@@ -880,6 +880,17 @@ function recalcAllGrievances() {
 
 /**
  * Recalculates member directory derived fields
+ *
+ * CROSS-POPULATION: This function reads all grievances for a member from the Grievance Log
+ * and updates their Member Directory record with aggregated statistics:
+ * - Column M: Total Grievances Filed
+ * - Column N: Active Grievances
+ * - Column O: Resolved Grievances
+ * - Column P: Grievances Won
+ * - Column Q: Grievances Lost
+ * - Column R: Last Grievance Date
+ *
+ * This ensures the Member Directory always reflects current grievance data from Grievance Log.
  */
 function recalcMemberRow(memberSheet, grievanceSheet, row) {
   if (row < 2) return;
@@ -887,10 +898,10 @@ function recalcMemberRow(memberSheet, grievanceSheet, row) {
   const memberId = memberSheet.getRange(row, 1).getValue();
   if (!memberId) return;
 
-  // Get all grievances for this member (28 columns in new structure)
+  // Get all grievances for this member from Grievance Log (28 columns in new structure)
   const lastRow = grievanceSheet.getLastRow();
   if (lastRow < 2) {
-    // No grievances - set all metrics to 0/blank
+    // No grievances found - set all metrics to 0/blank
     memberSheet.getRange(row, 13).setValue(0); // M: Total Grievances
     memberSheet.getRange(row, 14).setValue(0); // N: Active Grievances
     memberSheet.getRange(row, 15).setValue(0); // O: Resolved Grievances
@@ -2066,6 +2077,53 @@ function onFormSubmitTrigger(e) {
 // ============================================================================
 
 /**
+ * Generates a random unique Member ID
+ */
+function generateRandomMemberId(existingIds) {
+  let newId;
+  do {
+    const randomNum = Math.floor(Math.random() * 1000000);
+    newId = `MEM${String(randomNum).padStart(6, '0')}`;
+  } while (existingIds.has(newId));
+  return newId;
+}
+
+/**
+ * Validates that a Member ID exists in the Member Directory
+ * Returns the member data [ID, FirstName, LastName, JobTitle] or null if not found
+ */
+function validateAndGetMemberData(memberId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) return null;
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) return null;
+
+  const memberData = memberSheet.getRange("A2:D" + lastRow).getValues();
+  const member = memberData.find(row => row[0] === memberId);
+
+  return member || null;
+}
+
+/**
+ * Gets all valid Member IDs from the Member Directory
+ */
+function getAllMemberIds() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) return [];
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  const memberIds = memberSheet.getRange("A2:A" + lastRow).getValues().flat().filter(String);
+  return memberIds;
+}
+
+/**
  * Seeds 20,000 members with realistic data
  */
 function SEED_20K_MEMBERS() {
@@ -2094,18 +2152,24 @@ function SEED_20K_MEMBERS() {
 
   SpreadsheetApp.getUi().alert(`Seeding ${TOTAL} members in ${TOTAL/BATCH} batches...\n\nThis will take 3-5 minutes.`);
 
+  // Track all generated IDs to ensure uniqueness
+  const existingIds = new Set();
+
   for (let batch = 0; batch < TOTAL / BATCH; batch++) {
     const data = [];
 
     for (let i = 0; i < BATCH; i++) {
-      const num = (batch * BATCH) + i + 1;
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
       const isSteward = Math.random() < 0.1 ? "Yes" : "No";
 
+      // Generate random unique Member ID
+      const memberId = generateRandomMemberId(existingIds);
+      existingIds.add(memberId);
+
       data.push([
         // A-F: Basic Info
-        `MEM${String(num).padStart(6, '0')}`,
+        memberId,
         firstName,
         lastName,
         jobTitles[Math.floor(Math.random() * jobTitles.length)],
@@ -2142,11 +2206,16 @@ function SEED_20K_MEMBERS() {
     SpreadsheetApp.flush();
   }
 
-  SpreadsheetApp.getUi().alert('✅ 20,000 members seeded!\n\nRun "Recalc All Members" after adding grievances.');
+  SpreadsheetApp.getUi().alert('✅ 20,000 members seeded with random IDs!\n\nRun "Recalc All Members" after adding grievances.');
 }
 
 /**
  * Seeds 5,000 grievances with realistic data
+ *
+ * IMPORTANT: All grievances use ACTUAL MEMBER IDs from the Member Directory
+ * - Member ID, First Name, Last Name are pulled from existing members
+ * - This ensures data integrity between Grievance Log and Member Directory
+ * - After seeding, run "Recalc All Members" to cross-populate grievance stats to members
  */
 function SEED_5K_GRIEVANCES() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -2154,11 +2223,12 @@ function SEED_5K_GRIEVANCES() {
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
+  // Get actual member data from Member Directory (columns A-D: ID, FirstName, LastName, JobTitle)
   const memberData = memberSheet.getRange("A2:D" + memberSheet.getLastRow()).getValues();
   const members = memberData.filter(r => r[0]);
 
   if (members.length === 0) {
-    SpreadsheetApp.getUi().alert("Please seed members first!");
+    SpreadsheetApp.getUi().alert("❌ Please seed members first!\n\nGrievances must reference actual Member IDs.");
     return;
   }
 
@@ -2177,6 +2247,7 @@ function SEED_5K_GRIEVANCES() {
 
     for (let i = 0; i < BATCH; i++) {
       const num = (batch * BATCH) + i + 1;
+      // Select a random ACTUAL member from Member Directory
       const member = members[Math.floor(Math.random() * members.length)];
       const incidentDate = randomDateWithinDays(730);
       const hasFiled = Math.random() > 0.1;
@@ -2188,7 +2259,9 @@ function SEED_5K_GRIEVANCES() {
       data.push([
         // A-F: Basic Info
         `GRV${String(num).padStart(6, '0')}`,
-        member[0], member[1], member[2],
+        member[0], // Member ID from Member Directory
+        member[1], // First Name from Member Directory
+        member[2], // Last Name from Member Directory
         status, step,
         // G-J: Incident & Filing (H, J auto-calculated)
         incidentDate,
