@@ -4368,3 +4368,3627 @@ function autoDetectMobile() {
     applyMobileLayout();
   }
 }
+
+// ============================================================================
+// COMPREHENSIVE ENHANCEMENTS - 94 NEW FEATURES
+// ============================================================================
+// This section contains 94 advanced features organized into 10 categories
+// to enhance the 509 Dashboard functionality, automation, and user experience
+// ============================================================================
+
+// ============================================================================
+// SECTION 1: ADVANCED DATA VALIDATION (Features 1-10)
+// ============================================================================
+
+/**
+ * Feature 1: Validates member data integrity
+ * Checks for duplicate Member IDs, missing required fields, and invalid email formats
+ */
+function validateMemberData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return { valid: false, errors: ['Member Directory sheet not found'] };
+
+  const data = sheet.getDataRange().getValues();
+  const errors = [];
+  const memberIds = new Set();
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const memberId = row[0];
+    const firstName = row[1];
+    const lastName = row[2];
+    const email = row[7];
+
+    // Check for duplicate Member IDs
+    if (memberId && memberIds.has(memberId)) {
+      errors.push(`Row ${i + 1}: Duplicate Member ID: ${memberId}`);
+    }
+    memberIds.add(memberId);
+
+    // Check for missing required fields
+    if (!firstName || !lastName) {
+      errors.push(`Row ${i + 1}: Missing name fields`);
+    }
+
+    // Validate email format
+    if (email && !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+      errors.push(`Row ${i + 1}: Invalid email format: ${email}`);
+    }
+  }
+
+  return { valid: errors.length === 0, errors: errors };
+}
+
+/**
+ * Feature 2: Validates grievance data integrity
+ * Checks for valid Member IDs, required dates, and logical date sequences
+ */
+function validateGrievanceData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!grievanceSheet || !memberSheet) {
+    return { valid: false, errors: ['Required sheets not found'] };
+  }
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const memberData = memberSheet.getDataRange().getValues();
+  const validMemberIds = new Set(memberData.slice(1).map(row => row[0]));
+  const errors = [];
+
+  for (let i = 1; i < grievanceData.length; i++) {
+    const row = grievanceData[i];
+    const memberId = row[1];
+    const incidentDate = row[6];
+    const dateFiled = row[8];
+
+    // Check for valid Member ID
+    if (memberId && !validMemberIds.has(memberId)) {
+      errors.push(`Row ${i + 1}: Invalid Member ID: ${memberId}`);
+    }
+
+    // Check for required dates
+    if (!incidentDate) {
+      errors.push(`Row ${i + 1}: Missing Incident Date`);
+    }
+
+    // Check date sequence logic
+    if (incidentDate && dateFiled && new Date(dateFiled) < new Date(incidentDate)) {
+      errors.push(`Row ${i + 1}: Date Filed cannot be before Incident Date`);
+    }
+  }
+
+  return { valid: errors.length === 0, errors: errors };
+}
+
+/**
+ * Feature 3: Auto-corrects common data entry errors
+ * Fixes case, trims whitespace, standardizes phone numbers
+ */
+function autoCorrectDataErrors() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return;
+
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    let modified = false;
+
+    // Trim whitespace from all text fields
+    for (let j = 0; j < data[i].length; j++) {
+      if (typeof data[i][j] === 'string') {
+        const trimmed = data[i][j].trim();
+        if (trimmed !== data[i][j]) {
+          data[i][j] = trimmed;
+          modified = true;
+        }
+      }
+    }
+
+    // Proper case for names (columns 1-2: First Name, Last Name)
+    if (data[i][1]) {
+      const properFirst = data[i][1].charAt(0).toUpperCase() + data[i][1].slice(1).toLowerCase();
+      if (properFirst !== data[i][1]) {
+        data[i][1] = properFirst;
+        modified = true;
+      }
+    }
+
+    if (data[i][2]) {
+      const properLast = data[i][2].charAt(0).toUpperCase() + data[i][2].slice(1).toLowerCase();
+      if (properLast !== data[i][2]) {
+        data[i][2] = properLast;
+        modified = true;
+      }
+    }
+
+    // Standardize phone numbers (column 8)
+    if (data[i][8]) {
+      const phone = data[i][8].toString().replace(/\D/g, '');
+      if (phone.length === 10) {
+        const formatted = `(${phone.slice(0,3)}) ${phone.slice(3,6)}-${phone.slice(6)}`;
+        if (formatted !== data[i][8]) {
+          data[i][8] = formatted;
+          modified = true;
+        }
+      }
+    }
+  }
+
+  sheet.getDataRange().setValues(data);
+}
+
+/**
+ * Feature 4: Checks for orphaned grievances (invalid Member IDs)
+ */
+function findOrphanedGrievances() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!grievanceSheet || !memberSheet) return [];
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const memberData = memberSheet.getDataRange().getValues();
+  const validMemberIds = new Set(memberData.slice(1).map(row => row[0]).filter(id => id));
+
+  const orphaned = [];
+
+  for (let i = 1; i < grievanceData.length; i++) {
+    const memberId = grievanceData[i][1];
+    if (memberId && !validMemberIds.has(memberId)) {
+      orphaned.push({
+        row: i + 1,
+        grievanceId: grievanceData[i][0],
+        memberId: memberId,
+        firstName: grievanceData[i][2],
+        lastName: grievanceData[i][3]
+      });
+    }
+  }
+
+  return orphaned;
+}
+
+/**
+ * Feature 5: Validates date ranges for logical consistency
+ */
+function validateDateRanges() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return { valid: false, errors: ['Grievance Log not found'] };
+
+  const data = sheet.getDataRange().getValues();
+  const errors = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const incidentDate = data[i][6];
+    const dateFiled = data[i][8];
+    const step1Decision = data[i][10];
+    const step2Filed = data[i][13];
+    const step2Decision = data[i][15];
+    const step3Filed = data[i][19];
+
+    // Validate chronological order
+    if (incidentDate && dateFiled && new Date(dateFiled) < new Date(incidentDate)) {
+      errors.push(`Row ${i + 1}: Date Filed before Incident Date`);
+    }
+    if (dateFiled && step1Decision && new Date(step1Decision) < new Date(dateFiled)) {
+      errors.push(`Row ${i + 1}: Step I Decision before Date Filed`);
+    }
+    if (step1Decision && step2Filed && new Date(step2Filed) < new Date(step1Decision)) {
+      errors.push(`Row ${i + 1}: Step II Filed before Step I Decision`);
+    }
+    if (step2Filed && step2Decision && new Date(step2Decision) < new Date(step2Filed)) {
+      errors.push(`Row ${i + 1}: Step II Decision before Step II Filed`);
+    }
+    if (step2Decision && step3Filed && new Date(step3Filed) < new Date(step2Decision)) {
+      errors.push(`Row ${i + 1}: Step III Filed before Step II Decision`);
+    }
+  }
+
+  return { valid: errors.length === 0, errors: errors };
+}
+
+/**
+ * Feature 6: Checks for duplicate grievances
+ */
+function findDuplicateGrievances() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return [];
+
+  const data = sheet.getDataRange().getValues();
+  const duplicates = [];
+  const seen = new Map();
+
+  for (let i = 1; i < data.length; i++) {
+    const memberId = data[i][1];
+    const incidentDate = data[i][6];
+    const type = data[i][25];
+
+    if (!memberId || !incidentDate) continue;
+
+    const key = `${memberId}|${incidentDate}|${type}`;
+    if (seen.has(key)) {
+      duplicates.push({
+        row1: seen.get(key),
+        row2: i + 1,
+        memberId: memberId,
+        incidentDate: incidentDate,
+        type: type
+      });
+    } else {
+      seen.set(key, i + 1);
+    }
+  }
+
+  return duplicates;
+}
+
+/**
+ * Feature 7: Validates CBA compliance for all grievances
+ */
+function validateCBACompliance() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return { compliant: false, violations: ['Sheet not found'] };
+
+  const data = sheet.getDataRange().getValues();
+  const violations = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const incidentDate = data[i][6];
+    const dateFiled = data[i][8];
+
+    if (incidentDate && dateFiled) {
+      const daysDiff = Math.floor((new Date(dateFiled) - new Date(incidentDate)) / (1000 * 60 * 60 * 24));
+      if (daysDiff > CBA_DEADLINES.FILING) {
+        violations.push({
+          row: i + 1,
+          grievanceId: data[i][0],
+          violation: `Filed ${daysDiff} days after incident (CBA allows ${CBA_DEADLINES.FILING} days)`,
+          severity: daysDiff > 30 ? 'HIGH' : 'MEDIUM'
+        });
+      }
+    }
+  }
+
+  return { compliant: violations.length === 0, violations: violations };
+}
+
+/**
+ * Feature 8: Auto-generates missing Member IDs
+ */
+function autoGenerateMemberIDs() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return 0;
+
+  const data = sheet.getDataRange().getValues();
+  let maxId = 0;
+  let generated = 0;
+
+  // Find the highest existing ID
+  for (let i = 1; i < data.length; i++) {
+    const memberId = data[i][0];
+    if (memberId && memberId.toString().startsWith('MEM')) {
+      const num = parseInt(memberId.replace('MEM', ''));
+      if (num > maxId) maxId = num;
+    }
+  }
+
+  // Generate missing IDs
+  for (let i = 1; i < data.length; i++) {
+    if (!data[i][0] && (data[i][1] || data[i][2])) {  // Has name but no ID
+      maxId++;
+      data[i][0] = 'MEM' + String(maxId).padStart(6, '0');
+      generated++;
+    }
+  }
+
+  if (generated > 0) {
+    sheet.getDataRange().setValues(data);
+  }
+
+  return generated;
+}
+
+/**
+ * Feature 9: Auto-generates missing Grievance IDs
+ */
+function autoGenerateGrievanceIDs() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return 0;
+
+  const data = sheet.getDataRange().getValues();
+  let maxId = 0;
+  let generated = 0;
+
+  // Find the highest existing ID
+  for (let i = 1; i < data.length; i++) {
+    const grievanceId = data[i][0];
+    if (grievanceId && grievanceId.toString().startsWith('GRV')) {
+      const num = parseInt(grievanceId.replace('GRV', ''));
+      if (num > maxId) maxId = num;
+    }
+  }
+
+  // Generate missing IDs
+  for (let i = 1; i < data.length; i++) {
+    if (!data[i][0] && data[i][1]) {  // Has Member ID but no Grievance ID
+      maxId++;
+      data[i][0] = 'GRV' + String(maxId).padStart(6, '0');
+      generated++;
+    }
+  }
+
+  if (generated > 0) {
+    sheet.getDataRange().setValues(data);
+  }
+
+  return generated;
+}
+
+/**
+ * Feature 10: Comprehensive data integrity check
+ * Runs all validation checks and generates a report
+ */
+function runDataIntegrityCheck() {
+  const results = {
+    timestamp: new Date(),
+    memberValidation: validateMemberData(),
+    grievanceValidation: validateGrievanceData(),
+    dateRangeValidation: validateDateRanges(),
+    cbaCompliance: validateCBACompliance(),
+    orphanedGrievances: findOrphanedGrievances(),
+    duplicateGrievances: findDuplicateGrievances()
+  };
+
+  // Write results to Diagnostics sheet
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let diagSheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  if (!diagSheet) {
+    diagSheet = ss.insertSheet(SHEETS.DIAGNOSTICS);
+  }
+
+  diagSheet.clear();
+  diagSheet.appendRow(['DATA INTEGRITY CHECK REPORT']);
+  diagSheet.appendRow(['Run Date:', results.timestamp.toLocaleString()]);
+  diagSheet.appendRow([]);
+
+  diagSheet.appendRow(['MEMBER VALIDATION']);
+  diagSheet.appendRow(['Valid:', results.memberValidation.valid]);
+  diagSheet.appendRow(['Errors:', results.memberValidation.errors.length]);
+  results.memberValidation.errors.forEach(err => diagSheet.appendRow(['', err]));
+
+  diagSheet.appendRow([]);
+  diagSheet.appendRow(['GRIEVANCE VALIDATION']);
+  diagSheet.appendRow(['Valid:', results.grievanceValidation.valid]);
+  diagSheet.appendRow(['Errors:', results.grievanceValidation.errors.length]);
+  results.grievanceValidation.errors.forEach(err => diagSheet.appendRow(['', err]));
+
+  diagSheet.appendRow([]);
+  diagSheet.appendRow(['CBA COMPLIANCE']);
+  diagSheet.appendRow(['Compliant:', results.cbaCompliance.compliant]);
+  diagSheet.appendRow(['Violations:', results.cbaCompliance.violations.length]);
+  results.cbaCompliance.violations.forEach(v => {
+    diagSheet.appendRow(['', `Row ${v.row}: ${v.violation} [${v.severity}]`]);
+  });
+
+  diagSheet.appendRow([]);
+  diagSheet.appendRow(['ORPHANED GRIEVANCES']);
+  diagSheet.appendRow(['Count:', results.orphanedGrievances.length]);
+  results.orphanedGrievances.forEach(o => {
+    diagSheet.appendRow(['', `Row ${o.row}: ${o.grievanceId} - Invalid Member ID: ${o.memberId}`]);
+  });
+
+  diagSheet.appendRow([]);
+  diagSheet.appendRow(['DUPLICATE GRIEVANCES']);
+  diagSheet.appendRow(['Count:', results.duplicateGrievances.length]);
+  results.duplicateGrievances.forEach(d => {
+    diagSheet.appendRow(['', `Rows ${d.row1} & ${d.row2}: Member ${d.memberId}, ${d.incidentDate}`]);
+  });
+
+  diagSheet.setColumnWidth(1, 200);
+  diagSheet.setColumnWidth(2, 600);
+  diagSheet.getRange('A1:B1').setFontWeight('bold').setFontSize(14).setBackground(COLORS.HEADER_BLUE).setFontColor('white');
+
+  return results;
+}
+
+// ============================================================================
+// SECTION 2: AUTOMATED NOTIFICATIONS & ALERTS (Features 11-20)
+// ============================================================================
+
+/**
+ * Feature 11: Sends email alerts for overdue grievances
+ */
+function sendOverdueAlerts() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return 0;
+
+  const data = sheet.getDataRange().getValues();
+  const currentUser = Session.getActiveUser().getEmail();
+  let alertCount = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const isOverdue = data[i][28]; // Column AC: Is Overdue?
+    const grievanceId = data[i][0];
+    const memberName = `${data[i][2]} ${data[i][3]}`;
+    const nextDeadline = data[i][27]; // Next Deadline
+
+    if (isOverdue === 'YES' && nextDeadline) {
+      const daysOverdue = Math.floor((new Date() - new Date(nextDeadline)) / (1000 * 60 * 60 * 24));
+
+      try {
+        MailApp.sendEmail({
+          to: currentUser,
+          subject: `⚠️ OVERDUE GRIEVANCE ALERT: ${grievanceId}`,
+          body: `Grievance ${grievanceId} for ${memberName} is ${daysOverdue} days overdue.\n\n` +
+                `Next Deadline was: ${nextDeadline}\n` +
+                `Please take immediate action.\n\n` +
+                `View Dashboard: ${ss.getUrl()}`
+        });
+        alertCount++;
+      } catch (e) {
+        Logger.log(`Failed to send alert for ${grievanceId}: ${e}`);
+      }
+    }
+  }
+
+  return alertCount;
+}
+
+/**
+ * Feature 12: Sends weekly deadline reminder emails
+ */
+function sendWeeklyDeadlineReminders() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return 0;
+
+  const data = sheet.getDataRange().getValues();
+  const currentUser = Session.getActiveUser().getEmail();
+  const today = new Date();
+  const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+  let reminderCount = 0;
+
+  const upcomingDeadlines = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const nextDeadline = data[i][27]; // Next Deadline
+    const grievanceId = data[i][0];
+    const memberName = `${data[i][2]} ${data[i][3]}`;
+    const currentStep = data[i][5];
+
+    if (nextDeadline && new Date(nextDeadline) >= today && new Date(nextDeadline) <= nextWeek) {
+      const daysUntil = Math.floor((new Date(nextDeadline) - today) / (1000 * 60 * 60 * 24));
+      upcomingDeadlines.push({
+        grievanceId: grievanceId,
+        memberName: memberName,
+        currentStep: currentStep,
+        deadline: nextDeadline,
+        daysUntil: daysUntil
+      });
+    }
+  }
+
+  if (upcomingDeadlines.length > 0) {
+    let emailBody = `You have ${upcomingDeadlines.length} grievance deadline(s) in the next 7 days:\n\n`;
+
+    upcomingDeadlines.sort((a, b) => a.daysUntil - b.daysUntil);
+
+    upcomingDeadlines.forEach(item => {
+      emailBody += `• ${item.grievanceId} - ${item.memberName}\n`;
+      emailBody += `  Step: ${item.currentStep}\n`;
+      emailBody += `  Deadline: ${item.deadline} (${item.daysUntil} days)\n\n`;
+    });
+
+    emailBody += `\nView Dashboard: ${ss.getUrl()}`;
+
+    try {
+      MailApp.sendEmail({
+        to: currentUser,
+        subject: `📅 Weekly Deadline Reminder: ${upcomingDeadlines.length} Upcoming Deadline(s)`,
+        body: emailBody
+      });
+      reminderCount = upcomingDeadlines.length;
+    } catch (e) {
+      Logger.log(`Failed to send weekly reminder: ${e}`);
+    }
+  }
+
+  return reminderCount;
+}
+
+/**
+ * Feature 13: Creates daily digest email
+ */
+function sendDailyDigest() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const dashboardSheet = ss.getSheetByName(SHEETS.DASHBOARD);
+
+  if (!grievanceSheet || !dashboardSheet) return;
+
+  const currentUser = Session.getActiveUser().getEmail();
+  const today = new Date();
+
+  // Gather statistics
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  let totalActive = 0;
+  let overdueCount = 0;
+  let dueToday = 0;
+
+  for (let i = 1; i < grievanceData.length; i++) {
+    const status = grievanceData[i][4];
+    const isOverdue = grievanceData[i][28];
+    const nextDeadline = grievanceData[i][27];
+
+    if (status && status.startsWith('Filed')) {
+      totalActive++;
+    }
+
+    if (isOverdue === 'YES') {
+      overdueCount++;
+    }
+
+    if (nextDeadline) {
+      const deadlineDate = new Date(nextDeadline);
+      if (deadlineDate.toDateString() === today.toDateString()) {
+        dueToday++;
+      }
+    }
+  }
+
+  const emailBody = `509 Dashboard Daily Digest - ${today.toDateString()}\n\n` +
+                    `═══════════════════════════════════════\n\n` +
+                    `📊 OVERVIEW\n` +
+                    `• Active Grievances: ${totalActive}\n` +
+                    `• Overdue: ${overdueCount}\n` +
+                    `• Due Today: ${dueToday}\n\n` +
+                    `═══════════════════════════════════════\n\n` +
+                    `View Dashboard: ${ss.getUrl()}\n\n` +
+                    `This is an automated daily digest from your 509 Dashboard.`;
+
+  try {
+    MailApp.sendEmail({
+      to: currentUser,
+      subject: `📊 509 Dashboard Daily Digest - ${today.toDateString()}`,
+      body: emailBody
+    });
+  } catch (e) {
+    Logger.log(`Failed to send daily digest: ${e}`);
+  }
+}
+
+/**
+ * Feature 14: Sends steward workload balance alerts
+ */
+function sendStewardWorkloadAlerts() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
+  if (!sheet) return;
+
+  const data = sheet.getDataRange().getValues();
+  const currentUser = Session.getActiveUser().getEmail();
+
+  // Calculate average workload
+  let totalCases = 0;
+  let stewardCount = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const activeCases = data[i][4]; // Column E: Active Cases
+    if (typeof activeCases === 'number') {
+      totalCases += activeCases;
+      stewardCount++;
+    }
+  }
+
+  if (stewardCount === 0) return;
+
+  const avgWorkload = totalCases / stewardCount;
+  const threshold = avgWorkload * 1.5; // 50% above average
+
+  const overloadedStewards = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const stewardName = data[i][0];
+    const activeCases = data[i][4];
+
+    if (activeCases > threshold) {
+      overloadedStewards.push({
+        name: stewardName,
+        cases: activeCases,
+        avgCases: avgWorkload.toFixed(1)
+      });
+    }
+  }
+
+  if (overloadedStewards.length > 0) {
+    let emailBody = `⚠️ STEWARD WORKLOAD ALERT\n\n` +
+                    `The following steward(s) have significantly higher caseloads than average:\n\n`;
+
+    overloadedStewards.forEach(s => {
+      emailBody += `• ${s.name}: ${s.cases} active cases (avg: ${s.avgCases})\n`;
+    });
+
+    emailBody += `\nConsider rebalancing case assignments.\n\n` +
+                 `View Dashboard: ${ss.getUrl()}`;
+
+    try {
+      MailApp.sendEmail({
+        to: currentUser,
+        subject: '⚠️ Steward Workload Imbalance Alert',
+        body: emailBody
+      });
+    } catch (e) {
+      Logger.log(`Failed to send workload alert: ${e}`);
+    }
+  }
+}
+
+/**
+ * Feature 15: Sends new grievance notification
+ */
+function sendNewGrievanceNotification(grievanceId, memberName, type) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const currentUser = Session.getActiveUser().getEmail();
+
+  const emailBody = `🆕 NEW GRIEVANCE FILED\n\n` +
+                    `Grievance ID: ${grievanceId}\n` +
+                    `Member: ${memberName}\n` +
+                    `Type: ${type}\n\n` +
+                    `View Dashboard: ${ss.getUrl()}`;
+
+  try {
+    MailApp.sendEmail({
+      to: currentUser,
+      subject: `🆕 New Grievance Filed: ${grievanceId}`,
+      body: emailBody
+    });
+  } catch (e) {
+    Logger.log(`Failed to send new grievance notification: ${e}`);
+  }
+}
+
+/**
+ * Feature 16: Sends grievance resolution notification
+ */
+function sendResolutionNotification(grievanceId, memberName, outcome) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const currentUser = Session.getActiveUser().getEmail();
+
+  const emailBody = `✅ GRIEVANCE RESOLVED\n\n` +
+                    `Grievance ID: ${grievanceId}\n` +
+                    `Member: ${memberName}\n` +
+                    `Outcome: ${outcome}\n\n` +
+                    `View Dashboard: ${ss.getUrl()}`;
+
+  try {
+    MailApp.sendEmail({
+      to: currentUser,
+      subject: `✅ Grievance Resolved: ${grievanceId} - ${outcome}`,
+      body: emailBody
+    });
+  } catch (e) {
+    Logger.log(`Failed to send resolution notification: ${e}`);
+  }
+}
+
+/**
+ * Feature 17: Sends CBA violation warning
+ */
+function sendCBAViolationWarning(violations) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const currentUser = Session.getActiveUser().getEmail();
+
+  if (violations.length === 0) return;
+
+  let emailBody = `⚠️ CBA COMPLIANCE VIOLATIONS DETECTED\n\n` +
+                  `The following grievances have CBA deadline violations:\n\n`;
+
+  violations.forEach(v => {
+    emailBody += `• Row ${v.row}: ${v.grievanceId}\n`;
+    emailBody += `  ${v.violation} [${v.severity}]\n\n`;
+  });
+
+  emailBody += `Please review these cases immediately.\n\n` +
+               `View Dashboard: ${ss.getUrl()}`;
+
+  try {
+    MailApp.sendEmail({
+      to: currentUser,
+      subject: '⚠️ CBA Compliance Violations Detected',
+      body: emailBody
+    });
+  } catch (e) {
+    Logger.log(`Failed to send CBA violation warning: ${e}`);
+  }
+}
+
+/**
+ * Feature 18: Sends monthly performance report
+ */
+function sendMonthlyPerformanceReport() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const currentUser = Session.getActiveUser().getEmail();
+
+  if (!grievanceSheet) return;
+
+  const data = grievanceSheet.getDataRange().getValues();
+  const today = new Date();
+  const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  let filed = 0;
+  let resolved = 0;
+  let won = 0;
+  let lost = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const dateFiled = data[i][8];
+    const status = data[i][4];
+    const outcome = data[i][24];
+
+    // Count filed last month
+    if (dateFiled && new Date(dateFiled) >= lastMonth && new Date(dateFiled) < thisMonth) {
+      filed++;
+    }
+
+    // Count resolved last month
+    if (status && status.startsWith('Resolved')) {
+      if (outcome && outcome.includes('Won')) won++;
+      if (outcome && outcome.includes('Lost')) lost++;
+      resolved++;
+    }
+  }
+
+  const winRate = resolved > 0 ? ((won / resolved) * 100).toFixed(1) : 0;
+
+  const emailBody = `📊 MONTHLY PERFORMANCE REPORT\n` +
+                    `Period: ${lastMonth.toLocaleDateString()} - ${thisMonth.toLocaleDateString()}\n\n` +
+                    `═══════════════════════════════════════\n\n` +
+                    `📝 Filed: ${filed}\n` +
+                    `✅ Resolved: ${resolved}\n` +
+                    `🏆 Won: ${won}\n` +
+                    `❌ Lost: ${lost}\n` +
+                    `📈 Win Rate: ${winRate}%\n\n` +
+                    `═══════════════════════════════════════\n\n` +
+                    `View Dashboard: ${ss.getUrl()}`;
+
+  try {
+    MailApp.sendEmail({
+      to: currentUser,
+      subject: `📊 Monthly Performance Report - ${lastMonth.toLocaleDateString('en-US', {month: 'long', year: 'numeric'})}`,
+      body: emailBody
+    });
+  } catch (e) {
+    Logger.log(`Failed to send monthly report: ${e}`);
+  }
+}
+
+/**
+ * Feature 19: Sends custom alert based on criteria
+ */
+function sendCustomAlert(criteria, message) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const currentUser = Session.getActiveUser().getEmail();
+
+  const emailBody = `🔔 CUSTOM ALERT\n\n` +
+                    `Criteria: ${criteria}\n\n` +
+                    `${message}\n\n` +
+                    `View Dashboard: ${ss.getUrl()}`;
+
+  try {
+    MailApp.sendEmail({
+      to: currentUser,
+      subject: `🔔 Custom Alert: ${criteria}`,
+      body: emailBody
+    });
+  } catch (e) {
+    Logger.log(`Failed to send custom alert: ${e}`);
+  }
+}
+
+/**
+ * Feature 20: Configures email notification preferences
+ */
+function configureNotificationPreferences() {
+  const props = PropertiesService.getUserProperties();
+
+  // Default preferences
+  const defaultPrefs = {
+    dailyDigest: true,
+    weeklyReminders: true,
+    overdueAlerts: true,
+    newGrievanceAlerts: true,
+    resolutionAlerts: true,
+    workloadAlerts: true,
+    monthlyReports: true
+  };
+
+  // Save preferences
+  Object.keys(defaultPrefs).forEach(key => {
+    if (!props.getProperty(key)) {
+      props.setProperty(key, defaultPrefs[key].toString());
+    }
+  });
+
+  return props.getProperties();
+}
+
+// ============================================================================
+// SECTION 3: ADVANCED REPORTING (Features 21-30)
+// ============================================================================
+
+/**
+ * Feature 21: Generates comprehensive PDF report
+ */
+function generatePDFReport() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashboardSheet = ss.getSheetByName(SHEETS.DASHBOARD);
+
+  if (!dashboardSheet) return null;
+
+  // Create a temporary sheet with report content
+  const reportSheet = ss.insertSheet('PDF_Report_Temp');
+
+  // Add report header
+  reportSheet.getRange('A1').setValue('509 DASHBOARD - COMPREHENSIVE REPORT');
+  reportSheet.getRange('A2').setValue(`Generated: ${new Date().toLocaleString()}`);
+
+  // Copy dashboard metrics
+  const dashboardData = dashboardSheet.getRange('A1:H30').getValues();
+  reportSheet.getRange(4, 1, dashboardData.length, dashboardData[0].length).setValues(dashboardData);
+
+  // Format report
+  reportSheet.getRange('A1:H1').setFontSize(16).setFontWeight('bold').setBackground(COLORS.HEADER_BLUE).setFontColor('white');
+  reportSheet.getRange('A2').setFontSize(10).setFontStyle('italic');
+
+  // Convert to PDF
+  const pdfBlob = ss.getAs('application/pdf');
+  pdfBlob.setName(`509_Dashboard_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+
+  // Clean up
+  ss.deleteSheet(reportSheet);
+
+  return pdfBlob;
+}
+
+/**
+ * Feature 22: Exports grievance data to CSV
+ */
+function exportGrievancesToCSV() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+  let csv = '';
+
+  data.forEach(row => {
+    csv += row.map(cell => {
+      // Escape quotes and wrap in quotes if contains comma
+      const cellStr = cell.toString().replace(/"/g, '""');
+      return cellStr.includes(',') ? `"${cellStr}"` : cellStr;
+    }).join(',') + '\n';
+  });
+
+  const blob = Utilities.newBlob(csv, 'text/csv', `Grievances_${new Date().toISOString().slice(0,10)}.csv`);
+  return blob;
+}
+
+/**
+ * Feature 23: Creates executive summary report
+ */
+function createExecutiveSummary() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!grievanceSheet || !memberSheet) return null;
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const memberData = memberSheet.getDataRange().getValues();
+
+  const summary = {
+    reportDate: new Date().toLocaleString(),
+    memberMetrics: {
+      total: memberData.length - 1,
+      active: memberData.slice(1).filter(row => row[10] === 'Active').length,
+      stewards: memberData.slice(1).filter(row => row[9] === 'Yes').length
+    },
+    grievanceMetrics: {
+      total: grievanceData.length - 1,
+      active: grievanceData.slice(1).filter(row => row[4] && row[4].startsWith('Filed')).length,
+      resolved: grievanceData.slice(1).filter(row => row[4] && row[4].startsWith('Resolved')).length,
+      overdue: grievanceData.slice(1).filter(row => row[28] === 'YES').length
+    },
+    performanceMetrics: {
+      winRate: 0,
+      avgResolutionDays: 0,
+      settlementRate: 0
+    }
+  };
+
+  // Calculate performance metrics
+  const resolved = grievanceData.slice(1).filter(row => row[4] && row[4].startsWith('Resolved'));
+  const won = resolved.filter(row => row[24] && row[24].includes('Won')).length;
+  const settled = resolved.filter(row => row[24] && row[24].includes('Settled')).length;
+
+  if (resolved.length > 0) {
+    summary.performanceMetrics.winRate = ((won / resolved.length) * 100).toFixed(1);
+    summary.performanceMetrics.settlementRate = ((settled / resolved.length) * 100).toFixed(1);
+  }
+
+  return summary;
+}
+
+/**
+ * Feature 24: Generates trend analysis report
+ */
+function generateTrendAnalysis() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+  const monthlyData = {};
+
+  for (let i = 1; i < data.length; i++) {
+    const dateFiled = data[i][8];
+    if (dateFiled) {
+      const date = new Date(dateFiled);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { filed: 0, resolved: 0 };
+      }
+      monthlyData[monthKey].filed++;
+
+      const status = data[i][4];
+      if (status && status.startsWith('Resolved')) {
+        monthlyData[monthKey].resolved++;
+      }
+    }
+  }
+
+  const trends = Object.keys(monthlyData).sort().map(month => ({
+    month: month,
+    filed: monthlyData[month].filed,
+    resolved: monthlyData[month].resolved,
+    netChange: monthlyData[month].filed - monthlyData[month].resolved
+  }));
+
+  return trends;
+}
+
+/**
+ * Feature 25: Creates steward performance report
+ */
+function createStewardPerformanceReport() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!grievanceSheet || !memberSheet) return null;
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const stewardStats = {};
+
+  for (let i = 1; i < grievanceData.length; i++) {
+    const representative = grievanceData[i][26]; // Column AA: Representative
+    if (!representative) continue;
+
+    if (!stewardStats[representative]) {
+      stewardStats[representative] = {
+        total: 0,
+        active: 0,
+        resolved: 0,
+        won: 0,
+        lost: 0,
+        overdue: 0
+      };
+    }
+
+    stewardStats[representative].total++;
+
+    const status = grievanceData[i][4];
+    const outcome = grievanceData[i][24];
+    const isOverdue = grievanceData[i][28];
+
+    if (status && status.startsWith('Filed')) {
+      stewardStats[representative].active++;
+    }
+
+    if (status && status.startsWith('Resolved')) {
+      stewardStats[representative].resolved++;
+      if (outcome && outcome.includes('Won')) stewardStats[representative].won++;
+      if (outcome && outcome.includes('Lost')) stewardStats[representative].lost++;
+    }
+
+    if (isOverdue === 'YES') {
+      stewardStats[representative].overdue++;
+    }
+  }
+
+  // Calculate win rates
+  Object.keys(stewardStats).forEach(steward => {
+    const stats = stewardStats[steward];
+    stats.winRate = stats.resolved > 0 ? ((stats.won / stats.resolved) * 100).toFixed(1) : 0;
+  });
+
+  return stewardStats;
+}
+
+/**
+ * Feature 26: Generates location-based analysis report
+ */
+function generateLocationAnalysis() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!memberSheet || !grievanceSheet) return null;
+
+  const memberData = memberSheet.getDataRange().getValues();
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+
+  const locationStats = {};
+
+  // Count members by location
+  for (let i = 1; i < memberData.length; i++) {
+    const location = memberData[i][4]; // Work Location
+    if (!location) continue;
+
+    if (!locationStats[location]) {
+      locationStats[location] = { members: 0, grievances: 0, active: 0, resolved: 0 };
+    }
+    locationStats[location].members++;
+  }
+
+  // Count grievances by member location
+  for (let i = 1; i < grievanceData.length; i++) {
+    const memberId = grievanceData[i][1];
+    const member = memberData.find(row => row[0] === memberId);
+
+    if (member) {
+      const location = member[4];
+      if (locationStats[location]) {
+        locationStats[location].grievances++;
+
+        const status = grievanceData[i][4];
+        if (status && status.startsWith('Filed')) {
+          locationStats[location].active++;
+        }
+        if (status && status.startsWith('Resolved')) {
+          locationStats[location].resolved++;
+        }
+      }
+    }
+  }
+
+  return locationStats;
+}
+
+/**
+ * Feature 27: Creates grievance type analysis report
+ */
+function createGrievanceTypeAnalysis() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+  const typeStats = {};
+
+  for (let i = 1; i < data.length; i++) {
+    const type = data[i][25]; // Grievance Type
+    if (!type) continue;
+
+    if (!typeStats[type]) {
+      typeStats[type] = { total: 0, active: 0, resolved: 0, won: 0, settled: 0 };
+    }
+
+    typeStats[type].total++;
+
+    const status = data[i][4];
+    const outcome = data[i][24];
+
+    if (status && status.startsWith('Filed')) {
+      typeStats[type].active++;
+    }
+
+    if (status && status.startsWith('Resolved')) {
+      typeStats[type].resolved++;
+      if (outcome && outcome.includes('Won')) typeStats[type].won++;
+      if (outcome && outcome.includes('Settled')) typeStats[type].settled++;
+    }
+  }
+
+  // Calculate success rates
+  Object.keys(typeStats).forEach(type => {
+    const stats = typeStats[type];
+    stats.winRate = stats.resolved > 0 ? ((stats.won / stats.resolved) * 100).toFixed(1) : 0;
+    stats.settlementRate = stats.resolved > 0 ? ((stats.settled / stats.resolved) * 100).toFixed(1) : 0;
+  });
+
+  return typeStats;
+}
+
+/**
+ * Feature 28: Generates quarterly comparison report
+ */
+function generateQuarterlyComparison() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+  const quarterlyData = {};
+
+  for (let i = 1; i < data.length; i++) {
+    const dateFiled = data[i][8];
+    if (dateFiled) {
+      const date = new Date(dateFiled);
+      const quarter = `Q${Math.floor(date.getMonth() / 3) + 1} ${date.getFullYear()}`;
+
+      if (!quarterlyData[quarter]) {
+        quarterlyData[quarter] = { filed: 0, resolved: 0, won: 0, lost: 0 };
+      }
+
+      quarterlyData[quarter].filed++;
+
+      const status = data[i][4];
+      const outcome = data[i][24];
+
+      if (status && status.startsWith('Resolved')) {
+        quarterlyData[quarter].resolved++;
+        if (outcome && outcome.includes('Won')) quarterlyData[quarter].won++;
+        if (outcome && outcome.includes('Lost')) quarterlyData[quarter].lost++;
+      }
+    }
+  }
+
+  return quarterlyData;
+}
+
+/**
+ * Feature 29: Creates custom filtered report
+ */
+function createCustomFilteredReport(filters) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const filtered = [headers];
+
+  for (let i = 1; i < data.length; i++) {
+    let matches = true;
+
+    // Apply filters
+    if (filters.status && data[i][4] !== filters.status) matches = false;
+    if (filters.type && data[i][25] !== filters.type) matches = false;
+    if (filters.steward && data[i][26] !== filters.steward) matches = false;
+    if (filters.dateFrom && new Date(data[i][8]) < new Date(filters.dateFrom)) matches = false;
+    if (filters.dateTo && new Date(data[i][8]) > new Date(filters.dateTo)) matches = false;
+
+    if (matches) {
+      filtered.push(data[i]);
+    }
+  }
+
+  return filtered;
+}
+
+/**
+ * Feature 30: Generates annual summary report
+ */
+function generateAnnualSummary(year) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceSheet) return null;
+
+  const data = grievanceSheet.getDataRange().getValues();
+
+  const summary = {
+    year: year,
+    totalFiled: 0,
+    totalResolved: 0,
+    won: 0,
+    lost: 0,
+    settled: 0,
+    withdrawn: 0,
+    byMonth: {},
+    byType: {},
+    byLocation: {}
+  };
+
+  for (let i = 1; i < data.length; i++) {
+    const dateFiled = data[i][8];
+    if (!dateFiled) continue;
+
+    const fileDate = new Date(dateFiled);
+    if (fileDate.getFullYear() !== year) continue;
+
+    summary.totalFiled++;
+
+    const month = fileDate.toLocaleString('default', { month: 'long' });
+    summary.byMonth[month] = (summary.byMonth[month] || 0) + 1;
+
+    const type = data[i][25];
+    if (type) {
+      summary.byType[type] = (summary.byType[type] || 0) + 1;
+    }
+
+    const status = data[i][4];
+    const outcome = data[i][24];
+
+    if (status && status.startsWith('Resolved')) {
+      summary.totalResolved++;
+      if (outcome && outcome.includes('Won')) summary.won++;
+      if (outcome && outcome.includes('Lost')) summary.lost++;
+      if (outcome && outcome.includes('Settled')) summary.settled++;
+      if (outcome && outcome.includes('Withdrawn')) summary.withdrawn++;
+    }
+  }
+
+  // Calculate rates
+  summary.winRate = summary.totalResolved > 0 ? ((summary.won / summary.totalResolved) * 100).toFixed(1) : 0;
+  summary.settlementRate = summary.totalResolved > 0 ? ((summary.settled / summary.totalResolved) * 100).toFixed(1) : 0;
+
+  return summary;
+}
+
+// ============================================================================
+// SECTION 4: MEMBER ENGAGEMENT TOOLS (Features 31-40)
+// ============================================================================
+
+/**
+ * Feature 31: Tracks member participation in union events
+ */
+function trackMemberParticipation(memberId, eventType, eventDate) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return false;
+
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === memberId) {
+      // Update Events Attended count (column 22)
+      const currentCount = data[i][21] || 0;
+      data[i][21] = currentCount + 1;
+
+      // Update Last Updated (column 31)
+      data[i][30] = new Date();
+
+      sheet.getDataRange().setValues(data);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Feature 32: Calculates member engagement score
+ */
+function calculateEngagementScore(memberId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!memberSheet || !grievanceSheet) return 0;
+
+  const memberData = memberSheet.getDataRange().getValues();
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+
+  const member = memberData.find(row => row[0] === memberId);
+  if (!member) return 0;
+
+  let score = 0;
+
+  // Points for events attended
+  const eventsAttended = member[21] || 0;
+  score += eventsAttended * 5;
+
+  // Points for training sessions
+  const trainingSessions = member[22] || 0;
+  score += trainingSessions * 10;
+
+  // Points for committee membership
+  const committee = member[23];
+  if (committee && committee !== 'None') score += 20;
+
+  // Points for being a steward
+  const isSteward = member[9];
+  if (isSteward === 'Yes') score += 30;
+
+  // Points for grievances filed (shows engagement)
+  const grievancesFiled = grievanceData.filter(row => row[1] === memberId).length;
+  score += grievancesFiled * 3;
+
+  return score;
+}
+
+/**
+ * Feature 33: Updates member engagement level automatically
+ */
+function updateEngagementLevels() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return 0;
+
+  const data = sheet.getDataRange().getValues();
+  let updated = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const memberId = data[i][0];
+    if (!memberId) continue;
+
+    const score = calculateEngagementScore(memberId);
+
+    // Determine engagement level based on score
+    let level;
+    if (score >= 100) level = 'Very Active';
+    else if (score >= 50) level = 'Active';
+    else if (score >= 20) level = 'Moderately Active';
+    else if (score >= 5) level = 'Inactive';
+    else level = 'New Member';
+
+    // Update engagement level (column 21)
+    if (data[i][20] !== level) {
+      data[i][20] = level;
+      updated++;
+    }
+  }
+
+  if (updated > 0) {
+    sheet.getDataRange().setValues(data);
+  }
+
+  return updated;
+}
+
+/**
+ * Feature 34: Identifies inactive members
+ */
+function identifyInactiveMembers(monthsInactive = 6) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!memberSheet || !grievanceSheet) return [];
+
+  const memberData = memberSheet.getDataRange().getValues();
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const inactiveMembers = [];
+  const cutoffDate = new Date();
+  cutoffDate.setMonth(cutoffDate.getMonth() - monthsInactive);
+
+  for (let i = 1; i < memberData.length; i++) {
+    const memberId = memberData[i][0];
+    const eventsAttended = memberData[i][21] || 0;
+    const lastGrievance = memberData[i][17]; // Last Grievance Date
+
+    // Check if no events and no recent grievances
+    if (eventsAttended === 0 && (!lastGrievance || new Date(lastGrievance) < cutoffDate)) {
+      inactiveMembers.push({
+        memberId: memberId,
+        name: `${memberData[i][1]} ${memberData[i][2]}`,
+        location: memberData[i][4],
+        email: memberData[i][7],
+        lastGrievanceDate: lastGrievance || 'Never'
+      });
+    }
+  }
+
+  return inactiveMembers;
+}
+
+/**
+ * Feature 35: Sends member re-engagement email
+ */
+function sendReEngagementEmail(memberId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return false;
+
+  const data = sheet.getDataRange().getValues();
+  const member = data.find(row => row[0] === memberId);
+
+  if (!member || !member[7]) return false; // No email found
+
+  const name = `${member[1]} ${member[2]}`;
+  const email = member[7];
+
+  const emailBody = `Dear ${member[1]},\n\n` +
+                    `We haven't seen you at recent union events or activities. We'd love to have you more involved!\n\n` +
+                    `Here are some ways to get engaged:\n` +
+                    `• Attend union meetings\n` +
+                    `• Join a committee\n` +
+                    `• Participate in training sessions\n` +
+                    `• Connect with your steward\n\n` +
+                    `Your voice matters in our union!\n\n` +
+                    `In Solidarity,\nSEIU Local 509`;
+
+  try {
+    MailApp.sendEmail({
+      to: email,
+      subject: 'Stay Connected with SEIU Local 509',
+      body: emailBody
+    });
+    return true;
+  } catch (e) {
+    Logger.log(`Failed to send re-engagement email to ${email}: ${e}`);
+    return false;
+  }
+}
+
+/**
+ * Feature 36: Creates member satisfaction survey tracker
+ */
+function trackMemberSatisfaction(memberId, satisfactionLevel, comments) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let surveySheet = ss.getSheetByName('Member Surveys');
+
+  if (!surveySheet) {
+    surveySheet = ss.insertSheet('Member Surveys');
+    surveySheet.appendRow(['Survey Date', 'Member ID', 'Name', 'Satisfaction Level', 'Comments']);
+    surveySheet.getRange('1:1').setFontWeight('bold').setBackground(COLORS.HEADER_BLUE).setFontColor('white');
+  }
+
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const memberData = memberSheet.getDataRange().getValues();
+  const member = memberData.find(row => row[0] === memberId);
+
+  if (member) {
+    const name = `${member[1]} ${member[2]}`;
+    surveySheet.appendRow([new Date(), memberId, name, satisfactionLevel, comments]);
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Feature 37: Generates member engagement report
+ */
+function generateEngagementReport() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+  const report = {
+    totalMembers: data.length - 1,
+    byEngagementLevel: {},
+    stewards: 0,
+    committeeMembers: 0,
+    avgEventsAttended: 0,
+    avgTrainingSessions: 0
+  };
+
+  let totalEvents = 0;
+  let totalTraining = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    // Count by engagement level
+    const level = data[i][20] || 'Unknown';
+    report.byEngagementLevel[level] = (report.byEngagementLevel[level] || 0) + 1;
+
+    // Count stewards
+    if (data[i][9] === 'Yes') report.stewards++;
+
+    // Count committee members
+    if (data[i][23] && data[i][23] !== 'None') report.committeeMembers++;
+
+    // Sum events and training
+    totalEvents += data[i][21] || 0;
+    totalTraining += data[i][22] || 0;
+  }
+
+  report.avgEventsAttended = (totalEvents / (data.length - 1)).toFixed(1);
+  report.avgTrainingSessions = (totalTraining / (data.length - 1)).toFixed(1);
+
+  return report;
+}
+
+/**
+ * Feature 38: Tracks member committee participation
+ */
+function updateCommitteeMembership(memberId, committee) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return false;
+
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === memberId) {
+      data[i][23] = committee; // Column X: Committee Member
+      data[i][30] = new Date(); // Last Updated
+      sheet.getDataRange().setValues(data);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Feature 39: Identifies potential steward candidates
+ */
+function identifyPotentialStewards() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!memberSheet || !grievanceSheet) return [];
+
+  const memberData = memberSheet.getDataRange().getValues();
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const candidates = [];
+
+  for (let i = 1; i < memberData.length; i++) {
+    const memberId = memberData[i][0];
+    const isSteward = memberData[i][9];
+    const engagementLevel = memberData[i][20];
+    const eventsAttended = memberData[i][21] || 0;
+    const committee = memberData[i][23];
+
+    // Skip if already a steward
+    if (isSteward === 'Yes') continue;
+
+    // Criteria: High engagement, committee member, attended events
+    const score = calculateEngagementScore(memberId);
+    if (score >= 50 && eventsAttended >= 3 && committee && committee !== 'None') {
+      candidates.push({
+        memberId: memberId,
+        name: `${memberData[i][1]} ${memberData[i][2]}`,
+        location: memberData[i][4],
+        engagementLevel: engagementLevel,
+        eventsAttended: eventsAttended,
+        committee: committee,
+        score: score
+      });
+    }
+  }
+
+  // Sort by score descending
+  candidates.sort((a, b) => b.score - a.score);
+
+  return candidates;
+}
+
+/**
+ * Feature 40: Creates member outreach list
+ */
+function createOutreachList(criteria) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return [];
+
+  const data = sheet.getDataRange().getValues();
+  const outreachList = [];
+
+  for (let i = 1; i < data.length; i++) {
+    let include = true;
+
+    // Apply criteria filters
+    if (criteria.location && data[i][4] !== criteria.location) include = false;
+    if (criteria.unit && data[i][5] !== criteria.unit) include = false;
+    if (criteria.engagementLevel && data[i][20] !== criteria.engagementLevel) include = false;
+    if (criteria.isSteward !== undefined && (data[i][9] === 'Yes') !== criteria.isSteward) include = false;
+
+    if (include) {
+      outreachList.push({
+        memberId: data[i][0],
+        name: `${data[i][1]} ${data[i][2]}`,
+        email: data[i][7],
+        phone: data[i][8],
+        location: data[i][4],
+        preferredContact: data[i][24]
+      });
+    }
+  }
+
+  return outreachList;
+}
+
+// ============================================================================
+// SECTION 5: GRIEVANCE ANALYSIS ENHANCEMENTS (Features 41-50)
+// ============================================================================
+
+/**
+ * Feature 41: Identifies grievance patterns by member
+ */
+function identifyMemberGrievancePatterns() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return {};
+
+  const data = sheet.getDataRange().getValues();
+  const patterns = {};
+
+  for (let i = 1; i < data.length; i++) {
+    const memberId = data[i][1];
+    const type = data[i][25];
+
+    if (!memberId || !type) continue;
+
+    if (!patterns[memberId]) {
+      patterns[memberId] = { total: 0, byType: {}, mostCommonType: '' };
+    }
+
+    patterns[memberId].total++;
+    patterns[memberId].byType[type] = (patterns[memberId].byType[type] || 0) + 1;
+
+    // Update most common type
+    const maxType = Object.keys(patterns[memberId].byType).reduce((a, b) =>
+      patterns[memberId].byType[a] > patterns[memberId].byType[b] ? a : b
+    );
+    patterns[memberId].mostCommonType = maxType;
+  }
+
+  return patterns;
+}
+
+/**
+ * Feature 42: Analyzes grievance resolution time trends
+ */
+function analyzeResolutionTimes() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+  const resolutionTimes = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const dateFiled = data[i][8];
+    const status = data[i][4];
+
+    if (!dateFiled || !status || !status.startsWith('Resolved')) continue;
+
+    // Find resolution date (could be Step I, II, III decision)
+    let resolutionDate = data[i][10] || data[i][15] || data[i][20]; // Step I, II, or III decision
+
+    if (resolutionDate) {
+      const daysToResolve = Math.floor((new Date(resolutionDate) - new Date(dateFiled)) / (1000 * 60 * 60 * 24));
+      resolutionTimes.push({
+        grievanceId: data[i][0],
+        type: data[i][25],
+        daysToResolve: daysToResolve,
+        outcome: data[i][24]
+      });
+    }
+  }
+
+  if (resolutionTimes.length === 0) return null;
+
+  const avgResolutionTime = resolutionTimes.reduce((sum, item) => sum + item.daysToResolve, 0) / resolutionTimes.length;
+  const fastest = Math.min(...resolutionTimes.map(item => item.daysToResolve));
+  const slowest = Math.max(...resolutionTimes.map(item => item.daysToResolve));
+
+  return {
+    avgDays: avgResolutionTime.toFixed(1),
+    fastestDays: fastest,
+    slowestDays: slowest,
+    totalResolved: resolutionTimes.length,
+    resolutionTimes: resolutionTimes
+  };
+}
+
+/**
+ * Feature 43: Identifies high-risk grievance types
+ */
+function identifyHighRiskTypes() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return [];
+
+  const data = sheet.getDataRange().getValues();
+  const typeStats = {};
+
+  for (let i = 1; i < data.length; i++) {
+    const type = data[i][25];
+    const status = data[i][4];
+    const outcome = data[i][24];
+
+    if (!type) continue;
+
+    if (!typeStats[type]) {
+      typeStats[type] = { total: 0, resolved: 0, lost: 0, overdue: 0 };
+    }
+
+    typeStats[type].total++;
+
+    if (status && status.startsWith('Resolved')) {
+      typeStats[type].resolved++;
+      if (outcome && outcome.includes('Lost')) typeStats[type].lost++;
+    }
+
+    if (data[i][28] === 'YES') typeStats[type].overdue++;
+  }
+
+  // Identify high-risk types (high loss rate or high overdue rate)
+  const highRiskTypes = [];
+
+  Object.keys(typeStats).forEach(type => {
+    const stats = typeStats[type];
+    const lossRate = stats.resolved > 0 ? (stats.lost / stats.resolved) * 100 : 0;
+    const overdueRate = stats.total > 0 ? (stats.overdue / stats.total) * 100 : 0;
+
+    if (lossRate > 50 || overdueRate > 30) {
+      highRiskTypes.push({
+        type: type,
+        lossRate: lossRate.toFixed(1),
+        overdueRate: overdueRate.toFixed(1),
+        totalCases: stats.total,
+        riskLevel: (lossRate > 70 || overdueRate > 50) ? 'HIGH' : 'MEDIUM'
+      });
+    }
+  });
+
+  // Sort by risk level
+  highRiskTypes.sort((a, b) => {
+    const riskOrder = { HIGH: 0, MEDIUM: 1 };
+    return riskOrder[a.riskLevel] - riskOrder[b.riskLevel];
+  });
+
+  return highRiskTypes;
+}
+
+/**
+ * Feature 44: Predicts grievance outcome based on patterns
+ */
+function predictGrievanceOutcome(grievanceId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+  const grievance = data.find(row => row[0] === grievanceId);
+
+  if (!grievance) return null;
+
+  const type = grievance[25];
+  const currentStep = grievance[5];
+
+  // Analyze historical data for same type
+  const similarCases = data.filter(row =>
+    row[25] === type &&
+    row[4] && row[4].startsWith('Resolved')
+  );
+
+  if (similarCases.length === 0) {
+    return { prediction: 'INSUFFICIENT_DATA', confidence: 0 };
+  }
+
+  const won = similarCases.filter(row => row[24] && row[24].includes('Won')).length;
+  const lost = similarCases.filter(row => row[24] && row[24].includes('Lost')).length;
+  const settled = similarCases.filter(row => row[24] && row[24].includes('Settled')).length;
+
+  const winRate = (won / similarCases.length) * 100;
+  const lossRate = (lost / similarCases.length) * 100;
+  const settlementRate = (settled / similarCases.length) * 100;
+
+  let prediction;
+  let confidence;
+
+  if (winRate > 60) {
+    prediction = 'LIKELY_WIN';
+    confidence = winRate;
+  } else if (lossRate > 60) {
+    prediction = 'LIKELY_LOSS';
+    confidence = lossRate;
+  } else if (settlementRate > 40) {
+    prediction = 'LIKELY_SETTLEMENT';
+    confidence = settlementRate;
+  } else {
+    prediction = 'UNCERTAIN';
+    confidence = 50;
+  }
+
+  return {
+    prediction: prediction,
+    confidence: confidence.toFixed(1),
+    historicalData: {
+      similarCases: similarCases.length,
+      winRate: winRate.toFixed(1),
+      lossRate: lossRate.toFixed(1),
+      settlementRate: settlementRate.toFixed(1)
+    }
+  };
+}
+
+/**
+ * Feature 45: Identifies systemic workplace issues
+ */
+function identifySystemicIssues() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!grievanceSheet || !memberSheet) return [];
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const memberData = memberSheet.getDataRange().getValues();
+
+  const locationIssues = {};
+
+  for (let i = 1; i < grievanceData.length; i++) {
+    const memberId = grievanceData[i][1];
+    const type = grievanceData[i][25];
+    const dateFiled = grievanceData[i][8];
+
+    if (!memberId || !type) continue;
+
+    const member = memberData.find(row => row[0] === memberId);
+    if (!member) continue;
+
+    const location = member[4];
+    if (!location) continue;
+
+    if (!locationIssues[location]) {
+      locationIssues[location] = {};
+    }
+
+    if (!locationIssues[location][type]) {
+      locationIssues[location][type] = 0;
+    }
+
+    locationIssues[location][type]++;
+  }
+
+  // Identify systemic issues (location + type combinations with high counts)
+  const systemicIssues = [];
+
+  Object.keys(locationIssues).forEach(location => {
+    Object.keys(locationIssues[location]).forEach(type => {
+      const count = locationIssues[location][type];
+
+      if (count >= 3) { // Threshold: 3 or more grievances of same type at same location
+        systemicIssues.push({
+          location: location,
+          issue: type,
+          count: count,
+          severity: count >= 5 ? 'HIGH' : (count >= 4 ? 'MEDIUM' : 'LOW')
+        });
+      }
+    });
+  });
+
+  // Sort by count descending
+  systemicIssues.sort((a, b) => b.count - a.count);
+
+  return systemicIssues;
+}
+
+/**
+ * Feature 46: Tracks grievance escalation patterns
+ */
+function analyzeEscalationPatterns() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+
+  const patterns = {
+    totalGrievances: data.length - 1,
+    resolvedAtStepI: 0,
+    escalatedToStepII: 0,
+    escalatedToStepIII: 0,
+    wentToArbitration: 0,
+    escalationRate: 0
+  };
+
+  for (let i = 1; i < data.length; i++) {
+    const step1Decision = data[i][10];
+    const step2Filed = data[i][13];
+    const step3Filed = data[i][19];
+    const arbitrationDate = data[i][22];
+    const status = data[i][4];
+
+    if (status && status.startsWith('Resolved') && step1Decision && !step2Filed) {
+      patterns.resolvedAtStepI++;
+    }
+
+    if (step2Filed) {
+      patterns.escalatedToStepII++;
+
+      if (step3Filed) {
+        patterns.escalatedToStepIII++;
+
+        if (arbitrationDate) {
+          patterns.wentToArbitration++;
+        }
+      }
+    }
+  }
+
+  patterns.escalationRate = patterns.totalGrievances > 0 ?
+    ((patterns.escalatedToStepII / patterns.totalGrievances) * 100).toFixed(1) : 0;
+
+  return patterns;
+}
+
+/**
+ * Feature 47: Generates grievance heat map data
+ */
+function generateGrievanceHeatMap() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!grievanceSheet || !memberSheet) return null;
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const memberData = memberSheet.getDataRange().getValues();
+
+  const heatMap = {};
+
+  for (let i = 1; i < grievanceData.length; i++) {
+    const memberId = grievanceData[i][1];
+    const dateFiled = grievanceData[i][8];
+
+    if (!memberId || !dateFiled) continue;
+
+    const member = memberData.find(row => row[0] === memberId);
+    if (!member) continue;
+
+    const location = member[4];
+    const date = new Date(dateFiled);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    if (!heatMap[location]) {
+      heatMap[location] = {};
+    }
+
+    heatMap[location][monthKey] = (heatMap[location][monthKey] || 0) + 1;
+  }
+
+  return heatMap;
+}
+
+/**
+ * Feature 48: Identifies grievance clusters (spike detection)
+ */
+function detectGrievanceClusters(daysWindow = 30) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return [];
+
+  const data = sheet.getDataRange().getValues();
+  const clusters = [];
+
+  // Sort by date filed
+  const sortedGrievances = data.slice(1)
+    .filter(row => row[8]) // Has date filed
+    .sort((a, b) => new Date(a[8]) - new Date(b[8]));
+
+  // Look for clusters
+  for (let i = 0; i < sortedGrievances.length; i++) {
+    const startDate = new Date(sortedGrievances[i][8]);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + daysWindow);
+
+    const clusterGrievances = sortedGrievances.filter(row => {
+      const fileDate = new Date(row[8]);
+      return fileDate >= startDate && fileDate <= endDate;
+    });
+
+    if (clusterGrievances.length >= 5) { // Threshold: 5 or more in window
+      clusters.push({
+        startDate: startDate.toISOString().slice(0, 10),
+        endDate: endDate.toISOString().slice(0, 10),
+        count: clusterGrievances.length,
+        types: [...new Set(clusterGrievances.map(row => row[25]))],
+        severity: clusterGrievances.length >= 10 ? 'HIGH' : 'MEDIUM'
+      });
+    }
+  }
+
+  return clusters;
+}
+
+/**
+ * Feature 49: Analyzes win rate by steward
+ */
+function analyzeStewardWinRates() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return {};
+
+  const data = sheet.getDataRange().getValues();
+  const stewardStats = {};
+
+  for (let i = 1; i < data.length; i++) {
+    const representative = data[i][26];
+    const status = data[i][4];
+    const outcome = data[i][24];
+
+    if (!representative || !status || !status.startsWith('Resolved')) continue;
+
+    if (!stewardStats[representative]) {
+      stewardStats[representative] = { total: 0, won: 0, lost: 0, settled: 0 };
+    }
+
+    stewardStats[representative].total++;
+
+    if (outcome && outcome.includes('Won')) stewardStats[representative].won++;
+    if (outcome && outcome.includes('Lost')) stewardStats[representative].lost++;
+    if (outcome && outcome.includes('Settled')) stewardStats[representative].settled++;
+  }
+
+  // Calculate win rates
+  Object.keys(stewardStats).forEach(steward => {
+    const stats = stewardStats[steward];
+    stats.winRate = stats.total > 0 ? ((stats.won / stats.total) * 100).toFixed(1) : 0;
+    stats.settlementRate = stats.total > 0 ? ((stats.settled / stats.total) * 100).toFixed(1) : 0;
+  });
+
+  return stewardStats;
+}
+
+/**
+ * Feature 50: Creates predictive analytics for grievance volume
+ */
+function predictGrievanceVolume(monthsAhead = 3) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return null;
+
+  const data = sheet.getDataRange().getValues();
+  const monthlyData = {};
+
+  // Collect historical data
+  for (let i = 1; i < data.length; i++) {
+    const dateFiled = data[i][8];
+    if (!dateFiled) continue;
+
+    const date = new Date(dateFiled);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
+  }
+
+  // Calculate moving average
+  const months = Object.keys(monthlyData).sort();
+  if (months.length < 3) {
+    return { prediction: 'INSUFFICIENT_DATA', monthsAhead: monthsAhead };
+  }
+
+  const recentMonths = months.slice(-6); // Last 6 months
+  const avgVolume = recentMonths.reduce((sum, month) => sum + monthlyData[month], 0) / recentMonths.length;
+
+  // Simple trend analysis
+  const firstHalf = recentMonths.slice(0, 3).reduce((sum, month) => sum + monthlyData[month], 0) / 3;
+  const secondHalf = recentMonths.slice(3).reduce((sum, month) => sum + monthlyData[month], 0) / 3;
+  const trend = secondHalf - firstHalf;
+
+  // Predict future months
+  const predictions = [];
+  let predictedVolume = avgVolume;
+
+  for (let i = 1; i <= monthsAhead; i++) {
+    predictedVolume += trend / monthsAhead;
+    predictions.push({
+      monthOffset: i,
+      predictedVolume: Math.round(predictedVolume),
+      confidence: i === 1 ? 'HIGH' : (i === 2 ? 'MEDIUM' : 'LOW')
+    });
+  }
+
+  return {
+    historicalAvg: avgVolume.toFixed(1),
+    trend: trend > 0 ? 'INCREASING' : (trend < 0 ? 'DECREASING' : 'STABLE'),
+    trendValue: trend.toFixed(1),
+    predictions: predictions
+  };
+}
+
+// ============================================================================
+// SECTION 6: WORKFLOW AUTOMATION (Features 51-60)
+// ============================================================================
+
+/**
+ * Feature 51: Auto-assigns grievances to stewards based on workload
+ */
+function autoAssignGrievance(grievanceId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!grievanceSheet || !memberSheet) return null;
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const memberData = memberSheet.getDataRange().getValues();
+
+  // Find the grievance
+  let grievanceIndex = -1;
+  for (let i = 1; i < grievanceData.length; i++) {
+    if (grievanceData[i][0] === grievanceId) {
+      grievanceIndex = i;
+      break;
+    }
+  }
+
+  if (grievanceIndex === -1) return null;
+
+  // Get member location
+  const memberId = grievanceData[grievanceIndex][1];
+  const member = memberData.find(row => row[0] === memberId);
+  if (!member) return null;
+
+  const memberLocation = member[4];
+
+  // Find available stewards at same location
+  const stewardsAtLocation = memberData.filter(row =>
+    row[9] === 'Yes' && // Is Steward
+    row[4] === memberLocation // Same location
+  );
+
+  if (stewardsAtLocation.length === 0) {
+    // Fall back to any steward
+    stewardsAtLocation.push(...memberData.filter(row => row[9] === 'Yes'));
+  }
+
+  if (stewardsAtLocation.length === 0) return null;
+
+  // Calculate current workload for each steward
+  const stewardWorkloads = stewardsAtLocation.map(steward => {
+    const stewardName = `${steward[1]} ${steward[2]}`;
+    const activeCases = grievanceData.filter(row =>
+      row[26] === stewardName && // Representative matches
+      row[4] && row[4].startsWith('Filed') // Active status
+    ).length;
+
+    return {
+      name: stewardName,
+      activeCases: activeCases
+    };
+  });
+
+  // Assign to steward with lowest workload
+  stewardWorkloads.sort((a, b) => a.activeCases - b.activeCases);
+  const assignedSteward = stewardWorkloads[0].name;
+
+  // Update grievance
+  grievanceData[grievanceIndex][26] = assignedSteward;
+  grievanceSheet.getDataRange().setValues(grievanceData);
+
+  return assignedSteward;
+}
+
+/**
+ * Feature 52: Auto-escalates overdue grievances
+ */
+function autoEscalateOverdueGrievances() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return 0;
+
+  const data = sheet.getDataRange().getValues();
+  let escalated = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const isOverdue = data[i][28];
+    const currentStep = data[i][5];
+    const nextDeadline = data[i][27];
+
+    if (isOverdue === 'YES' && nextDeadline) {
+      const daysOverdue = Math.floor((new Date() - new Date(nextDeadline)) / (1000 * 60 * 60 * 24));
+
+      // Auto-escalate if more than 14 days overdue
+      if (daysOverdue >= 14) {
+        // Determine next step
+        let nextStep = currentStep;
+
+        if (currentStep === 'Step I - Immediate Supervisor') {
+          nextStep = 'Step II - Agency Head';
+          data[i][13] = new Date(); // Set Step II Filed Date
+        } else if (currentStep === 'Step II - Agency Head') {
+          nextStep = 'Step III - Human Resources';
+          data[i][19] = new Date(); // Set Step III Filed Date
+        }
+
+        if (nextStep !== currentStep) {
+          data[i][5] = nextStep;
+          escalated++;
+        }
+      }
+    }
+  }
+
+  if (escalated > 0) {
+    sheet.getDataRange().setValues(data);
+  }
+
+  return escalated;
+}
+
+/**
+ * Feature 53: Auto-archives resolved grievances older than threshold
+ */
+function autoArchiveOldGrievances(daysOld = 90) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  let archiveSheet = ss.getSheetByName(SHEETS.ARCHIVE);
+
+  if (!grievanceSheet) return 0;
+
+  if (!archiveSheet) {
+    archiveSheet = ss.insertSheet(SHEETS.ARCHIVE);
+    // Copy headers from Grievance Log
+    const headers = grievanceSheet.getRange('1:1').getValues();
+    archiveSheet.getRange('1:1').setValues(headers);
+  }
+
+  const data = grievanceSheet.getDataRange().getValues();
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+
+  let archived = 0;
+  const rowsToDelete = [];
+
+  for (let i = data.length - 1; i >= 1; i--) {
+    const status = data[i][4];
+    const dateFiled = data[i][8];
+
+    if (status && status.startsWith('Resolved') && dateFiled && new Date(dateFiled) < cutoffDate) {
+      // Archive this row
+      archiveSheet.appendRow(data[i]);
+      rowsToDelete.push(i + 1); // +1 because sheet rows are 1-indexed
+      archived++;
+    }
+  }
+
+  // Delete archived rows from Grievance Log
+  rowsToDelete.forEach(row => {
+    grievanceSheet.deleteRow(row);
+  });
+
+  return archived;
+}
+
+/**
+ * Feature 54: Auto-updates member statistics on edit
+ */
+function onGrievanceEdit(e) {
+  if (!e || !e.range) return;
+
+  const sheet = e.range.getSheet();
+  if (sheet.getName() !== SHEETS.GRIEVANCE_LOG) return;
+
+  const row = e.range.getRow();
+  if (row === 1) return; // Header row
+
+  const data = sheet.getRange(row, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const memberId = data[1];
+
+  if (memberId) {
+    // Recalculate member statistics
+    recalculateMemberStatistics(memberId);
+  }
+}
+
+/**
+ * Feature 55: Auto-generates next Member ID
+ */
+function getNextMemberID() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return 'MEM000001';
+
+  const data = sheet.getDataRange().getValues();
+  let maxId = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const memberId = data[i][0];
+    if (memberId && memberId.toString().startsWith('MEM')) {
+      const num = parseInt(memberId.replace('MEM', ''));
+      if (num > maxId) maxId = num;
+    }
+  }
+
+  return 'MEM' + String(maxId + 1).padStart(6, '0');
+}
+
+/**
+ * Feature 56: Auto-generates next Grievance ID
+ */
+function getNextGrievanceID() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return 'GRV000001';
+
+  const data = sheet.getDataRange().getValues();
+  let maxId = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const grievanceId = data[i][0];
+    if (grievanceId && grievanceId.toString().startsWith('GRV')) {
+      const num = parseInt(grievanceId.replace('GRV', ''));
+      if (num > maxId) maxId = num;
+    }
+  }
+
+  return 'GRV' + String(maxId + 1).padStart(6, '0');
+}
+
+/**
+ * Feature 57: Creates automated weekly summary
+ */
+function generateWeeklySummary() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceSheet) return null;
+
+  const data = grievanceSheet.getDataRange().getValues();
+  const today = new Date();
+  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  const summary = {
+    weekEnding: today.toISOString().slice(0, 10),
+    newGrievances: 0,
+    resolved: 0,
+    overdue: 0,
+    dueThisWeek: 0,
+    upcomingDeadlines: []
+  };
+
+  for (let i = 1; i < data.length; i++) {
+    const dateFiled = data[i][8];
+    const status = data[i][4];
+    const isOverdue = data[i][28];
+    const nextDeadline = data[i][27];
+
+    // Count new grievances filed this week
+    if (dateFiled && new Date(dateFiled) >= weekAgo) {
+      summary.newGrievances++;
+    }
+
+    // Count resolved this week
+    if (status && status.startsWith('Resolved')) {
+      const resolutionDate = data[i][10] || data[i][15] || data[i][20];
+      if (resolutionDate && new Date(resolutionDate) >= weekAgo) {
+        summary.resolved++;
+      }
+    }
+
+    // Count overdue
+    if (isOverdue === 'YES') {
+      summary.overdue++;
+    }
+
+    // Count due this week
+    if (nextDeadline) {
+      const deadlineDate = new Date(nextDeadline);
+      const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+      if (deadlineDate >= today && deadlineDate <= nextWeek) {
+        summary.dueThisWeek++;
+        summary.upcomingDeadlines.push({
+          grievanceId: data[i][0],
+          memberName: `${data[i][2]} ${data[i][3]}`,
+          deadline: deadlineDate.toISOString().slice(0, 10),
+          daysUntil: Math.floor((deadlineDate - today) / (1000 * 60 * 60 * 24))
+        });
+      }
+    }
+  }
+
+  return summary;
+}
+
+/**
+ * Feature 58: Auto-sends scheduled reports
+ */
+function scheduleReports() {
+  // Set up weekly summary report
+  ScriptApp.newTrigger('sendWeeklySummaryReport')
+    .timeBased()
+    .everyWeeks(1)
+    .onWeekDay(ScriptApp.WeekDay.MONDAY)
+    .atHour(8)
+    .create();
+
+  // Set up monthly performance report
+  ScriptApp.newTrigger('sendMonthlyPerformanceReport')
+    .timeBased()
+    .onMonthDay(1)
+    .atHour(9)
+    .create();
+
+  // Set up daily digest
+  ScriptApp.newTrigger('sendDailyDigest')
+    .timeBased()
+    .everyDays(1)
+    .atHour(7)
+    .create();
+}
+
+/**
+ * Feature 59: Auto-updates dashboard on schedule
+ */
+function scheduleAutomaticUpdates() {
+  // Rebuild dashboard every hour
+  ScriptApp.newTrigger('rebuildDashboard')
+    .timeBased()
+    .everyHours(1)
+    .create();
+
+  // Recalculate all grievances daily at 2 AM
+  ScriptApp.newTrigger('recalculateAllGrievances')
+    .timeBased()
+    .everyDays(1)
+    .atHour(2)
+    .create();
+}
+
+/**
+ * Feature 60: Creates automated backup
+ */
+function createAutomatedBackup() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const today = new Date();
+  const backupName = `509_Dashboard_Backup_${today.toISOString().slice(0,10)}`;
+
+  try {
+    const backup = ss.copy(backupName);
+    const folderId = PropertiesService.getScriptProperties().getProperty('BACKUP_FOLDER_ID');
+
+    if (folderId) {
+      const folder = DriveApp.getFolderById(folderId);
+      DriveApp.getFileById(backup.getId()).moveTo(folder);
+    }
+
+    return backup.getUrl();
+  } catch (e) {
+    Logger.log(`Backup failed: ${e}`);
+    return null;
+  }
+}
+
+// ============================================================================
+// SECTION 7: INTEGRATION FEATURES (Features 61-70)
+// ============================================================================
+
+/**
+ * Feature 61: Exports data to Google Calendar for deadlines
+ */
+function exportDeadlinesToCalendar() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return 0;
+
+  const data = sheet.getDataRange().getValues();
+  const calendar = CalendarApp.getDefaultCalendar();
+  let exported = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const grievanceId = data[i][0];
+    const memberName = `${data[i][2]} ${data[i][3]}`;
+    const nextDeadline = data[i][27];
+    const currentStep = data[i][5];
+
+    if (nextDeadline) {
+      const title = `⚖️ Grievance Deadline: ${grievanceId} - ${memberName}`;
+      const description = `Step: ${currentStep}\nMember: ${memberName}\nView Dashboard: ${ss.getUrl()}`;
+
+      try {
+        calendar.createAllDayEvent(title, new Date(nextDeadline), { description: description });
+        exported++;
+      } catch (e) {
+        Logger.log(`Failed to create calendar event for ${grievanceId}: ${e}`);
+      }
+    }
+  }
+
+  return exported;
+}
+
+/**
+ * Feature 62: Imports data from external CSV
+ */
+function importFromCSV(csvData) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return 0;
+
+  const rows = csvData.split('\n');
+  let imported = 0;
+
+  for (let i = 1; i < rows.length; i++) { // Skip header
+    const cells = rows[i].split(',');
+    if (cells.length >= 3) { // Minimum: First Name, Last Name, Email
+      sheet.appendRow(cells);
+      imported++;
+    }
+  }
+
+  return imported;
+}
+
+/**
+ * Feature 63: Syncs with Google Contacts
+ */
+function syncToGoogleContacts() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return 0;
+
+  const data = sheet.getDataRange().getValues();
+  let synced = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const firstName = data[i][1];
+    const lastName = data[i][2];
+    const email = data[i][7];
+    const phone = data[i][8];
+    const workLocation = data[i][4];
+
+    if (!email) continue;
+
+    try {
+      const contact = ContactsApp.createContact(firstName, lastName, email);
+      if (phone) contact.addPhone(ContactsApp.Field.WORK_PHONE, phone);
+      if (workLocation) contact.setNotes(`Work Location: ${workLocation}\nSEIU Local 509 Member`);
+      synced++;
+    } catch (e) {
+      Logger.log(`Failed to create contact for ${firstName} ${lastName}: ${e}`);
+    }
+  }
+
+  return synced;
+}
+
+/**
+ * Feature 64: Creates webhook for external integrations
+ */
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+
+    if (data.type === 'new_member') {
+      return handleNewMemberWebhook(data);
+    } else if (data.type === 'new_grievance') {
+      return handleNewGrievanceWebhook(data);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Unknown type' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * Feature 65: Handles new member webhook
+ */
+function handleNewMemberWebhook(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Sheet not found' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const memberId = getNextMemberID();
+  const row = [
+    memberId,
+    data.firstName,
+    data.lastName,
+    data.jobTitle || '',
+    data.location || '',
+    data.unit || '',
+    data.officeDays || '',
+    data.email || '',
+    data.phone || '',
+    'No', // Is Steward
+    'Active', // Membership Status
+    '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', new Date()
+  ];
+
+  sheet.appendRow(row);
+
+  return ContentService.createTextOutput(JSON.stringify({ success: true, memberId: memberId }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Feature 66: Handles new grievance webhook
+ */
+function handleNewGrievanceWebhook(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Sheet not found' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const grievanceId = getNextGrievanceID();
+  const row = [
+    grievanceId,
+    data.memberId,
+    data.firstName || '',
+    data.lastName || '',
+    'Filed - Step I',
+    'Step I - Immediate Supervisor',
+    new Date(data.incidentDate),
+    '', // Filing Deadline (will be calculated)
+    new Date(), // Date Filed
+    '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+    data.type || '',
+    data.description || ''
+  ];
+
+  sheet.appendRow(row);
+
+  // Recalculate deadlines for this grievance
+  recalculateGrievanceRow(sheet.getLastRow());
+
+  return ContentService.createTextOutput(JSON.stringify({ success: true, grievanceId: grievanceId }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Feature 67: Exports to Google Drive as Excel
+ */
+function exportToExcel() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const excelBlob = ss.getAs('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  excelBlob.setName(`509_Dashboard_Export_${new Date().toISOString().slice(0,10)}.xlsx`);
+
+  const folderId = PropertiesService.getScriptProperties().getProperty('EXPORT_FOLDER_ID');
+
+  if (folderId) {
+    const folder = DriveApp.getFolderById(folderId);
+    const file = folder.createFile(excelBlob);
+    return file.getUrl();
+  } else {
+    const file = DriveApp.createFile(excelBlob);
+    return file.getUrl();
+  }
+}
+
+/**
+ * Feature 68: Sends data to external API
+ */
+function sendToExternalAPI(endpoint, data) {
+  const apiKey = PropertiesService.getScriptProperties().getProperty('EXTERNAL_API_KEY');
+
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`
+    },
+    payload: JSON.stringify(data),
+    muteHttpExceptions: true
+  };
+
+  try {
+    const response = UrlFetchApp.fetch(endpoint, options);
+    const responseCode = response.getResponseCode();
+    const responseBody = response.getContentText();
+
+    return {
+      success: responseCode >= 200 && responseCode < 300,
+      statusCode: responseCode,
+      body: responseBody
+    };
+  } catch (e) {
+    Logger.log(`API request failed: ${e}`);
+    return {
+      success: false,
+      error: e.toString()
+    };
+  }
+}
+
+/**
+ * Feature 69: Creates QR codes for grievance tracking
+ */
+function generateGrievanceQRCode(grievanceId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const url = `${ss.getUrl()}#gid=${ss.getSheetByName(SHEETS.GRIEVANCE_LOG).getSheetId()}&search=${grievanceId}`;
+
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}`;
+
+  return qrCodeUrl;
+}
+
+/**
+ * Feature 70: Integrates with Slack for notifications
+ */
+function sendSlackNotification(message, channel) {
+  const webhookUrl = PropertiesService.getScriptProperties().getProperty('SLACK_WEBHOOK_URL');
+  if (!webhookUrl) return false;
+
+  const payload = {
+    channel: channel || '#grievances',
+    username: '509 Dashboard Bot',
+    text: message,
+    icon_emoji: ':scales:'
+  };
+
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  };
+
+  try {
+    const response = UrlFetchApp.fetch(webhookUrl, options);
+    return response.getResponseCode() === 200;
+  } catch (e) {
+    Logger.log(`Slack notification failed: ${e}`);
+    return false;
+  }
+}
+
+// ============================================================================
+// SECTION 8: PERFORMANCE & OPTIMIZATION (Features 71-78)
+// ============================================================================
+
+/**
+ * Feature 71: Implements caching for frequently accessed data
+ */
+function getCachedData(key, fetchFunction, cacheSeconds = 300) {
+  const cache = CacheService.getScriptCache();
+  let data = cache.get(key);
+
+  if (data) {
+    return JSON.parse(data);
+  }
+
+  data = fetchFunction();
+  cache.put(key, JSON.stringify(data), cacheSeconds);
+
+  return data;
+}
+
+/**
+ * Feature 72: Batch processes large data operations
+ */
+function batchProcessGrievances(processingFunction, batchSize = 100) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return 0;
+
+  const data = sheet.getDataRange().getValues();
+  let processed = 0;
+
+  for (let i = 1; i < data.length; i += batchSize) {
+    const batch = data.slice(i, Math.min(i + batchSize, data.length));
+
+    batch.forEach((row, index) => {
+      processingFunction(row, i + index);
+      processed++;
+    });
+
+    // Flush changes every batch
+    SpreadsheetApp.flush();
+  }
+
+  return processed;
+}
+
+/**
+ * Feature 73: Optimizes sheet formulas
+ */
+function optimizeSheetFormulas() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheets = [SHEETS.DASHBOARD, SHEETS.STEWARD_WORKLOAD, SHEETS.TRENDS];
+
+  sheets.forEach(sheetName => {
+    const sheet = ss.getSheetByName(sheetName);
+    if (!sheet) return;
+
+    // Replace volatile functions with static values where possible
+    const range = sheet.getDataRange();
+    const formulas = range.getFormulas();
+    const values = range.getValues();
+
+    for (let i = 0; i < formulas.length; i++) {
+      for (let j = 0; j < formulas[i].length; j++) {
+        // Replace NOW() and TODAY() with static dates
+        if (formulas[i][j].includes('NOW()') || formulas[i][j].includes('TODAY()')) {
+          sheet.getRange(i + 1, j + 1).setValue(values[i][j]);
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Feature 74: Implements lazy loading for large datasets
+ */
+function lazyLoadGrievances(offset = 0, limit = 100) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return { data: [], hasMore: false };
+
+  const totalRows = sheet.getLastRow() - 1; // Exclude header
+  const startRow = offset + 2; // +1 for header, +1 for 1-indexing
+  const endRow = Math.min(startRow + limit - 1, totalRows + 1);
+
+  if (startRow > totalRows + 1) {
+    return { data: [], hasMore: false };
+  }
+
+  const data = sheet.getRange(startRow, 1, endRow - startRow + 1, sheet.getLastColumn()).getValues();
+
+  return {
+    data: data,
+    hasMore: endRow < totalRows + 1,
+    nextOffset: offset + limit
+  };
+}
+
+/**
+ * Feature 75: Compresses old data for performance
+ */
+function compressOldData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  let compressedSheet = ss.getSheetByName('Compressed_Data');
+
+  if (!compressedSheet) {
+    compressedSheet = ss.insertSheet('Compressed_Data');
+  }
+
+  const data = grievanceSheet.getDataRange().getValues();
+  const cutoffDate = new Date();
+  cutoffDate.setFullYear(cutoffDate.getFullYear() - 1); // 1 year old
+
+  const compressed = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const dateFiled = data[i][8];
+    const status = data[i][4];
+
+    if (status && status.startsWith('Resolved') && dateFiled && new Date(dateFiled) < cutoffDate) {
+      // Create compressed summary
+      compressed.push([
+        data[i][0], // Grievance ID
+        data[i][1], // Member ID
+        data[i][8], // Date Filed
+        data[i][24], // Outcome
+        data[i][25], // Type
+        'Archived'
+      ]);
+    }
+  }
+
+  if (compressed.length > 0) {
+    compressedSheet.getRange(compressedSheet.getLastRow() + 1, 1, compressed.length, compressed[0].length)
+      .setValues(compressed);
+  }
+
+  return compressed.length;
+}
+
+/**
+ * Feature 76: Implements index for fast lookups
+ */
+function buildGrievanceIndex() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!sheet) return {};
+
+  const data = sheet.getDataRange().getValues();
+  const index = {
+    byMemberId: {},
+    byGrievanceId: {},
+    byStatus: {},
+    byType: {}
+  };
+
+  for (let i = 1; i < data.length; i++) {
+    const row = i;
+    const grievanceId = data[i][0];
+    const memberId = data[i][1];
+    const status = data[i][4];
+    const type = data[i][25];
+
+    // Index by Member ID
+    if (memberId) {
+      if (!index.byMemberId[memberId]) index.byMemberId[memberId] = [];
+      index.byMemberId[memberId].push(row);
+    }
+
+    // Index by Grievance ID
+    if (grievanceId) {
+      index.byGrievanceId[grievanceId] = row;
+    }
+
+    // Index by Status
+    if (status) {
+      if (!index.byStatus[status]) index.byStatus[status] = [];
+      index.byStatus[status].push(row);
+    }
+
+    // Index by Type
+    if (type) {
+      if (!index.byType[type]) index.byType[type] = [];
+      index.byType[type].push(row);
+    }
+  }
+
+  // Cache the index
+  const cache = CacheService.getScriptCache();
+  cache.put('grievance_index', JSON.stringify(index), 1800); // 30 minutes
+
+  return index;
+}
+
+/**
+ * Feature 77: Performs database cleanup and maintenance
+ */
+function performMaintenance() {
+  const tasks = [
+    { name: 'Auto-generate Missing IDs', func: () => autoGenerateMemberIDs() + autoGenerateGrievanceIDs() },
+    { name: 'Auto-correct Data Errors', func: () => { autoCorrectDataErrors(); return 1; } },
+    { name: 'Archive Old Grievances', func: () => autoArchiveOldGrievances() },
+    { name: 'Update Engagement Levels', func: () => updateEngagementLevels() },
+    { name: 'Rebuild Index', func: () => { buildGrievanceIndex(); return 1; } },
+    { name: 'Optimize Formulas', func: () => { optimizeSheetFormulas(); return 1; } }
+  ];
+
+  const results = {};
+
+  tasks.forEach(task => {
+    try {
+      const result = task.func();
+      results[task.name] = { success: true, result: result };
+    } catch (e) {
+      results[task.name] = { success: false, error: e.toString() };
+    }
+  });
+
+  return results;
+}
+
+/**
+ * Feature 78: Monitors script execution time
+ */
+function monitorPerformance(functionName, functionToRun) {
+  const startTime = new Date().getTime();
+
+  try {
+    const result = functionToRun();
+    const endTime = new Date().getTime();
+    const duration = endTime - startTime;
+
+    // Log performance
+    Logger.log(`${functionName} completed in ${duration}ms`);
+
+    // Store in performance log
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let perfSheet = ss.getSheetByName('Performance_Log');
+
+    if (!perfSheet) {
+      perfSheet = ss.insertSheet('Performance_Log');
+      perfSheet.appendRow(['Timestamp', 'Function', 'Duration (ms)', 'Status']);
+    }
+
+    perfSheet.appendRow([new Date(), functionName, duration, 'SUCCESS']);
+
+    return result;
+  } catch (e) {
+    const endTime = new Date().getTime();
+    const duration = endTime - startTime;
+
+    Logger.log(`${functionName} failed after ${duration}ms: ${e}`);
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let perfSheet = ss.getSheetByName('Performance_Log');
+
+    if (perfSheet) {
+      perfSheet.appendRow([new Date(), functionName, duration, `ERROR: ${e.toString()}`]);
+    }
+
+    throw e;
+  }
+}
+
+// ============================================================================
+// SECTION 9: SECURITY & AUDIT (Features 79-86)
+// ============================================================================
+
+/**
+ * Feature 79: Tracks all data modifications
+ */
+function logDataModification(sheet, row, column, oldValue, newValue, user) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let auditSheet = ss.getSheetByName('Audit_Log');
+
+  if (!auditSheet) {
+    auditSheet = ss.insertSheet('Audit_Log');
+    auditSheet.appendRow(['Timestamp', 'User', 'Sheet', 'Row', 'Column', 'Old Value', 'New Value']);
+    auditSheet.getRange('1:1').setFontWeight('bold').setBackground(COLORS.HEADER_BLUE).setFontColor('white');
+  }
+
+  auditSheet.appendRow([
+    new Date(),
+    user || Session.getActiveUser().getEmail(),
+    sheet,
+    row,
+    column,
+    oldValue,
+    newValue
+  ]);
+}
+
+/**
+ * Feature 80: Implements role-based access control
+ */
+function checkUserPermission(action) {
+  const user = Session.getActiveUser().getEmail();
+  const props = PropertiesService.getScriptProperties();
+
+  // Get user roles from properties
+  const admins = (props.getProperty('ADMINS') || '').split(',');
+  const stewards = (props.getProperty('STEWARDS') || '').split(',');
+  const viewers = (props.getProperty('VIEWERS') || '').split(',');
+
+  const permissions = {
+    'view': [...admins, ...stewards, ...viewers],
+    'edit_member': [...admins, ...stewards],
+    'edit_grievance': [...admins, ...stewards],
+    'delete': admins,
+    'export': [...admins, ...stewards],
+    'admin': admins
+  };
+
+  const allowedUsers = permissions[action] || [];
+  return allowedUsers.includes(user);
+}
+
+/**
+ * Feature 81: Encrypts sensitive data fields
+ */
+function encryptSensitiveData(data) {
+  // Simple XOR encryption (for demonstration - use proper encryption in production)
+  const key = PropertiesService.getScriptProperties().getProperty('ENCRYPTION_KEY') || 'default_key_12345';
+
+  let encrypted = '';
+  for (let i = 0; i < data.length; i++) {
+    encrypted += String.fromCharCode(data.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+  }
+
+  return Utilities.base64Encode(encrypted);
+}
+
+/**
+ * Feature 82: Decrypts sensitive data fields
+ */
+function decryptSensitiveData(encryptedData) {
+  const key = PropertiesService.getScriptProperties().getProperty('ENCRYPTION_KEY') || 'default_key_12345';
+
+  const decoded = Utilities.base64Decode(encryptedData);
+  const decodedString = Utilities.newBlob(decoded).getDataAsString();
+
+  let decrypted = '';
+  for (let i = 0; i < decodedString.length; i++) {
+    decrypted += String.fromCharCode(decodedString.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+  }
+
+  return decrypted;
+}
+
+/**
+ * Feature 83: Validates data input for security
+ */
+function sanitizeInput(input) {
+  if (typeof input !== 'string') return input;
+
+  // Remove potentially dangerous characters
+  let sanitized = input.replace(/<script.*?>.*?<\/script>/gi, '');
+  sanitized = sanitized.replace(/javascript:/gi, '');
+  sanitized = sanitized.replace(/on\w+\s*=/gi, '');
+
+  // Trim whitespace
+  sanitized = sanitized.trim();
+
+  return sanitized;
+}
+
+/**
+ * Feature 84: Creates audit trail report
+ */
+function generateAuditReport(startDate, endDate) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const auditSheet = ss.getSheetByName('Audit_Log');
+
+  if (!auditSheet) return null;
+
+  const data = auditSheet.getDataRange().getValues();
+  const filtered = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const timestamp = new Date(data[i][0]);
+
+    if (timestamp >= new Date(startDate) && timestamp <= new Date(endDate)) {
+      filtered.push({
+        timestamp: timestamp.toLocaleString(),
+        user: data[i][1],
+        sheet: data[i][2],
+        row: data[i][3],
+        column: data[i][4],
+        oldValue: data[i][5],
+        newValue: data[i][6]
+      });
+    }
+  }
+
+  return filtered;
+}
+
+/**
+ * Feature 85: Implements data retention policy
+ */
+function enforceDataRetention(retentionDays = 2555) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const auditSheet = ss.getSheetByName('Audit_Log');
+
+  if (!auditSheet) return 0;
+
+  const data = auditSheet.getDataRange().getValues();
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+
+  let deleted = 0;
+  const rowsToDelete = [];
+
+  for (let i = data.length - 1; i >= 1; i--) {
+    const timestamp = new Date(data[i][0]);
+
+    if (timestamp < cutoffDate) {
+      rowsToDelete.push(i + 1);
+      deleted++;
+    }
+  }
+
+  rowsToDelete.forEach(row => {
+    auditSheet.deleteRow(row);
+  });
+
+  return deleted;
+}
+
+/**
+ * Feature 86: Detects suspicious activity
+ */
+function detectSuspiciousActivity() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const auditSheet = ss.getSheetByName('Audit_Log');
+
+  if (!auditSheet) return [];
+
+  const data = auditSheet.getDataRange().getValues();
+  const recentTime = new Date(Date.now() - 60 * 60 * 1000); // Last hour
+  const userActivity = {};
+  const suspicious = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const timestamp = new Date(data[i][0]);
+    const user = data[i][1];
+
+    if (timestamp >= recentTime) {
+      userActivity[user] = (userActivity[user] || 0) + 1;
+    }
+  }
+
+  // Flag users with excessive activity (>50 changes in an hour)
+  Object.keys(userActivity).forEach(user => {
+    if (userActivity[user] > 50) {
+      suspicious.push({
+        user: user,
+        activityCount: userActivity[user],
+        timeWindow: '1 hour',
+        severity: userActivity[user] > 100 ? 'HIGH' : 'MEDIUM'
+      });
+    }
+  });
+
+  return suspicious;
+}
+
+// ============================================================================
+// SECTION 10: ADVANCED UI & UX (Features 87-94)
+// ============================================================================
+
+/**
+ * Feature 87: Creates custom sidebar with quick actions
+ */
+function showQuickActionsSidebar() {
+  const html = HtmlService.createHtmlOutput(`
+    <html>
+      <head>
+        <style>
+          body { font-family: Roboto, Arial, sans-serif; padding: 10px; }
+          button { width: 100%; margin: 5px 0; padding: 10px; background: #2563EB; color: white; border: none; border-radius: 4px; cursor: pointer; }
+          button:hover { background: #1D4ED8; }
+          h3 { color: #1F2937; }
+        </style>
+      </head>
+      <body>
+        <h3>Quick Actions</h3>
+        <button onclick="google.script.run.rebuildDashboard()">Rebuild Dashboard</button>
+        <button onclick="google.script.run.recalculateAllGrievances()">Recalculate All</button>
+        <button onclick="google.script.run.sendOverdueAlerts()">Send Overdue Alerts</button>
+        <button onclick="google.script.run.runDataIntegrityCheck()">Run Integrity Check</button>
+        <button onclick="google.script.run.createAutomatedBackup()">Create Backup</button>
+      </body>
+    </html>
+  `).setTitle('509 Dashboard - Quick Actions');
+
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+/**
+ * Feature 88: Creates interactive search dialog
+ */
+function showSearchDialog() {
+  const html = HtmlService.createHtmlOutput(`
+    <html>
+      <head>
+        <style>
+          body { font-family: Roboto, Arial, sans-serif; padding: 20px; }
+          input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #E5E7EB; border-radius: 4px; }
+          button { padding: 10px 20px; background: #2563EB; color: white; border: none; border-radius: 4px; cursor: pointer; }
+          button:hover { background: #1D4ED8; }
+        </style>
+      </head>
+      <body>
+        <h2>Search Grievances</h2>
+        <input type="text" id="searchTerm" placeholder="Enter Grievance ID, Member Name, or Type">
+        <button onclick="performSearch()">Search</button>
+        <div id="results"></div>
+        <script>
+          function performSearch() {
+            const term = document.getElementById('searchTerm').value;
+            google.script.run.withSuccessHandler(displayResults).searchGrievances(term);
+          }
+          function displayResults(results) {
+            document.getElementById('results').innerHTML = '<pre>' + JSON.stringify(results, null, 2) + '</pre>';
+          }
+        </script>
+      </body>
+    </html>
+  `).setWidth(400).setHeight(500);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Search Grievances');
+}
+
+/**
+ * Feature 89: Implements advanced filtering UI
+ */
+function showFilterDialog() {
+  const html = HtmlService.createHtmlOutput(`
+    <html>
+      <head>
+        <style>
+          body { font-family: Roboto, Arial, sans-serif; padding: 20px; }
+          label { display: block; margin: 10px 0 5px; font-weight: bold; }
+          select, input { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #E5E7EB; border-radius: 4px; }
+          button { padding: 10px 20px; background: #2563EB; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        </style>
+      </head>
+      <body>
+        <h2>Filter Grievances</h2>
+        <label>Status:</label>
+        <select id="status">
+          <option value="">All</option>
+          <option value="Filed - Step I">Filed - Step I</option>
+          <option value="Filed - Step II">Filed - Step II</option>
+          <option value="Filed - Step III">Filed - Step III</option>
+          <option value="Resolved">Resolved</option>
+        </select>
+        <label>Type:</label>
+        <select id="type">
+          <option value="">All</option>
+          <option value="Disciplinary Action">Disciplinary Action</option>
+          <option value="Working Conditions">Working Conditions</option>
+        </select>
+        <label>Date From:</label>
+        <input type="date" id="dateFrom">
+        <label>Date To:</label>
+        <input type="date" id="dateTo">
+        <button onclick="applyFilter()">Apply Filter</button>
+        <button onclick="clearFilter()">Clear</button>
+      </body>
+    </html>
+  `).setWidth(400).setHeight(500);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Filter Grievances');
+}
+
+/**
+ * Feature 90: Creates dashboard export wizard
+ */
+function showExportWizard() {
+  const html = HtmlService.createHtmlOutput(`
+    <html>
+      <head>
+        <style>
+          body { font-family: Roboto, Arial, sans-serif; padding: 20px; }
+          label { display: block; margin: 15px 0 5px; font-weight: bold; }
+          input[type="checkbox"] { margin-right: 8px; }
+          button { width: 100%; padding: 12px; background: #2563EB; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; }
+        </style>
+      </head>
+      <body>
+        <h2>Export Data</h2>
+        <label><input type="checkbox" id="members" checked> Member Directory</label>
+        <label><input type="checkbox" id="grievances" checked> Grievance Log</label>
+        <label><input type="checkbox" id="dashboard" checked> Dashboard</label>
+        <label>Format:</label>
+        <select id="format">
+          <option value="excel">Excel (.xlsx)</option>
+          <option value="csv">CSV</option>
+          <option value="pdf">PDF</option>
+        </select>
+        <button onclick="exportData()">Export</button>
+        <script>
+          function exportData() {
+            const format = document.getElementById('format').value;
+            google.script.run.performExport(format);
+          }
+        </script>
+      </body>
+    </html>
+  `).setWidth(350).setHeight(400);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Export Wizard');
+}
+
+/**
+ * Feature 91: Implements data visualization selector
+ */
+function showVisualizationSelector() {
+  const html = HtmlService.createHtmlOutput(`
+    <html>
+      <head>
+        <style>
+          body { font-family: Roboto, Arial, sans-serif; padding: 20px; }
+          .viz-option { padding: 15px; margin: 10px 0; border: 2px solid #E5E7EB; border-radius: 8px; cursor: pointer; }
+          .viz-option:hover { background: #F9FAFB; border-color: #2563EB; }
+        </style>
+      </head>
+      <body>
+        <h2>Choose Visualization</h2>
+        <div class="viz-option" onclick="createChart('status')">Grievances by Status</div>
+        <div class="viz-option" onclick="createChart('type')">Grievances by Type</div>
+        <div class="viz-option" onclick="createChart('timeline')">Timeline Analysis</div>
+        <div class="viz-option" onclick="createChart('location')">Location Heatmap</div>
+        <script>
+          function createChart(type) {
+            google.script.run.generateCustomChart(type);
+          }
+        </script>
+      </body>
+    </html>
+  `).setWidth(350).setHeight(450);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Visualizations');
+}
+
+/**
+ * Feature 92: Creates member profile quick view
+ */
+function showMemberProfile(memberId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  const memberData = memberSheet.getDataRange().getValues();
+  const member = memberData.find(row => row[0] === memberId);
+
+  if (!member) {
+    SpreadsheetApp.getUi().alert('Member not found');
+    return;
+  }
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const memberGrievances = grievanceData.filter(row => row[1] === memberId);
+
+  const html = HtmlService.createHtmlOutput(`
+    <html>
+      <head>
+        <style>
+          body { font-family: Roboto, Arial, sans-serif; padding: 20px; }
+          h2 { color: #2563EB; }
+          .info { margin: 10px 0; }
+          .label { font-weight: bold; color: #6B7280; }
+        </style>
+      </head>
+      <body>
+        <h2>${member[1]} ${member[2]}</h2>
+        <div class="info"><span class="label">Member ID:</span> ${member[0]}</div>
+        <div class="info"><span class="label">Location:</span> ${member[4]}</div>
+        <div class="info"><span class="label">Email:</span> ${member[7]}</div>
+        <div class="info"><span class="label">Phone:</span> ${member[8]}</div>
+        <h3>Grievance Summary</h3>
+        <div class="info"><span class="label">Total Grievances:</span> ${memberGrievances.length}</div>
+        <div class="info"><span class="label">Active:</span> ${memberGrievances.filter(row => row[4] && row[4].startsWith('Filed')).length}</div>
+        <div class="info"><span class="label">Resolved:</span> ${memberGrievances.filter(row => row[4] && row[4].startsWith('Resolved')).length}</div>
+      </body>
+    </html>
+  `).setWidth(400).setHeight(500);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Member Profile');
+}
+
+/**
+ * Feature 93: Implements keyboard shortcuts help
+ */
+function showKeyboardShortcuts() {
+  const html = HtmlService.createHtmlOutput(`
+    <html>
+      <head>
+        <style>
+          body { font-family: Roboto, Arial, sans-serif; padding: 20px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td { padding: 10px; text-align: left; border-bottom: 1px solid #E5E7EB; }
+          th { background: #F9FAFB; font-weight: bold; }
+          .key { background: #E5E7EB; padding: 3px 8px; border-radius: 3px; font-family: monospace; }
+        </style>
+      </head>
+      <body>
+        <h2>Keyboard Shortcuts</h2>
+        <table>
+          <tr><th>Action</th><th>Shortcut</th></tr>
+          <tr><td>Rebuild Dashboard</td><td><span class="key">Ctrl+Alt+R</span></td></tr>
+          <tr><td>New Grievance</td><td><span class="key">Ctrl+Alt+N</span></td></tr>
+          <tr><td>Search</td><td><span class="key">Ctrl+Alt+F</span></td></tr>
+          <tr><td>Quick Actions</td><td><span class="key">Ctrl+Alt+Q</span></td></tr>
+          <tr><td>Help</td><td><span class="key">Ctrl+Alt+H</span></td></tr>
+        </table>
+      </body>
+    </html>
+  `).setWidth(400).setHeight(400);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Keyboard Shortcuts');
+}
+
+/**
+ * Feature 94: Creates customizable dashboard widgets
+ */
+function createCustomWidget(widgetType, config) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashboardSheet = ss.getSheetByName(SHEETS.DASHBOARD);
+  if (!dashboardSheet) return;
+
+  const widgets = {
+    'kpi_card': (cfg) => {
+      const range = dashboardSheet.getRange(cfg.row, cfg.col, 3, 2);
+      range.merge();
+      range.setValue(cfg.title);
+      range.setFontSize(16);
+      range.setFontWeight('bold');
+      range.setBackground(COLORS.PRIMARY_BLUE);
+      range.setFontColor('white');
+      range.setHorizontalAlignment('center');
+      range.setVerticalAlignment('middle');
+
+      const valueRange = dashboardSheet.getRange(cfg.row + 3, cfg.col, 2, 2);
+      valueRange.merge();
+      valueRange.setValue(cfg.value);
+      valueRange.setFontSize(32);
+      valueRange.setFontWeight('bold');
+      valueRange.setHorizontalAlignment('center');
+    },
+    'metric_list': (cfg) => {
+      let row = cfg.row;
+      cfg.metrics.forEach(metric => {
+        dashboardSheet.getRange(row, cfg.col).setValue(metric.label);
+        dashboardSheet.getRange(row, cfg.col + 1).setValue(metric.value);
+        row++;
+      });
+    },
+    'status_indicator': (cfg) => {
+      const range = dashboardSheet.getRange(cfg.row, cfg.col);
+      range.setValue(cfg.label);
+
+      const statusRange = dashboardSheet.getRange(cfg.row, cfg.col + 1);
+      statusRange.setValue(cfg.status);
+
+      const color = cfg.status === 'Good' ? COLORS.ON_TRACK :
+                    (cfg.status === 'Warning' ? COLORS.DUE_SOON : COLORS.OVERDUE);
+      statusRange.setBackground(color);
+      statusRange.setFontColor('white');
+    }
+  };
+
+  const widgetFunc = widgets[widgetType];
+  if (widgetFunc) {
+    widgetFunc(config);
+  }
+}
+
+// ============================================================================
+// MENU INTEGRATION FOR NEW FEATURES
+// ============================================================================
+
+/**
+ * Adds menu items for all new enhancement features
+ */
+function addEnhancementMenus() {
+  const ui = SpreadsheetApp.getUi();
+
+  // Data Validation Menu
+  ui.createMenu('🔍 Data Validation')
+    .addItem('Run Integrity Check', 'runDataIntegrityCheck')
+    .addItem('Auto-Correct Errors', 'autoCorrectDataErrors')
+    .addItem('Find Orphaned Grievances', 'showOrphanedGrievances')
+    .addItem('Generate Missing IDs', 'generateMissingIDs')
+    .addSeparator()
+    .addItem('Validate CBA Compliance', 'showCBAComplianceReport')
+    .addToUi();
+
+  // Notifications Menu
+  ui.createMenu('📧 Notifications')
+    .addItem('Send Overdue Alerts', 'sendOverdueAlerts')
+    .addItem('Send Weekly Reminders', 'sendWeeklyDeadlineReminders')
+    .addItem('Send Daily Digest', 'sendDailyDigest')
+    .addItem('Configure Preferences', 'configureNotificationPreferences')
+    .addToUi();
+
+  // Reports Menu
+  ui.createMenu('📊 Advanced Reports')
+    .addItem('Executive Summary', 'showExecutiveSummary')
+    .addItem('Trend Analysis', 'showTrendAnalysis')
+    .addItem('Location Analysis', 'showLocationAnalysis')
+    .addItem('Steward Performance', 'showStewardPerformance')
+    .addSeparator()
+    .addItem('Export to PDF', 'generatePDFReport')
+    .addItem('Export to CSV', 'exportGrievancesToCSV')
+    .addItem('Export to Excel', 'exportToExcel')
+    .addToUi();
+
+  // Engagement Menu
+  ui.createMenu('👥 Member Engagement')
+    .addItem('Update Engagement Levels', 'updateEngagementLevels')
+    .addItem('Find Inactive Members', 'showInactiveMembers')
+    .addItem('Identify Steward Candidates', 'showPotentialStewards')
+    .addItem('Send Re-engagement Emails', 'sendBulkReEngagement')
+    .addToUi();
+
+  // Tools Menu
+  ui.createMenu('🛠️ Advanced Tools')
+    .addItem('Quick Actions Sidebar', 'showQuickActionsSidebar')
+    .addItem('Search Grievances', 'showSearchDialog')
+    .addItem('Filter Data', 'showFilterDialog')
+    .addItem('Export Wizard', 'showExportWizard')
+    .addSeparator()
+    .addItem('Keyboard Shortcuts', 'showKeyboardShortcuts')
+    .addItem('Performance Monitor', 'showPerformanceLog')
+    .addToUi();
+}
