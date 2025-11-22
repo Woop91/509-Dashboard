@@ -261,7 +261,7 @@ function createConfigSheet(ss) {
   ];
 
   config.getRange(1, 1, 1, headers.length).setValues([headers])
-    .setFontWeight("bold").setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+    .setFontWeight("bold").setBackground(COLORS.HEADER_BLUE).setFontColor("white").setFontFamily("Roboto");
 
   // Column A: Job Titles (from CBA Appendix C)
   const jobTitles = [
@@ -397,7 +397,7 @@ function createConfigSheet(ss) {
   config.getRange(1, timelineStartCol, 1, 6).merge()
     .setValue("GRIEVANCE TIMELINE RULES (CBA Article 23A)")
     .setFontWeight("bold")
-    .setFontSize(12)
+    .setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.HEADER_ORANGE)
     .setFontColor("white")
     .setHorizontalAlignment("center");
@@ -470,6 +470,7 @@ function createMemberDirectorySheet(ss) {
     .setFontWeight("bold")
     .setBackground(COLORS.HEADER_BLUE)
     .setFontColor("white")
+    .setFontFamily("Roboto")
     .setWrap(true);
 
   sheet.setFrozenRows(1);
@@ -527,6 +528,7 @@ function createGrievanceLogSheet(ss) {
       .setFontWeight("bold")
       .setBackground(COLORS.HEADER_RED)
       .setFontColor("white")
+      .setFontFamily("Roboto")
       .setWrap(true);
 
     sheet.setFrozenRows(1);
@@ -574,7 +576,8 @@ function createStewardWorkloadSheet(ss) {
   sheet.getRange(1, 1, 1, headers.length).setValues([headers])
     .setFontWeight("bold")
     .setBackground(COLORS.HEADER_PURPLE)
-    .setFontColor("white");
+    .setFontColor("white")
+    .setFontFamily("Roboto");
 
   sheet.setFrozenRows(1);
   sheet.autoResizeColumns(1, headers.length);
@@ -593,20 +596,20 @@ function createDashboardSheet(ss) {
   // Title
   sheet.getRange("A1:L1").merge()
     .setValue("509 DASHBOARD - REAL-TIME METRICS & ANALYTICS")
-    .setFontSize(20)
+    .setFontSize(20).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.HEADER_BLUE)
     .setFontColor("white");
 
   // Section headers (will be populated by rebuildDashboard())
-  sheet.getRange("A3").setValue("MEMBER METRICS").setFontWeight("bold").setFontSize(12);
-  sheet.getRange("A11").setValue("GRIEVANCE METRICS").setFontWeight("bold").setFontSize(12);
-  sheet.getRange("A21").setValue("DEADLINE TRACKING").setFontWeight("bold").setFontSize(12);
-  sheet.getRange("E3").setValue("TOP 10 OVERDUE GRIEVANCES").setFontWeight("bold").setFontSize(11);
+  sheet.getRange("A3").setValue("MEMBER METRICS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto");
+  sheet.getRange("A11").setValue("GRIEVANCE METRICS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto");
+  sheet.getRange("A21").setValue("DEADLINE TRACKING").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto");
+  sheet.getRange("E3").setValue("TOP 10 OVERDUE GRIEVANCES").setFontWeight("bold").setFontSize(11).setFontFamily("Roboto");
 
   // Chart area headers
-  sheet.getRange("A26").setValue("VISUAL ANALYTICS").setFontWeight("bold").setFontSize(14)
+  sheet.getRange("A26").setValue("VISUAL ANALYTICS").setFontWeight("bold").setFontSize(14).setFontFamily("Roboto")
     .setBackground(COLORS.HEADER_GREEN).setFontColor("white");
 
   sheet.setColumnWidth(1, 250);
@@ -633,7 +636,8 @@ function createAnalyticsSheet(ss) {
   sheet.getRange(1, 1, 1, headers.length).setValues([headers])
     .setFontWeight("bold")
     .setBackground(COLORS.HEADER_GREEN)
-    .setFontColor("white");
+    .setFontColor("white")
+    .setFontFamily("Roboto");
 
   sheet.setFrozenRows(1);
 }
@@ -651,20 +655,20 @@ function createTrendsSheet(ss) {
   // Title - Unified color scheme
   sheet.getRange("A1:L1").merge()
     .setValue("TRENDS & TIMELINE ANALYSIS")
-    .setFontSize(18)
+    .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
   // Section headers - Unified color scheme
-  sheet.getRange("A3").setValue("MONTHLY TRENDS").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("A3").setValue("MONTHLY TRENDS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A15").setValue("RESOLUTION TIME ANALYSIS").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("A15").setValue("RESOLUTION TIME ANALYSIS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A25").setValue("FILING TRENDS").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("A25").setValue("FILING TRENDS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
@@ -684,23 +688,23 @@ function createPerformanceSheet(ss) {
   // Title - Unified color scheme
   sheet.getRange("A1:L1").merge()
     .setValue("PERFORMANCE METRICS & KPIs")
-    .setFontSize(18)
+    .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
   // Section headers - Unified color scheme
-  sheet.getRange("A3").setValue("RESOLUTION PERFORMANCE").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("A3").setValue("RESOLUTION PERFORMANCE").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("E3").setValue("EFFICIENCY METRICS").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("E3").setValue("EFFICIENCY METRICS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A13").setValue("OUTCOME ANALYSIS").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("A13").setValue("OUTCOME ANALYSIS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A23").setValue("STEP PROGRESSION ANALYSIS").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("A23").setValue("STEP PROGRESSION ANALYSIS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
@@ -721,17 +725,17 @@ function createLocationSheet(ss) {
   // Title - Unified color scheme
   sheet.getRange("A1:L1").merge()
     .setValue("LOCATION ANALYTICS")
-    .setFontSize(18)
+    .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
   // Section headers - Unified color scheme
-  sheet.getRange("A3").setValue("GRIEVANCES BY LOCATION").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("A3").setValue("GRIEVANCES BY LOCATION").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A15").setValue("LOCATION PERFORMANCE METRICS").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("A15").setValue("LOCATION PERFORMANCE METRICS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
@@ -751,23 +755,23 @@ function createTypeAnalysisSheet(ss) {
   // Title - Unified color scheme
   sheet.getRange("A1:L1").merge()
     .setValue("GRIEVANCE TYPE ANALYSIS")
-    .setFontSize(18)
+    .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
   // Section headers - Unified color scheme
-  sheet.getRange("A3").setValue("TYPE BREAKDOWN").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("A3").setValue("TYPE BREAKDOWN").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("E3").setValue("SUCCESS RATE BY TYPE").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("E3").setValue("SUCCESS RATE BY TYPE").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A15").setValue("TYPE TRENDS OVER TIME").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("A15").setValue("TYPE TRENDS OVER TIME").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A27").setValue("AVERAGE RESOLUTION TIME BY TYPE").setFontWeight("bold").setFontSize(12)
+  sheet.getRange("A27").setValue("AVERAGE RESOLUTION TIME BY TYPE").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
@@ -792,7 +796,7 @@ function createExecutiveOverviewSheet(ss) {
   // Main title with union blue
   sheet.getRange("A1:P1").merge()
     .setValue("📋 EXECUTIVE OVERVIEW - 509 DASHBOARD")
-    .setFontSize(24)
+    .setFontSize(24).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.PRIMARY_BLUE)
@@ -801,7 +805,7 @@ function createExecutiveOverviewSheet(ss) {
   // Subtitle/date range
   sheet.getRange("A2:P2").merge()
     .setValue("Union-wide Performance Metrics & Key Indicators")
-    .setFontSize(12)
+    .setFontSize(12).setFontFamily("Roboto")
     .setFontStyle("italic")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.LIGHT_GRAY)
@@ -810,7 +814,7 @@ function createExecutiveOverviewSheet(ss) {
   // Section: Key Metrics (Row 4-10)
   sheet.getRange("A4:P4").merge()
     .setValue("📊 KEY PERFORMANCE INDICATORS")
-    .setFontSize(15)
+    .setFontSize(15).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.PRIMARY_BLUE)
@@ -826,12 +830,12 @@ function createExecutiveOverviewSheet(ss) {
   sheet.getRange("A9:C9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("A6:C6").merge().setValue("TOTAL MEMBERS")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("A7:C7").merge().setFontSize(42).setFontWeight("bold")
+  sheet.getRange("A7:C7").merge().setFontSize(42).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.ACCENT_TEAL);
-  sheet.getRange("A8:C9").merge().setFontSize(10).setHorizontalAlignment("center")
+  sheet.getRange("A8:C9").merge().setFontSize(10).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
     .setValue("vs Last Month");
 
@@ -845,12 +849,12 @@ function createExecutiveOverviewSheet(ss) {
   sheet.getRange("E9:G9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("E6:G6").merge().setValue("ACTIVE GRIEVANCES")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("E7:G7").merge().setFontSize(42).setFontWeight("bold")
+  sheet.getRange("E7:G7").merge().setFontSize(42).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.ACCENT_ORANGE);
-  sheet.getRange("E8:G9").merge().setFontSize(10).setHorizontalAlignment("center")
+  sheet.getRange("E8:G9").merge().setFontSize(10).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
     .setValue("vs Last Month");
 
@@ -864,12 +868,12 @@ function createExecutiveOverviewSheet(ss) {
   sheet.getRange("I9:K9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("I6:K6").merge().setValue("WIN RATE")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("I7:K7").merge().setFontSize(42).setFontWeight("bold")
+  sheet.getRange("I7:K7").merge().setFontSize(42).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.UNION_GREEN);
-  sheet.getRange("I8:K9").merge().setFontSize(10).setHorizontalAlignment("center")
+  sheet.getRange("I8:K9").merge().setFontSize(10).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
     .setValue("vs Last Month");
 
@@ -883,19 +887,19 @@ function createExecutiveOverviewSheet(ss) {
   sheet.getRange("M9:O9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("M6:O6").merge().setValue("AVG RESOLUTION TIME")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("M7:O7").merge().setFontSize(42).setFontWeight("bold")
+  sheet.getRange("M7:O7").merge().setFontSize(42).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.PRIMARY_BLUE);
-  sheet.getRange("M8:O9").merge().setFontSize(10).setHorizontalAlignment("center")
+  sheet.getRange("M8:O9").merge().setFontSize(10).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
     .setValue("vs Last Month");
 
   // ===== UNION HEALTH SECTION =====
   sheet.getRange("A12:P12").merge()
     .setValue("💪 UNION HEALTH & ENGAGEMENT")
-    .setFontSize(15)
+    .setFontSize(15).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.UNION_GREEN)
@@ -911,12 +915,12 @@ function createExecutiveOverviewSheet(ss) {
   sheet.getRange("A17:C17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("A14:C14").merge().setValue("STEWARD COUNT")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("A15:C15").merge().setFontSize(42).setFontWeight("bold")
+  sheet.getRange("A15:C15").merge().setFontSize(42).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.ACCENT_PURPLE);
-  sheet.getRange("A16:C17").merge().setFontSize(10).setHorizontalAlignment("center")
+  sheet.getRange("A16:C17").merge().setFontSize(10).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
     .setValue("Change YTD");
 
@@ -930,12 +934,12 @@ function createExecutiveOverviewSheet(ss) {
   sheet.getRange("E17:G17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("E14:G14").merge().setValue("MEMBER ENGAGEMENT")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("E15:G15").merge().setFontSize(42).setFontWeight("bold")
+  sheet.getRange("E15:G15").merge().setFontSize(42).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.ACCENT_TEAL);
-  sheet.getRange("E16:G17").merge().setFontSize(10).setHorizontalAlignment("center")
+  sheet.getRange("E16:G17").merge().setFontSize(10).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
     .setValue("Avg Score");
 
@@ -949,12 +953,12 @@ function createExecutiveOverviewSheet(ss) {
   sheet.getRange("I17:K17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("I14:K14").merge().setValue("ACTIVE COMMITTEES")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("I15:K15").merge().setFontSize(42).setFontWeight("bold")
+  sheet.getRange("I15:K15").merge().setFontSize(42).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.PRIMARY_BLUE);
-  sheet.getRange("I16:K17").merge().setFontSize(10).setHorizontalAlignment("center")
+  sheet.getRange("I16:K17").merge().setFontSize(10).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
     .setValue("This Quarter");
 
@@ -968,19 +972,19 @@ function createExecutiveOverviewSheet(ss) {
   sheet.getRange("M17:O17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("M14:O14").merge().setValue("TRAINING SESSIONS")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("M15:O15").merge().setFontSize(42).setFontWeight("bold")
+  sheet.getRange("M15:O15").merge().setFontSize(42).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.ACCENT_ORANGE);
-  sheet.getRange("M16:O17").merge().setFontSize(10).setHorizontalAlignment("center")
+  sheet.getRange("M16:O17").merge().setFontSize(10).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
     .setValue("Last 12 Months");
 
   // ===== PRIORITY ALERTS SECTION =====
   sheet.getRange("A20:P20").merge()
     .setValue("🚨 PRIORITY ALERTS & ACTION ITEMS")
-    .setFontSize(15)
+    .setFontSize(15).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.SOLIDARITY_RED)
@@ -991,10 +995,10 @@ function createExecutiveOverviewSheet(ss) {
   alertCard.setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  sheet.getRange("A22").setValue("Overdue Grievances:").setFontWeight("bold").setFontSize(11);
-  sheet.getRange("A23").setValue("Due This Week:").setFontWeight("bold").setFontSize(11);
-  sheet.getRange("A24").setValue("Arbitrations Pending:").setFontWeight("bold").setFontSize(11);
-  sheet.getRange("A25").setValue("High-Priority Cases:").setFontWeight("bold").setFontSize(11);
+  sheet.getRange("A22").setValue("Overdue Grievances:").setFontWeight("bold").setFontSize(11).setFontFamily("Roboto");
+  sheet.getRange("A23").setValue("Due This Week:").setFontWeight("bold").setFontSize(11).setFontFamily("Roboto");
+  sheet.getRange("A24").setValue("Arbitrations Pending:").setFontWeight("bold").setFontSize(11).setFontFamily("Roboto");
+  sheet.getRange("A25").setValue("High-Priority Cases:").setFontWeight("bold").setFontSize(11).setFontFamily("Roboto");
 
   // Add colored left borders for alert severity
   sheet.getRange("A22:A22").setBorder(null, true, null, null, null, null, COLORS.SOLIDARITY_RED, SpreadsheetApp.BorderStyle.SOLID_THICK);
@@ -1005,16 +1009,16 @@ function createExecutiveOverviewSheet(ss) {
   // ===== VISUAL SUMMARIES SECTION =====
   sheet.getRange("A28:P28").merge()
     .setValue("📈 VISUAL SUMMARIES")
-    .setFontSize(15)
+    .setFontSize(15).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.UNION_GREEN)
     .setFontColor("white");
 
   // Chart placeholders
-  sheet.getRange("A30").setValue("Status Breakdown").setFontWeight("bold").setFontSize(12);
-  sheet.getRange("F30").setValue("Monthly Trends").setFontWeight("bold").setFontSize(12);
-  sheet.getRange("K30").setValue("Win/Loss Outcomes").setFontWeight("bold").setFontSize(12);
+  sheet.getRange("A30").setValue("Status Breakdown").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto");
+  sheet.getRange("F30").setValue("Monthly Trends").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto");
+  sheet.getRange("K30").setValue("Win/Loss Outcomes").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto");
 
   // Formatting
   sheet.setRowHeight(1, 55);
@@ -1072,7 +1076,7 @@ function createKPIDashboardSheet(ss) {
   // Bold header with gradient feel
   sheet.getRange("A1:P1").merge()
     .setValue("⚡ REAL-TIME KPI DASHBOARD")
-    .setFontSize(26)
+    .setFontSize(26).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.ACCENT_PURPLE)
@@ -1082,7 +1086,7 @@ function createKPIDashboardSheet(ss) {
   const today = new Date();
   sheet.getRange("A2:P2").merge()
     .setValue(`Performance Period: ${today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`)
-    .setFontSize(12)
+    .setFontSize(12).setFontFamily("Roboto")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.LIGHT_GRAY)
     .setFontColor(COLORS.TEXT_DARK);
@@ -1090,7 +1094,7 @@ function createKPIDashboardSheet(ss) {
   // Main KPI Grid - Large Numbers Section
   sheet.getRange("A4:P4").merge()
     .setValue("📊 THIS MONTH")
-    .setFontSize(16)
+    .setFontSize(16).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.PRIMARY_BLUE)
@@ -1109,12 +1113,12 @@ function createKPIDashboardSheet(ss) {
   sheet.getRange("A9:C9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("A6:C6").merge().setValue("GRIEVANCES FILED")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("A7:C7").merge().setFontSize(48).setFontWeight("bold")
+  sheet.getRange("A7:C7").merge().setFontSize(48).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.PRIMARY_BLUE);
-  sheet.getRange("A8:C9").merge().setFontSize(11).setHorizontalAlignment("center")
+  sheet.getRange("A8:C9").merge().setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
 
   // ===== KPI CARD 2: Grievances Resolved =====
@@ -1127,12 +1131,12 @@ function createKPIDashboardSheet(ss) {
   sheet.getRange("E9:G9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("E6:G6").merge().setValue("GRIEVANCES RESOLVED")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("E7:G7").merge().setFontSize(48).setFontWeight("bold")
+  sheet.getRange("E7:G7").merge().setFontSize(48).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.UNION_GREEN);
-  sheet.getRange("E8:G9").merge().setFontSize(11).setHorizontalAlignment("center")
+  sheet.getRange("E8:G9").merge().setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
 
   // ===== KPI CARD 3: Pending Decisions =====
@@ -1145,12 +1149,12 @@ function createKPIDashboardSheet(ss) {
   sheet.getRange("I9:K9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("I6:K6").merge().setValue("PENDING DECISIONS")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("I7:K7").merge().setFontSize(48).setFontWeight("bold")
+  sheet.getRange("I7:K7").merge().setFontSize(48).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.ACCENT_ORANGE);
-  sheet.getRange("I8:K9").merge().setFontSize(11).setHorizontalAlignment("center")
+  sheet.getRange("I8:K9").merge().setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
 
   // ===== KPI CARD 4: Win Rate % =====
@@ -1163,18 +1167,18 @@ function createKPIDashboardSheet(ss) {
   sheet.getRange("M9:O9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("M6:O6").merge().setValue("WIN RATE %")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("M7:O7").merge().setFontSize(48).setFontWeight("bold")
+  sheet.getRange("M7:O7").merge().setFontSize(48).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.ACCENT_PURPLE);
-  sheet.getRange("M8:O9").merge().setFontSize(11).setHorizontalAlignment("center")
+  sheet.getRange("M8:O9").merge().setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
 
   // ===== YEAR TO DATE SECTION =====
   sheet.getRange("A12:P12").merge()
     .setValue("📈 YEAR TO DATE")
-    .setFontSize(16)
+    .setFontSize(16).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.UNION_GREEN)
@@ -1190,12 +1194,12 @@ function createKPIDashboardSheet(ss) {
   sheet.getRange("A17:C17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("A14:C14").merge().setValue("TOTAL FILINGS")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("A15:C15").merge().setFontSize(48).setFontWeight("bold")
+  sheet.getRange("A15:C15").merge().setFontSize(48).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.PRIMARY_BLUE);
-  sheet.getRange("A16:C17").merge().setFontSize(11).setHorizontalAlignment("center")
+  sheet.getRange("A16:C17").merge().setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
 
   // ===== YTD CARD 2: Total Resolved =====
@@ -1208,12 +1212,12 @@ function createKPIDashboardSheet(ss) {
   sheet.getRange("E17:G17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("E14:G14").merge().setValue("TOTAL RESOLVED")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("E15:G15").merge().setFontSize(48).setFontWeight("bold")
+  sheet.getRange("E15:G15").merge().setFontSize(48).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.UNION_GREEN);
-  sheet.getRange("E16:G17").merge().setFontSize(11).setHorizontalAlignment("center")
+  sheet.getRange("E16:G17").merge().setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
 
   // ===== YTD CARD 3: Settlements =====
@@ -1226,12 +1230,12 @@ function createKPIDashboardSheet(ss) {
   sheet.getRange("I17:K17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("I14:K14").merge().setValue("SETTLEMENTS")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("I15:K15").merge().setFontSize(48).setFontWeight("bold")
+  sheet.getRange("I15:K15").merge().setFontSize(48).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.ACCENT_TEAL);
-  sheet.getRange("I16:K17").merge().setFontSize(11).setHorizontalAlignment("center")
+  sheet.getRange("I16:K17").merge().setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
 
   // ===== YTD CARD 4: Arbitrations =====
@@ -1244,18 +1248,18 @@ function createKPIDashboardSheet(ss) {
   sheet.getRange("M17:O17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("M14:O14").merge().setValue("ARBITRATIONS")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("M15:O15").merge().setFontSize(48).setFontWeight("bold")
+  sheet.getRange("M15:O15").merge().setFontSize(48).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.SOLIDARITY_RED);
-  sheet.getRange("M16:O17").merge().setFontSize(11).setHorizontalAlignment("center")
+  sheet.getRange("M16:O17").merge().setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
 
   // ===== PERFORMANCE BREAKDOWN SECTION =====
   sheet.getRange("A20:P20").merge()
     .setValue("⚡ PERFORMANCE BREAKDOWN")
-    .setFontSize(16)
+    .setFontSize(16).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.ACCENT_ORANGE)
@@ -1346,7 +1350,7 @@ function createMemberEngagementSheet(ss) {
   // Title
   sheet.getRange("A1:L1").merge()
     .setValue("MEMBER ENGAGEMENT & PARTICIPATION")
-    .setFontSize(20)
+    .setFontSize(20).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.ACCENT_TEAL)
@@ -1355,7 +1359,7 @@ function createMemberEngagementSheet(ss) {
   // Engagement Score Cards
   sheet.getRange("A3:L3").merge()
     .setValue("🎯 ENGAGEMENT SCORES")
-    .setFontSize(14)
+    .setFontSize(14).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setBackground(COLORS.LIGHT_GRAY)
     .setFontColor(COLORS.TEXT_DARK);
@@ -1372,13 +1376,13 @@ function createMemberEngagementSheet(ss) {
     engagementLabels[2]
   ]);
 
-  sheet.getRange("A5:D5").setFontWeight("bold").setFontSize(10)
+  sheet.getRange("A5:D5").setFontWeight("bold").setFontSize(10).setFontFamily("Roboto")
     .setHorizontalAlignment("center").setFontColor(COLORS.TEXT_GRAY);
 
   // Member Distribution
   sheet.getRange("A10:F10").merge()
     .setValue("👥 MEMBER DISTRIBUTION BY ENGAGEMENT LEVEL")
-    .setFontSize(13)
+    .setFontSize(13).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
@@ -1401,7 +1405,7 @@ function createMemberEngagementSheet(ss) {
   // Committee Participation
   sheet.getRange("A20:F20").merge()
     .setValue("🏛️ COMMITTEE PARTICIPATION")
-    .setFontSize(13)
+    .setFontSize(13).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setBackground(COLORS.UNION_GREEN)
     .setFontColor("white");
@@ -1425,7 +1429,7 @@ function createMemberEngagementSheet(ss) {
   // Contact & Communication Preferences
   sheet.getRange("A31:F31").merge()
     .setValue("📱 COMMUNICATION PREFERENCES")
-    .setFontSize(13)
+    .setFontSize(13).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setBackground(COLORS.ACCENT_PURPLE)
     .setFontColor("white");
@@ -1467,7 +1471,7 @@ function createCostImpactSheet(ss) {
   // Title
   sheet.getRange("A1:L1").merge()
     .setValue("COST IMPACT ANALYSIS")
-    .setFontSize(20)
+    .setFontSize(20).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.SOLIDARITY_RED)
@@ -1475,7 +1479,7 @@ function createCostImpactSheet(ss) {
 
   sheet.getRange("A2:L2").merge()
     .setValue("Financial Impact of Grievances & Union Activities")
-    .setFontSize(11)
+    .setFontSize(11).setFontFamily("Roboto")
     .setFontStyle("italic")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.LIGHT_GRAY);
@@ -1483,7 +1487,7 @@ function createCostImpactSheet(ss) {
   // Financial Metrics
   sheet.getRange("A4:L4").merge()
     .setValue("💰 MEMBER WINS & RECOVERIES")
-    .setFontSize(14)
+    .setFontSize(14).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setBackground(COLORS.LIGHT_GRAY)
     .setFontColor(COLORS.TEXT_DARK);
@@ -1500,13 +1504,13 @@ function createCostImpactSheet(ss) {
     costLabels[2]
   ]);
 
-  sheet.getRange("A6:D6").setFontWeight("bold").setFontSize(10)
+  sheet.getRange("A6:D6").setFontWeight("bold").setFontSize(10).setFontFamily("Roboto")
     .setHorizontalAlignment("center").setFontColor(COLORS.TEXT_GRAY);
 
   // Cost by Type
   sheet.getRange("A11:F11").merge()
     .setValue("📊 RECOVERY BY GRIEVANCE TYPE")
-    .setFontSize(13)
+    .setFontSize(13).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setBackground(COLORS.UNION_GREEN)
     .setFontColor("white");
@@ -1524,7 +1528,7 @@ function createCostImpactSheet(ss) {
   // Time Cost Analysis
   sheet.getRange("A25:F25").merge()
     .setValue("⏱️ TIME INVESTMENT ANALYSIS")
-    .setFontSize(13)
+    .setFontSize(13).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setBackground(COLORS.ACCENT_ORANGE)
     .setFontColor("white");
@@ -1547,7 +1551,7 @@ function createCostImpactSheet(ss) {
   // ROI Metrics
   sheet.getRange("A35:F35").merge()
     .setValue("📈 RETURN ON INVESTMENT")
-    .setFontSize(13)
+    .setFontSize(13).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
@@ -1579,7 +1583,7 @@ function createQuickStatsSheet(ss) {
   // Bold, eye-catching title
   sheet.getRange("A1:O1").merge()
     .setValue("⚡ QUICK STATS - AT A GLANCE")
-    .setFontSize(26)
+    .setFontSize(26).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.UNION_GREEN)
@@ -1589,7 +1593,7 @@ function createQuickStatsSheet(ss) {
   const today = new Date();
   sheet.getRange("A2:O2").merge()
     .setValue(`Snapshot: ${today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`)
-    .setFontSize(12)
+    .setFontSize(12).setFontFamily("Roboto")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.LIGHT_GRAY)
     .setFontColor(COLORS.TEXT_DARK);
@@ -1597,7 +1601,7 @@ function createQuickStatsSheet(ss) {
   // ===== TODAY SECTION =====
   sheet.getRange("A4:O4").merge()
     .setValue("📅 TODAY")
-    .setFontSize(16)
+    .setFontSize(16).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.PRIMARY_BLUE)
@@ -1611,9 +1615,9 @@ function createQuickStatsSheet(ss) {
   sheet.getRange("A8:D8").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("A6:D6").merge().setValue("NEW GRIEVANCES")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("A7:D8").merge().setFontSize(48).setFontWeight("bold")
+  sheet.getRange("A7:D8").merge().setFontSize(48).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.PRIMARY_BLUE);
 
@@ -1625,9 +1629,9 @@ function createQuickStatsSheet(ss) {
   sheet.getRange("F8:I8").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("F6:I6").merge().setValue("DEADLINES DUE")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("F7:I8").merge().setFontSize(48).setFontWeight("bold")
+  sheet.getRange("F7:I8").merge().setFontSize(48).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.SOLIDARITY_RED);
 
@@ -1639,16 +1643,16 @@ function createQuickStatsSheet(ss) {
   sheet.getRange("K8:N8").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("K6:N6").merge().setValue("MEETINGS SCHEDULED")
-    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
     .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
-  sheet.getRange("K7:N8").merge().setFontSize(48).setFontWeight("bold")
+  sheet.getRange("K7:N8").merge().setFontSize(48).setFontFamily("Roboto").setFontWeight("bold")
     .setHorizontalAlignment("center").setVerticalAlignment("middle")
     .setFontColor(COLORS.ACCENT_TEAL);
 
   // ===== THIS WEEK SECTION =====
   sheet.getRange("A11:O11").merge()
     .setValue("📊 THIS WEEK")
-    .setFontSize(16)
+    .setFontSize(16).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.ACCENT_TEAL)
@@ -1670,7 +1674,7 @@ function createQuickStatsSheet(ss) {
     sheet.getRange(bottomRow).setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
     sheet.getRange(topRowRange).merge().setValue(label)
-      .setFontWeight("bold").setFontSize(10).setHorizontalAlignment("center")
+      .setFontWeight("bold").setFontSize(10).setFontFamily("Roboto").setHorizontalAlignment("center")
       .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
     sheet.getRange(range.split(":")[0].match(/[A-Z]+/)[0] + (parseInt(range.split(":")[0].match(/\d+/)[0]) + 1) + ":" + bottomRow).merge()
       .setFontSize(38).setFontWeight("bold")
@@ -1686,7 +1690,7 @@ function createQuickStatsSheet(ss) {
   // ===== THIS MONTH SECTION =====
   sheet.getRange("A18:O18").merge()
     .setValue("📈 THIS MONTH")
-    .setFontSize(16)
+    .setFontSize(16).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.ACCENT_PURPLE)
@@ -1704,7 +1708,7 @@ function createQuickStatsSheet(ss) {
   // ===== YEAR TO DATE SECTION =====
   sheet.getRange("A25:O25").merge()
     .setValue("🎯 YEAR TO DATE")
-    .setFontSize(16)
+    .setFontSize(16).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.SOLIDARITY_RED)
@@ -1721,7 +1725,7 @@ function createQuickStatsSheet(ss) {
   // ===== ALL TIME SECTION =====
   sheet.getRange("A32:O32").merge()
     .setValue("🏆 ALL TIME RECORDS")
-    .setFontSize(16)
+    .setFontSize(16).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.ACCENT_ORANGE)
@@ -1735,7 +1739,7 @@ function createQuickStatsSheet(ss) {
   // ===== CRITICAL ALERTS BOX =====
   sheet.getRange("A39:O39").merge()
     .setValue("🚨 CRITICAL ALERTS")
-    .setFontSize(16)
+    .setFontSize(16).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.SOLIDARITY_RED)
@@ -1745,10 +1749,10 @@ function createQuickStatsSheet(ss) {
   alertBox.setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  sheet.getRange("A41").setValue("Grievances Overdue:").setFontWeight("bold").setFontSize(12).setFontColor(COLORS.SOLIDARITY_RED);
-  sheet.getRange("A42").setValue("Due in Next 48 Hours:").setFontWeight("bold").setFontSize(12).setFontColor(COLORS.ACCENT_ORANGE);
-  sheet.getRange("A43").setValue("Arbitrations Pending:").setFontWeight("bold").setFontSize(12).setFontColor(COLORS.ACCENT_PURPLE);
-  sheet.getRange("A44").setValue("Step III Cases:").setFontWeight("bold").setFontSize(12).setFontColor(COLORS.PRIMARY_BLUE);
+  sheet.getRange("A41").setValue("Grievances Overdue:").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto").setFontColor(COLORS.SOLIDARITY_RED);
+  sheet.getRange("A42").setValue("Due in Next 48 Hours:").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto").setFontColor(COLORS.ACCENT_ORANGE);
+  sheet.getRange("A43").setValue("Arbitrations Pending:").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto").setFontColor(COLORS.ACCENT_PURPLE);
+  sheet.getRange("A44").setValue("Step III Cases:").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto").setFontColor(COLORS.PRIMARY_BLUE);
 
   // Add colored left borders for alert severity
   sheet.getRange("A41:A41").setBorder(null, true, null, null, null, null, COLORS.SOLIDARITY_RED, SpreadsheetApp.BorderStyle.SOLID_THICK);
@@ -1815,7 +1819,7 @@ function createArchiveSheet(ss) {
 
   sheet.getRange("A1").setValue("Archived Grievances")
     .setFontWeight("bold")
-    .setFontSize(14);
+    .setFontSize(14).setFontFamily("Roboto");
 
   sheet.getRange("A2").setValue("Resolved grievances are automatically moved here after 90 days")
     .setFontStyle("italic");
@@ -1834,7 +1838,8 @@ function createDiagnosticsSheet(ss) {
   const headers = ["Check Type", "Status", "Details", "Last Run"];
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers])
-    .setFontWeight("bold");
+    .setFontWeight("bold")
+    .setFontFamily("Roboto");
 
   const checks = [
     ["Data Validation", "OK", "All dropdowns configured", new Date()],
@@ -2383,15 +2388,15 @@ function rebuildDashboard() {
     dashboard.getRange("B15").setBackground(COLORS.ON_TRACK).setFontColor("white");
     dashboard.getRange("A16").setBackground(COLORS.LIGHT_GRAY);
     dashboard.getRange("B16").setBackground(COLORS.OVERDUE).setFontColor("white");
-    dashboard.getRange("A17:B17").setBackground("#E8F5E9").setFontSize(12).setFontWeight("bold");
+    dashboard.getRange("A17:B17").setBackground("#E8F5E9").setFontSize(12).setFontFamily("Roboto").setFontWeight("bold");
     dashboard.getRange("A18:B19").setBackground(COLORS.LIGHT_GRAY);
     dashboard.getRange("A21:B21").setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
     dashboard.getRange("A22").setBackground(COLORS.LIGHT_GRAY);
     dashboard.getRange("B22").setBackground(overdue > 0 ? COLORS.OVERDUE : COLORS.ON_TRACK)
-      .setFontColor("white").setFontWeight("bold").setFontSize(12);
+      .setFontColor("white").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto");
     dashboard.getRange("A23").setBackground(COLORS.LIGHT_GRAY);
     dashboard.getRange("B23").setBackground(dueThisWeek > 0 ? COLORS.DUE_SOON : COLORS.ON_TRACK)
-      .setFontColor("white").setFontWeight("bold").setFontSize(12);
+      .setFontColor("white").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto");
     dashboard.getRange("A24:B24").setBackground(COLORS.LIGHT_GRAY);
 
     // Format overdue table
@@ -4288,7 +4293,7 @@ function applyMobileLayout() {
   if (dashboard) {
     dashboard.setColumnWidth(1, 250);
     dashboard.setColumnWidth(2, 150);
-    dashboard.getRange("A1:H50").setFontSize(14);
+    dashboard.getRange("A1:H50").setFontSize(14).setFontFamily("Roboto");
   }
 
   // Member Directory: Essential columns only visible
@@ -4298,7 +4303,7 @@ function applyMobileLayout() {
     memberDir.setColumnWidth(3, 150);  // Last Name
     memberDir.setColumnWidth(4, 200);  // Job Title
     memberDir.setColumnWidth(5, 200);  // Location
-    memberDir.getRange("1:1").setFontSize(12).setFontWeight("bold");
+    memberDir.getRange("1:1").setFontSize(12).setFontFamily("Roboto").setFontWeight("bold");
   }
 
   // Grievance Log: Essential columns only visible
@@ -4308,7 +4313,7 @@ function applyMobileLayout() {
     grievanceLog.setColumnWidth(3, 150);  // First Name
     grievanceLog.setColumnWidth(4, 150);  // Last Name
     grievanceLog.setColumnWidth(5, 150);  // Status
-    grievanceLog.getRange("1:1").setFontSize(12).setFontWeight("bold");
+    grievanceLog.getRange("1:1").setFontSize(12).setFontFamily("Roboto").setFontWeight("bold");
   }
 }
 
@@ -4325,7 +4330,7 @@ function applyDesktopLayout() {
   if (dashboard) {
     dashboard.setColumnWidth(1, 200);
     dashboard.setColumnWidth(2, 120);
-    dashboard.getRange("A1:H50").setFontSize(10);
+    dashboard.getRange("A1:H50").setFontSize(10).setFontFamily("Roboto");
   }
 
   // Member Directory: Standard column widths
@@ -4335,7 +4340,7 @@ function applyDesktopLayout() {
     memberDir.setColumnWidth(3, 100);  // Last Name
     memberDir.setColumnWidth(4, 150);  // Job Title
     memberDir.setColumnWidth(5, 150);  // Location
-    memberDir.getRange("1:1").setFontSize(10).setFontWeight("bold");
+    memberDir.getRange("1:1").setFontSize(10).setFontFamily("Roboto").setFontWeight("bold");
   }
 
   // Grievance Log: Standard column widths
@@ -4345,7 +4350,7 @@ function applyDesktopLayout() {
     grievanceLog.setColumnWidth(3, 100);  // First Name
     grievanceLog.setColumnWidth(4, 100);  // Last Name
     grievanceLog.setColumnWidth(5, 120);  // Status
-    grievanceLog.getRange("1:1").setFontSize(10).setFontWeight("bold");
+    grievanceLog.getRange("1:1").setFontSize(10).setFontFamily("Roboto").setFontWeight("bold");
   }
 }
 
