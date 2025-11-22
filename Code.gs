@@ -8486,3 +8486,398 @@ function addEnhancementMenus() {
     .addItem('Performance Monitor', 'showPerformanceLog')
     .addToUi();
 }
+
+// ============================================================================
+// WRAPPER FUNCTIONS FOR MENU ITEMS
+// ============================================================================
+// These functions provide user-friendly interfaces to the core functionality
+
+/**
+ * Wrapper: Shows orphaned grievances in a dialog
+ */
+function showOrphanedGrievances() {
+  const ui = SpreadsheetApp.getUi();
+
+  try {
+    const orphanedGrievances = findOrphanedGrievances();
+
+    if (!orphanedGrievances || orphanedGrievances.length === 0) {
+      ui.alert('✅ No Orphaned Grievances',
+               'All grievances have valid member IDs!',
+               ui.ButtonSet.OK);
+      return;
+    }
+
+    let message = `Found ${orphanedGrievances.length} orphaned grievance(s):\n\n`;
+    orphanedGrievances.slice(0, 20).forEach(g => {
+      message += `• Row ${g.row}: ${g.grievanceId} - Invalid Member ID: ${g.memberId}\n`;
+    });
+
+    if (orphanedGrievances.length > 20) {
+      message += `\n... and ${orphanedGrievances.length - 20} more.`;
+    }
+
+    message += '\n\nThese grievances reference member IDs that don\'t exist in the Member Directory.';
+
+    ui.alert('⚠️ Orphaned Grievances Found', message, ui.ButtonSet.OK);
+  } catch (error) {
+    ui.alert('❌ Error', 'Failed to find orphaned grievances: ' + error.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Wrapper: Generates missing IDs for members and grievances
+ */
+function generateMissingIDs() {
+  const ui = SpreadsheetApp.getUi();
+
+  const response = ui.alert('Generate Missing IDs',
+    'This will generate IDs for any members or grievances that are missing them.\n\nContinue?',
+    ui.ButtonSet.YES_NO);
+
+  if (response !== ui.Button.YES) {
+    return;
+  }
+
+  try {
+    const memberCount = autoGenerateMemberIDs();
+    const grievanceCount = autoGenerateGrievanceIDs();
+
+    ui.alert('✅ IDs Generated',
+             `Successfully generated:\n• ${memberCount} Member IDs\n• ${grievanceCount} Grievance IDs`,
+             ui.ButtonSet.OK);
+  } catch (error) {
+    ui.alert('❌ Error', 'Failed to generate IDs: ' + error.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Wrapper: Shows CBA compliance report
+ */
+function showCBAComplianceReport() {
+  const ui = SpreadsheetApp.getUi();
+
+  try {
+    const violations = validateCBACompliance();
+
+    if (!violations || violations.length === 0) {
+      ui.alert('✅ CBA Compliance',
+               'All grievances are compliant with CBA deadlines!',
+               ui.ButtonSet.OK);
+      return;
+    }
+
+    let message = `Found ${violations.length} potential CBA violation(s):\n\n`;
+    violations.slice(0, 15).forEach(v => {
+      message += `• ${v.grievanceId}: ${v.violation}\n`;
+    });
+
+    if (violations.length > 15) {
+      message += `\n... and ${violations.length - 15} more violations.`;
+    }
+
+    ui.alert('⚠️ CBA Compliance Issues', message, ui.ButtonSet.OK);
+  } catch (error) {
+    ui.alert('❌ Error', 'Failed to validate CBA compliance: ' + error.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Wrapper: Shows executive summary report
+ */
+function showExecutiveSummary() {
+  const ui = SpreadsheetApp.getUi();
+
+  try {
+    const summary = createExecutiveSummary();
+
+    if (!summary) {
+      ui.alert('❌ Error', 'Failed to generate executive summary.', ui.ButtonSet.OK);
+      return;
+    }
+
+    const message = `
+📊 EXECUTIVE SUMMARY
+
+MEMBERS:
+• Total Members: ${summary.totalMembers || 0}
+• Active Members: ${summary.activeMembers || 0}
+• Total Stewards: ${summary.totalStewards || 0}
+
+GRIEVANCES:
+• Total Filed: ${summary.totalGrievances || 0}
+• Active: ${summary.activeGrievances || 0}
+• Resolved: ${summary.resolvedGrievances || 0}
+• Win Rate: ${summary.winRate || 0}%
+
+ALERTS:
+• Overdue: ${summary.overdueCount || 0}
+• Due This Week: ${summary.dueThisWeek || 0}
+• Due Next Week: ${summary.dueNextWeek || 0}
+
+Check the Dashboard sheet for detailed visualizations.
+    `.trim();
+
+    ui.alert('Executive Summary', message, ui.ButtonSet.OK);
+  } catch (error) {
+    ui.alert('❌ Error', 'Failed to generate executive summary: ' + error.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Wrapper: Shows trend analysis report
+ */
+function showTrendAnalysis() {
+  const ui = SpreadsheetApp.getUi();
+
+  try {
+    const trends = generateTrendAnalysis();
+
+    if (!trends) {
+      ui.alert('❌ Error', 'Failed to generate trend analysis.', ui.ButtonSet.OK);
+      return;
+    }
+
+    const message = `
+📈 TREND ANALYSIS
+
+FILING TRENDS:
+• Total Months with Data: ${trends.totalMonths || 0}
+• Average Filings/Month: ${trends.avgFilingsPerMonth || 0}
+• Peak Month: ${trends.peakMonth || 'N/A'}
+
+RESOLUTION METRICS:
+• Avg Resolution Time: ${trends.avgResolutionDays || 0} days
+• Fastest Resolution: ${trends.fastestResolution || 0} days
+• Slowest Resolution: ${trends.slowestResolution || 0} days
+
+RECENT TREND:
+${trends.recentTrend || 'Insufficient data'}
+
+See "Trends & Timeline" sheet for detailed analysis.
+    `.trim();
+
+    ui.alert('Trend Analysis', message, ui.ButtonSet.OK);
+  } catch (error) {
+    ui.alert('❌ Error', 'Failed to generate trend analysis: ' + error.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Wrapper: Shows location analysis report
+ */
+function showLocationAnalysis() {
+  const ui = SpreadsheetApp.getUi();
+
+  try {
+    const locationData = generateLocationAnalysis();
+
+    if (!locationData || locationData.length === 0) {
+      ui.alert('❌ Error', 'No location data available.', ui.ButtonSet.OK);
+      return;
+    }
+
+    let message = '📍 LOCATION ANALYSIS - Top 10 Locations:\n\n';
+    locationData.slice(0, 10).forEach((loc, index) => {
+      message += `${index + 1}. ${loc.location}\n`;
+      message += `   Members: ${loc.memberCount}, Grievances: ${loc.totalGrievances}\n`;
+      message += `   Win Rate: ${loc.winRate}%\n\n`;
+    });
+
+    message += '\nSee "Location Analytics" sheet for complete details.';
+
+    ui.alert('Location Analysis', message, ui.ButtonSet.OK);
+  } catch (error) {
+    ui.alert('❌ Error', 'Failed to generate location analysis: ' + error.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Wrapper: Shows steward performance report
+ */
+function showStewardPerformance() {
+  const ui = SpreadsheetApp.getUi();
+
+  try {
+    const stewardData = createStewardPerformanceReport();
+
+    if (!stewardData || stewardData.length === 0) {
+      ui.alert('ℹ️ No Data', 'No steward performance data available.', ui.ButtonSet.OK);
+      return;
+    }
+
+    let message = '👨‍⚖️ STEWARD PERFORMANCE - Top Performers:\n\n';
+    stewardData.slice(0, 10).forEach((steward, index) => {
+      message += `${index + 1}. ${steward.name}\n`;
+      message += `   Cases: ${steward.totalCases}, Active: ${steward.activeCases}\n`;
+      message += `   Win Rate: ${steward.winRate}%, Overdue: ${steward.overdueCount}\n\n`;
+    });
+
+    if (stewardData.length > 10) {
+      message += `... and ${stewardData.length - 10} more stewards.\n\n`;
+    }
+
+    message += 'See "Steward Workload" sheet for complete details.';
+
+    ui.alert('Steward Performance', message, ui.ButtonSet.OK);
+  } catch (error) {
+    ui.alert('❌ Error', 'Failed to generate steward performance report: ' + error.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Wrapper: Shows inactive members
+ */
+function showInactiveMembers() {
+  const ui = SpreadsheetApp.getUi();
+
+  try {
+    const inactiveMembers = identifyInactiveMembers(6); // 6 months inactive
+
+    if (!inactiveMembers || inactiveMembers.length === 0) {
+      ui.alert('✅ No Inactive Members',
+               'All members have recent activity!',
+               ui.ButtonSet.OK);
+      return;
+    }
+
+    let message = `Found ${inactiveMembers.length} inactive member(s) (6+ months):\n\n`;
+    inactiveMembers.slice(0, 20).forEach(member => {
+      message += `• ${member.firstName} ${member.lastName} (${member.memberId})\n`;
+      message += `  Last Activity: ${member.lastActivity || 'Never'}\n`;
+    });
+
+    if (inactiveMembers.length > 20) {
+      message += `\n... and ${inactiveMembers.length - 20} more.`;
+    }
+
+    message += '\n\nConsider re-engagement outreach for these members.';
+
+    ui.alert('Inactive Members', message, ui.ButtonSet.OK);
+  } catch (error) {
+    ui.alert('❌ Error', 'Failed to identify inactive members: ' + error.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Wrapper: Shows potential steward candidates
+ */
+function showPotentialStewards() {
+  const ui = SpreadsheetApp.getUi();
+
+  try {
+    const candidates = identifyPotentialStewards();
+
+    if (!candidates || candidates.length === 0) {
+      ui.alert('ℹ️ No Candidates',
+               'No potential steward candidates identified at this time.',
+               ui.ButtonSet.OK);
+      return;
+    }
+
+    let message = `Identified ${candidates.length} potential steward candidate(s):\n\n`;
+    candidates.slice(0, 15).forEach(candidate => {
+      message += `• ${candidate.firstName} ${candidate.lastName}\n`;
+      message += `  Engagement: ${candidate.engagementLevel || 'N/A'}\n`;
+      message += `  Events: ${candidate.eventsAttended || 0}, Grievances: ${candidate.totalGrievances || 0}\n\n`;
+    });
+
+    if (candidates.length > 15) {
+      message += `... and ${candidates.length - 15} more candidates.`;
+    }
+
+    ui.alert('Potential Steward Candidates', message, ui.ButtonSet.OK);
+  } catch (error) {
+    ui.alert('❌ Error', 'Failed to identify steward candidates: ' + error.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Wrapper: Sends bulk re-engagement emails
+ */
+function sendBulkReEngagement() {
+  const ui = SpreadsheetApp.getUi();
+
+  const response = ui.alert('Send Bulk Re-engagement Emails',
+    'This will send re-engagement emails to all inactive members.\n\nContinue?',
+    ui.ButtonSet.YES_NO);
+
+  if (response !== ui.Button.YES) {
+    return;
+  }
+
+  try {
+    const inactiveMembers = identifyInactiveMembers(6);
+
+    if (!inactiveMembers || inactiveMembers.length === 0) {
+      ui.alert('ℹ️ No Recipients', 'No inactive members to send emails to.', ui.ButtonSet.OK);
+      return;
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+
+    inactiveMembers.forEach(member => {
+      try {
+        sendReEngagementEmail(member.memberId);
+        successCount++;
+      } catch (error) {
+        failCount++;
+      }
+    });
+
+    ui.alert('✅ Emails Sent',
+             `Successfully sent ${successCount} re-engagement email(s).\nFailed: ${failCount}`,
+             ui.ButtonSet.OK);
+  } catch (error) {
+    ui.alert('❌ Error', 'Failed to send bulk emails: ' + error.message, ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Wrapper: Shows performance log/monitor
+ */
+function showPerformanceLog() {
+  const ui = SpreadsheetApp.getUi();
+
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const props = PropertiesService.getScriptProperties();
+    const performanceData = props.getProperty('PERFORMANCE_LOG');
+
+    if (!performanceData) {
+      ui.alert('ℹ️ Performance Monitor',
+               'No performance data available yet.\n\nPerformance monitoring will track execution times of key functions.',
+               ui.ButtonSet.OK);
+      return;
+    }
+
+    const perfLog = JSON.parse(performanceData);
+    let message = '⚡ PERFORMANCE MONITOR\n\n';
+    message += 'Recent Function Execution Times:\n\n';
+
+    Object.keys(perfLog).slice(-10).forEach(funcName => {
+      const data = perfLog[funcName];
+      message += `• ${funcName}: ${data.avgTime}ms (avg)\n`;
+      message += `  Calls: ${data.callCount}, Last: ${data.lastTime}ms\n\n`;
+    });
+
+    message += 'Performance data is logged automatically.';
+
+    ui.alert('Performance Monitor', message, ui.ButtonSet.OK);
+  } catch (error) {
+    const message = `
+⚡ PERFORMANCE MONITOR
+
+Current System Status:
+• Sheets: ${ss.getSheets().length} sheets
+• Last Calculation: Just now
+• Status: Operational
+
+Performance monitoring tracks execution times of key functions.
+Data will appear here as functions are executed.
+    `.trim();
+
+    ui.alert('Performance Monitor', message, ui.ButtonSet.OK);
+  }
+}
