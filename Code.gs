@@ -206,7 +206,7 @@ function createConfigSheet(ss) {
     "Job Titles", "Work Locations", "Units", "Steward Status",
     "Grievance Status", "Grievance Steps", "Grievance Types",
     "Outcomes", "Satisfaction Levels", "Engagement Levels",
-    "Contact Methods", "Committee Types", "Membership Status"
+    "Contact Methods", "Committee Types", "Membership Status", "Office Days"
   ];
 
   config.getRange(1, 1, 1, headers.length).setValues([headers])
@@ -317,11 +317,14 @@ function createConfigSheet(ss) {
   // Column M: Membership Status
   const membershipStatus = ["Active", "Inactive", "On Leave", "Retired"];
 
+  // Column N: Office Days
+  const officeDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
   // Write all data
   const allData = [
     jobTitles, workLocations, units, stewardStatus, grievanceStatus,
     grievanceSteps, grievanceTypes, outcomes, satisfactionLevels,
-    engagementLevels, contactMethods, committeeTypes, membershipStatus
+    engagementLevels, contactMethods, committeeTypes, membershipStatus, officeDays
   ];
 
   for (let i = 0; i < allData.length; i++) {
@@ -391,23 +394,23 @@ function createMemberDirectorySheet(ss) {
 
   sheet.clear();
 
-  // 35 columns (A-AI) - Added grievance snapshot fields
+  // 33 columns (A-AG) - Added grievance snapshot fields
   const headers = [
     // Basic Info (A-F)
     "Member ID", "First Name", "Last Name", "Job Title", "Work Location (Site)", "Unit",
-    // Contact & Role (G-L)
-    "Office Days", "Email Address", "Phone Number", "Is Steward (Y/N)", "Date Joined Union", "Membership Status",
-    // Grievance Metrics (M-R) - AUTO CALCULATED
+    // Contact & Role (G-K)
+    "Office Days", "Email Address", "Phone Number", "Is Steward (Y/N)", "Membership Status",
+    // Grievance Metrics (L-Q) - AUTO CALCULATED
     "Total Grievances Filed", "Active Grievances", "Resolved Grievances",
     "Grievances Won", "Grievances Lost", "Last Grievance Date",
-    // Grievance Snapshot (S-V) - AUTO CALCULATED
+    // Grievance Snapshot (R-U) - AUTO CALCULATED
     "Has Open Grievance?", "# Open Grievances", "Last Grievance Status", "Next Deadline (Soonest)",
-    // Participation (W-AA)
+    // Participation (V-Z)
     "Engagement Level", "Events Attended (Last 12mo)", "Training Sessions Attended",
     "Committee Member", "Preferred Contact Method",
-    // Emergency & Admin (AB-AI)
+    // Emergency & Admin (AA-AF)
     "Emergency Contact Name", "Emergency Contact Phone", "Notes",
-    "Date of Birth", "Hire Date", "Seniority Date",
+    "Date of Birth", "Hire Date",
     "Last Updated", "Updated By"
   ];
 
@@ -779,11 +782,12 @@ function setupDataValidation(ss) {
     { sheet: memberDir, column: "D", range: "A2:A19", name: "Job Title" },      // Job Titles
     { sheet: memberDir, column: "E", range: "B2:B16", name: "Work Location" },  // Locations
     { sheet: memberDir, column: "F", range: "C2:C3", name: "Unit" },            // Units
+    { sheet: memberDir, column: "G", range: "N2:N8", name: "Office Days" },     // Office Days (allows comma-separated values)
     { sheet: memberDir, column: "J", range: "D2:D3", name: "Steward" },         // Is Steward (Y/N)
-    { sheet: memberDir, column: "L", range: "M2:M5", name: "Membership" },      // Membership Status
-    { sheet: memberDir, column: "S", range: "J2:J6", name: "Engagement" },      // Engagement Level (now column S)
-    { sheet: memberDir, column: "V", range: "L2:L8", name: "Committee" },       // Committee Member (now column V) - FIXED: L2:L8 includes all 7 committee types
-    { sheet: memberDir, column: "W", range: "K2:K5", name: "Contact Method" }   // Preferred Contact Method (now column W)
+    { sheet: memberDir, column: "K", range: "M2:M5", name: "Membership" },      // Membership Status (was column L)
+    { sheet: memberDir, column: "R", range: "J2:J6", name: "Engagement" },      // Engagement Level (was column S, now column R)
+    { sheet: memberDir, column: "U", range: "L2:L8", name: "Committee" },       // Committee Member (was column V, now column U)
+    { sheet: memberDir, column: "V", range: "K2:K5", name: "Contact Method" }   // Preferred Contact Method (was column W, now column V)
   ];
 
   validations.forEach(v => {
@@ -1008,16 +1012,16 @@ function recalcAllGrievances() {
  *
  * CROSS-POPULATION: This function reads all grievances for a member from the Grievance Log
  * and updates their Member Directory record with aggregated statistics:
- * - Column M: Total Grievances Filed
- * - Column N: Active Grievances
- * - Column O: Resolved Grievances
- * - Column P: Grievances Won
- * - Column Q: Grievances Lost
- * - Column R: Last Grievance Date
- * - Column S: Has Open Grievance?
- * - Column T: # Open Grievances
- * - Column U: Last Grievance Status
- * - Column V: Next Deadline (Soonest)
+ * - Column L: Total Grievances Filed
+ * - Column M: Active Grievances
+ * - Column N: Resolved Grievances
+ * - Column O: Grievances Won
+ * - Column P: Grievances Lost
+ * - Column Q: Last Grievance Date
+ * - Column R: Has Open Grievance?
+ * - Column S: # Open Grievances
+ * - Column T: Last Grievance Status
+ * - Column U: Next Deadline (Soonest)
  *
  * This ensures the Member Directory always reflects current grievance data from Grievance Log.
  */
@@ -1031,58 +1035,58 @@ function recalcMemberRow(memberSheet, grievanceSheet, row) {
   const lastRow = grievanceSheet.getLastRow();
   if (lastRow < 2) {
     // No grievances found - set all metrics to 0/blank
-    memberSheet.getRange(row, 13).setValue(0); // M: Total Grievances
-    memberSheet.getRange(row, 14).setValue(0); // N: Active Grievances
-    memberSheet.getRange(row, 15).setValue(0); // O: Resolved Grievances
-    memberSheet.getRange(row, 16).setValue(0); // P: Grievances Won
-    memberSheet.getRange(row, 17).setValue(0); // Q: Grievances Lost
-    memberSheet.getRange(row, 18).setValue(""); // R: Last Grievance Date
-    memberSheet.getRange(row, 19).setValue("NO"); // S: Has Open Grievance?
-    memberSheet.getRange(row, 20).setValue(0); // T: # Open Grievances
-    memberSheet.getRange(row, 21).setValue(""); // U: Last Grievance Status
-    memberSheet.getRange(row, 22).setValue(""); // V: Next Deadline (Soonest)
-    memberSheet.getRange(row, 34).setValue(new Date()); // AH: Last Updated
-    memberSheet.getRange(row, 35).setValue("AUTO"); // AI: Updated By
+    memberSheet.getRange(row, 12).setValue(0); // L: Total Grievances
+    memberSheet.getRange(row, 13).setValue(0); // M: Active Grievances
+    memberSheet.getRange(row, 14).setValue(0); // N: Resolved Grievances
+    memberSheet.getRange(row, 15).setValue(0); // O: Grievances Won
+    memberSheet.getRange(row, 16).setValue(0); // P: Grievances Lost
+    memberSheet.getRange(row, 17).setValue(""); // Q: Last Grievance Date
+    memberSheet.getRange(row, 18).setValue("NO"); // R: Has Open Grievance?
+    memberSheet.getRange(row, 19).setValue(0); // S: # Open Grievances
+    memberSheet.getRange(row, 20).setValue(""); // T: Last Grievance Status
+    memberSheet.getRange(row, 21).setValue(""); // U: Next Deadline (Soonest)
+    memberSheet.getRange(row, 32).setValue(new Date()); // AF: Last Updated
+    memberSheet.getRange(row, 33).setValue("AUTO"); // AG: Updated By
     return;
   }
 
   const grievanceData = grievanceSheet.getRange(2, 1, lastRow - 1, 32).getValues();
   const memberGrievances = grievanceData.filter(g => g[1] === memberId); // Column B = Member ID
 
-  // Total Grievances Filed (M)
-  memberSheet.getRange(row, 13).setValue(memberGrievances.length);
+  // Total Grievances Filed (L)
+  memberSheet.getRange(row, 12).setValue(memberGrievances.length);
 
-  // Active Grievances (N) - Filed or Pending Decision status
+  // Active Grievances (M) - Filed or Pending Decision status
   const active = memberGrievances.filter(g => g[4] && (g[4].toString().startsWith("Filed") || g[4] === "Pending Decision")).length;
-  memberSheet.getRange(row, 14).setValue(active);
+  memberSheet.getRange(row, 13).setValue(active);
 
-  // Resolved Grievances (O)
+  // Resolved Grievances (N)
   const resolved = memberGrievances.filter(g => g[4] && g[4].toString().startsWith("Resolved")).length;
-  memberSheet.getRange(row, 15).setValue(resolved);
+  memberSheet.getRange(row, 14).setValue(resolved);
 
-  // Grievances Won (P)
+  // Grievances Won (O)
   const won = memberGrievances.filter(g => g[4] === "Resolved - Won").length;
-  memberSheet.getRange(row, 16).setValue(won);
+  memberSheet.getRange(row, 15).setValue(won);
 
-  // Grievances Lost (Q)
+  // Grievances Lost (P)
   const lost = memberGrievances.filter(g => g[4] === "Resolved - Lost").length;
-  memberSheet.getRange(row, 17).setValue(lost);
+  memberSheet.getRange(row, 16).setValue(lost);
 
-  // Last Grievance Date (R) - Use Date Filed instead of Incident Date
+  // Last Grievance Date (Q) - Use Date Filed instead of Incident Date
   if (memberGrievances.length > 0) {
     const dates = memberGrievances.map(g => g[8]).filter(d => d); // Column I = Date Filed
     if (dates.length > 0) {
       const lastDate = new Date(Math.max(...dates.map(d => new Date(d))));
-      memberSheet.getRange(row, 18).setValue(lastDate);
+      memberSheet.getRange(row, 17).setValue(lastDate);
     } else {
-      memberSheet.getRange(row, 18).setValue("");
+      memberSheet.getRange(row, 17).setValue("");
     }
   } else {
-    memberSheet.getRange(row, 18).setValue("");
+    memberSheet.getRange(row, 17).setValue("");
   }
 
   // ============================================================================
-  // GRIEVANCE SNAPSHOT FIELDS (S-V)
+  // GRIEVANCE SNAPSHOT FIELDS (R-U)
   // ============================================================================
 
   // Get open/active grievances (not resolved)
@@ -1090,13 +1094,13 @@ function recalcMemberRow(memberSheet, grievanceSheet, row) {
     g[4] && !g[4].toString().startsWith("Resolved") && g[4] !== "Draft"
   );
 
-  // Has Open Grievance? (S)
-  memberSheet.getRange(row, 19).setValue(openGrievances.length > 0 ? "YES" : "NO");
+  // Has Open Grievance? (R)
+  memberSheet.getRange(row, 18).setValue(openGrievances.length > 0 ? "YES" : "NO");
 
-  // # Open Grievances (T)
-  memberSheet.getRange(row, 20).setValue(openGrievances.length);
+  // # Open Grievances (S)
+  memberSheet.getRange(row, 19).setValue(openGrievances.length);
 
-  // Last Grievance Status (U) - Most recent grievance by Date Filed
+  // Last Grievance Status (T) - Most recent grievance by Date Filed
   if (memberGrievances.length > 0) {
     // Sort by Date Filed (column I, index 8) descending
     const sortedGrievances = memberGrievances.slice().sort((a, b) => {
@@ -1105,12 +1109,12 @@ function recalcMemberRow(memberSheet, grievanceSheet, row) {
       return dateB - dateA;
     });
     const lastStatus = sortedGrievances[0][4] || ""; // Column E = Status
-    memberSheet.getRange(row, 21).setValue(lastStatus);
+    memberSheet.getRange(row, 20).setValue(lastStatus);
   } else {
-    memberSheet.getRange(row, 21).setValue("");
+    memberSheet.getRange(row, 20).setValue("");
   }
 
-  // Next Deadline (Soonest) (V) - Find earliest Next Action Due from open grievances
+  // Next Deadline (Soonest) (U) - Find earliest Next Action Due from open grievances
   if (openGrievances.length > 0) {
     const deadlines = openGrievances
       .map(g => g[27]) // Column AB = Next Action Due (index 27 in 0-indexed array)
@@ -1118,19 +1122,19 @@ function recalcMemberRow(memberSheet, grievanceSheet, row) {
 
     if (deadlines.length > 0) {
       const soonestDeadline = new Date(Math.min(...deadlines.map(d => new Date(d))));
-      memberSheet.getRange(row, 22).setValue(soonestDeadline);
+      memberSheet.getRange(row, 21).setValue(soonestDeadline);
     } else {
-      memberSheet.getRange(row, 22).setValue("");
+      memberSheet.getRange(row, 21).setValue("");
     }
   } else {
-    memberSheet.getRange(row, 22).setValue("");
+    memberSheet.getRange(row, 21).setValue("");
   }
 
-  // Last Updated (AH)
-  memberSheet.getRange(row, 34).setValue(new Date());
+  // Last Updated (AF)
+  memberSheet.getRange(row, 32).setValue(new Date());
 
-  // Updated By (AI)
-  memberSheet.getRange(row, 35).setValue("AUTO");
+  // Updated By (AG)
+  memberSheet.getRange(row, 33).setValue("AUTO");
 }
 
 /**
@@ -2373,36 +2377,34 @@ function SEED_20K_MEMBERS() {
         jobTitles[Math.floor(Math.random() * jobTitles.length)],
         locations[Math.floor(Math.random() * locations.length)],
         units[Math.floor(Math.random() * units.length)],
-        // G-L: Contact & Role
+        // G-K: Contact & Role
         "Mon-Fri",
         `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mass.gov`,
         `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
         isSteward,
-        randomDate(2020, 2024),
         membershipStatus[Math.floor(Math.random() * membershipStatus.length)],
-        // M-R: Grievance Metrics (AUTO CALCULATED - leave blank)
+        // L-Q: Grievance Metrics (AUTO CALCULATED - leave blank)
         "", "", "", "", "", "",
-        // S-V: Grievance Snapshot (AUTO CALCULATED - leave blank)
+        // R-U: Grievance Snapshot (AUTO CALCULATED - leave blank)
         "", "", "", "",
-        // W-AA: Participation
+        // V-Z: Participation
         engagementLevels[Math.floor(Math.random() * engagementLevels.length)],
         Math.floor(Math.random() * 25),
         Math.floor(Math.random() * 15),
         isSteward === "Yes" ? committees[Math.floor(Math.random() * (committees.length - 1))] : "None",
         contactMethods[Math.floor(Math.random() * contactMethods.length)],
-        // AB-AI: Emergency & Admin
+        // AA-AG: Emergency & Admin
         `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
         `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
         "",
         randomDate(1960, 2000),
-        randomDate(2015, 2024),
         randomDate(2015, 2024),
         new Date(),
         "SEED_SCRIPT"
       ]);
     }
 
-    sheet.getRange(2 + (batch * BATCH), 1, BATCH, 35).setValues(data);
+    sheet.getRange(2 + (batch * BATCH), 1, BATCH, 33).setValues(data);
     SpreadsheetApp.flush();
   }
 
