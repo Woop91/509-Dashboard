@@ -74,6 +74,34 @@ Six professionally designed charts that update automatically:
 5. **Top 10 Member Locations** - Bar chart of member workplace distribution
 6. **Resolved Outcomes** - Donut chart showing Won/Lost/Settled/Withdrawn
 
+### 📊 NEW: Advanced Analytics Tabs
+Four dedicated analytical tabs with comprehensive insights:
+
+**1. Trends & Timeline**
+- Monthly filing trends with historical data
+- Average filings per month calculations
+- Peak month identification
+- Resolution time analysis (average, fastest, slowest)
+- Last 12 months filing trends visualization
+
+**2. Performance Metrics**
+- Resolution performance (total resolved, win rate, settlement rate, withdrawal rate)
+- Efficiency metrics (active grievances, overdue rate, on-time rate)
+- Outcome analysis by step with win rates
+- Step progression analysis
+
+**3. Location Analytics**
+- Top 15 locations by grievance volume
+- Members and grievances by location
+- Active vs resolved cases by location
+- Win rate comparison across locations
+
+**4. Type Analysis**
+- Comprehensive breakdown by grievance type
+- Total, active, and resolved counts per type
+- Win rate and settlement rate by type
+- Identify high-volume grievance categories
+
 ### 🎨 Professional Design
 - Color-coded sections with clear headers
 - Number formatting with thousands separators
@@ -301,14 +329,96 @@ Historical snapshot tracking for trend analysis:
 
 ---
 
-### 7. **Archive** Sheet
+### 7. **Trends & Timeline** Sheet 🆕
+
+**Automatic time-based analysis of your grievance data:**
+
+**Monthly Trends Section:**
+- Total months with data
+- Average filings per month
+- Peak month identification
+
+**Resolution Time Analysis:**
+- Average resolution time across all cases
+- Fastest resolution time
+- Slowest resolution time
+
+**Filing Trends:**
+- Last 12 months breakdown
+- Monthly filing counts
+- Trend visualization data
+
+*Auto-populated when you run "Rebuild Dashboard" or "Rebuild Analytics" menu*
+
+---
+
+### 8. **Performance Metrics** Sheet 🆕
+
+**Comprehensive KPI analysis for performance tracking:**
+
+**Resolution Performance:**
+- Total resolved grievances
+- Win rate percentage (highlighted)
+- Settlement rate percentage
+- Withdrawal rate percentage
+
+**Efficiency Metrics:**
+- Active grievances count
+- Overdue rate (color-coded: red if overdue)
+- On-time rate
+
+**Outcome Analysis by Step:**
+- Step I, II, III breakdown
+- Total cases and win rates per step
+- Performance comparison across steps
+
+*Ideal for monthly reporting and performance reviews*
+
+---
+
+### 9. **Location Analytics** Sheet 🆕
+
+**Geographic breakdown of grievances and member activity:**
+
+**Top 15 Locations Table:**
+- Location name
+- Member count
+- Total grievances filed
+- Active grievances
+- Resolved grievances
+- Win rate percentage
+
+*Helps identify problem locations and resource allocation needs*
+
+---
+
+### 10. **Type Analysis** Sheet 🆕
+
+**Deep dive into grievance categories and outcomes:**
+
+**Type Breakdown Table:**
+- All grievance types
+- Total count per type
+- Active cases per type
+- Resolved cases per type
+
+**Success Rate Analysis:**
+- Win rate by grievance type
+- Settlement rate by grievance type
+- Identify which types are most successful
+
+*Use this to focus on high-volume or low-success grievance types*
+
+---
+
+### 11. **Archive** Sheet
 
 Storage for resolved grievances older than 90 days.
 *Future feature - manual archiving currently*
 
 ---
 
-### 8. **Diagnostics** Sheet
+### 12. **Diagnostics** Sheet
 
 System health checks:
 - Data validation status
@@ -602,6 +712,13 @@ This system enforces **Article 23A** grievance procedure deadlines:
    ├─ Recalc All Grievances (fix calculations)
    ├─ Recalc All Members (update metrics)
    └─ Rebuild Dashboard (refresh charts)
+
+📈 Rebuild Analytics 🆕
+   ├─ Rebuild All Tabs (refresh all analytics)
+   ├─ Rebuild Trends & Timeline
+   ├─ Rebuild Performance Metrics
+   ├─ Rebuild Location Analytics
+   └─ Rebuild Type Analysis
 
 ⚙️ Utilities
    ├─ Sort by Priority (organize grievance list)

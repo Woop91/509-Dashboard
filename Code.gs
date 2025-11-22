@@ -25,6 +25,12 @@
  * - All calculations done in code (no formula rows)
  * - Automated deadline and status tracking
  *
+ * NEW ANALYTICAL TABS:
+ * - Trends & Timeline: Monthly filing trends, resolution time analysis, 12-month trends
+ * - Performance Metrics: Win rates, settlement rates, efficiency metrics, step-by-step analysis
+ * - Location Analytics: Grievances by location, location performance comparisons
+ * - Type Analysis: Breakdown by grievance type, success rates, resolution times by type
+ *
  * VISUAL ENHANCEMENTS:
  * - Professional color scheme with section headers
  * - Number formatting with thousands separators
@@ -51,6 +57,10 @@ const SHEETS = {
   DASHBOARD: "Dashboard",
   STEWARD_WORKLOAD: "Steward Workload",
   ANALYTICS: "Analytics Data",
+  TRENDS: "Trends & Timeline",
+  PERFORMANCE: "Performance Metrics",
+  LOCATION: "Location Analytics",
+  TYPE_ANALYSIS: "Type Analysis",
   ARCHIVE: "Archive",
   DIAGNOSTICS: "Diagnostics"
 };
@@ -128,6 +138,18 @@ function CREATE_509_DASHBOARD() {
     SpreadsheetApp.flush();
 
     createAnalyticsSheet(ss);
+    SpreadsheetApp.flush();
+
+    createTrendsSheet(ss);
+    SpreadsheetApp.flush();
+
+    createPerformanceSheet(ss);
+    SpreadsheetApp.flush();
+
+    createLocationSheet(ss);
+    SpreadsheetApp.flush();
+
+    createTypeAnalysisSheet(ss);
     SpreadsheetApp.flush();
 
     createArchiveSheet(ss);
@@ -500,6 +522,143 @@ function createAnalyticsSheet(ss) {
 }
 
 // ============================================================================
+// TRENDS & TIMELINE SHEET
+// ============================================================================
+
+function createTrendsSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.TRENDS);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.TRENDS);
+
+  sheet.clear();
+
+  // Title
+  sheet.getRange("A1:L1").merge()
+    .setValue("TRENDS & TIMELINE ANALYSIS")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.HEADER_BLUE)
+    .setFontColor("white");
+
+  // Section headers
+  sheet.getRange("A3").setValue("MONTHLY TRENDS").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_GREEN).setFontColor("white");
+
+  sheet.getRange("A15").setValue("RESOLUTION TIME ANALYSIS").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
+
+  sheet.getRange("A25").setValue("FILING TRENDS").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_PURPLE).setFontColor("white");
+
+  sheet.setRowHeight(1, 40);
+  sheet.setColumnWidth(1, 200);
+}
+
+// ============================================================================
+// PERFORMANCE METRICS SHEET
+// ============================================================================
+
+function createPerformanceSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.PERFORMANCE);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.PERFORMANCE);
+
+  sheet.clear();
+
+  // Title
+  sheet.getRange("A1:L1").merge()
+    .setValue("PERFORMANCE METRICS & KPIs")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.HEADER_GREEN)
+    .setFontColor("white");
+
+  // Section headers
+  sheet.getRange("A3").setValue("RESOLUTION PERFORMANCE").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+
+  sheet.getRange("E3").setValue("EFFICIENCY METRICS").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
+
+  sheet.getRange("A13").setValue("OUTCOME ANALYSIS").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_RED).setFontColor("white");
+
+  sheet.getRange("A23").setValue("STEP PROGRESSION ANALYSIS").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_PURPLE).setFontColor("white");
+
+  sheet.setRowHeight(1, 40);
+  sheet.setColumnWidth(1, 250);
+  sheet.setColumnWidth(2, 120);
+}
+
+// ============================================================================
+// LOCATION ANALYTICS SHEET
+// ============================================================================
+
+function createLocationSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.LOCATION);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.LOCATION);
+
+  sheet.clear();
+
+  // Title
+  sheet.getRange("A1:L1").merge()
+    .setValue("LOCATION ANALYTICS")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.HEADER_PURPLE)
+    .setFontColor("white");
+
+  // Section headers
+  sheet.getRange("A3").setValue("GRIEVANCES BY LOCATION").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+
+  sheet.getRange("A15").setValue("LOCATION PERFORMANCE METRICS").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_GREEN).setFontColor("white");
+
+  sheet.setRowHeight(1, 40);
+  sheet.setColumnWidth(1, 250);
+}
+
+// ============================================================================
+// TYPE ANALYSIS SHEET
+// ============================================================================
+
+function createTypeAnalysisSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.TYPE_ANALYSIS);
+
+  sheet.clear();
+
+  // Title
+  sheet.getRange("A1:L1").merge()
+    .setValue("GRIEVANCE TYPE ANALYSIS")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.HEADER_RED)
+    .setFontColor("white");
+
+  // Section headers
+  sheet.getRange("A3").setValue("TYPE BREAKDOWN").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+
+  sheet.getRange("E3").setValue("SUCCESS RATE BY TYPE").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_GREEN).setFontColor("white");
+
+  sheet.getRange("A15").setValue("TYPE TRENDS OVER TIME").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
+
+  sheet.getRange("A27").setValue("AVERAGE RESOLUTION TIME BY TYPE").setFontWeight("bold").setFontSize(12)
+    .setBackground(COLORS.HEADER_PURPLE).setFontColor("white");
+
+  sheet.setRowHeight(1, 40);
+  sheet.setColumnWidth(1, 250);
+  sheet.setColumnWidth(2, 120);
+}
+
+// ============================================================================
 // ARCHIVE SHEET
 // ============================================================================
 
@@ -560,7 +719,7 @@ function setupDataValidation(ss) {
     { sheet: memberDir, column: "J", range: "D2:D3", name: "Steward" },         // Is Steward (Y/N)
     { sheet: memberDir, column: "L", range: "M2:M5", name: "Membership" },      // Membership Status
     { sheet: memberDir, column: "S", range: "J2:J6", name: "Engagement" },      // Engagement Level (now column S)
-    { sheet: memberDir, column: "V", range: "L2:L7", name: "Committee" },       // Committee Member (now column V)
+    { sheet: memberDir, column: "V", range: "L2:L8", name: "Committee" },       // Committee Member (now column V) - FIXED: L2:L8 includes all 7 committee types
     { sheet: memberDir, column: "W", range: "K2:K5", name: "Contact Method" }   // Preferred Contact Method (now column W)
   ];
 
@@ -984,6 +1143,19 @@ function rebuildDashboard() {
     createDashboardCharts();
     SpreadsheetApp.flush();
 
+    // Rebuild new analytical tabs
+    rebuildTrendsSheet();
+    SpreadsheetApp.flush();
+
+    rebuildPerformanceSheet();
+    SpreadsheetApp.flush();
+
+    rebuildLocationSheet();
+    SpreadsheetApp.flush();
+
+    rebuildTypeAnalysisSheet();
+    SpreadsheetApp.flush();
+
   } catch (error) {
     Logger.log('Error in rebuildDashboard: ' + error.toString());
     SpreadsheetApp.getUi().alert('⚠️ Dashboard rebuild error:\n\n' + error.message);
@@ -1352,6 +1524,353 @@ function createDashboardCharts() {
 }
 
 // ============================================================================
+// NEW TAB DATA POPULATION FUNCTIONS
+// ============================================================================
+
+/**
+ * Rebuilds the Trends & Timeline sheet with current data
+ */
+function rebuildTrendsSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const trendsSheet = ss.getSheetByName(SHEETS.TRENDS);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!trendsSheet || !grievanceSheet) return;
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  if (grievanceData.length <= 1) {
+    trendsSheet.getRange("A4").setValue("No data available yet.");
+    return;
+  }
+
+  // Calculate monthly filing trends
+  const monthlyData = {};
+  const today = new Date();
+
+  grievanceData.forEach((r, i) => {
+    if (i === 0) return;
+    const filedDate = r[8]; // Column I: Date Filed
+    if (filedDate) {
+      const date = new Date(filedDate);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
+    }
+  });
+
+  // Monthly Trends KPIs
+  trendsSheet.getRange("A4").setValue("Total Months with Data:").setFontWeight("bold");
+  trendsSheet.getRange("B4").setValue(Object.keys(monthlyData).length).setNumberFormat("#,##0");
+
+  trendsSheet.getRange("A5").setValue("Average Filings per Month:").setFontWeight("bold");
+  const avgPerMonth = Object.keys(monthlyData).length > 0
+    ? (Object.values(monthlyData).reduce((a, b) => a + b, 0) / Object.keys(monthlyData).length).toFixed(1)
+    : 0;
+  trendsSheet.getRange("B5").setValue(avgPerMonth).setNumberFormat("#,##0.0");
+
+  trendsSheet.getRange("A6").setValue("Peak Month:").setFontWeight("bold");
+  const peakMonth = Object.entries(monthlyData).sort((a, b) => b[1] - a[1])[0];
+  trendsSheet.getRange("B6").setValue(peakMonth ? `${peakMonth[0]} (${peakMonth[1]} filings)` : "N/A");
+
+  // Resolution Time Analysis
+  const resolutionTimes = [];
+  grievanceData.forEach((r, i) => {
+    if (i === 0 || !r[4] || !r[4].toString().startsWith("Resolved")) return;
+    const filed = r[8]; // Date Filed
+    const resolved = r[27]; // Last Updated (approximation)
+    if (filed && resolved) {
+      const days = Math.floor((new Date(resolved) - new Date(filed)) / (1000 * 60 * 60 * 24));
+      if (days > 0) resolutionTimes.push(days);
+    }
+  });
+
+  trendsSheet.getRange("A16").setValue("Average Resolution Time:").setFontWeight("bold");
+  const avgResolution = resolutionTimes.length > 0
+    ? (resolutionTimes.reduce((a, b) => a + b, 0) / resolutionTimes.length).toFixed(1)
+    : "N/A";
+  trendsSheet.getRange("B16").setValue(`${avgResolution} days`);
+
+  trendsSheet.getRange("A17").setValue("Fastest Resolution:").setFontWeight("bold");
+  trendsSheet.getRange("B17").setValue(resolutionTimes.length > 0 ? `${Math.min(...resolutionTimes)} days` : "N/A");
+
+  trendsSheet.getRange("A18").setValue("Slowest Resolution:").setFontWeight("bold");
+  trendsSheet.getRange("B18").setValue(resolutionTimes.length > 0 ? `${Math.max(...resolutionTimes)} days` : "N/A");
+
+  // Filing Trends (Last 12 months)
+  const last12Months = {};
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    last12Months[key] = 0;
+  }
+
+  Object.keys(monthlyData).forEach(month => {
+    if (last12Months.hasOwnProperty(month)) {
+      last12Months[month] = monthlyData[month];
+    }
+  });
+
+  trendsSheet.getRange("A26").setValue("Month").setFontWeight("bold");
+  trendsSheet.getRange("B26").setValue("Filings").setFontWeight("bold");
+
+  let row = 27;
+  Object.entries(last12Months).forEach(([month, count]) => {
+    trendsSheet.getRange(`A${row}`).setValue(month);
+    trendsSheet.getRange(`B${row}`).setValue(count).setNumberFormat("#,##0");
+    row++;
+  });
+
+  // Apply formatting
+  trendsSheet.getRange("A4:B18").setBackground(COLORS.LIGHT_GRAY);
+  trendsSheet.getRange("B4:B18").setHorizontalAlignment("right");
+}
+
+/**
+ * Rebuilds the Performance Metrics sheet
+ */
+function rebuildPerformanceSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const perfSheet = ss.getSheetByName(SHEETS.PERFORMANCE);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!perfSheet || !grievanceSheet) return;
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  if (grievanceData.length <= 1) {
+    perfSheet.getRange("A4").setValue("No data available yet.");
+    return;
+  }
+
+  // Resolution Performance
+  const resolved = grievanceData.filter((r, i) => i > 0 && r[4] && r[4].toString().startsWith("Resolved"));
+  const won = resolved.filter(r => r[4] === "Resolved - Won");
+  const lost = resolved.filter(r => r[4] === "Resolved - Lost");
+  const settled = resolved.filter(r => r[4] === "Resolved - Settled");
+  const withdrawn = resolved.filter(r => r[4] === "Resolved - Withdrawn");
+
+  perfSheet.getRange("A4").setValue("Total Resolved:").setFontWeight("bold");
+  perfSheet.getRange("B4").setValue(resolved.length).setNumberFormat("#,##0").setHorizontalAlignment("right");
+
+  perfSheet.getRange("A5").setValue("Win Rate:").setFontWeight("bold");
+  const winRate = resolved.length > 0 ? ((won.length / resolved.length) * 100).toFixed(1) + "%" : "N/A";
+  perfSheet.getRange("B5").setValue(winRate).setHorizontalAlignment("right").setFontWeight("bold")
+    .setBackground("#E8F5E9");
+
+  perfSheet.getRange("A6").setValue("Settlement Rate:").setFontWeight("bold");
+  const settleRate = resolved.length > 0 ? ((settled.length / resolved.length) * 100).toFixed(1) + "%" : "N/A";
+  perfSheet.getRange("B6").setValue(settleRate).setHorizontalAlignment("right");
+
+  perfSheet.getRange("A7").setValue("Withdrawal Rate:").setFontWeight("bold");
+  const withdrawRate = resolved.length > 0 ? ((withdrawn.length / resolved.length) * 100).toFixed(1) + "%" : "N/A";
+  perfSheet.getRange("B7").setValue(withdrawRate).setHorizontalAlignment("right");
+
+  // Efficiency Metrics
+  const active = grievanceData.filter((r, i) => i > 0 && r[4] && r[4].toString().startsWith("Filed"));
+  const today = new Date();
+  let overdue = 0;
+
+  active.forEach(r => {
+    const nextDeadline = getNextDeadlineFromRow(r);
+    if (nextDeadline && nextDeadline < today) overdue++;
+  });
+
+  perfSheet.getRange("E4").setValue("Active Grievances:").setFontWeight("bold");
+  perfSheet.getRange("F4").setValue(active.length).setNumberFormat("#,##0").setHorizontalAlignment("right");
+
+  perfSheet.getRange("E5").setValue("Overdue Rate:").setFontWeight("bold");
+  const overdueRate = active.length > 0 ? ((overdue / active.length) * 100).toFixed(1) + "%" : "N/A";
+  perfSheet.getRange("F5").setValue(overdueRate).setHorizontalAlignment("right")
+    .setBackground(overdue > 0 ? COLORS.OVERDUE : COLORS.ON_TRACK)
+    .setFontColor("white").setFontWeight("bold");
+
+  perfSheet.getRange("E6").setValue("On-Time Rate:").setFontWeight("bold");
+  const onTimeRate = active.length > 0 ? (((active.length - overdue) / active.length) * 100).toFixed(1) + "%" : "N/A";
+  perfSheet.getRange("F6").setValue(onTimeRate).setHorizontalAlignment("right");
+
+  // Outcome Analysis by Step
+  perfSheet.getRange("A14:C14").setFontWeight("bold").setBackground(COLORS.HEADER_RED).setFontColor("white");
+  perfSheet.getRange("A14").setValue("Step");
+  perfSheet.getRange("B14").setValue("Total");
+  perfSheet.getRange("C14").setValue("Win Rate");
+
+  const stepOutcomes = {};
+  ["Step I - Immediate Supervisor", "Step II - Agency Head", "Step III - Human Resources"].forEach(step => {
+    const stepGrievances = resolved.filter(r => r[5] === step);
+    const stepWon = stepGrievances.filter(r => r[4] === "Resolved - Won");
+    stepOutcomes[step] = {
+      total: stepGrievances.length,
+      winRate: stepGrievances.length > 0 ? ((stepWon.length / stepGrievances.length) * 100).toFixed(1) + "%" : "N/A"
+    };
+  });
+
+  let row = 15;
+  Object.entries(stepOutcomes).forEach(([step, data]) => {
+    perfSheet.getRange(`A${row}`).setValue(step);
+    perfSheet.getRange(`B${row}`).setValue(data.total).setNumberFormat("#,##0");
+    perfSheet.getRange(`C${row}`).setValue(data.winRate);
+    row++;
+  });
+
+  // Apply formatting
+  perfSheet.getRange("A4:B7").setBackground(COLORS.LIGHT_GRAY);
+  perfSheet.getRange("E4:F6").setBackground(COLORS.LIGHT_GRAY);
+  perfSheet.getRange("A15:C17").setBackground(COLORS.LIGHT_GRAY);
+}
+
+/**
+ * Rebuilds the Location Analytics sheet
+ */
+function rebuildLocationSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const locSheet = ss.getSheetByName(SHEETS.LOCATION);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!locSheet || !memberSheet || !grievanceSheet) return;
+
+  const memberData = memberSheet.getDataRange().getValues();
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+
+  if (memberData.length <= 1) {
+    locSheet.getRange("A4").setValue("No data available yet.");
+    return;
+  }
+
+  // Count members and grievances by location
+  const locationStats = {};
+
+  memberData.forEach((r, i) => {
+    if (i === 0) return;
+    const location = r[4]; // Column E: Work Location
+    const memberId = r[0];
+
+    if (!locationStats[location]) {
+      locationStats[location] = { members: 0, grievances: 0, active: 0, resolved: 0, won: 0 };
+    }
+    locationStats[location].members++;
+
+    // Count grievances for this member
+    const memberGrievances = grievanceData.filter((g, gi) => gi > 0 && g[1] === memberId);
+    locationStats[location].grievances += memberGrievances.length;
+    locationStats[location].active += memberGrievances.filter(g => g[4] && g[4].toString().startsWith("Filed")).length;
+    locationStats[location].resolved += memberGrievances.filter(g => g[4] && g[4].toString().startsWith("Resolved")).length;
+    locationStats[location].won += memberGrievances.filter(g => g[4] === "Resolved - Won").length;
+  });
+
+  // Headers
+  locSheet.getRange("A4:F4").setFontWeight("bold").setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+  locSheet.getRange("A4").setValue("Location");
+  locSheet.getRange("B4").setValue("Members");
+  locSheet.getRange("C4").setValue("Total Grievances");
+  locSheet.getRange("D4").setValue("Active");
+  locSheet.getRange("E4").setValue("Resolved");
+  locSheet.getRange("F4").setValue("Win Rate");
+
+  // Sort by grievance count
+  const sortedLocations = Object.entries(locationStats)
+    .sort((a, b) => b[1].grievances - a[1].grievances)
+    .slice(0, 15); // Top 15 locations
+
+  let row = 5;
+  sortedLocations.forEach(([location, stats]) => {
+    const winRate = stats.resolved > 0 ? ((stats.won / stats.resolved) * 100).toFixed(1) + "%" : "N/A";
+
+    locSheet.getRange(`A${row}`).setValue(location);
+    locSheet.getRange(`B${row}`).setValue(stats.members).setNumberFormat("#,##0");
+    locSheet.getRange(`C${row}`).setValue(stats.grievances).setNumberFormat("#,##0");
+    locSheet.getRange(`D${row}`).setValue(stats.active).setNumberFormat("#,##0");
+    locSheet.getRange(`E${row}`).setValue(stats.resolved).setNumberFormat("#,##0");
+    locSheet.getRange(`F${row}`).setValue(winRate);
+    row++;
+  });
+
+  locSheet.getRange(`A5:F${row-1}`).setBackground(COLORS.LIGHT_GRAY);
+  locSheet.getRange(`B5:F${row-1}`).setHorizontalAlignment("right");
+
+  locSheet.setColumnWidth(1, 250);
+}
+
+/**
+ * Rebuilds the Type Analysis sheet
+ */
+function rebuildTypeAnalysisSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const typeSheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!typeSheet || !grievanceSheet) return;
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  if (grievanceData.length <= 1) {
+    typeSheet.getRange("A4").setValue("No data available yet.");
+    return;
+  }
+
+  // Analyze by type
+  const typeStats = {};
+
+  grievanceData.forEach((r, i) => {
+    if (i === 0) return;
+    const type = r[23]; // Column X: Grievance Type
+    if (!type) return;
+
+    if (!typeStats[type]) {
+      typeStats[type] = { total: 0, active: 0, resolved: 0, won: 0, lost: 0, settled: 0 };
+    }
+
+    typeStats[type].total++;
+    const status = r[4];
+    if (status && status.toString().startsWith("Filed")) typeStats[type].active++;
+    if (status && status.toString().startsWith("Resolved")) {
+      typeStats[type].resolved++;
+      if (status === "Resolved - Won") typeStats[type].won++;
+      if (status === "Resolved - Lost") typeStats[type].lost++;
+      if (status === "Resolved - Settled") typeStats[type].settled++;
+    }
+  });
+
+  // Type Breakdown
+  typeSheet.getRange("A4:D4").setFontWeight("bold").setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+  typeSheet.getRange("A4").setValue("Grievance Type");
+  typeSheet.getRange("B4").setValue("Total");
+  typeSheet.getRange("C4").setValue("Active");
+  typeSheet.getRange("D4").setValue("Resolved");
+
+  const sortedTypes = Object.entries(typeStats).sort((a, b) => b[1].total - a[1].total);
+
+  let row = 5;
+  sortedTypes.forEach(([type, stats]) => {
+    typeSheet.getRange(`A${row}`).setValue(type);
+    typeSheet.getRange(`B${row}`).setValue(stats.total).setNumberFormat("#,##0");
+    typeSheet.getRange(`C${row}`).setValue(stats.active).setNumberFormat("#,##0");
+    typeSheet.getRange(`D${row}`).setValue(stats.resolved).setNumberFormat("#,##0");
+    row++;
+  });
+
+  typeSheet.getRange(`A5:D${row-1}`).setBackground(COLORS.LIGHT_GRAY);
+  typeSheet.getRange(`B5:D${row-1}`).setHorizontalAlignment("right");
+
+  // Success Rate by Type
+  typeSheet.getRange("E4:G4").setFontWeight("bold").setBackground(COLORS.HEADER_GREEN).setFontColor("white");
+  typeSheet.getRange("E4").setValue("Grievance Type");
+  typeSheet.getRange("F4").setValue("Win Rate");
+  typeSheet.getRange("G4").setValue("Settlement Rate");
+
+  row = 5;
+  sortedTypes.forEach(([type, stats]) => {
+    const winRate = stats.resolved > 0 ? ((stats.won / stats.resolved) * 100).toFixed(1) + "%" : "N/A";
+    const settleRate = stats.resolved > 0 ? ((stats.settled / stats.resolved) * 100).toFixed(1) + "%" : "N/A";
+
+    typeSheet.getRange(`E${row}`).setValue(type.substring(0, 30));
+    typeSheet.getRange(`F${row}`).setValue(winRate);
+    typeSheet.getRange(`G${row}`).setValue(settleRate);
+    row++;
+  });
+
+  typeSheet.getRange(`E5:G${row-1}`).setBackground(COLORS.LIGHT_GRAY);
+  typeSheet.getRange(`F5:G${row-1}`).setHorizontalAlignment("right");
+}
+
+// ============================================================================
 // PRIORITY SORTING
 // ============================================================================
 
@@ -1690,6 +2209,13 @@ function onOpen() {
       .addItem('Recalc All Grievances', 'recalcAllGrievances')
       .addItem('Recalc All Members', 'recalcAllMembers')
       .addItem('Rebuild Dashboard', 'rebuildDashboard'))
+    .addSubMenu(ui.createMenu('📈 Rebuild Analytics')
+      .addItem('Rebuild All Tabs', 'rebuildDashboard')
+      .addSeparator()
+      .addItem('Rebuild Trends & Timeline', 'rebuildTrendsSheet')
+      .addItem('Rebuild Performance Metrics', 'rebuildPerformanceSheet')
+      .addItem('Rebuild Location Analytics', 'rebuildLocationSheet')
+      .addItem('Rebuild Type Analysis', 'rebuildTypeAnalysisSheet'))
     .addSubMenu(ui.createMenu('⚙️ Utilities')
       .addItem('Sort by Priority', 'sortGrievancesByPriority')
       .addItem('Setup Triggers', 'setupTriggers'))
