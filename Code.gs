@@ -310,21 +310,19 @@ function createMemberDirectorySheet(ss) {
 
   sheet.clear();
 
-  // 35 columns with enhanced tracking
+  // 31 columns (A-AE) per spec
   const headers = [
     // Basic Info (A-F)
-    "Member ID", "First Name", "Last Name", "Job Title", "Work Location", "Unit",
-    // Contact & Role (G-M)
-    "Office Days", "Email Address", "Phone Number", "Is Steward", "Date Joined Union",
-    "Membership Status", "Engagement Level",
-    // Grievance Metrics (N-T) - AUTO CALCULATED
-    "Total Grievances", "Active Grievances", "Resolved Grievances",
-    "Grievances Won", "Grievances Lost", "Last Grievance Date", "Win Rate %",
-    // Derived Fields (U-X) - AUTO CALCULATED
-    "Has Open Grievance?", "Current Grievance Status", "Next Deadline", "Days to Deadline",
-    // Participation (Y-AB)
-    "Events Attended (12mo)", "Training Sessions", "Committee Member", "Preferred Contact",
-    // Emergency & Admin (AC-AI)
+    "Member ID", "First Name", "Last Name", "Job Title", "Work Location (Site)", "Unit",
+    // Contact & Role (G-L)
+    "Office Days", "Email Address", "Phone Number", "Is Steward (Y/N)", "Date Joined Union", "Membership Status",
+    // Grievance Metrics (M-R) - AUTO CALCULATED
+    "Total Grievances Filed", "Active Grievances", "Resolved Grievances",
+    "Grievances Won", "Grievances Lost", "Last Grievance Date",
+    // Participation (S-W)
+    "Engagement Level", "Events Attended (Last 12mo)", "Training Sessions Attended",
+    "Committee Member", "Preferred Contact Method",
+    // Emergency & Admin (X-AE)
     "Emergency Contact Name", "Emergency Contact Phone", "Notes",
     "Date of Birth", "Hire Date", "Seniority Date",
     "Last Updated", "Updated By"
@@ -346,10 +344,11 @@ function createMemberDirectorySheet(ss) {
   sheet.setColumnWidth(4, 200);  // Job Title
   sheet.setColumnWidth(5, 220);  // Work Location
   sheet.setColumnWidth(8, 220);  // Email
+  sheet.setColumnWidth(25, 300); // Notes
 
-  // Color-code derived field columns (light gray background)
-  const derivedCols = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]; // N through X
-  derivedCols.forEach(col => {
+  // Color-code auto-calculated columns (M-R and AD)
+  const autoCols = [13, 14, 15, 16, 17, 18, 30]; // M-R (grievance metrics) and AD (Last Updated)
+  autoCols.forEach(col => {
     sheet.getRange(1, col).setBackground(COLORS.HEADER_GREEN);
   });
 }
@@ -365,24 +364,21 @@ function createGrievanceLogSheet(ss) {
 
     sheet.clear();
 
-    // 34 columns with enhanced deadline tracking
+    // 28 columns (A-AB) per spec
     const headers = [
       // Basic Info (A-F)
       "Grievance ID", "Member ID", "First Name", "Last Name", "Status", "Current Step",
       // Incident & Filing (G-J) - H, J auto-calculated
-      "Incident Date", "Filing Deadline", "Date Filed", "Step I Decision Due",
-      // Step I (K-N) - M auto-calculated
-      "Step I Decision Date", "Step I Outcome", "Step II Appeal Deadline", "Step II Filed Date",
-      // Step II (O-R) - O auto-calculated
-      "Step II Decision Due", "Step II Decision Date", "Step II Outcome", "Step III Appeal Deadline",
+      "Incident Date", "Filing Deadline (21d)", "Date Filed (Step I)", "Step I Decision Due (30d)",
+      // Step I (K-M) - M auto-calculated
+      "Step I Decision Date", "Step I Outcome", "Step II Appeal Deadline (10d)",
+      // Step II (N-R) - O, R auto-calculated
+      "Step II Filed Date", "Step II Decision Due (30d)", "Step II Decision Date", "Step II Outcome", "Step III Appeal Deadline (10d)",
       // Step III & Beyond (S-V)
       "Step III Filed Date", "Step III Decision Date", "Mediation Date", "Arbitration Date",
       // Details (W-Z)
       "Final Outcome", "Grievance Type", "Description", "Representative",
-      // Derived Fields (AA-AF) - AUTO CALCULATED
-      "Days Open", "Days to Next Deadline", "Is Overdue?", "Priority Score",
-      "Assigned Steward", "Steward Contact",
-      // Admin (AG-AH)
+      // Admin (AA-AB)
       "Notes", "Last Updated"
     ];
 
@@ -396,30 +392,21 @@ function createGrievanceLogSheet(ss) {
 
     sheet.setFrozenRows(1);
 
-    // Set column widths (do this BEFORE accessing ranges)
+    // Set column widths
     try {
       sheet.setColumnWidth(1, 120);  // Grievance ID
       sheet.setColumnWidth(2, 110);  // Member ID
       sheet.setColumnWidth(25, 300); // Description (Column Y)
-      sheet.setColumnWidth(29, 250); // Description text
-      sheet.setColumnWidth(33, 300); // Notes (Column AG)
+      sheet.setColumnWidth(27, 300); // Notes (Column AA)
     } catch (widthError) {
       Logger.log('Column width error (non-critical): ' + widthError.toString());
     }
 
-    // Color-code auto-calculated deadline columns
-    const deadlineCols = [8, 10, 13, 15, 18]; // Filing Deadline, Step I Due, Step II Appeal, Step II Due, Step III Appeal
-    deadlineCols.forEach(col => {
+    // Color-code auto-calculated deadline columns (H, J, M, O, R, AB)
+    const autoCols = [8, 10, 13, 15, 18, 28]; // Filing Deadline, Step I Due, Step II Appeal, Step II Due, Step III Appeal, Last Updated
+    autoCols.forEach(col => {
       if (col <= headers.length) {
         sheet.getRange(1, col).setBackground(COLORS.HEADER_ORANGE);
-      }
-    });
-
-    // Color-code derived fields
-    const derivedCols = [27, 28, 29, 30, 31, 32]; // Days Open through Steward Contact
-    derivedCols.forEach(col => {
-      if (col <= headers.length) {
-        sheet.getRange(1, col).setBackground(COLORS.HEADER_GREEN);
       }
     });
   } catch (error) {
@@ -570,11 +557,11 @@ function setupDataValidation(ss) {
     { sheet: memberDir, column: "D", range: "A2:A19", name: "Job Title" },      // Job Titles
     { sheet: memberDir, column: "E", range: "B2:B16", name: "Work Location" },  // Locations
     { sheet: memberDir, column: "F", range: "C2:C3", name: "Unit" },            // Units
-    { sheet: memberDir, column: "J", range: "D2:D3", name: "Steward" },         // Steward Status
+    { sheet: memberDir, column: "J", range: "D2:D3", name: "Steward" },         // Is Steward (Y/N)
     { sheet: memberDir, column: "L", range: "M2:M5", name: "Membership" },      // Membership Status
-    { sheet: memberDir, column: "M", range: "J2:J6", name: "Engagement" },      // Engagement Level
-    { sheet: memberDir, column: "AB", range: "L2:L7", name: "Committee" },      // Committee
-    { sheet: memberDir, column: "AD", range: "K2:K5", name: "Contact Method" }  // Contact Method
+    { sheet: memberDir, column: "S", range: "J2:J6", name: "Engagement" },      // Engagement Level (now column S)
+    { sheet: memberDir, column: "V", range: "L2:L7", name: "Committee" },       // Committee Member (now column V)
+    { sheet: memberDir, column: "W", range: "K2:K5", name: "Contact Method" }   // Preferred Contact Method (now column W)
   ];
 
   validations.forEach(v => {
