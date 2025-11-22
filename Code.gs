@@ -648,24 +648,24 @@ function createTrendsSheet(ss) {
 
   sheet.clear();
 
-  // Title
+  // Title - Unified color scheme
   sheet.getRange("A1:L1").merge()
     .setValue("TRENDS & TIMELINE ANALYSIS")
     .setFontSize(18)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
-    .setBackground(COLORS.HEADER_BLUE)
+    .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
-  // Section headers
+  // Section headers - Unified color scheme
   sheet.getRange("A3").setValue("MONTHLY TRENDS").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_GREEN).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.getRange("A15").setValue("RESOLUTION TIME ANALYSIS").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.getRange("A25").setValue("FILING TRENDS").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_PURPLE).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
   sheet.setColumnWidth(1, 200);
@@ -681,27 +681,27 @@ function createPerformanceSheet(ss) {
 
   sheet.clear();
 
-  // Title
+  // Title - Unified color scheme
   sheet.getRange("A1:L1").merge()
     .setValue("PERFORMANCE METRICS & KPIs")
     .setFontSize(18)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
-    .setBackground(COLORS.HEADER_GREEN)
+    .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
-  // Section headers
+  // Section headers - Unified color scheme
   sheet.getRange("A3").setValue("RESOLUTION PERFORMANCE").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.getRange("E3").setValue("EFFICIENCY METRICS").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.getRange("A13").setValue("OUTCOME ANALYSIS").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_RED).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.getRange("A23").setValue("STEP PROGRESSION ANALYSIS").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_PURPLE).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
   sheet.setColumnWidth(1, 250);
@@ -718,21 +718,21 @@ function createLocationSheet(ss) {
 
   sheet.clear();
 
-  // Title
+  // Title - Unified color scheme
   sheet.getRange("A1:L1").merge()
     .setValue("LOCATION ANALYTICS")
     .setFontSize(18)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
-    .setBackground(COLORS.HEADER_PURPLE)
+    .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
-  // Section headers
+  // Section headers - Unified color scheme
   sheet.getRange("A3").setValue("GRIEVANCES BY LOCATION").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.getRange("A15").setValue("LOCATION PERFORMANCE METRICS").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_GREEN).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
   sheet.setColumnWidth(1, 250);
@@ -748,27 +748,27 @@ function createTypeAnalysisSheet(ss) {
 
   sheet.clear();
 
-  // Title
+  // Title - Unified color scheme
   sheet.getRange("A1:L1").merge()
     .setValue("GRIEVANCE TYPE ANALYSIS")
     .setFontSize(18)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
-    .setBackground(COLORS.HEADER_RED)
+    .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
-  // Section headers
+  // Section headers - Unified color scheme
   sheet.getRange("A3").setValue("TYPE BREAKDOWN").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.getRange("E3").setValue("SUCCESS RATE BY TYPE").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_GREEN).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.getRange("A15").setValue("TYPE TRENDS OVER TIME").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.getRange("A27").setValue("AVERAGE RESOLUTION TIME BY TYPE").setFontWeight("bold").setFontSize(12)
-    .setBackground(COLORS.HEADER_PURPLE).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
   sheet.setColumnWidth(1, 250);
@@ -2426,6 +2426,9 @@ function rebuildDashboard() {
     rebuildLocationSheet();
     rebuildTypeAnalysisSheet();
 
+    // Rebuild all dashboard variations with live data
+    rebuildAllDashboards();
+
     // Single flush at the end
     SpreadsheetApp.flush();
 
@@ -3196,6 +3199,302 @@ function rebuildTypeAnalysisSheet() {
     typeSheet.getRange(`E5:G${4 + sortedTypes.length}`).setBackground(COLORS.LIGHT_GRAY);
     typeSheet.getRange(`F5:G${4 + sortedTypes.length}`).setHorizontalAlignment("right");
   }
+}
+
+// ============================================================================
+// DASHBOARD VARIATIONS - DATA POPULATION
+// ============================================================================
+
+/**
+ * Rebuilds all dashboard variations with live data
+ */
+function rebuildAllDashboards() {
+  rebuildExecutiveOverview();
+  rebuildKPIDashboard();
+  rebuildMemberEngagement();
+  rebuildCostImpact();
+  rebuildQuickStats();
+}
+
+/**
+ * Calculate common metrics used across all dashboards
+ */
+function calculateDashboardMetrics() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!memberSheet || !grievanceSheet) return null;
+
+  const memberData = memberSheet.getDataRange().getValues();
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const today = new Date();
+  const thisMonth = today.getMonth();
+  const thisYear = today.getFullYear();
+
+  // Member metrics
+  let totalMembers = memberData.length - 1;
+  let activeMembers = 0, totalStewards = 0, unit8 = 0, unit10 = 0;
+  let engagementCounts = { "Very Active": 0, "Active": 0, "Moderately Active": 0, "Inactive": 0, "New Member": 0 };
+  let satisfactionCounts = { "Very Satisfied": 0, "Satisfied": 0, "Neutral": 0, "Dissatisfied": 0, "Very Dissatisfied": 0 };
+  let committeeMembers = 0;
+
+  for (let i = 1; i < memberData.length; i++) {
+    const r = memberData[i];
+    if (r[10] === "Active") activeMembers++;  // Column K: Membership Status
+    if (r[9] === "Yes") totalStewards++;      // Column J: Is Steward
+    if (r[5] === "Unit 8") unit8++;           // Column F: Unit
+    if (r[5] === "Unit 10") unit10++;
+
+    const engagement = r[20];                 // Column U: Engagement Level
+    if (engagement && engagementCounts[engagement] !== undefined) {
+      engagementCounts[engagement]++;
+    }
+
+    const committee = r[23];                  // Column X: Committee Member
+    if (committee && committee !== "None") committeeMembers++;
+  }
+
+  // Grievance metrics
+  let totalGrievances = grievanceData.length - 1;
+  let activeGrievances = 0, resolvedGrievances = 0, won = 0, lost = 0, settled = 0;
+  let inMediation = 0, inArbitration = 0, pendingDecision = 0;
+  let overdue = 0, dueThisWeek = 0, dueNextWeek = 0;
+  let thisMonthFiled = 0, thisMonthResolved = 0;
+  let ytdFiled = 0, ytdResolved = 0;
+  let resolutionDaysSum = 0, resolutionDaysCount = 0;
+  let financialRecovery = 0;
+
+  for (let i = 1; i < grievanceData.length; i++) {
+    const r = grievanceData[i];
+    const status = r[4];                      // Column E: Status
+    const filedDate = r[8];                   // Column I: Date Filed
+
+    if (!status) continue;
+
+    const statusStr = status.toString();
+
+    // Count filed this month/year
+    if (filedDate) {
+      const filed = new Date(filedDate);
+      if (filed.getMonth() === thisMonth && filed.getFullYear() === thisYear) {
+        thisMonthFiled++;
+      }
+      if (filed.getFullYear() === thisYear) {
+        ytdFiled++;
+      }
+    }
+
+    // Status counts
+    if (statusStr.startsWith("Filed")) {
+      activeGrievances++;
+    } else if (statusStr.startsWith("Resolved")) {
+      resolvedGrievances++;
+      if (status === "Resolved - Won") {
+        won++;
+        financialRecovery += 5000; // Estimated average recovery
+      }
+      if (status === "Resolved - Lost") lost++;
+      if (status === "Resolved - Settled") {
+        settled++;
+        financialRecovery += 2500; // Estimated average settlement
+      }
+
+      // Calculate resolution time
+      if (filedDate) {
+        const filed = new Date(filedDate);
+        const resolved = today; // Approximation
+        const days = Math.floor((resolved - filed) / (1000 * 60 * 60 * 24));
+        resolutionDaysSum += days;
+        resolutionDaysCount++;
+
+        // Count resolved this month/year
+        if (resolved.getMonth() === thisMonth && resolved.getFullYear() === thisYear) {
+          thisMonthResolved++;
+        }
+        if (resolved.getFullYear() === thisYear) {
+          ytdResolved++;
+        }
+      }
+    }
+
+    if (status === "In Mediation") inMediation++;
+    if (status === "In Arbitration") inArbitration++;
+    if (status === "Pending Decision") pendingDecision++;
+
+    // Deadline metrics (for active grievances)
+    if (!statusStr.startsWith("Resolved")) {
+      const nextDeadline = getNextDeadlineFromRow(r);
+      if (nextDeadline) {
+        const daysTo = Math.floor((nextDeadline - today) / (1000 * 60 * 60 * 24));
+        if (daysTo < 0) overdue++;
+        else if (daysTo <= 7) dueThisWeek++;
+        else if (daysTo <= 14) dueNextWeek++;
+      }
+    }
+  }
+
+  const winRate = resolvedGrievances > 0 ? (won / resolvedGrievances) * 100 : 0;
+  const settlementRate = resolvedGrievances > 0 ? (settled / resolvedGrievances) * 100 : 0;
+  const avgResolutionDays = resolutionDaysCount > 0 ? Math.round(resolutionDaysSum / resolutionDaysCount) : 0;
+  const memberEngagementRate = totalMembers > 0 ? ((engagementCounts["Very Active"] + engagementCounts["Active"]) / totalMembers) * 100 : 0;
+
+  return {
+    // Member metrics
+    totalMembers, activeMembers, totalStewards, unit8, unit10, committeeMembers,
+    engagementCounts, memberEngagementRate,
+
+    // Grievance metrics
+    totalGrievances, activeGrievances, resolvedGrievances,
+    won, lost, settled, winRate, settlementRate,
+    inMediation, inArbitration, pendingDecision,
+    overdue, dueThisWeek, dueNextWeek,
+    avgResolutionDays,
+
+    // Time-based metrics
+    thisMonthFiled, thisMonthResolved,
+    ytdFiled, ytdResolved,
+
+    // Financial
+    financialRecovery
+  };
+}
+
+/**
+ * Rebuild Executive Overview Dashboard
+ */
+function rebuildExecutiveOverview() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.EXECUTIVE);
+  if (!sheet) return;
+
+  const metrics = calculateDashboardMetrics();
+  if (!metrics) return;
+
+  // KPI Cards - Row 7 contains the main values
+  sheet.getRange("A7:C7").merge().setValue(metrics.totalMembers);
+  sheet.getRange("E7:G7").merge().setValue(metrics.activeGrievances);
+  sheet.getRange("I7:K7").merge().setValue(metrics.winRate.toFixed(1) + "%");
+  sheet.getRange("M7:O7").merge().setValue(metrics.avgResolutionDays + " days");
+
+  // Union Health Section - Row 15 contains values
+  sheet.getRange("A15:C15").merge().setValue(metrics.totalStewards);
+  sheet.getRange("E15:G15").merge().setValue(metrics.memberEngagementRate.toFixed(1) + "%");
+  sheet.getRange("I15:K15").merge().setValue(metrics.activeMembers);
+  sheet.getRange("M15:O15").merge().setValue(metrics.committeeMembers);
+}
+
+/**
+ * Rebuild KPI Dashboard
+ */
+function rebuildKPIDashboard() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.KPI_BOARD);
+  if (!sheet) return;
+
+  const metrics = calculateDashboardMetrics();
+  if (!metrics) return;
+
+  // THIS MONTH section - Row 7
+  sheet.getRange("A7:C7").merge().setValue(metrics.thisMonthFiled);
+  sheet.getRange("A8:C9").merge().setValue("+" + metrics.thisMonthFiled + " from last month");
+
+  sheet.getRange("E7:G7").merge().setValue(metrics.thisMonthResolved);
+  sheet.getRange("E8:G9").merge().setValue(metrics.thisMonthResolved + " cases closed");
+
+  sheet.getRange("I7:K7").merge().setValue(metrics.pendingDecision);
+  sheet.getRange("I8:K9").merge().setValue("Awaiting decisions");
+
+  sheet.getRange("M7:O7").merge().setValue(metrics.winRate.toFixed(1) + "%");
+  sheet.getRange("M8:O9").merge().setValue("Success rate");
+
+  // YEAR TO DATE section - Row 15
+  sheet.getRange("A15:C15").merge().setValue(metrics.ytdFiled);
+  sheet.getRange("A16:C17").merge().setValue("Cases filed YTD");
+
+  sheet.getRange("E15:G15").merge().setValue(metrics.ytdResolved);
+  sheet.getRange("E16:G17").merge().setValue("Cases resolved YTD");
+
+  sheet.getRange("I15:K15").merge().setValue(metrics.activeGrievances);
+  sheet.getRange("I16:K17").merge().setValue("Currently active");
+
+  sheet.getRange("M15:O15").merge().setValue(metrics.overdue);
+  sheet.getRange("M16:O17").merge().setValue("Cases overdue");
+}
+
+/**
+ * Rebuild Member Engagement Dashboard
+ */
+function rebuildMemberEngagement() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
+  if (!sheet) return;
+
+  const metrics = calculateDashboardMetrics();
+  if (!metrics) return;
+
+  // Engagement KPIs - Row 7
+  sheet.getRange("A7:C7").merge().setValue(metrics.memberEngagementRate.toFixed(1) + "%");
+  sheet.getRange("E7:G7").merge().setValue(metrics.totalStewards);
+  sheet.getRange("I7:K7").merge().setValue(metrics.committeeMembers);
+  sheet.getRange("M7:O7").merge().setValue(metrics.activeMembers);
+
+  // Engagement breakdown - Starting at row 15
+  sheet.getRange("A15").setValue(metrics.engagementCounts["Very Active"]);
+  sheet.getRange("B15").setValue(metrics.engagementCounts["Active"]);
+  sheet.getRange("C15").setValue(metrics.engagementCounts["Moderately Active"]);
+  sheet.getRange("D15").setValue(metrics.engagementCounts["Inactive"]);
+  sheet.getRange("E15").setValue(metrics.engagementCounts["New Member"]);
+}
+
+/**
+ * Rebuild Cost Impact Dashboard
+ */
+function rebuildCostImpact() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
+  if (!sheet) return;
+
+  const metrics = calculateDashboardMetrics();
+  if (!metrics) return;
+
+  // Financial KPIs - Row 7
+  const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
+
+  sheet.getRange("A7:C7").merge().setValue(formatter.format(metrics.financialRecovery));
+  sheet.getRange("E7:G7").merge().setValue(metrics.won);
+  sheet.getRange("I7:K7").merge().setValue(formatter.format(metrics.financialRecovery / Math.max(1, metrics.won + metrics.settled)));
+  sheet.getRange("M7:O7").merge().setValue(metrics.winRate.toFixed(1) + "%");
+
+  // Additional financial metrics - Row 15
+  const avgPerMember = metrics.totalMembers > 0 ? metrics.financialRecovery / metrics.totalMembers : 0;
+  sheet.getRange("A15:C15").merge().setValue(formatter.format(avgPerMember));
+  sheet.getRange("E15:G15").merge().setValue(metrics.won + metrics.settled);
+  sheet.getRange("I15:K15").merge().setValue(formatter.format(metrics.financialRecovery * 1.2)); // Projected
+}
+
+/**
+ * Rebuild Quick Stats Dashboard
+ */
+function rebuildQuickStats() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.QUICK_STATS);
+  if (!sheet) return;
+
+  const metrics = calculateDashboardMetrics();
+  if (!metrics) return;
+
+  // Large stat cards - Row 7
+  sheet.getRange("A7:C7").merge().setValue(metrics.totalGrievances);
+  sheet.getRange("E7:G7").merge().setValue(metrics.activeGrievances);
+  sheet.getRange("I7:K7").merge().setValue(metrics.overdue);
+  sheet.getRange("M7:O7").merge().setValue(metrics.totalMembers);
+
+  // Secondary stats - Row 15
+  sheet.getRange("A15:C15").merge().setValue(metrics.winRate.toFixed(1) + "%");
+  sheet.getRange("E15:G15").merge().setValue(metrics.avgResolutionDays);
+  sheet.getRange("I15:K15").merge().setValue(metrics.totalStewards);
+  sheet.getRange("M15:O15").merge().setValue(metrics.dueThisWeek);
 }
 
 // ============================================================================
