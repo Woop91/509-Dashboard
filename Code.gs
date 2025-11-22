@@ -85,6 +85,8 @@ const SHEETS = {
   MEMBER_ENGAGEMENT: "Member Engagement",
   COST_IMPACT: "Cost Impact Analysis",
   QUICK_STATS: "Quick Stats",
+  FUTURE_FEATURES: "Future Features",
+  PENDING_FEATURES: "Pending Features",
   ARCHIVE: "Archive",
   DIAGNOSTICS: "Diagnostics"
 };
@@ -212,6 +214,12 @@ function CREATE_509_DASHBOARD() {
     SpreadsheetApp.flush();
 
     createQuickStatsSheet(ss);
+    SpreadsheetApp.flush();
+
+    createFutureFeaturesSheet(ss);
+    SpreadsheetApp.flush();
+
+    createPendingFeaturesSheet(ss);
     SpreadsheetApp.flush();
 
     createArchiveSheet(ss);
@@ -1805,6 +1813,390 @@ function createQuickStatsSheet(ss) {
   // Set background for spacing columns
   sheet.getRange("E1:E50").setBackground(COLORS.LIGHT_GRAY);
   sheet.getRange("J1:J50").setBackground(COLORS.LIGHT_GRAY);
+}
+
+// ============================================================================
+// FUTURE FEATURES SHEET
+// ============================================================================
+
+/**
+ * Creates Future Features sheet listing security enhancements and features for future implementation
+ */
+function createFutureFeaturesSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.FUTURE_FEATURES);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.FUTURE_FEATURES);
+
+  sheet.clear();
+
+  // Title
+  sheet.getRange("A1:H1").merge()
+    .setValue("🔮 FUTURE FEATURES - Security & Enhancements")
+    .setFontSize(20).setFontFamily("Roboto")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_PURPLE)
+    .setFontColor("white");
+
+  // Subtitle
+  sheet.getRange("A2:H2").merge()
+    .setValue("Advanced features available for implementation when needed")
+    .setFontSize(12).setFontFamily("Roboto")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_DARK);
+
+  // Security Enhancements Section
+  sheet.getRange("A4:H4").merge()
+    .setValue("🔒 SECURITY & AUDIT ENHANCEMENTS")
+    .setFontSize(14).setFontFamily("Roboto")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.SOLIDARITY_RED)
+    .setFontColor("white");
+
+  // Headers
+  const headers = ["Feature #", "Feature Name", "Description", "Function Name", "Status", "Priority", "Notes", "Dependencies"];
+  sheet.getRange("A5:H5").setValues([headers])
+    .setFontWeight("bold")
+    .setFontSize(11)
+    .setFontFamily("Roboto")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white")
+    .setHorizontalAlignment("center");
+
+  // Security Features Data
+  const securityFeatures = [
+    ["79", "Audit Logging", "Tracks all data modifications with user, timestamp, and change details", "logDataModification()", "Available", "High", "Creates Audit_Log sheet automatically", "None"],
+    ["80", "Role-Based Access Control", "Implements user permissions (Admin, Steward, Viewer roles)", "checkUserPermission()", "Available", "High", "Requires script properties configuration", "ADMINS, STEWARDS, VIEWERS properties"],
+    ["81", "Data Encryption", "Encrypts sensitive data fields (SSN, DOB, etc.)", "encryptSensitiveData()", "Available", "Medium", "Use proper encryption in production", "ENCRYPTION_KEY property"],
+    ["82", "Data Decryption", "Decrypts encrypted sensitive data", "decryptSensitiveData()", "Available", "Medium", "Paired with encryption feature", "ENCRYPTION_KEY property"],
+    ["83", "Input Sanitization", "Validates and sanitizes user input for security", "sanitizeInput()", "Available", "High", "Prevents script injection attacks", "None"],
+    ["84", "Audit Reporting", "Generates audit trail reports for date ranges", "generateAuditReport()", "Available", "Medium", "Requires Audit_Log sheet", "Feature 79"],
+    ["85", "Data Retention Policy", "Enforces data retention policies (default 7 years)", "enforceDataRetention()", "Available", "Low", "Configurable retention period", "Feature 79"],
+    ["86", "Suspicious Activity Detection", "Detects unusual patterns (>50 changes/hour)", "detectSuspiciousActivity()", "Available", "Medium", "Alerts on potential data breaches", "Feature 79"]
+  ];
+
+  sheet.getRange(6, 1, securityFeatures.length, 8).setValues(securityFeatures);
+
+  // Advanced Features Section
+  const advancedRow = 6 + securityFeatures.length + 2;
+  sheet.getRange(advancedRow, 1, 1, 8).merge()
+    .setValue("⚡ ADVANCED FEATURES")
+    .setFontSize(14).setFontFamily("Roboto")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_TEAL)
+    .setFontColor("white");
+
+  // Headers for advanced features
+  sheet.getRange(advancedRow + 1, 1, 1, 8).setValues([headers])
+    .setFontWeight("bold")
+    .setFontSize(11)
+    .setFontFamily("Roboto")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white")
+    .setHorizontalAlignment("center");
+
+  // Advanced Features Data
+  const advancedFeatures = [
+    ["87", "Quick Actions Sidebar", "Interactive sidebar with one-click common actions", "showQuickActionsSidebar()", "Available", "Medium", "Accessible via menu", "None"],
+    ["88", "Advanced Search", "Interactive grievance search dialog", "showSearchDialog()", "Available", "Medium", "Search by ID, name, type", "None"],
+    ["89", "Advanced Filtering", "Filter grievances by multiple criteria", "showFilterDialog()", "Available", "Medium", "Date range, status, type filters", "None"],
+    ["90", "Automated Backups", "Creates daily backups to Google Drive", "createAutomatedBackup()", "Available", "High", "Requires Drive folder configuration", "BACKUP_FOLDER_ID property"],
+    ["91", "Performance Monitoring", "Tracks script execution times and performance", "trackPerformance()", "Available", "Low", "Logs to Performance_Log sheet", "None"],
+    ["92", "Keyboard Shortcuts", "Custom keyboard shortcuts for common actions", "setupKeyboardShortcuts()", "Available", "Low", "Enhances user productivity", "None"],
+    ["93", "Export Wizard", "Guided export with format and filter options", "showExportWizard()", "Available", "Medium", "Interactive dialog for exports", "None"],
+    ["94", "Data Import", "Import members/grievances from CSV/Excel", "showImportWizard()", "Available", "High", "Bulk data import capability", "None"]
+  ];
+
+  sheet.getRange(advancedRow + 2, 1, advancedFeatures.length, 8).setValues(advancedFeatures);
+
+  // Implementation Notes Section
+  const notesRow = advancedRow + 2 + advancedFeatures.length + 2;
+  sheet.getRange(notesRow, 1, 1, 8).merge()
+    .setValue("📝 IMPLEMENTATION NOTES")
+    .setFontSize(14).setFontFamily("Roboto")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.UNION_GREEN)
+    .setFontColor("white");
+
+  const notes = [
+    ["To enable these features:", "", "", "", "", "", "", ""],
+    ["1.", "Call addEnhancementMenus() from onOpen() to expose all menus", "", "", "", "", "", ""],
+    ["2.", "Configure script properties for sensitive features (encryption keys, roles, etc.)", "", "", "", "", "", ""],
+    ["3.", "Set up automated triggers for backup and reporting features", "", "", "", "", "", ""],
+    ["4.", "Test each feature in a development environment before production use", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", "", ""],
+    ["Security Best Practices:", "", "", "", "", "", "", ""],
+    ["•", "Use strong encryption keys (not default) for production", "", "", "", "", "", ""],
+    ["•", "Regularly review audit logs for unauthorized access", "", "", "", "", "", ""],
+    ["•", "Implement role-based access control before going live", "", "", "", "", "", ""],
+    ["•", "Enable automated backups with appropriate retention policies", "", "", "", "", "", ""]
+  ];
+
+  sheet.getRange(notesRow + 1, 1, notes.length, 8).setValues(notes);
+
+  // Formatting
+  sheet.setRowHeight(1, 50);
+  sheet.setRowHeight(2, 35);
+  sheet.setRowHeight(4, 35);
+  sheet.setRowHeight(5, 30);
+  sheet.setRowHeight(advancedRow, 35);
+  sheet.setRowHeight(advancedRow + 1, 30);
+  sheet.setRowHeight(notesRow, 35);
+
+  // Column widths
+  sheet.setColumnWidth(1, 80);   // Feature #
+  sheet.setColumnWidth(2, 200);  // Feature Name
+  sheet.setColumnWidth(3, 350);  // Description
+  sheet.setColumnWidth(4, 250);  // Function Name
+  sheet.setColumnWidth(5, 100);  // Status
+  sheet.setColumnWidth(6, 80);   // Priority
+  sheet.setColumnWidth(7, 250);  // Notes
+  sheet.setColumnWidth(8, 200);  // Dependencies
+
+  // Apply borders and styling to data rows
+  const totalRows = notesRow + notes.length;
+  sheet.getRange(6, 1, securityFeatures.length, 8)
+    .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID)
+    .setFontFamily("Roboto")
+    .setVerticalAlignment("middle");
+
+  sheet.getRange(advancedRow + 2, 1, advancedFeatures.length, 8)
+    .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID)
+    .setFontFamily("Roboto")
+    .setVerticalAlignment("middle");
+
+  sheet.getRange(notesRow + 1, 1, notes.length, 8)
+    .setFontFamily("Roboto")
+    .setFontSize(10)
+    .setVerticalAlignment("middle");
+
+  // Freeze header rows
+  sheet.setFrozenRows(2);
+}
+
+// ============================================================================
+// PENDING FEATURES SHEET
+// ============================================================================
+
+/**
+ * Creates Pending Features sheet with setup instructions for production deployment
+ */
+function createPendingFeaturesSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.PENDING_FEATURES);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.PENDING_FEATURES);
+
+  sheet.clear();
+
+  // Title
+  sheet.getRange("A1:G1").merge()
+    .setValue("⏳ PENDING FEATURES - Production Setup Checklist")
+    .setFontSize(20).setFontFamily("Roboto")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_ORANGE)
+    .setFontColor("white");
+
+  // Subtitle
+  sheet.getRange("A2:G2").merge()
+    .setValue("Complete these tasks before going live")
+    .setFontSize(12).setFontFamily("Roboto")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_DARK);
+
+  // Section 1: Test Key Features
+  sheet.getRange("A4:G4").merge()
+    .setValue("🧪 TEST KEY FEATURES")
+    .setFontSize(14).setFontFamily("Roboto")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
+
+  const testFeatures = [
+    ["Task", "Description", "Function to Run", "Expected Result", "Status", "Priority", "Notes"],
+    ["Run Data Integrity Check", "Validates all data relationships and calculations", "runDataIntegrityCheck()", "Report showing validation results", "Pending", "High", "Check for orphaned records, invalid dates, missing IDs"],
+    ["Test Quick Actions Sidebar", "Verify sidebar displays and functions work", "showQuickActionsSidebar()", "Sidebar opens with working buttons", "Pending", "Medium", "Test all buttons in sidebar"],
+    ["Verify Dashboard Calculations", "Ensure all metrics calculate correctly", "rebuildDashboard()", "Accurate KPIs and charts", "Pending", "High", "Compare manual counts with dashboard"],
+    ["Test CBA Compliance", "Validate deadline calculations per contract", "validateCBACompliance()", "All deadlines follow Article 23A rules", "Pending", "Critical", "21-day filing, 30-day decisions, 10-day appeals"],
+    ["Verify Seed Functions", "Test data generation works correctly", "seedAll()", "Members and grievances created", "Pending", "Medium", "Use new unified seed function"]
+  ];
+
+  sheet.getRange(5, 1, testFeatures.length, 7).setValues(testFeatures);
+
+  // Section 2: Configure Properties
+  const configRow = 5 + testFeatures.length + 2;
+  sheet.getRange(configRow, 1, 1, 7).merge()
+    .setValue("⚙️ CONFIGURE SCRIPT PROPERTIES")
+    .setFontSize(14).setFontFamily("Roboto")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_TEAL)
+    .setFontColor("white");
+
+  const configTasks = [
+    ["Property Name", "Description", "Example Value", "Required For", "Status", "Priority", "How to Set"],
+    ["ADMINS", "Comma-separated admin email addresses", "admin1@mass.gov,admin2@mass.gov", "Role-based access control", "Pending", "High", "Script Properties > Add Property"],
+    ["STEWARDS", "Comma-separated steward email addresses", "steward1@mass.gov,steward2@mass.gov", "Permission management", "Pending", "High", "Script Properties > Add Property"],
+    ["VIEWERS", "Comma-separated viewer email addresses", "viewer1@mass.gov,viewer2@mass.gov", "Read-only access", "Pending", "Medium", "Script Properties > Add Property"],
+    ["ENCRYPTION_KEY", "Strong encryption key for sensitive data", "YourSecureKey2024!@#$", "Data encryption features", "Pending", "High", "Use 16+ character random string"],
+    ["BACKUP_FOLDER_ID", "Google Drive folder ID for backups", "1ABC...xyz", "Automated backups", "Pending", "Medium", "Create Drive folder, copy ID from URL"],
+    ["NOTIFICATION_EMAIL", "Default email for system notifications", "notifications@mass.gov", "Alert system", "Pending", "Low", "Script Properties > Add Property"]
+  ];
+
+  sheet.getRange(configRow + 1, 1, configTasks.length, 7).setValues(configTasks);
+
+  // Section 3: Set Up Triggers
+  const triggerRow = configRow + 1 + configTasks.length + 2;
+  sheet.getRange(triggerRow, 1, 1, 7).merge()
+    .setValue("⏰ SET UP AUTOMATED TRIGGERS")
+    .setFontSize(14).setFontFamily("Roboto")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_PURPLE)
+    .setFontColor("white");
+
+  const triggerTasks = [
+    ["Trigger Name", "Description", "Function to Run", "Schedule", "Status", "Priority", "Notes"],
+    ["Schedule Reports", "Set up weekly and monthly reports", "scheduleReports()", "Weekly Monday 8am, Monthly 1st at 9am", "Pending", "Medium", "Run once to create triggers"],
+    ["Schedule Updates", "Auto-refresh dashboard hourly", "scheduleAutomaticUpdates()", "Every hour + daily at 2am", "Pending", "Low", "Keeps dashboard current"],
+    ["Daily Backup", "Create daily backup to Drive", "createAutomatedBackup()", "Daily at 3am", "Pending", "High", "Requires BACKUP_FOLDER_ID"],
+    ["Overdue Alerts", "Send alerts for overdue grievances", "sendOverdueAlerts()", "Daily at 7am", "Pending", "High", "Notifies responsible parties"],
+    ["Data Retention", "Clean up old audit logs", "enforceDataRetention()", "Weekly Sunday at midnight", "Pending", "Low", "Keeps system clean"]
+  ];
+
+  sheet.getRange(triggerRow + 1, 1, triggerTasks.length, 7).setValues(triggerTasks);
+
+  // Section 4: Update Main Menu
+  const menuRow = triggerRow + 1 + triggerTasks.length + 2;
+  sheet.getRange(menuRow, 1, 1, 7).merge()
+    .setValue("🍔 UPDATE MAIN MENU")
+    .setFontSize(14).setFontFamily("Roboto")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.UNION_GREEN)
+    .setFontColor("white");
+
+  const menuTasks = [
+    ["Task", "Description", "Action Required", "Function", "Status", "Priority", "Notes"],
+    ["Add Enhancement Menus", "Expose all advanced features in UI", "Call addEnhancementMenus() from onOpen()", "addEnhancementMenus()", "Pending", "High", "Adds 5 new menus: Data Validation, Notifications, Reports, Engagement, Tools"],
+    ["Verify Menu Structure", "Ensure all menu items work", "Test each menu item", "onOpen()", "Pending", "High", "Check permissions for all functions"],
+    ["Add Seed Menu Item", "Add unified seed function to menu", "Add seedAll() to Data Management menu", "seedAll()", "Pending", "Medium", "Simplifies test data generation"]
+  ];
+
+  sheet.getRange(menuRow + 1, 1, menuTasks.length, 7).setValues(menuTasks);
+
+  // Section 5: Final Verification
+  const verifyRow = menuRow + 1 + menuTasks.length + 2;
+  sheet.getRange(verifyRow, 1, 1, 7).merge()
+    .setValue("✅ FINAL VERIFICATION")
+    .setFontSize(14).setFontFamily("Roboto")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.SOLIDARITY_RED)
+    .setFontColor("white");
+
+  const verifyTasks = [
+    ["Verification Item", "Description", "How to Verify", "Success Criteria", "Status", "Priority", "Notes"],
+    ["All Functions Wired", "Ensure all functions are accessible", "Check all menu items and test", "All functions execute without errors", "Pending", "Critical", "No orphaned or unreachable functions"],
+    ["Data Accuracy", "Verify calculations are correct", "Manual spot checks vs system", "100% accuracy on calculations", "Pending", "Critical", "Especially deadlines and metrics"],
+    ["Performance", "System responds quickly", "Test with full data load", "< 5 seconds for most operations", "Pending", "High", "Optimize if needed"],
+    ["Documentation", "README reflects current state", "Review README completeness", "All features documented", "Pending", "Medium", "Update with new features"],
+    ["User Acceptance", "End users can operate system", "UAT with actual stewards", "Users can complete workflows", "Pending", "Critical", "Get feedback before launch"],
+    ["Backup & Recovery", "Verify backup/restore works", "Create backup, test restore", "Data restored successfully", "Pending", "High", "Test disaster recovery"],
+    ["Security", "All security features enabled", "Check permissions and audit", "RBAC working, audit log active", "Pending", "Critical", "No unauthorized access possible"]
+  ];
+
+  sheet.getRange(verifyRow + 1, 1, verifyTasks.length, 7).setValues(verifyTasks);
+
+  // Instructions Section
+  const instructRow = verifyRow + 1 + verifyTasks.length + 2;
+  sheet.getRange(instructRow, 1, 1, 7).merge()
+    .setValue("📖 STEP-BY-STEP INSTRUCTIONS")
+    .setFontSize(14).setFontFamily("Roboto")
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
+
+  const instructions = [
+    ["Step", "Action", "Details", "", "", "", ""],
+    ["1", "Test in Development", "Complete all testing tasks above in a copy of the spreadsheet", "", "", "", ""],
+    ["2", "Configure Properties", "Set all required script properties (Extensions > Apps Script > Project Settings > Script Properties)", "", "", "", ""],
+    ["3", "Enable Menus", "Add this line to onOpen(): addEnhancementMenus();", "", "", "", ""],
+    ["4", "Set Up Triggers", "Run scheduleReports() and scheduleAutomaticUpdates() from Apps Script", "", "", "", ""],
+    ["5", "Test All Features", "Use the Quick Actions sidebar and test each advanced feature", "", "", "", ""],
+    ["6", "Load Real Data", "Import or manually enter actual members and grievances", "", "", "", ""],
+    ["7", "User Training", "Train stewards on system usage and workflows", "", "", "", ""],
+    ["8", "Go Live", "Monitor first week closely for any issues", "", "", "", ""],
+    ["9", "Regular Maintenance", "Weekly: Run Rebuild Dashboard | Monthly: Review audit logs | Quarterly: Check backups", "", "", "", ""]
+  ];
+
+  sheet.getRange(instructRow + 1, 1, instructions.length, 7).setValues(instructions);
+
+  // Formatting
+  sheet.setRowHeight(1, 50);
+  sheet.setRowHeight(2, 35);
+  sheet.setRowHeight(4, 35);
+  sheet.setRowHeight(configRow, 35);
+  sheet.setRowHeight(triggerRow, 35);
+  sheet.setRowHeight(menuRow, 35);
+  sheet.setRowHeight(verifyRow, 35);
+  sheet.setRowHeight(instructRow, 35);
+
+  // Column widths
+  sheet.setColumnWidth(1, 200);  // Task/Property/etc
+  sheet.setColumnWidth(2, 300);  // Description
+  sheet.setColumnWidth(3, 250);  // Function/Value/etc
+  sheet.setColumnWidth(4, 200);  // Expected/Schedule/etc
+  sheet.setColumnWidth(5, 100);  // Status
+  sheet.setColumnWidth(6, 80);   // Priority
+  sheet.setColumnWidth(7, 250);  // Notes
+
+  // Apply styling to all data sections
+  const sections = [
+    {start: 5, length: testFeatures.length},
+    {start: configRow + 1, length: configTasks.length},
+    {start: triggerRow + 1, length: triggerTasks.length},
+    {start: menuRow + 1, length: menuTasks.length},
+    {start: verifyRow + 1, length: verifyTasks.length},
+    {start: instructRow + 1, length: instructions.length}
+  ];
+
+  sections.forEach(section => {
+    sheet.getRange(section.start, 1, section.length, 7)
+      .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID)
+      .setFontFamily("Roboto")
+      .setVerticalAlignment("middle")
+      .setWrap(true);
+
+    // Bold and color code header rows
+    sheet.getRange(section.start, 1, 1, 7)
+      .setFontWeight("bold")
+      .setBackground(COLORS.LIGHT_GRAY)
+      .setFontColor(COLORS.TEXT_DARK);
+
+    // Highlight priority column
+    if (section.length > 1) {
+      for (let i = 1; i < section.length; i++) {
+        const priorityCell = sheet.getRange(section.start + i, 6);
+        const priority = priorityCell.getValue();
+        if (priority === "Critical" || priority === "High") {
+          priorityCell.setBackground("#FEE2E2").setFontWeight("bold").setFontColor(COLORS.SOLIDARITY_RED);
+        } else if (priority === "Medium") {
+          priorityCell.setBackground("#FEF3C7").setFontColor(COLORS.ACCENT_ORANGE);
+        } else if (priority === "Low") {
+          priorityCell.setBackground("#D1FAE5").setFontColor(COLORS.UNION_GREEN);
+        }
+      }
+    }
+  });
+
+  // Freeze header rows
+  sheet.setFrozenRows(2);
 }
 
 // ============================================================================
@@ -3992,6 +4384,96 @@ function SEED_5K_GRIEVANCES() {
   SpreadsheetApp.getUi().alert('✅ 5,000 grievances seeded!\n\nRun "Recalc All Members" to update member stats.');
 }
 
+/**
+ * Unified seed function that seeds both members and grievances in the correct order
+ * This is the recommended way to populate test data
+ */
+function seedAll() {
+  const ui = SpreadsheetApp.getUi();
+
+  const response = ui.alert(
+    'Seed Test Data',
+    'This will:\n' +
+    '1. Seed 20,000 members\n' +
+    '2. Seed 5,000 grievances\n' +
+    '3. Recalculate all members\n' +
+    '4. Rebuild dashboard\n\n' +
+    'This will take 5-7 minutes. Continue?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    return;
+  }
+
+  try {
+    // Step 1: Seed members
+    ui.alert('Step 1/4: Seeding 20,000 members...\n\nThis will take 3-5 minutes.');
+    SEED_20K_MEMBERS();
+
+    // Step 2: Seed grievances
+    ui.alert('Step 2/4: Seeding 5,000 grievances...\n\nThis will take 2-3 minutes.');
+    SEED_5K_GRIEVANCES();
+
+    // Step 3: Recalculate members
+    ui.alert('Step 3/4: Recalculating all member metrics...\n\nThis will take 30-60 seconds.');
+    recalcAllMembers();
+
+    // Step 4: Rebuild dashboard
+    ui.alert('Step 4/4: Rebuilding dashboard and analytics...\n\nThis will take 30 seconds.');
+    rebuildDashboard();
+
+    ui.alert('✅ Complete!\n\n' +
+      '20,000 members and 5,000 grievances have been seeded.\n' +
+      'All calculations and dashboards have been updated.\n\n' +
+      'Check the Dashboard tab to see your data!');
+  } catch (error) {
+    ui.alert('❌ Error during seeding:\n\n' + error.message + '\n\nPlease check the logs.');
+    Logger.log('Seed error: ' + error.toString());
+  }
+}
+
+/**
+ * Alternative: Seed with custom amounts
+ */
+function SEED_ALL_CUSTOM() {
+  const ui = SpreadsheetApp.getUi();
+
+  const memberResponse = ui.prompt(
+    'Seed Members',
+    'How many members to seed? (Max: 50000)',
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (memberResponse.getSelectedButton() !== ui.Button.OK) return;
+
+  const memberCount = parseInt(memberResponse.getResponseText());
+  if (isNaN(memberCount) || memberCount <= 0 || memberCount > 50000) {
+    ui.alert('Invalid member count. Please enter a number between 1 and 50000.');
+    return;
+  }
+
+  const grievanceResponse = ui.prompt(
+    'Seed Grievances',
+    'How many grievances to seed? (Max: 20000)',
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (grievanceResponse.getSelectedButton() !== ui.Button.OK) return;
+
+  const grievanceCount = parseInt(grievanceResponse.getResponseText());
+  if (isNaN(grievanceCount) || grievanceCount <= 0 || grievanceCount > 20000) {
+    ui.alert('Invalid grievance count. Please enter a number between 1 and 20000.');
+    return;
+  }
+
+  ui.alert(`Seeding ${memberCount} members and ${grievanceCount} grievances...\n\nThis may take several minutes.`);
+
+  // Note: You would need to modify SEED_20K_MEMBERS and SEED_5K_GRIEVANCES
+  // to accept parameters for custom counts. For now, use the default functions.
+  ui.alert('Custom seeding is not yet implemented.\n\nUse the standard seedAll() function for now.');
+}
+
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
@@ -4025,6 +4507,11 @@ function onOpen() {
     .addItem('🔧 Create Dashboard', 'CREATE_509_DASHBOARD')
     .addSeparator()
     .addSubMenu(ui.createMenu('📊 Data Management')
+      .addItem('Seed All Test Data (Recommended)', 'seedAll')
+      .addSeparator()
+      .addItem('Seed 20K Members', 'SEED_20K_MEMBERS')
+      .addItem('Seed 5K Grievances', 'SEED_5K_GRIEVANCES')
+      .addSeparator()
       .addItem('Recalc All Grievances', 'recalcAllGrievances')
       .addItem('Recalc All Members', 'recalcAllMembers')
       .addItem('Rebuild Dashboard', 'rebuildDashboard'))
@@ -4049,6 +4536,9 @@ function onOpen() {
       .addItem('Toggle Mobile Mode', 'toggleMobileMode')
       .addItem('Setup Triggers', 'setupTriggers'))
     .addToUi();
+
+  // Add enhancement menus with all advanced features
+  addEnhancementMenus();
 }
 
 // ============================================================================
@@ -6840,7 +7330,7 @@ function scheduleAutomaticUpdates() {
     .create();
 
   // Recalculate all grievances daily at 2 AM
-  ScriptApp.newTrigger('recalculateAllGrievances')
+  ScriptApp.newTrigger('recalcAllGrievances')
     .timeBased()
     .everyDays(1)
     .atHour(2)
@@ -7641,7 +8131,7 @@ function showQuickActionsSidebar() {
       <body>
         <h3>Quick Actions</h3>
         <button onclick="google.script.run.rebuildDashboard()">Rebuild Dashboard</button>
-        <button onclick="google.script.run.recalculateAllGrievances()">Recalculate All</button>
+        <button onclick="google.script.run.recalcAllGrievances()">Recalculate All</button>
         <button onclick="google.script.run.sendOverdueAlerts()">Send Overdue Alerts</button>
         <button onclick="google.script.run.runDataIntegrityCheck()">Run Integrity Check</button>
         <button onclick="google.script.run.createAutomatedBackup()">Create Backup</button>
