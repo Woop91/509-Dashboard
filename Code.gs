@@ -609,8 +609,6 @@ function recalcGrievanceRow(sheet, row) {
   const step1Decision = sheet.getRange(row, 11).getValue(); // K: Step I Decision
   const step2Filed = sheet.getRange(row, 14).getValue();    // N: Step II Filed
   const step2Decision = sheet.getRange(row, 16).getValue(); // P: Step II Decision
-  const currentStep = sheet.getRange(row, 6).getValue();    // F: Current Step
-  const status = sheet.getRange(row, 5).getValue();         // E: Status
 
   // Calculate Filing Deadline (H = G + 21 days)
   if (incidentDate) {
@@ -647,40 +645,8 @@ function recalcGrievanceRow(sheet, row) {
     sheet.getRange(row, 18).setValue(step3AppealDeadline);
   }
 
-  // Calculate Days Open (AA)
-  if (dateFiled) {
-    const today = new Date();
-    const filed = new Date(dateFiled);
-    const daysOpen = Math.floor((today - filed) / (1000 * 60 * 60 * 24));
-    sheet.getRange(row, 27).setValue(daysOpen);
-  }
-
-  // Calculate Days to Next Deadline (AB)
-  const nextDeadline = getNextDeadline(sheet, row);
-  if (nextDeadline) {
-    const today = new Date();
-    const daysTo = Math.floor((nextDeadline - today) / (1000 * 60 * 60 * 24));
-    sheet.getRange(row, 28).setValue(daysTo);
-
-    // Is Overdue? (AC)
-    sheet.getRange(row, 29).setValue(daysTo < 0 ? "YES" : "NO");
-
-    // Apply color coding
-    if (daysTo < 0) {
-      sheet.getRange(row, 28).setBackground(COLORS.OVERDUE);
-    } else if (daysTo <= 7) {
-      sheet.getRange(row, 28).setBackground(COLORS.DUE_SOON);
-    } else {
-      sheet.getRange(row, 28).setBackground(COLORS.ON_TRACK);
-    }
-  }
-
-  // Calculate Priority Score (AD)
-  const priority = PRIORITY_ORDER[currentStep] || 99;
-  sheet.getRange(row, 30).setValue(priority);
-
-  // Last Updated (AH)
-  sheet.getRange(row, 34).setValue(new Date());
+  // Last Updated (AB)
+  sheet.getRange(row, 28).setValue(new Date());
 }
 
 /**
@@ -704,6 +670,31 @@ function getNextDeadline(sheet, row) {
     if (step2Due) return step2Due;
   }
   if (currentStep === "Step III - Human Resources" && step3AppealDue) return step3AppealDue;
+
+  return null;
+}
+
+/**
+ * Gets the next deadline from a grievance row array (for dashboard calculations)
+ */
+function getNextDeadlineFromRow(row) {
+  const currentStep = row[5]; // F: Current Step
+  const status = row[4];       // E: Status
+
+  if (!status || status.toString().startsWith("Resolved")) return null;
+
+  // Check deadlines in order: J, M, O, R (columns 9, 12, 14, 17 in 0-indexed)
+  const step1Due = row[9];        // J: Step I Decision Due
+  const step2AppealDue = row[12]; // M: Step II Appeal Deadline
+  const step2Due = row[14];       // O: Step II Decision Due
+  const step3AppealDue = row[17]; // R: Step III Appeal Deadline
+
+  if (currentStep === "Step I - Immediate Supervisor" && step1Due) return new Date(step1Due);
+  if (currentStep === "Step II - Agency Head") {
+    if (step2AppealDue) return new Date(step2AppealDue);
+    if (step2Due) return new Date(step2Due);
+  }
+  if (currentStep === "Step III - Human Resources" && step3AppealDue) return new Date(step3AppealDue);
 
   return null;
 }
@@ -737,85 +728,61 @@ function recalcMemberRow(memberSheet, grievanceSheet, row) {
   const memberId = memberSheet.getRange(row, 1).getValue();
   if (!memberId) return;
 
-  // Get all grievances for this member
-  const grievanceData = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, 34).getValues();
+  // Get all grievances for this member (28 columns in new structure)
+  const lastRow = grievanceSheet.getLastRow();
+  if (lastRow < 2) {
+    // No grievances - set all metrics to 0/blank
+    memberSheet.getRange(row, 13).setValue(0); // M: Total Grievances
+    memberSheet.getRange(row, 14).setValue(0); // N: Active Grievances
+    memberSheet.getRange(row, 15).setValue(0); // O: Resolved Grievances
+    memberSheet.getRange(row, 16).setValue(0); // P: Grievances Won
+    memberSheet.getRange(row, 17).setValue(0); // Q: Grievances Lost
+    memberSheet.getRange(row, 18).setValue(""); // R: Last Grievance Date
+    memberSheet.getRange(row, 30).setValue(new Date()); // AD: Last Updated
+    memberSheet.getRange(row, 31).setValue("AUTO"); // AE: Updated By
+    return;
+  }
+
+  const grievanceData = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
   const memberGrievances = grievanceData.filter(g => g[1] === memberId); // Column B = Member ID
 
-  // Total Grievances (N)
-  memberSheet.getRange(row, 14).setValue(memberGrievances.length);
+  // Total Grievances Filed (M)
+  memberSheet.getRange(row, 13).setValue(memberGrievances.length);
 
-  // Active Grievances (O)
+  // Active Grievances (N)
   const active = memberGrievances.filter(g => g[4] && g[4].toString().startsWith("Filed")).length;
-  memberSheet.getRange(row, 15).setValue(active);
+  memberSheet.getRange(row, 14).setValue(active);
 
-  // Resolved Grievances (P)
+  // Resolved Grievances (O)
   const resolved = memberGrievances.filter(g => g[4] && g[4].toString().startsWith("Resolved")).length;
-  memberSheet.getRange(row, 16).setValue(resolved);
+  memberSheet.getRange(row, 15).setValue(resolved);
 
-  // Grievances Won (Q)
+  // Grievances Won (P)
   const won = memberGrievances.filter(g => g[4] === "Resolved - Won").length;
-  memberSheet.getRange(row, 17).setValue(won);
+  memberSheet.getRange(row, 16).setValue(won);
 
-  // Grievances Lost (R)
+  // Grievances Lost (Q)
   const lost = memberGrievances.filter(g => g[4] === "Resolved - Lost").length;
-  memberSheet.getRange(row, 18).setValue(lost);
+  memberSheet.getRange(row, 17).setValue(lost);
 
-  // Last Grievance Date (S)
+  // Last Grievance Date (R)
   if (memberGrievances.length > 0) {
     const dates = memberGrievances.map(g => g[6]).filter(d => d); // Column G = Incident Date
     if (dates.length > 0) {
       const lastDate = new Date(Math.max(...dates.map(d => new Date(d))));
-      memberSheet.getRange(row, 19).setValue(lastDate);
-    }
-  }
-
-  // Win Rate % (T)
-  if (resolved > 0) {
-    const winRate = (won / resolved) * 100;
-    memberSheet.getRange(row, 20).setValue(winRate.toFixed(1) + "%");
-  } else {
-    memberSheet.getRange(row, 20).setValue("N/A");
-  }
-
-  // Has Open Grievance? (U)
-  memberSheet.getRange(row, 21).setValue(active > 0 ? "YES" : "NO");
-
-  // Current Grievance Status (V)
-  if (active > 0) {
-    const activeGrievance = memberGrievances.find(g => g[4] && g[4].toString().startsWith("Filed"));
-    memberSheet.getRange(row, 22).setValue(activeGrievance ? activeGrievance[4] : "");
-  } else {
-    memberSheet.getRange(row, 22).setValue("");
-  }
-
-  // Next Deadline (W) and Days to Deadline (X)
-  if (active > 0) {
-    const activeGrievances = memberGrievances.filter(g => g[4] && g[4].toString().startsWith("Filed"));
-    let earliestDeadline = null;
-
-    activeGrievances.forEach(g => {
-      // Check various deadline columns
-      const deadlines = [g[9], g[12], g[14], g[17]].filter(d => d); // Step I Due, Step II Appeal, Step II Due, Step III Appeal
-      deadlines.forEach(d => {
-        if (!earliestDeadline || new Date(d) < earliestDeadline) {
-          earliestDeadline = new Date(d);
-        }
-      });
-    });
-
-    if (earliestDeadline) {
-      memberSheet.getRange(row, 23).setValue(earliestDeadline);
-      const today = new Date();
-      const daysTo = Math.floor((earliestDeadline - today) / (1000 * 60 * 60 * 24));
-      memberSheet.getRange(row, 24).setValue(daysTo);
+      memberSheet.getRange(row, 18).setValue(lastDate);
+    } else {
+      memberSheet.getRange(row, 18).setValue("");
     }
   } else {
-    memberSheet.getRange(row, 23).setValue("");
-    memberSheet.getRange(row, 24).setValue("");
+    memberSheet.getRange(row, 18).setValue("");
   }
 
-  // Last Updated (AI)
-  memberSheet.getRange(row, 35).setValue(new Date());
+  // Last Updated (AD)
+  memberSheet.getRange(row, 30).setValue(new Date());
+
+  // Updated By (AE)
+  memberSheet.getRange(row, 31).setValue("AUTO");
 }
 
 /**
@@ -920,10 +887,28 @@ function rebuildDashboard() {
   dashboard.getRange("A17:B17").setBackground("#E8F5E9"); // Light green for win rate
   dashboard.getRange("A18:B19").setBackground(COLORS.LIGHT_GRAY);
 
-  // Deadline Tracking (A21:B24)
-  const overdue = grievanceData.filter((r, i) => i > 0 && r[28] === "YES").length;
-  const dueThisWeek = grievanceData.filter((r, i) => i > 0 && r[27] && r[27] >= 0 && r[27] <= 7).length;
-  const dueNextWeek = grievanceData.filter((r, i) => i > 0 && r[27] && r[27] > 7 && r[27] <= 14).length;
+  // Deadline Tracking (A21:B24) - Calculate dynamically
+  let overdue = 0;
+  let dueThisWeek = 0;
+  let dueNextWeek = 0;
+  const today = new Date();
+
+  grievanceData.forEach((r, i) => {
+    if (i === 0 || !r[4] || r[4].toString().startsWith("Resolved")) return; // Skip header and resolved
+
+    // Get next deadline based on current step
+    const nextDeadline = getNextDeadlineFromRow(r);
+    if (nextDeadline) {
+      const daysTo = Math.floor((nextDeadline - today) / (1000 * 60 * 60 * 24));
+      if (daysTo < 0) {
+        overdue++;
+      } else if (daysTo <= 7) {
+        dueThisWeek++;
+      } else if (daysTo <= 14) {
+        dueNextWeek++;
+      }
+    }
+  });
 
   dashboard.getRange("A22").setValue("Overdue Grievances:").setFontWeight("bold");
   dashboard.getRange("B22").setValue(overdue).setNumberFormat("#,##0").setHorizontalAlignment("right")
@@ -942,17 +927,25 @@ function rebuildDashboard() {
   dashboard.getRange("A23").setBackground(COLORS.LIGHT_GRAY);
   dashboard.getRange("A24:B24").setBackground(COLORS.LIGHT_GRAY);
 
-  // Top 10 Overdue Grievances (E4:H13)
-  const overdueList = grievanceData
-    .filter((r, i) => i > 0 && r[28] === "YES")
-    .map(r => ({
-      id: r[0],
-      member: r[2] + " " + r[3],
-      step: r[5],
-      daysTo: r[27]
-    }))
-    .sort((a, b) => a.daysTo - b.daysTo)
-    .slice(0, 10);
+  // Top 10 Overdue Grievances (E4:H13) - Calculate dynamically
+  const overdueList = [];
+  grievanceData.forEach((r, i) => {
+    if (i === 0 || !r[4] || r[4].toString().startsWith("Resolved")) return; // Skip header and resolved
+
+    const nextDeadline = getNextDeadlineFromRow(r);
+    if (nextDeadline) {
+      const daysTo = Math.floor((nextDeadline - today) / (1000 * 60 * 60 * 24));
+      if (daysTo < 0) {
+        overdueList.push({
+          id: r[0],
+          member: r[2] + " " + r[3],
+          step: r[5],
+          daysTo: daysTo
+        });
+      }
+    }
+  });
+  overdueList.sort((a, b) => a.daysTo - b.daysTo).splice(10); // Keep only top 10
 
   dashboard.getRange("E4:H4").setFontWeight("bold").setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
   dashboard.getRange("E4").setValue("Grievance ID");
@@ -1041,19 +1034,34 @@ function rebuildStewardWorkload() {
     const step1Cases = assignedGrievances.filter(g => g[5] === "Step I - Immediate Supervisor").length;
     const step2Cases = assignedGrievances.filter(g => g[5] === "Step II - Agency Head").length;
     const step3Cases = assignedGrievances.filter(g => g[5] === "Step III - Human Resources").length;
-    const overdueCases = assignedGrievances.filter(g => g[28] === "YES").length;
-    const dueThisWeek = assignedGrievances.filter(g => g[27] && g[27] >= 0 && g[27] <= 7).length;
+
+    // Calculate overdue and due this week dynamically
+    const today = new Date();
+    let overdueCases = 0;
+    let dueThisWeek = 0;
+    assignedGrievances.forEach(g => {
+      const nextDeadline = getNextDeadlineFromRow(g);
+      if (nextDeadline) {
+        const daysTo = Math.floor((nextDeadline - today) / (1000 * 60 * 60 * 24));
+        if (daysTo < 0) overdueCases++;
+        else if (daysTo <= 7) dueThisWeek++;
+      }
+    });
 
     const resolvedCases = assignedGrievances.filter(g => g[4] && g[4].toString().startsWith("Resolved")).length;
     const wonCases = assignedGrievances.filter(g => g[4] === "Resolved - Won").length;
     const winRate = resolvedCases > 0 ? ((wonCases / resolvedCases) * 100).toFixed(1) + "%" : "N/A";
 
     // Calculate average days to resolution
-    const resolvedWithDays = assignedGrievances.filter(g =>
-      g[4] && g[4].toString().startsWith("Resolved") && g[26]
+    const resolvedWithDates = assignedGrievances.filter(g =>
+      g[4] && g[4].toString().startsWith("Resolved") && g[8] // Date Filed (I)
     );
-    const avgDays = resolvedWithDays.length > 0
-      ? Math.round(resolvedWithDays.reduce((sum, g) => sum + g[26], 0) / resolvedWithDays.length)
+    const avgDays = resolvedWithDates.length > 0
+      ? Math.round(resolvedWithDates.reduce((sum, g) => {
+          const filed = new Date(g[8]); // Date Filed (I)
+          const resolved = new Date(); // Approximate - could use Last Updated
+          return sum + Math.floor((resolved - filed) / (1000 * 60 * 60 * 24));
+        }, 0) / resolvedWithDates.length)
       : "N/A";
 
     // Get last case date
@@ -1170,8 +1178,8 @@ function createDashboardCharts() {
   if (grievanceData.length > 1) {
     const typeCounts = {};
     grievanceData.forEach((r, i) => {
-      if (i > 0 && r[27]) {
-        const type = r[27].toString();
+      if (i > 0 && r[23]) { // Column X (24 in 1-indexed, 23 in 0-indexed) = Grievance Type
+        const type = r[23].toString();
         typeCounts[type] = (typeCounts[type] || 0) + 1;
       }
     });
@@ -1357,12 +1365,34 @@ function sortGrievancesByPriority() {
 
   if (lastRow < 3) return; // Need at least 2 data rows to sort
 
-  // Sort by Column AD (Priority Score), then Column AB (Days to Deadline)
-  const range = sheet.getRange(2, 1, lastRow - 1, 34);
-  range.sort([
-    { column: 30, ascending: true },  // Priority Score
-    { column: 28, ascending: true }   // Days to Deadline
-  ]);
+  // Get all data and calculate priority scores
+  const data = sheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const today = new Date();
+
+  // Create array with priority scores and days to deadline
+  const rowsWithPriority = data.map((row, index) => {
+    const currentStep = row[5]; // F: Current Step
+    const priority = PRIORITY_ORDER[currentStep] || 99;
+    const nextDeadline = getNextDeadlineFromRow(row);
+    const daysTo = nextDeadline ? Math.floor((nextDeadline - today) / (1000 * 60 * 60 * 24)) : 999999;
+
+    return {
+      row: row,
+      priority: priority,
+      daysTo: daysTo,
+      originalIndex: index
+    };
+  });
+
+  // Sort by priority, then by days to deadline
+  rowsWithPriority.sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return a.daysTo - b.daysTo;
+  });
+
+  // Write back sorted data
+  const sortedData = rowsWithPriority.map(item => item.row);
+  sheet.getRange(2, 1, sortedData.length, 28).setValues(sortedData);
 
   SpreadsheetApp.getUi().alert('✅ Grievances sorted by priority!');
 }
@@ -1499,26 +1529,31 @@ function SEED_20K_MEMBERS() {
       const isSteward = Math.random() < 0.1 ? "Yes" : "No";
 
       data.push([
+        // A-F: Basic Info
         `MEM${String(num).padStart(6, '0')}`,
         firstName,
         lastName,
         jobTitles[Math.floor(Math.random() * jobTitles.length)],
         locations[Math.floor(Math.random() * locations.length)],
         units[Math.floor(Math.random() * units.length)],
+        // G-L: Contact & Role
         "Mon-Fri",
         `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mass.gov`,
         `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
         isSteward,
         randomDate(2020, 2024),
         membershipStatus[Math.floor(Math.random() * membershipStatus.length)],
+        // M-R: Grievance Metrics (AUTO CALCULATED - leave blank)
+        "", "", "", "", "", "",
+        // S-W: Participation
         engagementLevels[Math.floor(Math.random() * engagementLevels.length)],
-        "", "", "", "", "", "", "",  // Grievance metrics (calculated)
-        "", "", "", "",              // Derived fields (calculated)
         Math.floor(Math.random() * 25),
         Math.floor(Math.random() * 15),
         isSteward === "Yes" ? committees[Math.floor(Math.random() * (committees.length - 1))] : "None",
         contactMethods[Math.floor(Math.random() * contactMethods.length)],
-        "", "",
+        // X-AE: Emergency & Admin
+        `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
+        `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
         "",
         randomDate(1960, 2000),
         randomDate(2015, 2024),
@@ -1528,7 +1563,7 @@ function SEED_20K_MEMBERS() {
       ]);
     }
 
-    sheet.getRange(2 + (batch * BATCH), 1, BATCH, 35).setValues(data);
+    sheet.getRange(2 + (batch * BATCH), 1, BATCH, 31).setValues(data);
     SpreadsheetApp.flush();
   }
 
@@ -1576,26 +1611,34 @@ function SEED_5K_GRIEVANCES() {
       const type = types[Math.floor(Math.random() * types.length)];
 
       data.push([
+        // A-F: Basic Info
         `GRV${String(num).padStart(6, '0')}`,
         member[0], member[1], member[2],
         status, step,
+        // G-J: Incident & Filing (H, J auto-calculated)
         incidentDate,
-        "", // Filing deadline (calculated)
+        "", // Filing deadline (H - calculated)
         filedDate,
-        "", // Step I due (calculated)
-        null, "", "", null, "", null, "", "", null, null, null, null,
+        "", // Step I due (J - calculated)
+        // K-M: Step I (M auto-calculated)
+        null, "", "", // Step I Decision Date, Outcome, Appeal Deadline (M - calculated)
+        // N-R: Step II (O, R auto-calculated)
+        null, "", null, "", "", // Step II Filed, Decision Due (O - calc), Decision, Outcome, Appeal Deadline (R - calc)
+        // S-V: Step III & Beyond
+        null, null, null, null, // Step III Filed, Decision, Mediation, Arbitration
+        // W-Z: Details
         status.startsWith("Resolved") ? outcomes[Math.floor(Math.random() * outcomes.length)] : "Pending",
         type,
         `${type} - Auto-generated description`,
         "Union Rep " + (Math.floor(Math.random() * 10) + 1),
-        "", "", "", "", "", "",  // Derived fields (calculated)
+        // AA-AB: Admin (AB auto-calculated)
         "",
-        new Date()
+        new Date() // Last Updated (AB)
       ]);
     }
 
     const startRow = 2 + (batch * BATCH);
-    sheet.getRange(startRow, 1, BATCH, 34).setValues(data);
+    sheet.getRange(startRow, 1, BATCH, 28).setValues(data);
 
     // Recalculate this batch
     for (let row = startRow; row < startRow + BATCH; row++) {
