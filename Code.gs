@@ -10,11 +10,27 @@
  * - Member Directory with auto-calculated grievance metrics
  * - Grievance Log with CBA-compliant deadline tracking
  * - Priority sorting (Step III → II → I, then by due date)
- * - Advanced Dashboard with KPIs, charts, and Top 10 lists
- * - Steward workload tracking
+ * - Advanced Dashboard with KPIs and real-time metrics
+ * - Interactive Visual Charts:
+ *   • Grievances by Status (donut chart)
+ *   • Top 10 Grievance Types (bar chart)
+ *   • Grievances by Current Step (column chart)
+ *   • Members by Unit (donut chart)
+ *   • Top 10 Member Locations (bar chart)
+ *   • Resolved Grievance Outcomes (donut chart)
+ * - Steward Workload Tracking with automated calculations
+ * - Color-coded metrics and conditional formatting
+ * - Top 10 Overdue Grievances with severity indicators
  * - Form integration for data entry
  * - All calculations done in code (no formula rows)
  * - Automated deadline and status tracking
+ *
+ * VISUAL ENHANCEMENTS:
+ * - Professional color scheme with section headers
+ * - Number formatting with thousands separators
+ * - Conditional formatting (red=overdue, yellow=due soon, green=on track)
+ * - Gradient color coding for overdue severity
+ * - Easy-to-read metrics with right-aligned numbers
  *
  * CBA COMPLIANCE:
  * - Article 23A: Grievance deadlines (21-day filing, 30-day decisions, 10-day appeals)
@@ -408,23 +424,27 @@ function createDashboardSheet(ss) {
   sheet.clear();
 
   // Title
-  sheet.getRange("A1:H1").merge()
-    .setValue("509 DASHBOARD - REAL-TIME METRICS")
-    .setFontSize(18)
+  sheet.getRange("A1:L1").merge()
+    .setValue("509 DASHBOARD - REAL-TIME METRICS & ANALYTICS")
+    .setFontSize(20)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.HEADER_BLUE)
     .setFontColor("white");
 
   // Section headers (will be populated by rebuildDashboard())
-  sheet.getRange("A3").setValue("MEMBER METRICS").setFontWeight("bold");
-  sheet.getRange("A11").setValue("GRIEVANCE METRICS").setFontWeight("bold");
-  sheet.getRange("A21").setValue("DEADLINE TRACKING").setFontWeight("bold");
-  sheet.getRange("E3").setValue("TOP 10 OVERDUE GRIEVANCES").setFontWeight("bold");
-  sheet.getRange("E15").setValue("STEWARD WORKLOAD").setFontWeight("bold");
+  sheet.getRange("A3").setValue("MEMBER METRICS").setFontWeight("bold").setFontSize(12);
+  sheet.getRange("A11").setValue("GRIEVANCE METRICS").setFontWeight("bold").setFontSize(12);
+  sheet.getRange("A21").setValue("DEADLINE TRACKING").setFontWeight("bold").setFontSize(12);
+  sheet.getRange("E3").setValue("TOP 10 OVERDUE GRIEVANCES").setFontWeight("bold").setFontSize(11);
+
+  // Chart area headers
+  sheet.getRange("A26").setValue("VISUAL ANALYTICS").setFontWeight("bold").setFontSize(14)
+    .setBackground(COLORS.HEADER_GREEN).setFontColor("white");
 
   sheet.setColumnWidth(1, 250);
   sheet.setColumnWidth(2, 120);
+  sheet.setRowHeight(1, 40);
 }
 
 // ============================================================================
@@ -814,16 +834,20 @@ function rebuildDashboard() {
   const unit8 = memberData.filter((r, i) => i > 0 && r[5] === "Unit 8").length;
   const unit10 = memberData.filter((r, i) => i > 0 && r[5] === "Unit 10").length;
 
-  dashboard.getRange("A4").setValue("Total Members:");
-  dashboard.getRange("B4").setValue(totalMembers);
-  dashboard.getRange("A5").setValue("Active Members:");
-  dashboard.getRange("B5").setValue(activeMembers);
-  dashboard.getRange("A6").setValue("Total Stewards:");
-  dashboard.getRange("B6").setValue(totalStewards);
-  dashboard.getRange("A7").setValue("Unit 8 Members:");
-  dashboard.getRange("B7").setValue(unit8);
-  dashboard.getRange("A8").setValue("Unit 10 Members:");
-  dashboard.getRange("B8").setValue(unit10);
+  dashboard.getRange("A4").setValue("Total Members:").setFontWeight("bold");
+  dashboard.getRange("B4").setValue(totalMembers).setNumberFormat("#,##0").setHorizontalAlignment("right");
+  dashboard.getRange("A5").setValue("Active Members:").setFontWeight("bold");
+  dashboard.getRange("B5").setValue(activeMembers).setNumberFormat("#,##0").setHorizontalAlignment("right");
+  dashboard.getRange("A6").setValue("Total Stewards:").setFontWeight("bold");
+  dashboard.getRange("B6").setValue(totalStewards).setNumberFormat("#,##0").setHorizontalAlignment("right");
+  dashboard.getRange("A7").setValue("Unit 8 Members:").setFontWeight("bold");
+  dashboard.getRange("B7").setValue(unit8).setNumberFormat("#,##0").setHorizontalAlignment("right");
+  dashboard.getRange("A8").setValue("Unit 10 Members:").setFontWeight("bold");
+  dashboard.getRange("B8").setValue(unit10).setNumberFormat("#,##0").setHorizontalAlignment("right");
+
+  // Color code member metrics section
+  dashboard.getRange("A3:B3").setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+  dashboard.getRange("A4:B9").setBackground(COLORS.LIGHT_GRAY);
 
   // Grievance Metrics (A11:B19)
   const totalGrievances = grievanceData.length - 1;
@@ -835,31 +859,54 @@ function rebuildDashboard() {
   const inMediation = grievanceData.filter((r, i) => i > 0 && r[4] === "In Mediation").length;
   const inArbitration = grievanceData.filter((r, i) => i > 0 && r[4] === "In Arbitration").length;
 
-  dashboard.getRange("A12").setValue("Total Grievances:");
-  dashboard.getRange("B12").setValue(totalGrievances);
-  dashboard.getRange("A13").setValue("Active Grievances:");
-  dashboard.getRange("B13").setValue(activeGrievances);
-  dashboard.getRange("A14").setValue("Resolved Grievances:");
-  dashboard.getRange("B14").setValue(resolvedGrievances);
-  dashboard.getRange("A15").setValue("Grievances Won:");
-  dashboard.getRange("B15").setValue(won);
-  dashboard.getRange("A16").setValue("Grievances Lost:");
-  dashboard.getRange("B16").setValue(lost);
-  dashboard.getRange("A17").setValue("Win Rate:");
-  dashboard.getRange("B17").setValue(winRate);
-  dashboard.getRange("A18").setValue("In Mediation:");
-  dashboard.getRange("B18").setValue(inMediation);
-  dashboard.getRange("A19").setValue("In Arbitration:");
-  dashboard.getRange("B19").setValue(inArbitration);
+  dashboard.getRange("A12").setValue("Total Grievances:").setFontWeight("bold");
+  dashboard.getRange("B12").setValue(totalGrievances).setNumberFormat("#,##0").setHorizontalAlignment("right");
+  dashboard.getRange("A13").setValue("Active Grievances:").setFontWeight("bold");
+  dashboard.getRange("B13").setValue(activeGrievances).setNumberFormat("#,##0").setHorizontalAlignment("right");
+  dashboard.getRange("A14").setValue("Resolved Grievances:").setFontWeight("bold");
+  dashboard.getRange("B14").setValue(resolvedGrievances).setNumberFormat("#,##0").setHorizontalAlignment("right");
+  dashboard.getRange("A15").setValue("Grievances Won:").setFontWeight("bold");
+  dashboard.getRange("B15").setValue(won).setNumberFormat("#,##0").setHorizontalAlignment("right")
+    .setBackground(COLORS.ON_TRACK).setFontColor("white");
+  dashboard.getRange("A16").setValue("Grievances Lost:").setFontWeight("bold");
+  dashboard.getRange("B16").setValue(lost).setNumberFormat("#,##0").setHorizontalAlignment("right")
+    .setBackground(COLORS.OVERDUE).setFontColor("white");
+  dashboard.getRange("A17").setValue("Win Rate:").setFontWeight("bold");
+  dashboard.getRange("B17").setValue(winRate).setHorizontalAlignment("right").setFontSize(12).setFontWeight("bold");
+  dashboard.getRange("A18").setValue("In Mediation:").setFontWeight("bold");
+  dashboard.getRange("B18").setValue(inMediation).setNumberFormat("#,##0").setHorizontalAlignment("right");
+  dashboard.getRange("A19").setValue("In Arbitration:").setFontWeight("bold");
+  dashboard.getRange("B19").setValue(inArbitration).setNumberFormat("#,##0").setHorizontalAlignment("right");
 
-  // Deadline Tracking (A21:B25)
+  // Color code grievance metrics section
+  dashboard.getRange("A11:B11").setBackground(COLORS.HEADER_RED).setFontColor("white");
+  dashboard.getRange("A12:B14").setBackground(COLORS.LIGHT_GRAY);
+  dashboard.getRange("A15").setBackground(COLORS.LIGHT_GRAY);
+  dashboard.getRange("A16").setBackground(COLORS.LIGHT_GRAY);
+  dashboard.getRange("A17:B17").setBackground("#E8F5E9"); // Light green for win rate
+  dashboard.getRange("A18:B19").setBackground(COLORS.LIGHT_GRAY);
+
+  // Deadline Tracking (A21:B24)
   const overdue = grievanceData.filter((r, i) => i > 0 && r[28] === "YES").length;
   const dueThisWeek = grievanceData.filter((r, i) => i > 0 && r[27] && r[27] >= 0 && r[27] <= 7).length;
+  const dueNextWeek = grievanceData.filter((r, i) => i > 0 && r[27] && r[27] > 7 && r[27] <= 14).length;
 
-  dashboard.getRange("A22").setValue("Overdue Grievances:");
-  dashboard.getRange("B22").setValue(overdue);
-  dashboard.getRange("A23").setValue("Due This Week:");
-  dashboard.getRange("B23").setValue(dueThisWeek);
+  dashboard.getRange("A22").setValue("Overdue Grievances:").setFontWeight("bold");
+  dashboard.getRange("B22").setValue(overdue).setNumberFormat("#,##0").setHorizontalAlignment("right")
+    .setBackground(overdue > 0 ? COLORS.OVERDUE : COLORS.ON_TRACK)
+    .setFontColor("white").setFontWeight("bold").setFontSize(12);
+  dashboard.getRange("A23").setValue("Due This Week:").setFontWeight("bold");
+  dashboard.getRange("B23").setValue(dueThisWeek).setNumberFormat("#,##0").setHorizontalAlignment("right")
+    .setBackground(dueThisWeek > 0 ? COLORS.DUE_SOON : COLORS.ON_TRACK)
+    .setFontColor("white").setFontWeight("bold").setFontSize(12);
+  dashboard.getRange("A24").setValue("Due Next Week:").setFontWeight("bold");
+  dashboard.getRange("B24").setValue(dueNextWeek).setNumberFormat("#,##0").setHorizontalAlignment("right");
+
+  // Color code deadline tracking section
+  dashboard.getRange("A21:B21").setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
+  dashboard.getRange("A22").setBackground(COLORS.LIGHT_GRAY);
+  dashboard.getRange("A23").setBackground(COLORS.LIGHT_GRAY);
+  dashboard.getRange("A24:B24").setBackground(COLORS.LIGHT_GRAY);
 
   // Top 10 Overdue Grievances (E4:H13)
   const overdueList = grievanceData
@@ -873,6 +920,7 @@ function rebuildDashboard() {
     .sort((a, b) => a.daysTo - b.daysTo)
     .slice(0, 10);
 
+  dashboard.getRange("E4:H4").setFontWeight("bold").setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
   dashboard.getRange("E4").setValue("Grievance ID");
   dashboard.getRange("F4").setValue("Member");
   dashboard.getRange("G4").setValue("Step");
@@ -886,8 +934,370 @@ function rebuildDashboard() {
       dashboard.getRange("F" + row).setValue(g.member);
       dashboard.getRange("G" + row).setValue(g.step);
       dashboard.getRange("H" + row).setValue(Math.abs(g.daysTo));
+
+      // Color code overdue rows with gradient (darker for more overdue)
+      const daysOverdue = Math.abs(g.daysTo);
+      if (daysOverdue > 30) {
+        dashboard.getRange("E" + row + ":H" + row).setBackground("#C00000").setFontColor("white").setFontWeight("bold");
+      } else if (daysOverdue > 14) {
+        dashboard.getRange("E" + row + ":H" + row).setBackground(COLORS.OVERDUE).setFontColor("white");
+      } else {
+        dashboard.getRange("E" + row + ":H" + row).setBackground("#F4CCCC");
+      }
     } else {
-      dashboard.getRange("E" + row + ":H" + row).clearContent();
+      dashboard.getRange("E" + row + ":H" + row).clearContent().setBackground("white").setFontWeight("normal");
+    }
+  }
+
+  // Build Steward Workload Sheet
+  rebuildStewardWorkload();
+
+  // Create all dashboard charts
+  createDashboardCharts();
+}
+
+// ============================================================================
+// STEWARD WORKLOAD CALCULATION
+// ============================================================================
+
+/**
+ * Rebuilds the Steward Workload sheet with current data
+ */
+function rebuildStewardWorkload() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const stewardSheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  // Get all stewards
+  const memberData = memberSheet.getDataRange().getValues();
+  const stewards = memberData.filter((r, i) => i > 0 && r[9] === "Yes"); // Column J = Is Steward
+
+  // Get all grievances
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+
+  // Clear existing data (keep headers)
+  const lastRow = stewardSheet.getLastRow();
+  if (lastRow > 1) {
+    stewardSheet.getRange(2, 1, lastRow - 1, 15).clearContent();
+  }
+
+  const stewardStats = [];
+
+  stewards.forEach(steward => {
+    const memberId = steward[0];
+    const fullName = steward[1] + " " + steward[2];
+    const location = steward[4];
+
+    // Find grievances assigned to this steward (using Representative column)
+    const assignedGrievances = grievanceData.filter((g, i) =>
+      i > 0 && g[25] && g[25].toString().includes(fullName)
+    );
+
+    // Calculate metrics
+    const totalCases = assignedGrievances.length;
+    const activeCases = assignedGrievances.filter(g => g[4] && g[4].toString().startsWith("Filed")).length;
+    const step1Cases = assignedGrievances.filter(g => g[5] === "Step I - Immediate Supervisor").length;
+    const step2Cases = assignedGrievances.filter(g => g[5] === "Step II - Agency Head").length;
+    const step3Cases = assignedGrievances.filter(g => g[5] === "Step III - Human Resources").length;
+    const overdueCases = assignedGrievances.filter(g => g[28] === "YES").length;
+    const dueThisWeek = assignedGrievances.filter(g => g[27] && g[27] >= 0 && g[27] <= 7).length;
+
+    const resolvedCases = assignedGrievances.filter(g => g[4] && g[4].toString().startsWith("Resolved")).length;
+    const wonCases = assignedGrievances.filter(g => g[4] === "Resolved - Won").length;
+    const winRate = resolvedCases > 0 ? ((wonCases / resolvedCases) * 100).toFixed(1) + "%" : "N/A";
+
+    // Calculate average days to resolution
+    const resolvedWithDays = assignedGrievances.filter(g =>
+      g[4] && g[4].toString().startsWith("Resolved") && g[26]
+    );
+    const avgDays = resolvedWithDays.length > 0
+      ? Math.round(resolvedWithDays.reduce((sum, g) => sum + g[26], 0) / resolvedWithDays.length)
+      : "N/A";
+
+    // Get last case date
+    const caseDates = assignedGrievances.map(g => g[6]).filter(d => d);
+    const lastCaseDate = caseDates.length > 0
+      ? new Date(Math.max(...caseDates.map(d => new Date(d))))
+      : "";
+
+    const status = activeCases > 0 ? "Active" : "Available";
+
+    stewardStats.push([
+      fullName,
+      memberId,
+      location,
+      totalCases,
+      activeCases,
+      step1Cases,
+      step2Cases,
+      step3Cases,
+      overdueCases,
+      dueThisWeek,
+      winRate,
+      avgDays,
+      0, // Members Assigned (placeholder)
+      lastCaseDate,
+      status
+    ]);
+  });
+
+  // Write data
+  if (stewardStats.length > 0) {
+    stewardSheet.getRange(2, 1, stewardStats.length, 15).setValues(stewardStats);
+
+    // Apply conditional formatting
+    for (let i = 0; i < stewardStats.length; i++) {
+      const row = i + 2;
+      const overdue = stewardStats[i][8];
+      if (overdue > 0) {
+        stewardSheet.getRange(row, 9).setBackground(COLORS.OVERDUE).setFontColor("white");
+      }
+    }
+  }
+}
+
+// ============================================================================
+// DASHBOARD CHARTS
+// ============================================================================
+
+/**
+ * Creates all visual charts for the dashboard
+ */
+function createDashboardCharts() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  // Remove existing charts
+  const charts = dashboard.getCharts();
+  charts.forEach(chart => dashboard.removeChart(chart));
+
+  // Get data
+  const memberData = memberSheet.getDataRange().getValues();
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+
+  // Check if we have data to chart
+  if (memberData.length <= 1 && grievanceData.length <= 1) {
+    dashboard.getRange("A28").setValue("No data available yet. Add members and grievances to see charts.");
+    return;
+  }
+
+  // Prepare chart data sheets (hidden sheet for chart data)
+  let chartDataSheet = ss.getSheetByName("_ChartData");
+  if (!chartDataSheet) {
+    chartDataSheet = ss.insertSheet("_ChartData");
+    chartDataSheet.hideSheet();
+  }
+  chartDataSheet.clear();
+
+  // === CHART 1: Grievances by Status (Pie Chart) ===
+  if (grievanceData.length > 1) {
+    const statusCounts = {};
+    grievanceData.forEach((r, i) => {
+      if (i > 0 && r[4]) {
+        const status = r[4].toString();
+        statusCounts[status] = (statusCounts[status] || 0) + 1;
+      }
+    });
+
+    const statusData = [["Status", "Count"]];
+    Object.entries(statusCounts).forEach(([status, count]) => {
+      statusData.push([status, count]);
+    });
+
+    if (statusData.length > 1) {
+      chartDataSheet.getRange(1, 1, statusData.length, 2).setValues(statusData);
+
+      const statusChart = chartDataSheet.newChart()
+        .setChartType(Charts.ChartType.PIE)
+        .addRange(chartDataSheet.getRange(1, 1, statusData.length, 2))
+        .setPosition(27, 1, 0, 0)
+        .setOption('title', 'Grievances by Status')
+        .setOption('pieHole', 0.4)
+        .setOption('width', 450)
+        .setOption('height', 300)
+        .setOption('legend', {position: 'right', textStyle: {fontSize: 10}})
+        .setOption('chartArea', {width: '85%', height: '80%'})
+        .build();
+      dashboard.insertChart(statusChart);
+    }
+  }
+
+  // === CHART 2: Grievances by Type (Bar Chart) ===
+  if (grievanceData.length > 1) {
+    const typeCounts = {};
+    grievanceData.forEach((r, i) => {
+      if (i > 0 && r[27]) {
+        const type = r[27].toString();
+        typeCounts[type] = (typeCounts[type] || 0) + 1;
+      }
+    });
+
+    const typeData = [["Type", "Count"]];
+    Object.entries(typeCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .forEach(([type, count]) => {
+        typeData.push([type.substring(0, 30), count]);
+      });
+
+    if (typeData.length > 1) {
+      chartDataSheet.getRange(1, 4, typeData.length, 2).setValues(typeData);
+
+      const typeChart = chartDataSheet.newChart()
+        .setChartType(Charts.ChartType.BAR)
+        .addRange(chartDataSheet.getRange(1, 4, typeData.length, 2))
+        .setPosition(27, 6, 0, 0)
+        .setOption('title', 'Top 10 Grievance Types')
+        .setOption('width', 500)
+        .setOption('height', 300)
+        .setOption('legend', {position: 'none'})
+        .setOption('chartArea', {width: '70%', height: '80%'})
+        .setOption('hAxis', {title: 'Count'})
+        .setOption('colors', ['#E06666'])
+        .build();
+      dashboard.insertChart(typeChart);
+    }
+  }
+
+  // === CHART 3: Grievances by Step (Column Chart) ===
+  if (grievanceData.length > 1) {
+    const stepCounts = {};
+    grievanceData.forEach((r, i) => {
+      if (i > 0 && r[5]) {
+        const step = r[5].toString();
+        stepCounts[step] = (stepCounts[step] || 0) + 1;
+      }
+    });
+
+    const stepData = [["Step", "Count"]];
+    Object.entries(stepCounts).forEach(([step, count]) => {
+      stepData.push([step, count]);
+    });
+
+    if (stepData.length > 1) {
+      chartDataSheet.getRange(1, 7, stepData.length, 2).setValues(stepData);
+
+      const stepChart = chartDataSheet.newChart()
+        .setChartType(Charts.ChartType.COLUMN)
+        .addRange(chartDataSheet.getRange(1, 7, stepData.length, 2))
+        .setPosition(45, 1, 0, 0)
+        .setOption('title', 'Grievances by Current Step')
+        .setOption('width', 450)
+        .setOption('height', 300)
+        .setOption('legend', {position: 'none'})
+        .setOption('chartArea', {width: '85%', height: '75%'})
+        .setOption('vAxis', {title: 'Count'})
+        .setOption('colors', ['#4A86E8'])
+        .build();
+      dashboard.insertChart(stepChart);
+    }
+  }
+
+  // === CHART 4: Members by Unit (Pie Chart) ===
+  if (memberData.length > 1) {
+    const unitCounts = {};
+    memberData.forEach((r, i) => {
+      if (i > 0 && r[5]) {
+        const unit = r[5].toString();
+        unitCounts[unit] = (unitCounts[unit] || 0) + 1;
+      }
+    });
+
+    const unitData = [["Unit", "Count"]];
+    Object.entries(unitCounts).forEach(([unit, count]) => {
+      unitData.push([unit, count]);
+    });
+
+    if (unitData.length > 1) {
+      chartDataSheet.getRange(1, 10, unitData.length, 2).setValues(unitData);
+
+      const unitChart = chartDataSheet.newChart()
+        .setChartType(Charts.ChartType.PIE)
+        .addRange(chartDataSheet.getRange(1, 10, unitData.length, 2))
+        .setPosition(45, 6, 0, 0)
+        .setOption('title', 'Members by Unit')
+        .setOption('pieHole', 0.4)
+        .setOption('width', 450)
+        .setOption('height', 300)
+        .setOption('legend', {position: 'right', textStyle: {fontSize: 12}})
+        .setOption('chartArea', {width: '85%', height: '80%'})
+        .setOption('colors', ['#93C47D', '#8E7CC3'])
+        .build();
+      dashboard.insertChart(unitChart);
+    }
+  }
+
+  // === CHART 5: Members by Location (Top 10 Bar Chart) ===
+  if (memberData.length > 1) {
+    const locationCounts = {};
+    memberData.forEach((r, i) => {
+      if (i > 0 && r[4]) {
+        const location = r[4].toString();
+        locationCounts[location] = (locationCounts[location] || 0) + 1;
+      }
+    });
+
+    const locationData = [["Location", "Count"]];
+    Object.entries(locationCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .forEach(([location, count]) => {
+        locationData.push([location.substring(0, 25), count]);
+      });
+
+    if (locationData.length > 1) {
+      chartDataSheet.getRange(1, 13, locationData.length, 2).setValues(locationData);
+
+      const locationChart = chartDataSheet.newChart()
+        .setChartType(Charts.ChartType.BAR)
+        .addRange(chartDataSheet.getRange(1, 13, locationData.length, 2))
+        .setPosition(63, 1, 0, 0)
+        .setOption('title', 'Top 10 Member Locations')
+        .setOption('width', 500)
+        .setOption('height', 300)
+        .setOption('legend', {position: 'none'})
+        .setOption('chartArea', {width: '70%', height: '80%'})
+        .setOption('hAxis', {title: 'Members'})
+        .setOption('colors', ['#93C47D'])
+        .build();
+      dashboard.insertChart(locationChart);
+    }
+  }
+
+  // === CHART 6: Win/Loss Rate (Pie Chart) ===
+  if (grievanceData.length > 1) {
+    const wonCount = grievanceData.filter((r, i) => i > 0 && r[4] === "Resolved - Won").length;
+    const lostCount = grievanceData.filter((r, i) => i > 0 && r[4] === "Resolved - Lost").length;
+    const settledFull = grievanceData.filter((r, i) => i > 0 && r[4] === "Resolved - Settled").length;
+    const withdrawn = grievanceData.filter((r, i) => i > 0 && r[4] === "Resolved - Withdrawn").length;
+
+    if (wonCount + lostCount + settledFull + withdrawn > 0) {
+      const outcomeData = [
+        ["Outcome", "Count"],
+        ["Won", wonCount],
+        ["Lost", lostCount],
+        ["Settled", settledFull],
+        ["Withdrawn", withdrawn]
+      ];
+
+      chartDataSheet.getRange(1, 16, outcomeData.length, 2).setValues(outcomeData);
+
+      const outcomeChart = chartDataSheet.newChart()
+        .setChartType(Charts.ChartType.PIE)
+        .addRange(chartDataSheet.getRange(1, 16, outcomeData.length, 2))
+        .setPosition(63, 6, 0, 0)
+        .setOption('title', 'Resolved Grievance Outcomes')
+        .setOption('pieHole', 0.4)
+        .setOption('width', 450)
+        .setOption('height', 300)
+        .setOption('legend', {position: 'right', textStyle: {fontSize: 11}})
+        .setOption('chartArea', {width: '85%', height: '80%'})
+        .setOption('colors', ['#34A853', '#EA4335', '#FBBC04', '#999999'])
+        .build();
+      dashboard.insertChart(outcomeChart);
     }
   }
 }
