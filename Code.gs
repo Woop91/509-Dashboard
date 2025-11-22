@@ -144,6 +144,10 @@ const PRIORITY_ORDER = {
   "Arbitration": 6
 };
 
+// Contact Update Configuration
+// TODO: Replace this URL with your actual Google Form URL for member contact updates
+const MEMBER_CONTACT_UPDATE_FORM_URL = "https://forms.gle/YOUR_FORM_ID_HERE";
+
 // ============================================================================
 // MAIN SETUP FUNCTION
 // ============================================================================
@@ -6337,6 +6341,82 @@ function sendReEngagementEmail(memberId) {
 }
 
 /**
+ * Sends contact update email to a single member with Google Form link
+ */
+function sendContactUpdateEmail(memberId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return false;
+
+  const data = sheet.getDataRange().getValues();
+  const member = data.find(row => row[0] === memberId);
+
+  if (!member || !member[7]) return false; // No email found
+
+  const firstName = member[1];
+  const lastName = member[2];
+  const email = member[7];
+
+  const emailBody = `Dear ${firstName},\n\n` +
+                    `We want to make sure we have your most current contact information on file. ` +
+                    `Keeping your contact details up to date helps us communicate important union updates, ` +
+                    `meeting notifications, and grievance information effectively.\n\n` +
+                    `Please take a moment to review and update your contact information using this form:\n\n` +
+                    `${MEMBER_CONTACT_UPDATE_FORM_URL}\n\n` +
+                    `Your updated information will help us:\n` +
+                    `• Reach you about important deadlines and meetings\n` +
+                    `• Keep you informed about contract updates\n` +
+                    `• Ensure you receive critical union communications\n` +
+                    `• Contact you in case of emergencies\n\n` +
+                    `Thank you for helping us stay connected!\n\n` +
+                    `In Solidarity,\nSEIU Local 509`;
+
+  try {
+    MailApp.sendEmail({
+      to: email,
+      subject: 'Update Your Contact Information - SEIU Local 509',
+      body: emailBody
+    });
+    return true;
+  } catch (e) {
+    Logger.log(`Failed to send contact update email to ${email}: ${e}`);
+    return false;
+  }
+}
+
+/**
+ * Sends contact update emails to multiple members
+ * @param {Array<string>} memberIds - Array of member IDs to email
+ * @returns {Object} Results with success and failure counts
+ */
+function sendBulkContactUpdateEmails(memberIds) {
+  let successCount = 0;
+  let failCount = 0;
+  const failed = [];
+
+  memberIds.forEach(memberId => {
+    try {
+      if (sendContactUpdateEmail(memberId)) {
+        successCount++;
+      } else {
+        failCount++;
+        failed.push(memberId);
+      }
+    } catch (error) {
+      failCount++;
+      failed.push(memberId);
+      Logger.log(`Failed to send to ${memberId}: ${error}`);
+    }
+  });
+
+  return {
+    success: successCount,
+    failed: failCount,
+    failedIds: failed
+  };
+}
+
+/**
  * Feature 36: Creates member satisfaction survey tracker
  */
 function trackMemberSatisfaction(memberId, satisfactionLevel, comments) {
@@ -8472,7 +8552,9 @@ function addEnhancementMenus() {
     .addItem('Update Engagement Levels', 'updateEngagementLevels')
     .addItem('Find Inactive Members', 'showInactiveMembers')
     .addItem('Identify Steward Candidates', 'showPotentialStewards')
+    .addSeparator()
     .addItem('Send Re-engagement Emails', 'sendBulkReEngagement')
+    .addItem('Send Contact Update Requests', 'showContactUpdateEmailSelector')
     .addToUi();
 
   // Tools Menu
@@ -8832,6 +8914,398 @@ function sendBulkReEngagement() {
   } catch (error) {
     ui.alert('❌ Error', 'Failed to send bulk emails: ' + error.message, ui.ButtonSet.OK);
   }
+}
+
+/**
+ * Wrapper: Shows member selection sidebar for sending contact update emails
+ */
+function showContactUpdateEmailSelector() {
+  const html = HtmlService.createHtmlOutput(getMemberSelectionHtml())
+    .setTitle('Send Contact Update Emails')
+    .setWidth(400);
+  SpreadsheetApp.getUi().showSidebar(html);
+}
+
+/**
+ * Gets all member data for the selection UI
+ */
+function getMembersForSelection() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!sheet) return [];
+
+  const data = sheet.getDataRange().getValues();
+  const members = [];
+
+  // Skip header row
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (row[0]) { // Has Member ID
+      members.push({
+        memberId: row[0],
+        firstName: row[1] || '',
+        lastName: row[2] || '',
+        email: row[7] || '',
+        location: row[4] || '',
+        unit: row[5] || '',
+        status: row[10] || ''
+      });
+    }
+  }
+
+  return members;
+}
+
+/**
+ * Processes the selected members and sends contact update emails
+ */
+function processSendContactUpdateEmails(memberIds) {
+  if (!memberIds || memberIds.length === 0) {
+    return { success: false, message: 'No members selected.' };
+  }
+
+  const results = sendBulkContactUpdateEmails(memberIds);
+
+  let message = `Successfully sent ${results.success} email(s).`;
+  if (results.failed > 0) {
+    message += `\nFailed to send ${results.failed} email(s).`;
+  }
+
+  return {
+    success: true,
+    message: message,
+    successCount: results.success,
+    failedCount: results.failed
+  };
+}
+
+/**
+ * Generates HTML for member selection sidebar
+ */
+function getMemberSelectionHtml() {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 15px;
+      margin: 0;
+      font-size: 13px;
+    }
+    .header {
+      background: #2563EB;
+      color: white;
+      padding: 12px;
+      margin: -15px -15px 15px -15px;
+      border-radius: 0;
+    }
+    .header h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    .info-box {
+      background: #F0F7FF;
+      border-left: 3px solid #2563EB;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 12px;
+    }
+    .filter-section {
+      margin-bottom: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .filter-row {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #374151;
+    }
+    input[type="text"], select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #D1D5DB;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 13px;
+    }
+    .member-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #D1D5DB;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 15px;
+      background: white;
+    }
+    .member-item {
+      padding: 8px;
+      margin-bottom: 5px;
+      border-bottom: 1px solid #F3F4F6;
+      display: flex;
+      align-items: center;
+    }
+    .member-item:last-child {
+      border-bottom: none;
+    }
+    .member-item input[type="checkbox"] {
+      margin-right: 10px;
+    }
+    .member-info {
+      flex: 1;
+    }
+    .member-name {
+      font-weight: 500;
+      color: #1F2937;
+    }
+    .member-details {
+      font-size: 11px;
+      color: #6B7280;
+      margin-top: 2px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    button {
+      flex: 1;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .btn-primary {
+      background: #2563EB;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #1D4ED8;
+    }
+    .btn-secondary {
+      background: #F3F4F6;
+      color: #374151;
+    }
+    .btn-secondary:hover {
+      background: #E5E7EB;
+    }
+    .status-message {
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .status-success {
+      background: #D1FAE5;
+      color: #065F46;
+      border-left: 3px solid #059669;
+    }
+    .status-error {
+      background: #FEE2E2;
+      color: #991B1B;
+      border-left: 3px solid #DC2626;
+    }
+    .selection-count {
+      font-size: 12px;
+      color: #6B7280;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>📧 Send Contact Update Emails</h2>
+  </div>
+
+  <div class="info-box">
+    Select members to send a contact information update request. Members will receive an email with a link to update their contact details.
+  </div>
+
+  <div class="filter-section">
+    <div class="filter-row">
+      <label>Search by Name:</label>
+      <input type="text" id="searchName" placeholder="Type to filter..." onkeyup="filterMembers()">
+    </div>
+    <div class="filter-row">
+      <label>Filter by Status:</label>
+      <select id="filterStatus" onchange="filterMembers()">
+        <option value="">All Statuses</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+        <option value="On Leave">On Leave</option>
+        <option value="Retired">Retired</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <label>Filter by Location:</label>
+      <select id="filterLocation" onchange="filterMembers()">
+        <option value="">All Locations</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="selection-count">
+    <span id="selectionCount">0 members selected</span>
+    <button class="btn-secondary" onclick="toggleSelectAll()" style="float:right; padding:5px 10px;">Select All</button>
+    <div style="clear:both;"></div>
+  </div>
+
+  <div class="member-list" id="memberList">
+    <div style="text-align:center; color:#6B7280;">Loading members...</div>
+  </div>
+
+  <div class="button-group">
+    <button class="btn-secondary" onclick="google.script.host.close()">Cancel</button>
+    <button class="btn-primary" onclick="sendEmails()">Send Emails</button>
+  </div>
+
+  <div id="statusMessage" class="status-message"></div>
+
+  <script>
+    let allMembers = [];
+    let selectAllState = false;
+
+    // Load members on page load
+    google.script.run
+      .withSuccessHandler(displayMembers)
+      .withFailureHandler(showError)
+      .getMembersForSelection();
+
+    function displayMembers(members) {
+      allMembers = members;
+
+      // Populate location filter
+      const locations = [...new Set(members.map(m => m.location).filter(l => l))];
+      const locationSelect = document.getElementById('filterLocation');
+      locations.forEach(loc => {
+        const option = document.createElement('option');
+        option.value = loc;
+        option.textContent = loc;
+        locationSelect.appendChild(option);
+      });
+
+      filterMembers();
+    }
+
+    function filterMembers() {
+      const searchTerm = document.getElementById('searchName').value.toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value;
+      const locationFilter = document.getElementById('filterLocation').value;
+
+      const filtered = allMembers.filter(member => {
+        const nameMatch = !searchTerm ||
+          (member.firstName.toLowerCase() + ' ' + member.lastName.toLowerCase()).includes(searchTerm);
+        const statusMatch = !statusFilter || member.status === statusFilter;
+        const locationMatch = !locationFilter || member.location === locationFilter;
+        return nameMatch && statusMatch && locationMatch;
+      });
+
+      renderMemberList(filtered);
+    }
+
+    function renderMemberList(members) {
+      const listDiv = document.getElementById('memberList');
+
+      if (members.length === 0) {
+        listDiv.innerHTML = '<div style="text-align:center; color:#6B7280;">No members found</div>';
+        return;
+      }
+
+      listDiv.innerHTML = members.map(member => {
+        const hasEmail = member.email ? '✓' : '✗';
+        const emailClass = member.email ? '' : 'style="color: #DC2626;"';
+        return \`
+          <div class="member-item">
+            <input type="checkbox" id="member_\${member.memberId}" value="\${member.memberId}"
+                   onchange="updateSelectionCount()" \${member.email ? '' : 'disabled'}>
+            <div class="member-info">
+              <div class="member-name">\${member.firstName} \${member.lastName} <span \${emailClass}>\${hasEmail}</span></div>
+              <div class="member-details">
+                \${member.location || 'No location'} | \${member.unit || 'No unit'} | \${member.status || 'No status'}
+                \${member.email ? '' : '<br><span style="color: #DC2626;">No email address</span>'}
+              </div>
+            </div>
+          </div>
+        \`;
+      }).join('');
+
+      updateSelectionCount();
+    }
+
+    function toggleSelectAll() {
+      selectAllState = !selectAllState;
+      const checkboxes = document.querySelectorAll('.member-list input[type="checkbox"]:not([disabled])');
+      checkboxes.forEach(cb => cb.checked = selectAllState);
+      updateSelectionCount();
+    }
+
+    function updateSelectionCount() {
+      const checked = document.querySelectorAll('.member-list input[type="checkbox"]:checked').length;
+      document.getElementById('selectionCount').textContent = checked + ' member' + (checked !== 1 ? 's' : '') + ' selected';
+    }
+
+    function sendEmails() {
+      const selectedIds = Array.from(document.querySelectorAll('.member-list input[type="checkbox"]:checked'))
+        .map(cb => cb.value);
+
+      if (selectedIds.length === 0) {
+        showMessage('Please select at least one member.', 'error');
+        return;
+      }
+
+      const confirmMsg = \`Send contact update emails to \${selectedIds.length} member(s)?\\n\\nNote: Make sure you have configured the Google Form URL in the script constants.\`;
+      if (!confirm(confirmMsg)) {
+        return;
+      }
+
+      showMessage('Sending emails...', 'success');
+
+      google.script.run
+        .withSuccessHandler(handleSendResult)
+        .withFailureHandler(showError)
+        .processSendContactUpdateEmails(selectedIds);
+    }
+
+    function handleSendResult(result) {
+      if (result.success) {
+        showMessage(result.message, 'success');
+        // Uncheck all checkboxes
+        document.querySelectorAll('.member-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+        updateSelectionCount();
+      } else {
+        showMessage(result.message, 'error');
+      }
+    }
+
+    function showError(error) {
+      showMessage('Error: ' + error.message, 'error');
+    }
+
+    function showMessage(message, type) {
+      const msgDiv = document.getElementById('statusMessage');
+      msgDiv.textContent = message;
+      msgDiv.className = 'status-message status-' + type;
+      msgDiv.style.display = 'block';
+
+      if (type === 'success') {
+        setTimeout(() => {
+          msgDiv.style.display = 'none';
+        }, 5000);
+      }
+    }
+  </script>
+</body>
+</html>
+  `;
 }
 
 /**
