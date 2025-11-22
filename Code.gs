@@ -28,14 +28,22 @@
  * - All calculations done in code (no formula rows)
  * - Automated deadline and status tracking
  *
- * NEW ANALYTICAL TABS:
+ * ANALYTICAL TABS:
  * - Trends & Timeline: Monthly filing trends, resolution time analysis, 12-month trends
  * - Performance Metrics: Win rates, settlement rates, efficiency metrics, step-by-step analysis
  * - Location Analytics: Grievances by location, location performance comparisons
  * - Type Analysis: Breakdown by grievance type, success rates, resolution times by type
  *
+ * NEW DASHBOARD VARIATIONS (Inspired by Professional Design References):
+ * - Executive Overview: Clean CRM-style dashboard with large KPI cards for leadership
+ * - KPI Dashboard: Gaming-style dashboard with bold numbers and performance indicators
+ * - Member Engagement: Track participation, satisfaction, committee involvement
+ * - Cost Impact Analysis: Financial recovery tracking and ROI metrics
+ * - Quick Stats: At-a-glance real-time statistics with prominent displays
+ *
  * VISUAL ENHANCEMENTS:
- * - Professional color scheme with section headers
+ * - Unified professional union color scheme (Union Blue, Solidarity Red, Success Green)
+ * - Consistent design language across all dashboard tabs
  * - Number formatting with thousands separators
  * - Conditional formatting (red=overdue, yellow=due soon, green=on track)
  * - Gradient color coding for overdue severity
@@ -72,21 +80,48 @@ const SHEETS = {
   PERFORMANCE: "Performance Metrics",
   LOCATION: "Location Analytics",
   TYPE_ANALYSIS: "Type Analysis",
+  EXECUTIVE: "Executive Overview",
+  KPI_BOARD: "KPI Dashboard",
+  MEMBER_ENGAGEMENT: "Member Engagement",
+  COST_IMPACT: "Cost Impact Analysis",
+  QUICK_STATS: "Quick Stats",
   ARCHIVE: "Archive",
   DIAGNOSTICS: "Diagnostics"
 };
 
+// Unified Professional Union Color Scheme (inspired by design references)
 const COLORS = {
-  HEADER_BLUE: "#4A86E8",
-  HEADER_RED: "#E06666",
-  HEADER_GREEN: "#93C47D",
-  HEADER_ORANGE: "#F6B26B",
-  HEADER_PURPLE: "#8E7CC3",
+  // Primary Union Theme
+  PRIMARY_BLUE: "#2563EB",      // Union Blue - main headers
+  SOLIDARITY_RED: "#DC2626",    // Solidarity Red - urgent/critical
+  UNION_GREEN: "#059669",       // Success/wins
+
+  // Secondary Colors
+  ACCENT_TEAL: "#0891B2",       // Info/neutral
+  ACCENT_PURPLE: "#7C3AED",     // In progress/pending
+  ACCENT_ORANGE: "#EA580C",     // Warning/attention
+  ACCENT_YELLOW: "#CA8A04",     // Due soon
+
+  // Backgrounds & Neutrals
   WHITE: "#FFFFFF",
-  LIGHT_GRAY: "#F3F3F3",
-  OVERDUE: "#EA4335",
-  DUE_SOON: "#FBBC04",
-  ON_TRACK: "#34A853"
+  CARD_BG: "#FFFFFF",
+  LIGHT_GRAY: "#F9FAFB",
+  BORDER_GRAY: "#E5E7EB",
+  TEXT_DARK: "#1F2937",
+  TEXT_GRAY: "#6B7280",
+
+  // Status Colors
+  OVERDUE: "#DC2626",           // Red
+  DUE_SOON: "#F59E0B",          // Orange
+  ON_TRACK: "#10B981",          // Green
+  IN_PROGRESS: "#8B5CF6",       // Purple
+
+  // Legacy compatibility (mapped to new colors)
+  HEADER_BLUE: "#2563EB",
+  HEADER_RED: "#DC2626",
+  HEADER_GREEN: "#059669",
+  HEADER_ORANGE: "#EA580C",
+  HEADER_PURPLE: "#7C3AED"
 };
 
 const CBA_DEADLINES = {
@@ -161,6 +196,22 @@ function CREATE_509_DASHBOARD() {
     SpreadsheetApp.flush();
 
     createTypeAnalysisSheet(ss);
+    SpreadsheetApp.flush();
+
+    // New dashboard variations inspired by design references
+    createExecutiveOverviewSheet(ss);
+    SpreadsheetApp.flush();
+
+    createKPIDashboardSheet(ss);
+    SpreadsheetApp.flush();
+
+    createMemberEngagementSheet(ss);
+    SpreadsheetApp.flush();
+
+    createCostImpactSheet(ss);
+    SpreadsheetApp.flush();
+
+    createQuickStatsSheet(ss);
     SpreadsheetApp.flush();
 
     createArchiveSheet(ss);
@@ -722,6 +773,605 @@ function createTypeAnalysisSheet(ss) {
   sheet.setRowHeight(1, 40);
   sheet.setColumnWidth(1, 250);
   sheet.setColumnWidth(2, 120);
+}
+
+// ============================================================================
+// EXECUTIVE OVERVIEW DASHBOARD (Inspired by CRM Dashboard)
+// ============================================================================
+
+/**
+ * Clean, professional executive-level overview with large KPI cards
+ * Design inspiration: CRM Dashboard with white cards and colored metrics
+ */
+function createExecutiveOverviewSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.EXECUTIVE);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.EXECUTIVE);
+
+  sheet.clear();
+
+  // Main title with union blue
+  sheet.getRange("A1:L1").merge()
+    .setValue("EXECUTIVE OVERVIEW - 509 DASHBOARD")
+    .setFontSize(22)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
+
+  // Subtitle/date range
+  sheet.getRange("A2:L2").merge()
+    .setValue("Union-wide Performance Metrics & Key Indicators")
+    .setFontSize(11)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  // Section: Key Metrics (Row 4-10)
+  sheet.getRange("A4:L4").merge()
+    .setValue("📊 KEY PERFORMANCE INDICATORS")
+    .setFontSize(14)
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_DARK);
+
+  // KPI card labels (will be filled by rebuild function)
+  const kpiLabels = [
+    ["TOTAL MEMBERS", "ACTIVE GRIEVANCES", "WIN RATE", "AVG RESOLUTION TIME"],
+    ["", "", "", ""],
+    ["vs Last Month", "vs Last Month", "vs Last Month", "vs Last Month"]
+  ];
+
+  sheet.getRange("A6:D8").setValues([
+    kpiLabels[0],
+    kpiLabels[1],
+    kpiLabels[2]
+  ]);
+
+  // Style KPI card labels
+  sheet.getRange("A6:D6").setFontWeight("bold").setFontSize(10)
+    .setFontColor(COLORS.TEXT_GRAY).setHorizontalAlignment("center");
+
+  // Section: Union Health Metrics (Row 11-17)
+  sheet.getRange("A11:L11").merge()
+    .setValue("💪 UNION HEALTH & ENGAGEMENT")
+    .setFontSize(14)
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_DARK);
+
+  const healthLabels = [
+    ["STEWARD COUNT", "MEMBER ENGAGEMENT", "ACTIVE COMMITTEES", "TRAINING SESSIONS"],
+    ["", "", "", ""],
+    ["Change YTD", "Avg Score", "This Quarter", "Last 12 Months"]
+  ];
+
+  sheet.getRange("A13:D15").setValues([
+    healthLabels[0],
+    healthLabels[1],
+    healthLabels[2]
+  ]);
+
+  sheet.getRange("A13:D13").setFontWeight("bold").setFontSize(10)
+    .setFontColor(COLORS.TEXT_GRAY).setHorizontalAlignment("center");
+
+  // Section: Critical Alerts (Row 18-24)
+  sheet.getRange("A18:L18").merge()
+    .setValue("🚨 PRIORITY ALERTS & ACTION ITEMS")
+    .setFontSize(14)
+    .setFontWeight("bold")
+    .setBackground(COLORS.SOLIDARITY_RED)
+    .setFontColor("white");
+
+  sheet.getRange("A20").setValue("Overdue Grievances:").setFontWeight("bold");
+  sheet.getRange("A21").setValue("Due This Week:").setFontWeight("bold");
+  sheet.getRange("A22").setValue("Arbitrations Pending:").setFontWeight("bold");
+  sheet.getRange("A23").setValue("High-Priority Cases:").setFontWeight("bold");
+
+  // Section: Visual Summaries (Row 26+)
+  sheet.getRange("A26:L26").merge()
+    .setValue("📈 VISUAL SUMMARIES")
+    .setFontSize(14)
+    .setFontWeight("bold")
+    .setBackground(COLORS.UNION_GREEN)
+    .setFontColor("white");
+
+  // Chart placeholders
+  sheet.getRange("A28").setValue("Status Breakdown").setFontWeight("bold").setFontSize(11);
+  sheet.getRange("E28").setValue("Monthly Trends").setFontWeight("bold").setFontSize(11);
+  sheet.getRange("I28").setValue("Win/Loss Outcomes").setFontWeight("bold").setFontSize(11);
+
+  // Formatting
+  sheet.setRowHeight(1, 50);
+  sheet.setRowHeight(2, 30);
+  sheet.setColumnWidths(1, 4, 180);
+  sheet.setColumnWidths(5, 4, 180);
+  sheet.setColumnWidths(9, 4, 180);
+}
+
+// ============================================================================
+// KPI DASHBOARD (Inspired by Gaming KPI Dashboard)
+// ============================================================================
+
+/**
+ * Large metric displays with performance indicators
+ * Design inspiration: Gaming KPI Dashboard with triangle indicators and bold numbers
+ */
+function createKPIDashboardSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.KPI_BOARD);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.KPI_BOARD);
+
+  sheet.clear();
+
+  // Bold header with gradient feel
+  sheet.getRange("A1:M1").merge()
+    .setValue("⚡ REAL-TIME KPI DASHBOARD")
+    .setFontSize(24)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_PURPLE)
+    .setFontColor("white");
+
+  // Current period indicator
+  const today = new Date();
+  sheet.getRange("A2:M2").merge()
+    .setValue(`Performance Period: ${today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`)
+    .setFontSize(12)
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_DARK);
+
+  // Main KPI Grid - Large Numbers Section
+  sheet.getRange("A4:M4").merge()
+    .setValue("THIS MONTH")
+    .setFontSize(16)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
+
+  // KPI Cards Row 1
+  const kpiRow1 = ["GRIEVANCES FILED", "GRIEVANCES RESOLVED", "PENDING DECISIONS", "WIN RATE %"];
+  sheet.getRange("A6:D6").setValues([kpiRow1])
+    .setFontWeight("bold")
+    .setFontSize(10)
+    .setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  // Large number placeholders (will be filled by rebuild)
+  sheet.getRange("A7:D7").setFontSize(36).setFontWeight("bold").setHorizontalAlignment("center");
+
+  // Trend indicators row
+  sheet.getRange("A8:D8").setFontSize(11).setHorizontalAlignment("center");
+
+  // KPI Cards Row 2
+  sheet.getRange("A11:M11").merge()
+    .setValue("YEAR TO DATE")
+    .setFontSize(16)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.UNION_GREEN)
+    .setFontColor("white");
+
+  const kpiRow2 = ["TOTAL FILINGS", "TOTAL RESOLVED", "SETTLEMENTS", "ARBITRATIONS"];
+  sheet.getRange("A13:D13").setValues([kpiRow2])
+    .setFontWeight("bold")
+    .setFontSize(10)
+    .setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  sheet.getRange("A14:D14").setFontSize(36).setFontWeight("bold").setHorizontalAlignment("center");
+  sheet.getRange("A15:D15").setFontSize(11).setHorizontalAlignment("center");
+
+  // Performance Breakdown Section
+  sheet.getRange("A18:M18").merge()
+    .setValue("PERFORMANCE BREAKDOWN")
+    .setFontSize(16)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_ORANGE)
+    .setFontColor("white");
+
+  // Table headers for detailed breakdown
+  const perfHeaders = ["Metric", "Current", "Target", "Variance", "Status"];
+  sheet.getRange("A20:E20").setValues([perfHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_DARK);
+
+  const perfMetrics = [
+    ["Avg Days to Resolution", "", "30 days", "", ""],
+    ["Member Satisfaction", "", "4.5/5.0", "", ""],
+    ["Steward Response Time", "", "24 hrs", "", ""],
+    ["Case Documentation Rate", "", "100%", "", ""],
+    ["Settlement Success Rate", "", "75%", "", ""]
+  ];
+
+  sheet.getRange("A21:E25").setValues(perfMetrics);
+
+  // Formatting
+  sheet.setRowHeight(1, 55);
+  sheet.setRowHeight(7, 50); // Large number rows
+  sheet.setRowHeight(14, 50);
+  sheet.setColumnWidths(1, 5, 150);
+}
+
+// ============================================================================
+// MEMBER ENGAGEMENT DASHBOARD (Inspired by Employee Performance Dashboard)
+// ============================================================================
+
+/**
+ * Member participation, satisfaction, and engagement tracking
+ * Design inspiration: Employee Performance Dashboard with multi-colored metrics
+ */
+function createMemberEngagementSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.MEMBER_ENGAGEMENT);
+
+  sheet.clear();
+
+  // Title
+  sheet.getRange("A1:L1").merge()
+    .setValue("MEMBER ENGAGEMENT & PARTICIPATION")
+    .setFontSize(20)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_TEAL)
+    .setFontColor("white");
+
+  // Engagement Score Cards
+  sheet.getRange("A3:L3").merge()
+    .setValue("🎯 ENGAGEMENT SCORES")
+    .setFontSize(14)
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_DARK);
+
+  const engagementLabels = [
+    ["OVERALL ENGAGEMENT", "VERY ACTIVE MEMBERS", "EVENT ATTENDANCE", "TRAINING PARTICIPATION"],
+    ["", "", "", ""],
+    ["Avg Level", "Count & %", "Last 12 Months", "Completion Rate"]
+  ];
+
+  sheet.getRange("A5:D7").setValues([
+    engagementLabels[0],
+    engagementLabels[1],
+    engagementLabels[2]
+  ]);
+
+  sheet.getRange("A5:D5").setFontWeight("bold").setFontSize(10)
+    .setHorizontalAlignment("center").setFontColor(COLORS.TEXT_GRAY);
+
+  // Member Distribution
+  sheet.getRange("A10:F10").merge()
+    .setValue("👥 MEMBER DISTRIBUTION BY ENGAGEMENT LEVEL")
+    .setFontSize(13)
+    .setFontWeight("bold")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
+
+  const engagementHeaders = ["Engagement Level", "Count", "Percentage", "Change (30d)", "Trend"];
+  sheet.getRange("A12:E12").setValues([engagementHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY);
+
+  const engagementLevels = [
+    ["Very Active", "", "", "", ""],
+    ["Active", "", "", "", ""],
+    ["Moderately Active", "", "", "", ""],
+    ["Inactive", "", "", "", ""],
+    ["New Member", "", "", "", ""]
+  ];
+
+  sheet.getRange("A13:E17").setValues(engagementLevels);
+
+  // Committee Participation
+  sheet.getRange("A20:F20").merge()
+    .setValue("🏛️ COMMITTEE PARTICIPATION")
+    .setFontSize(13)
+    .setFontWeight("bold")
+    .setBackground(COLORS.UNION_GREEN)
+    .setFontColor("white");
+
+  const committeeHeaders = ["Committee", "Members", "Meetings (YTD)", "Attendance Rate", "Status"];
+  sheet.getRange("A22:E22").setValues([committeeHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY);
+
+  const committees = [
+    ["Executive Board", "", "", "", ""],
+    ["Bargaining Committee", "", "", "", ""],
+    ["Grievance Committee", "", "", "", ""],
+    ["Political Action", "", "", "", ""],
+    ["Communications", "", "", "", ""],
+    ["Member Engagement", "", "", "", ""]
+  ];
+
+  sheet.getRange("A23:E28").setValues(committees);
+
+  // Contact & Communication Preferences
+  sheet.getRange("A31:F31").merge()
+    .setValue("📱 COMMUNICATION PREFERENCES")
+    .setFontSize(13)
+    .setFontWeight("bold")
+    .setBackground(COLORS.ACCENT_PURPLE)
+    .setFontColor("white");
+
+  const contactHeaders = ["Preferred Method", "Member Count", "Percentage", "Response Rate"];
+  sheet.getRange("A33:D33").setValues([contactHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY);
+
+  const contactMethods = [
+    ["Email", "", "", ""],
+    ["Phone", "", "", ""],
+    ["Text", "", "", ""],
+    ["Mail", "", "", ""]
+  ];
+
+  sheet.getRange("A34:D37").setValues(contactMethods);
+
+  // Formatting
+  sheet.setRowHeight(1, 45);
+  sheet.setColumnWidth(1, 200);
+  sheet.setColumnWidths(2, 4, 130);
+}
+
+// ============================================================================
+// COST IMPACT ANALYSIS DASHBOARD (Inspired by Portfolio Dashboard)
+// ============================================================================
+
+/**
+ * Financial and cost analysis of grievance activities
+ * Design inspiration: Portfolio Dashboard with clean charts and financial metrics
+ */
+function createCostImpactSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.COST_IMPACT);
+
+  sheet.clear();
+
+  // Title
+  sheet.getRange("A1:L1").merge()
+    .setValue("COST IMPACT ANALYSIS")
+    .setFontSize(20)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.SOLIDARITY_RED)
+    .setFontColor("white");
+
+  sheet.getRange("A2:L2").merge()
+    .setValue("Financial Impact of Grievances & Union Activities")
+    .setFontSize(11)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY);
+
+  // Financial Metrics
+  sheet.getRange("A4:L4").merge()
+    .setValue("💰 MEMBER WINS & RECOVERIES")
+    .setFontSize(14)
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_DARK);
+
+  const costLabels = [
+    ["TOTAL RECOVERED", "BACK PAY WON", "BENEFITS RESTORED", "AVG PER CASE"],
+    ["", "", "", ""],
+    ["Year to Date", "Year to Date", "Count", "This Year"]
+  ];
+
+  sheet.getRange("A6:D8").setValues([
+    costLabels[0],
+    costLabels[1],
+    costLabels[2]
+  ]);
+
+  sheet.getRange("A6:D6").setFontWeight("bold").setFontSize(10)
+    .setHorizontalAlignment("center").setFontColor(COLORS.TEXT_GRAY);
+
+  // Cost by Type
+  sheet.getRange("A11:F11").merge()
+    .setValue("📊 RECOVERY BY GRIEVANCE TYPE")
+    .setFontSize(13)
+    .setFontWeight("bold")
+    .setBackground(COLORS.UNION_GREEN)
+    .setFontColor("white");
+
+  const typeHeaders = ["Grievance Type", "Cases Won", "Total Recovered", "Avg Recovery", "% of Total"];
+  sheet.getRange("A13:E13").setValues([typeHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY);
+
+  // Placeholder rows (will be populated by rebuild)
+  for (let i = 0; i < 10; i++) {
+    sheet.getRange(14 + i, 1).setValue(`Type ${i + 1}`);
+  }
+
+  // Time Cost Analysis
+  sheet.getRange("A25:F25").merge()
+    .setValue("⏱️ TIME INVESTMENT ANALYSIS")
+    .setFontSize(13)
+    .setFontWeight("bold")
+    .setBackground(COLORS.ACCENT_ORANGE)
+    .setFontColor("white");
+
+  const timeHeaders = ["Activity", "Total Hours", "Avg Hours/Case", "Steward Time", "Member Time"];
+  sheet.getRange("A27:E27").setValues([timeHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY);
+
+  const timeActivities = [
+    ["Grievance Preparation", "", "", "", ""],
+    ["Meetings & Hearings", "", "", "", ""],
+    ["Research & Documentation", "", "", "", ""],
+    ["Mediation Sessions", "", "", "", ""],
+    ["Arbitration Proceedings", "", "", "", ""]
+  ];
+
+  sheet.getRange("A28:E32").setValues(timeActivities);
+
+  // ROI Metrics
+  sheet.getRange("A35:F35").merge()
+    .setValue("📈 RETURN ON INVESTMENT")
+    .setFontSize(13)
+    .setFontWeight("bold")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
+
+  sheet.getRange("A37").setValue("Time Invested vs. Recovery Ratio:").setFontWeight("bold");
+  sheet.getRange("A38").setValue("Success Rate Impact:").setFontWeight("bold");
+  sheet.getRange("A39").setValue("Member Value Delivered:").setFontWeight("bold");
+
+  // Formatting
+  sheet.setRowHeight(1, 45);
+  sheet.setColumnWidth(1, 220);
+  sheet.setColumnWidths(2, 4, 130);
+}
+
+// ============================================================================
+// QUICK STATS DASHBOARD (Inspired by Running Analytics)
+// ============================================================================
+
+/**
+ * Fast, at-a-glance statistics with large numbers
+ * Design inspiration: Running Analytics with prominent metric displays
+ */
+function createQuickStatsSheet(ss) {
+  let sheet = ss.getSheetByName(SHEETS.QUICK_STATS);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.QUICK_STATS);
+
+  sheet.clear();
+
+  // Bold, eye-catching title
+  sheet.getRange("A1:K1").merge()
+    .setValue("⚡ QUICK STATS - AT A GLANCE")
+    .setFontSize(24)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.UNION_GREEN)
+    .setFontColor("white");
+
+  // Today's snapshot
+  const today = new Date();
+  sheet.getRange("A2:K2").merge()
+    .setValue(`Snapshot: ${today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`)
+    .setFontSize(11)
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_DARK);
+
+  // TODAY section
+  sheet.getRange("A4:K4").merge()
+    .setValue("TODAY")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
+
+  const todayStats = ["NEW GRIEVANCES", "DEADLINES DUE", "MEETINGS SCHEDULED"];
+  sheet.getRange("A6:C6").setValues([todayStats])
+    .setFontWeight("bold")
+    .setFontSize(11)
+    .setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  sheet.getRange("A7:C7").setFontSize(42).setFontWeight("bold").setHorizontalAlignment("center");
+
+  // THIS WEEK section
+  sheet.getRange("A10:K10").merge()
+    .setValue("THIS WEEK")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_TEAL)
+    .setFontColor("white");
+
+  const weekStats = ["FILED", "RESOLVED", "DUE SOON", "OVERDUE"];
+  sheet.getRange("A12:D12").setValues([weekStats])
+    .setFontWeight("bold")
+    .setFontSize(11)
+    .setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  sheet.getRange("A13:D13").setFontSize(36).setFontWeight("bold").setHorizontalAlignment("center");
+
+  // THIS MONTH section
+  sheet.getRange("A16:K16").merge()
+    .setValue("THIS MONTH")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_PURPLE)
+    .setFontColor("white");
+
+  const monthStats = ["FILED", "RESOLVED", "WON", "LOST", "SETTLED"];
+  sheet.getRange("A18:E18").setValues([monthStats])
+    .setFontWeight("bold")
+    .setFontSize(11)
+    .setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  sheet.getRange("A19:E19").setFontSize(32).setFontWeight("bold").setHorizontalAlignment("center");
+
+  // YEAR TO DATE section
+  sheet.getRange("A22:K22").merge()
+    .setValue("YEAR TO DATE")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.SOLIDARITY_RED)
+    .setFontColor("white");
+
+  const ytdStats = ["TOTAL FILED", "TOTAL RESOLVED", "WIN RATE %", "AVG DAYS", "ACTIVE NOW"];
+  sheet.getRange("A24:E24").setValues([ytdStats])
+    .setFontWeight("bold")
+    .setFontSize(11)
+    .setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  sheet.getRange("A25:E25").setFontSize(32).setFontWeight("bold").setHorizontalAlignment("center");
+
+  // ALL TIME section
+  sheet.getRange("A28:K28").merge()
+    .setValue("ALL TIME RECORDS")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_ORANGE)
+    .setFontColor("white");
+
+  const allTimeStats = ["MEMBERS SERVED", "GRIEVANCES FILED", "TOTAL WINS", "SUCCESS RATE"];
+  sheet.getRange("A30:D30").setValues([allTimeStats])
+    .setFontWeight("bold")
+    .setFontSize(11)
+    .setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  sheet.getRange("A31:D31").setFontSize(32).setFontWeight("bold").setHorizontalAlignment("center");
+
+  // Critical Alerts Box
+  sheet.getRange("A34:K34").merge()
+    .setValue("🚨 CRITICAL ALERTS")
+    .setFontSize(14)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.SOLIDARITY_RED)
+    .setFontColor("white");
+
+  sheet.getRange("A36").setValue("Grievances Overdue:").setFontWeight("bold").setFontColor(COLORS.SOLIDARITY_RED);
+  sheet.getRange("A37").setValue("Due in Next 48 Hours:").setFontWeight("bold").setFontColor(COLORS.ACCENT_ORANGE);
+  sheet.getRange("A38").setValue("Arbitrations Pending:").setFontWeight("bold").setFontColor(COLORS.ACCENT_PURPLE);
+
+  // Formatting
+  sheet.setRowHeight(1, 55);
+  sheet.setRowHeight(7, 60);  // Extra large numbers
+  sheet.setRowHeight(13, 55);
+  sheet.setRowHeight(19, 50);
+  sheet.setRowHeight(25, 50);
+  sheet.setRowHeight(31, 50);
+  sheet.setColumnWidths(1, 11, 130);
 }
 
 // ============================================================================
