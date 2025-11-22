@@ -986,174 +986,175 @@ function rebuildDashboard() {
     // Get data
     const memberData = memberSheet.getDataRange().getValues();
     const grievanceData = grievanceSheet.getDataRange().getValues();
+    const today = new Date();
 
-  // Member Metrics (A4:B9)
-  const totalMembers = memberData.length - 1;
-  const activeMembers = memberData.filter((r, i) => i > 0 && r[11] === "Active").length;
-  const totalStewards = memberData.filter((r, i) => i > 0 && r[9] === "Yes").length;
-  const unit8 = memberData.filter((r, i) => i > 0 && r[5] === "Unit 8").length;
-  const unit10 = memberData.filter((r, i) => i > 0 && r[5] === "Unit 10").length;
+    // Calculate all member metrics in one pass
+    let activeMembers = 0, totalStewards = 0, unit8 = 0, unit10 = 0;
+    for (let i = 1; i < memberData.length; i++) {
+      if (memberData[i][11] === "Active") activeMembers++;
+      if (memberData[i][9] === "Yes") totalStewards++;
+      if (memberData[i][5] === "Unit 8") unit8++;
+      if (memberData[i][5] === "Unit 10") unit10++;
+    }
+    const totalMembers = memberData.length - 1;
 
-  dashboard.getRange("A4").setValue("Total Members:").setFontWeight("bold");
-  dashboard.getRange("B4").setValue(totalMembers).setNumberFormat("#,##0").setHorizontalAlignment("right");
-  dashboard.getRange("A5").setValue("Active Members:").setFontWeight("bold");
-  dashboard.getRange("B5").setValue(activeMembers).setNumberFormat("#,##0").setHorizontalAlignment("right");
-  dashboard.getRange("A6").setValue("Total Stewards:").setFontWeight("bold");
-  dashboard.getRange("B6").setValue(totalStewards).setNumberFormat("#,##0").setHorizontalAlignment("right");
-  dashboard.getRange("A7").setValue("Unit 8 Members:").setFontWeight("bold");
-  dashboard.getRange("B7").setValue(unit8).setNumberFormat("#,##0").setHorizontalAlignment("right");
-  dashboard.getRange("A8").setValue("Unit 10 Members:").setFontWeight("bold");
-  dashboard.getRange("B8").setValue(unit10).setNumberFormat("#,##0").setHorizontalAlignment("right");
+    // Calculate all grievance metrics in one pass
+    let activeGrievances = 0, resolvedGrievances = 0, won = 0, lost = 0;
+    let inMediation = 0, inArbitration = 0;
+    let overdue = 0, dueThisWeek = 0, dueNextWeek = 0;
+    const overdueList = [];
 
-  // Color code member metrics section
-  dashboard.getRange("A3:B3").setBackground(COLORS.HEADER_BLUE).setFontColor("white");
-  dashboard.getRange("A4:B9").setBackground(COLORS.LIGHT_GRAY);
+    for (let i = 1; i < grievanceData.length; i++) {
+      const r = grievanceData[i];
+      const status = r[4];
+      if (!status) continue;
 
-  // Grievance Metrics (A11:B19)
-  const totalGrievances = grievanceData.length - 1;
-  const activeGrievances = grievanceData.filter((r, i) => i > 0 && r[4] && r[4].toString().startsWith("Filed")).length;
-  const resolvedGrievances = grievanceData.filter((r, i) => i > 0 && r[4] && r[4].toString().startsWith("Resolved")).length;
-  const won = grievanceData.filter((r, i) => i > 0 && r[4] === "Resolved - Won").length;
-  const lost = grievanceData.filter((r, i) => i > 0 && r[4] === "Resolved - Lost").length;
-  const winRate = resolvedGrievances > 0 ? ((won / resolvedGrievances) * 100).toFixed(1) + "%" : "N/A";
-  const inMediation = grievanceData.filter((r, i) => i > 0 && r[4] === "In Mediation").length;
-  const inArbitration = grievanceData.filter((r, i) => i > 0 && r[4] === "In Arbitration").length;
+      const statusStr = status.toString();
+      if (statusStr.startsWith("Filed")) activeGrievances++;
+      if (statusStr.startsWith("Resolved")) {
+        resolvedGrievances++;
+        if (status === "Resolved - Won") won++;
+        if (status === "Resolved - Lost") lost++;
+      }
+      if (status === "In Mediation") inMediation++;
+      if (status === "In Arbitration") inArbitration++;
 
-  dashboard.getRange("A12").setValue("Total Grievances:").setFontWeight("bold");
-  dashboard.getRange("B12").setValue(totalGrievances).setNumberFormat("#,##0").setHorizontalAlignment("right");
-  dashboard.getRange("A13").setValue("Active Grievances:").setFontWeight("bold");
-  dashboard.getRange("B13").setValue(activeGrievances).setNumberFormat("#,##0").setHorizontalAlignment("right");
-  dashboard.getRange("A14").setValue("Resolved Grievances:").setFontWeight("bold");
-  dashboard.getRange("B14").setValue(resolvedGrievances).setNumberFormat("#,##0").setHorizontalAlignment("right");
-  dashboard.getRange("A15").setValue("Grievances Won:").setFontWeight("bold");
-  dashboard.getRange("B15").setValue(won).setNumberFormat("#,##0").setHorizontalAlignment("right")
-    .setBackground(COLORS.ON_TRACK).setFontColor("white");
-  dashboard.getRange("A16").setValue("Grievances Lost:").setFontWeight("bold");
-  dashboard.getRange("B16").setValue(lost).setNumberFormat("#,##0").setHorizontalAlignment("right")
-    .setBackground(COLORS.OVERDUE).setFontColor("white");
-  dashboard.getRange("A17").setValue("Win Rate:").setFontWeight("bold");
-  dashboard.getRange("B17").setValue(winRate).setHorizontalAlignment("right").setFontSize(12).setFontWeight("bold");
-  dashboard.getRange("A18").setValue("In Mediation:").setFontWeight("bold");
-  dashboard.getRange("B18").setValue(inMediation).setNumberFormat("#,##0").setHorizontalAlignment("right");
-  dashboard.getRange("A19").setValue("In Arbitration:").setFontWeight("bold");
-  dashboard.getRange("B19").setValue(inArbitration).setNumberFormat("#,##0").setHorizontalAlignment("right");
-
-  // Color code grievance metrics section
-  dashboard.getRange("A11:B11").setBackground(COLORS.HEADER_RED).setFontColor("white");
-  dashboard.getRange("A12:B14").setBackground(COLORS.LIGHT_GRAY);
-  dashboard.getRange("A15").setBackground(COLORS.LIGHT_GRAY);
-  dashboard.getRange("A16").setBackground(COLORS.LIGHT_GRAY);
-  dashboard.getRange("A17:B17").setBackground("#E8F5E9"); // Light green for win rate
-  dashboard.getRange("A18:B19").setBackground(COLORS.LIGHT_GRAY);
-
-  // Deadline Tracking (A21:B24) - Calculate dynamically
-  let overdue = 0;
-  let dueThisWeek = 0;
-  let dueNextWeek = 0;
-  const today = new Date();
-
-  grievanceData.forEach((r, i) => {
-    if (i === 0 || !r[4] || r[4].toString().startsWith("Resolved")) return; // Skip header and resolved
-
-    // Get next deadline based on current step
-    const nextDeadline = getNextDeadlineFromRow(r);
-    if (nextDeadline) {
-      const daysTo = Math.floor((nextDeadline - today) / (1000 * 60 * 60 * 24));
-      if (daysTo < 0) {
-        overdue++;
-      } else if (daysTo <= 7) {
-        dueThisWeek++;
-      } else if (daysTo <= 14) {
-        dueNextWeek++;
+      // Calculate deadline metrics only for non-resolved grievances
+      if (!statusStr.startsWith("Resolved")) {
+        const nextDeadline = getNextDeadlineFromRow(r);
+        if (nextDeadline) {
+          const daysTo = Math.floor((nextDeadline - today) / (1000 * 60 * 60 * 24));
+          if (daysTo < 0) {
+            overdue++;
+            overdueList.push({
+              id: r[0],
+              member: r[2] + " " + r[3],
+              step: r[5],
+              daysTo: daysTo
+            });
+          } else if (daysTo <= 7) {
+            dueThisWeek++;
+          } else if (daysTo <= 14) {
+            dueNextWeek++;
+          }
+        }
       }
     }
-  });
 
-  dashboard.getRange("A22").setValue("Overdue Grievances:").setFontWeight("bold");
-  dashboard.getRange("B22").setValue(overdue).setNumberFormat("#,##0").setHorizontalAlignment("right")
-    .setBackground(overdue > 0 ? COLORS.OVERDUE : COLORS.ON_TRACK)
-    .setFontColor("white").setFontWeight("bold").setFontSize(12);
-  dashboard.getRange("A23").setValue("Due This Week:").setFontWeight("bold");
-  dashboard.getRange("B23").setValue(dueThisWeek).setNumberFormat("#,##0").setHorizontalAlignment("right")
-    .setBackground(dueThisWeek > 0 ? COLORS.DUE_SOON : COLORS.ON_TRACK)
-    .setFontColor("white").setFontWeight("bold").setFontSize(12);
-  dashboard.getRange("A24").setValue("Due Next Week:").setFontWeight("bold");
-  dashboard.getRange("B24").setValue(dueNextWeek).setNumberFormat("#,##0").setHorizontalAlignment("right");
+    const totalGrievances = grievanceData.length - 1;
+    const winRate = resolvedGrievances > 0 ? ((won / resolvedGrievances) * 100).toFixed(1) + "%" : "N/A";
 
-  // Color code deadline tracking section
-  dashboard.getRange("A21:B21").setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
-  dashboard.getRange("A22").setBackground(COLORS.LIGHT_GRAY);
-  dashboard.getRange("A23").setBackground(COLORS.LIGHT_GRAY);
-  dashboard.getRange("A24:B24").setBackground(COLORS.LIGHT_GRAY);
+    // Sort and limit overdue list
+    overdueList.sort((a, b) => a.daysTo - b.daysTo);
+    const top10Overdue = overdueList.slice(0, 10);
 
-  // Top 10 Overdue Grievances (E4:H13) - Calculate dynamically
-  const overdueList = [];
-  grievanceData.forEach((r, i) => {
-    if (i === 0 || !r[4] || r[4].toString().startsWith("Resolved")) return; // Skip header and resolved
+    // Batch write member metrics
+    const memberMetrics = [
+      ["Total Members:", totalMembers],
+      ["Active Members:", activeMembers],
+      ["Total Stewards:", totalStewards],
+      ["Unit 8 Members:", unit8],
+      ["Unit 10 Members:", unit10],
+      ["", ""] // Empty row for spacing
+    ];
+    dashboard.getRange(4, 1, 6, 2).setValues(memberMetrics);
+    dashboard.getRange("A4:A8").setFontWeight("bold");
+    dashboard.getRange("B4:B8").setNumberFormat("#,##0").setHorizontalAlignment("right");
 
-    const nextDeadline = getNextDeadlineFromRow(r);
-    if (nextDeadline) {
-      const daysTo = Math.floor((nextDeadline - today) / (1000 * 60 * 60 * 24));
-      if (daysTo < 0) {
-        overdueList.push({
-          id: r[0],
-          member: r[2] + " " + r[3],
-          step: r[5],
-          daysTo: daysTo
-        });
-      }
-    }
-  });
-  overdueList.sort((a, b) => a.daysTo - b.daysTo).splice(10); // Keep only top 10
+    // Batch write grievance metrics
+    const grievanceMetrics = [
+      ["", ""], // Empty row
+      ["Total Grievances:", totalGrievances],
+      ["Active Grievances:", activeGrievances],
+      ["Resolved Grievances:", resolvedGrievances],
+      ["Grievances Won:", won],
+      ["Grievances Lost:", lost],
+      ["Win Rate:", winRate],
+      ["In Mediation:", inMediation],
+      ["In Arbitration:", inArbitration]
+    ];
+    dashboard.getRange(11, 1, 9, 2).setValues(grievanceMetrics);
+    dashboard.getRange("A12:A19").setFontWeight("bold");
+    dashboard.getRange("B12:B16").setNumberFormat("#,##0").setHorizontalAlignment("right");
+    dashboard.getRange("B17").setHorizontalAlignment("right");
+    dashboard.getRange("B18:B19").setNumberFormat("#,##0").setHorizontalAlignment("right");
 
-  dashboard.getRange("E4:H4").setFontWeight("bold").setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
-  dashboard.getRange("E4").setValue("Grievance ID");
-  dashboard.getRange("F4").setValue("Member");
-  dashboard.getRange("G4").setValue("Step");
-  dashboard.getRange("H4").setValue("Days Overdue");
+    // Batch write deadline metrics
+    const deadlineMetrics = [
+      ["", ""],
+      ["Overdue Grievances:", overdue],
+      ["Due This Week:", dueThisWeek],
+      ["Due Next Week:", dueNextWeek]
+    ];
+    dashboard.getRange(21, 1, 4, 2).setValues(deadlineMetrics);
+    dashboard.getRange("A22:A24").setFontWeight("bold");
+    dashboard.getRange("B22:B24").setNumberFormat("#,##0").setHorizontalAlignment("right");
 
-  for (let i = 0; i < 10; i++) {
-    const row = 5 + i;
-    if (i < overdueList.length) {
-      const g = overdueList[i];
-      dashboard.getRange("E" + row).setValue(g.id);
-      dashboard.getRange("F" + row).setValue(g.member);
-      dashboard.getRange("G" + row).setValue(g.step);
-      dashboard.getRange("H" + row).setValue(Math.abs(g.daysTo));
-
-      // Color code overdue rows with gradient (darker for more overdue)
-      const daysOverdue = Math.abs(g.daysTo);
-      if (daysOverdue > 30) {
-        dashboard.getRange("E" + row + ":H" + row).setBackground("#C00000").setFontColor("white").setFontWeight("bold");
-      } else if (daysOverdue > 14) {
-        dashboard.getRange("E" + row + ":H" + row).setBackground(COLORS.OVERDUE).setFontColor("white");
+    // Batch write overdue grievances table
+    const overdueTable = [["Grievance ID", "Member", "Step", "Days Overdue"]];
+    for (let i = 0; i < 10; i++) {
+      if (i < top10Overdue.length) {
+        const g = top10Overdue[i];
+        overdueTable.push([g.id, g.member, g.step, Math.abs(g.daysTo)]);
       } else {
-        dashboard.getRange("E" + row + ":H" + row).setBackground("#F4CCCC");
+        overdueTable.push(["", "", "", ""]);
       }
-    } else {
-      dashboard.getRange("E" + row + ":H" + row).clearContent().setBackground("white").setFontWeight("normal");
     }
-  }
+    dashboard.getRange(4, 5, 11, 4).setValues(overdueTable);
+
+    // Apply formatting (batch operations)
+    dashboard.getRange("A3:B3").setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+    dashboard.getRange("A4:B9").setBackground(COLORS.LIGHT_GRAY);
+    dashboard.getRange("A11:B11").setBackground(COLORS.HEADER_RED).setFontColor("white");
+    dashboard.getRange("A12:B14").setBackground(COLORS.LIGHT_GRAY);
+    dashboard.getRange("A15").setBackground(COLORS.LIGHT_GRAY);
+    dashboard.getRange("B15").setBackground(COLORS.ON_TRACK).setFontColor("white");
+    dashboard.getRange("A16").setBackground(COLORS.LIGHT_GRAY);
+    dashboard.getRange("B16").setBackground(COLORS.OVERDUE).setFontColor("white");
+    dashboard.getRange("A17:B17").setBackground("#E8F5E9").setFontSize(12).setFontWeight("bold");
+    dashboard.getRange("A18:B19").setBackground(COLORS.LIGHT_GRAY);
+    dashboard.getRange("A21:B21").setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
+    dashboard.getRange("A22").setBackground(COLORS.LIGHT_GRAY);
+    dashboard.getRange("B22").setBackground(overdue > 0 ? COLORS.OVERDUE : COLORS.ON_TRACK)
+      .setFontColor("white").setFontWeight("bold").setFontSize(12);
+    dashboard.getRange("A23").setBackground(COLORS.LIGHT_GRAY);
+    dashboard.getRange("B23").setBackground(dueThisWeek > 0 ? COLORS.DUE_SOON : COLORS.ON_TRACK)
+      .setFontColor("white").setFontWeight("bold").setFontSize(12);
+    dashboard.getRange("A24:B24").setBackground(COLORS.LIGHT_GRAY);
+
+    // Format overdue table
+    dashboard.getRange("E4:H4").setFontWeight("bold").setBackground(COLORS.HEADER_ORANGE).setFontColor("white");
+    for (let i = 0; i < top10Overdue.length; i++) {
+      const row = 5 + i;
+      const daysOverdue = Math.abs(top10Overdue[i].daysTo);
+      const range = dashboard.getRange("E" + row + ":H" + row);
+      if (daysOverdue > 30) {
+        range.setBackground("#C00000").setFontColor("white").setFontWeight("bold");
+      } else if (daysOverdue > 14) {
+        range.setBackground(COLORS.OVERDUE).setFontColor("white");
+      } else {
+        range.setBackground("#F4CCCC");
+      }
+    }
+    // Clear formatting for empty rows
+    if (top10Overdue.length < 10) {
+      dashboard.getRange(5 + top10Overdue.length, 5, 10 - top10Overdue.length, 4)
+        .setBackground("white").setFontWeight("normal").setFontColor("black");
+    }
 
     // Build Steward Workload Sheet
     rebuildStewardWorkload();
-    SpreadsheetApp.flush();
 
     // Create all dashboard charts
     createDashboardCharts();
-    SpreadsheetApp.flush();
 
     // Rebuild new analytical tabs
     rebuildTrendsSheet();
-    SpreadsheetApp.flush();
-
     rebuildPerformanceSheet();
-    SpreadsheetApp.flush();
-
     rebuildLocationSheet();
-    SpreadsheetApp.flush();
-
     rebuildTypeAnalysisSheet();
+
+    // Single flush at the end
     SpreadsheetApp.flush();
 
   } catch (error) {
@@ -1177,10 +1178,43 @@ function rebuildStewardWorkload() {
 
   // Get all stewards
   const memberData = memberSheet.getDataRange().getValues();
-  const stewards = memberData.filter((r, i) => i > 0 && r[9] === "Yes"); // Column J = Is Steward
+  const stewards = [];
+  const stewardMap = {}; // Map full name to steward data
 
-  // Get all grievances
+  for (let i = 1; i < memberData.length; i++) {
+    const r = memberData[i];
+    if (r[9] === "Yes") { // Column J = Is Steward
+      const fullName = r[1] + " " + r[2];
+      const stewardData = {
+        memberId: r[0],
+        fullName: fullName,
+        location: r[4],
+        grievances: []
+      };
+      stewards.push(stewardData);
+      stewardMap[fullName] = stewardData;
+    }
+  }
+
+  // Get all grievances and assign to stewards
   const grievanceData = grievanceSheet.getDataRange().getValues();
+  const today = new Date();
+
+  // PERFORMANCE FIX: Build grievance assignments in one pass
+  for (let i = 1; i < grievanceData.length; i++) {
+    const g = grievanceData[i];
+    const representative = g[25]; // Column Z: Representative
+    if (representative) {
+      const repStr = representative.toString();
+      // Check if any steward name is in the representative field
+      for (const stewardName in stewardMap) {
+        if (repStr.includes(stewardName)) {
+          stewardMap[stewardName].grievances.push(g);
+          break; // Assign to first matching steward only
+        }
+      }
+    }
+  }
 
   // Clear existing data (keep headers)
   const lastRow = stewardSheet.getLastRow();
@@ -1190,64 +1224,70 @@ function rebuildStewardWorkload() {
 
   const stewardStats = [];
 
+  // Calculate metrics for each steward
   stewards.forEach(steward => {
-    const memberId = steward[0];
-    const fullName = steward[1] + " " + steward[2];
-    const location = steward[4];
+    const assignedGrievances = steward.grievances;
 
-    // Find grievances assigned to this steward (using Representative column)
-    const assignedGrievances = grievanceData.filter((g, i) =>
-      i > 0 && g[25] && g[25].toString().includes(fullName)
-    );
+    // Calculate all metrics in one pass through assigned grievances
+    let totalCases = assignedGrievances.length;
+    let activeCases = 0, step1Cases = 0, step2Cases = 0, step3Cases = 0;
+    let overdueCases = 0, dueThisWeek = 0, resolvedCases = 0, wonCases = 0;
+    let resolutionDaysSum = 0, resolutionDaysCount = 0;
+    let lastCaseDateMs = 0;
 
-    // Calculate metrics
-    const totalCases = assignedGrievances.length;
-    const activeCases = assignedGrievances.filter(g => g[4] && g[4].toString().startsWith("Filed")).length;
-    const step1Cases = assignedGrievances.filter(g => g[5] === "Step I - Immediate Supervisor").length;
-    const step2Cases = assignedGrievances.filter(g => g[5] === "Step II - Agency Head").length;
-    const step3Cases = assignedGrievances.filter(g => g[5] === "Step III - Human Resources").length;
-
-    // Calculate overdue and due this week dynamically
-    const today = new Date();
-    let overdueCases = 0;
-    let dueThisWeek = 0;
     assignedGrievances.forEach(g => {
+      const status = g[4];
+      const step = g[5];
+      const incidentDate = g[6];
+
+      // Count by status
+      if (status) {
+        const statusStr = status.toString();
+        if (statusStr.startsWith("Filed")) activeCases++;
+        if (statusStr.startsWith("Resolved")) {
+          resolvedCases++;
+          if (status === "Resolved - Won") wonCases++;
+
+          // Calculate resolution time
+          const filedDate = g[8];
+          if (filedDate) {
+            const filed = new Date(filedDate);
+            const resolved = new Date(); // Approximate
+            resolutionDaysSum += Math.floor((resolved - filed) / (1000 * 60 * 60 * 24));
+            resolutionDaysCount++;
+          }
+        }
+      }
+
+      // Count by step
+      if (step === "Step I - Immediate Supervisor") step1Cases++;
+      if (step === "Step II - Agency Head") step2Cases++;
+      if (step === "Step III - Human Resources") step3Cases++;
+
+      // Calculate deadline metrics
       const nextDeadline = getNextDeadlineFromRow(g);
       if (nextDeadline) {
         const daysTo = Math.floor((nextDeadline - today) / (1000 * 60 * 60 * 24));
         if (daysTo < 0) overdueCases++;
         else if (daysTo <= 7) dueThisWeek++;
       }
+
+      // Track last case date
+      if (incidentDate) {
+        const dateMs = new Date(incidentDate).getTime();
+        if (dateMs > lastCaseDateMs) lastCaseDateMs = dateMs;
+      }
     });
 
-    const resolvedCases = assignedGrievances.filter(g => g[4] && g[4].toString().startsWith("Resolved")).length;
-    const wonCases = assignedGrievances.filter(g => g[4] === "Resolved - Won").length;
     const winRate = resolvedCases > 0 ? ((wonCases / resolvedCases) * 100).toFixed(1) + "%" : "N/A";
-
-    // Calculate average days to resolution
-    const resolvedWithDates = assignedGrievances.filter(g =>
-      g[4] && g[4].toString().startsWith("Resolved") && g[8] // Date Filed (I)
-    );
-    const avgDays = resolvedWithDates.length > 0
-      ? Math.round(resolvedWithDates.reduce((sum, g) => {
-          const filed = new Date(g[8]); // Date Filed (I)
-          const resolved = new Date(); // Approximate - could use Last Updated
-          return sum + Math.floor((resolved - filed) / (1000 * 60 * 60 * 24));
-        }, 0) / resolvedWithDates.length)
-      : "N/A";
-
-    // Get last case date
-    const caseDates = assignedGrievances.map(g => g[6]).filter(d => d);
-    const lastCaseDate = caseDates.length > 0
-      ? new Date(Math.max(...caseDates.map(d => new Date(d))))
-      : "";
-
-    const status = activeCases > 0 ? "Active" : "Available";
+    const avgDays = resolutionDaysCount > 0 ? Math.round(resolutionDaysSum / resolutionDaysCount) : "N/A";
+    const lastCaseDate = lastCaseDateMs > 0 ? new Date(lastCaseDateMs) : "";
+    const statusVal = activeCases > 0 ? "Active" : "Available";
 
     stewardStats.push([
-      fullName,
-      memberId,
-      location,
+      steward.fullName,
+      steward.memberId,
+      steward.location,
       totalCases,
       activeCases,
       step1Cases,
@@ -1259,7 +1299,7 @@ function rebuildStewardWorkload() {
       avgDays,
       0, // Members Assigned (placeholder)
       lastCaseDate,
-      status
+      statusVal
     ]);
   });
 
@@ -1543,57 +1583,54 @@ function rebuildTrendsSheet() {
     return;
   }
 
-  // Calculate monthly filing trends
+  // Calculate monthly filing trends and resolution times in one pass
   const monthlyData = {};
+  const resolutionTimes = [];
   const today = new Date();
 
-  grievanceData.forEach((r, i) => {
-    if (i === 0) return;
+  for (let i = 1; i < grievanceData.length; i++) {
+    const r = grievanceData[i];
     const filedDate = r[8]; // Column I: Date Filed
     if (filedDate) {
       const date = new Date(filedDate);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
     }
-  });
 
-  // Monthly Trends KPIs
-  trendsSheet.getRange("A4").setValue("Total Months with Data:").setFontWeight("bold");
-  trendsSheet.getRange("B4").setValue(Object.keys(monthlyData).length).setNumberFormat("#,##0");
-
-  trendsSheet.getRange("A5").setValue("Average Filings per Month:").setFontWeight("bold");
-  const avgPerMonth = Object.keys(monthlyData).length > 0
-    ? (Object.values(monthlyData).reduce((a, b) => a + b, 0) / Object.keys(monthlyData).length).toFixed(1)
-    : 0;
-  trendsSheet.getRange("B5").setValue(avgPerMonth).setNumberFormat("#,##0.0");
-
-  trendsSheet.getRange("A6").setValue("Peak Month:").setFontWeight("bold");
-  const peakMonth = Object.entries(monthlyData).sort((a, b) => b[1] - a[1])[0];
-  trendsSheet.getRange("B6").setValue(peakMonth ? `${peakMonth[0]} (${peakMonth[1]} filings)` : "N/A");
-
-  // Resolution Time Analysis
-  const resolutionTimes = [];
-  grievanceData.forEach((r, i) => {
-    if (i === 0 || !r[4] || !r[4].toString().startsWith("Resolved")) return;
-    const filed = r[8]; // Date Filed
-    const resolved = r[27]; // Last Updated (approximation)
-    if (filed && resolved) {
-      const days = Math.floor((new Date(resolved) - new Date(filed)) / (1000 * 60 * 60 * 24));
-      if (days > 0) resolutionTimes.push(days);
+    // Calculate resolution times
+    if (r[4] && r[4].toString().startsWith("Resolved")) {
+      const filed = r[8]; // Date Filed
+      const resolved = r[27]; // Last Updated (approximation)
+      if (filed && resolved) {
+        const days = Math.floor((new Date(resolved) - new Date(filed)) / (1000 * 60 * 60 * 24));
+        if (days > 0) resolutionTimes.push(days);
+      }
     }
-  });
+  }
 
-  trendsSheet.getRange("A16").setValue("Average Resolution Time:").setFontWeight("bold");
+  // Calculate KPI values
+  const totalMonths = Object.keys(monthlyData).length;
+  const avgPerMonth = totalMonths > 0
+    ? (Object.values(monthlyData).reduce((a, b) => a + b, 0) / totalMonths).toFixed(1)
+    : 0;
+  const peakMonth = Object.entries(monthlyData).sort((a, b) => b[1] - a[1])[0];
   const avgResolution = resolutionTimes.length > 0
     ? (resolutionTimes.reduce((a, b) => a + b, 0) / resolutionTimes.length).toFixed(1)
     : "N/A";
-  trendsSheet.getRange("B16").setValue(`${avgResolution} days`);
+  const minResolution = resolutionTimes.length > 0 ? Math.min(...resolutionTimes) : "N/A";
+  const maxResolution = resolutionTimes.length > 0 ? Math.max(...resolutionTimes) : "N/A";
 
-  trendsSheet.getRange("A17").setValue("Fastest Resolution:").setFontWeight("bold");
-  trendsSheet.getRange("B17").setValue(resolutionTimes.length > 0 ? `${Math.min(...resolutionTimes)} days` : "N/A");
-
-  trendsSheet.getRange("A18").setValue("Slowest Resolution:").setFontWeight("bold");
-  trendsSheet.getRange("B18").setValue(resolutionTimes.length > 0 ? `${Math.max(...resolutionTimes)} days` : "N/A");
+  // Batch write KPIs
+  const kpiData = [
+    ["Total Months with Data:", totalMonths],
+    ["Average Filings per Month:", avgPerMonth],
+    ["Peak Month:", peakMonth ? `${peakMonth[0]} (${peakMonth[1]} filings)` : "N/A"],
+    ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], ["", ""], // Empty rows
+    ["Average Resolution Time:", `${avgResolution} days`],
+    ["Fastest Resolution:", minResolution === "N/A" ? "N/A" : `${minResolution} days`],
+    ["Slowest Resolution:", maxResolution === "N/A" ? "N/A" : `${maxResolution} days`]
+  ];
+  trendsSheet.getRange(4, 1, 15, 2).setValues(kpiData);
 
   // Filing Trends (Last 12 months)
   const last12Months = {};
@@ -1609,19 +1646,21 @@ function rebuildTrendsSheet() {
     }
   });
 
-  trendsSheet.getRange("A26").setValue("Month").setFontWeight("bold");
-  trendsSheet.getRange("B26").setValue("Filings").setFontWeight("bold");
-
-  let row = 27;
+  // Batch write 12-month table
+  const monthTableData = [["Month", "Filings"]];
   Object.entries(last12Months).forEach(([month, count]) => {
-    trendsSheet.getRange(`A${row}`).setValue(month);
-    trendsSheet.getRange(`B${row}`).setValue(count).setNumberFormat("#,##0");
-    row++;
+    monthTableData.push([month, count]);
   });
+  trendsSheet.getRange(26, 1, monthTableData.length, 2).setValues(monthTableData);
 
-  // Apply formatting
+  // Apply formatting (batch operations)
+  trendsSheet.getRange("A4:A18").setFontWeight("bold");
   trendsSheet.getRange("A4:B18").setBackground(COLORS.LIGHT_GRAY);
   trendsSheet.getRange("B4:B18").setHorizontalAlignment("right");
+  trendsSheet.getRange("B4").setNumberFormat("#,##0");
+  trendsSheet.getRange("B5").setNumberFormat("#,##0.0");
+  trendsSheet.getRange("A26:B26").setFontWeight("bold");
+  trendsSheet.getRange("B27:B38").setNumberFormat("#,##0");
 }
 
 /**
@@ -1640,79 +1679,91 @@ function rebuildPerformanceSheet() {
     return;
   }
 
-  // Resolution Performance
-  const resolved = grievanceData.filter((r, i) => i > 0 && r[4] && r[4].toString().startsWith("Resolved"));
-  const won = resolved.filter(r => r[4] === "Resolved - Won");
-  const lost = resolved.filter(r => r[4] === "Resolved - Lost");
-  const settled = resolved.filter(r => r[4] === "Resolved - Settled");
-  const withdrawn = resolved.filter(r => r[4] === "Resolved - Withdrawn");
-
-  perfSheet.getRange("A4").setValue("Total Resolved:").setFontWeight("bold");
-  perfSheet.getRange("B4").setValue(resolved.length).setNumberFormat("#,##0").setHorizontalAlignment("right");
-
-  perfSheet.getRange("A5").setValue("Win Rate:").setFontWeight("bold");
-  const winRate = resolved.length > 0 ? ((won.length / resolved.length) * 100).toFixed(1) + "%" : "N/A";
-  perfSheet.getRange("B5").setValue(winRate).setHorizontalAlignment("right").setFontWeight("bold")
-    .setBackground("#E8F5E9");
-
-  perfSheet.getRange("A6").setValue("Settlement Rate:").setFontWeight("bold");
-  const settleRate = resolved.length > 0 ? ((settled.length / resolved.length) * 100).toFixed(1) + "%" : "N/A";
-  perfSheet.getRange("B6").setValue(settleRate).setHorizontalAlignment("right");
-
-  perfSheet.getRange("A7").setValue("Withdrawal Rate:").setFontWeight("bold");
-  const withdrawRate = resolved.length > 0 ? ((withdrawn.length / resolved.length) * 100).toFixed(1) + "%" : "N/A";
-  perfSheet.getRange("B7").setValue(withdrawRate).setHorizontalAlignment("right");
-
-  // Efficiency Metrics
-  const active = grievanceData.filter((r, i) => i > 0 && r[4] && r[4].toString().startsWith("Filed"));
+  // Calculate all metrics in a single pass
   const today = new Date();
-  let overdue = 0;
+  let resolvedCount = 0, wonCount = 0, lostCount = 0, settledCount = 0, withdrawnCount = 0;
+  let activeCount = 0, overdueCount = 0;
+  const stepStats = {
+    "Step I - Immediate Supervisor": { total: 0, won: 0 },
+    "Step II - Agency Head": { total: 0, won: 0 },
+    "Step III - Human Resources": { total: 0, won: 0 }
+  };
 
-  active.forEach(r => {
-    const nextDeadline = getNextDeadlineFromRow(r);
-    if (nextDeadline && nextDeadline < today) overdue++;
+  for (let i = 1; i < grievanceData.length; i++) {
+    const r = grievanceData[i];
+    const status = r[4];
+    if (!status) continue;
+
+    const statusStr = status.toString();
+    if (statusStr.startsWith("Resolved")) {
+      resolvedCount++;
+      if (status === "Resolved - Won") wonCount++;
+      if (status === "Resolved - Lost") lostCount++;
+      if (status === "Resolved - Settled") settledCount++;
+      if (status === "Resolved - Withdrawn") withdrawnCount++;
+
+      // Track step outcomes
+      const step = r[5];
+      if (stepStats[step]) {
+        stepStats[step].total++;
+        if (status === "Resolved - Won") stepStats[step].won++;
+      }
+    } else if (statusStr.startsWith("Filed")) {
+      activeCount++;
+      const nextDeadline = getNextDeadlineFromRow(r);
+      if (nextDeadline && nextDeadline < today) overdueCount++;
+    }
+  }
+
+  // Calculate rates
+  const winRate = resolvedCount > 0 ? ((wonCount / resolvedCount) * 100).toFixed(1) + "%" : "N/A";
+  const settleRate = resolvedCount > 0 ? ((settledCount / resolvedCount) * 100).toFixed(1) + "%" : "N/A";
+  const withdrawRate = resolvedCount > 0 ? ((withdrawnCount / resolvedCount) * 100).toFixed(1) + "%" : "N/A";
+  const overdueRate = activeCount > 0 ? ((overdueCount / activeCount) * 100).toFixed(1) + "%" : "N/A";
+  const onTimeRate = activeCount > 0 ? (((activeCount - overdueCount) / activeCount) * 100).toFixed(1) + "%" : "N/A";
+
+  // Batch write resolution performance metrics
+  const resolutionData = [
+    ["Total Resolved:", resolvedCount],
+    ["Win Rate:", winRate],
+    ["Settlement Rate:", settleRate],
+    ["Withdrawal Rate:", withdrawRate]
+  ];
+  perfSheet.getRange(4, 1, 4, 2).setValues(resolutionData);
+
+  // Batch write efficiency metrics
+  const efficiencyData = [
+    ["Active Grievances:", activeCount],
+    ["Overdue Rate:", overdueRate],
+    ["On-Time Rate:", onTimeRate]
+  ];
+  perfSheet.getRange(4, 5, 3, 2).setValues(efficiencyData);
+
+  // Batch write step analysis table
+  const stepTableData = [["Step", "Total", "Win Rate"]];
+  Object.entries(stepStats).forEach(([step, stats]) => {
+    const stepWinRate = stats.total > 0 ? ((stats.won / stats.total) * 100).toFixed(1) + "%" : "N/A";
+    stepTableData.push([step, stats.total, stepWinRate]);
   });
+  perfSheet.getRange(14, 1, stepTableData.length, 3).setValues(stepTableData);
 
-  perfSheet.getRange("E4").setValue("Active Grievances:").setFontWeight("bold");
-  perfSheet.getRange("F4").setValue(active.length).setNumberFormat("#,##0").setHorizontalAlignment("right");
-
-  perfSheet.getRange("E5").setValue("Overdue Rate:").setFontWeight("bold");
-  const overdueRate = active.length > 0 ? ((overdue / active.length) * 100).toFixed(1) + "%" : "N/A";
-  perfSheet.getRange("F5").setValue(overdueRate).setHorizontalAlignment("right")
-    .setBackground(overdue > 0 ? COLORS.OVERDUE : COLORS.ON_TRACK)
-    .setFontColor("white").setFontWeight("bold");
-
-  perfSheet.getRange("E6").setValue("On-Time Rate:").setFontWeight("bold");
-  const onTimeRate = active.length > 0 ? (((active.length - overdue) / active.length) * 100).toFixed(1) + "%" : "N/A";
-  perfSheet.getRange("F6").setValue(onTimeRate).setHorizontalAlignment("right");
-
-  // Outcome Analysis by Step
-  perfSheet.getRange("A14:C14").setFontWeight("bold").setBackground(COLORS.HEADER_RED).setFontColor("white");
-  perfSheet.getRange("A14").setValue("Step");
-  perfSheet.getRange("B14").setValue("Total");
-  perfSheet.getRange("C14").setValue("Win Rate");
-
-  const stepOutcomes = {};
-  ["Step I - Immediate Supervisor", "Step II - Agency Head", "Step III - Human Resources"].forEach(step => {
-    const stepGrievances = resolved.filter(r => r[5] === step);
-    const stepWon = stepGrievances.filter(r => r[4] === "Resolved - Won");
-    stepOutcomes[step] = {
-      total: stepGrievances.length,
-      winRate: stepGrievances.length > 0 ? ((stepWon.length / stepGrievances.length) * 100).toFixed(1) + "%" : "N/A"
-    };
-  });
-
-  let row = 15;
-  Object.entries(stepOutcomes).forEach(([step, data]) => {
-    perfSheet.getRange(`A${row}`).setValue(step);
-    perfSheet.getRange(`B${row}`).setValue(data.total).setNumberFormat("#,##0");
-    perfSheet.getRange(`C${row}`).setValue(data.winRate);
-    row++;
-  });
-
-  // Apply formatting
+  // Apply formatting (batch operations)
+  perfSheet.getRange("A4:A7").setFontWeight("bold");
+  perfSheet.getRange("B4").setNumberFormat("#,##0").setHorizontalAlignment("right");
+  perfSheet.getRange("B5:B7").setHorizontalAlignment("right");
   perfSheet.getRange("A4:B7").setBackground(COLORS.LIGHT_GRAY);
+  perfSheet.getRange("B5").setFontWeight("bold").setBackground("#E8F5E9");
+
+  perfSheet.getRange("E4:E6").setFontWeight("bold");
+  perfSheet.getRange("F4").setNumberFormat("#,##0").setHorizontalAlignment("right");
+  perfSheet.getRange("F5:F6").setHorizontalAlignment("right");
   perfSheet.getRange("E4:F6").setBackground(COLORS.LIGHT_GRAY);
+  perfSheet.getRange("F5").setFontWeight("bold")
+    .setBackground(overdueCount > 0 ? COLORS.OVERDUE : COLORS.ON_TRACK)
+    .setFontColor("white");
+
+  perfSheet.getRange("A14:C14").setFontWeight("bold").setBackground(COLORS.HEADER_RED).setFontColor("white");
+  perfSheet.getRange("B15:B17").setNumberFormat("#,##0");
   perfSheet.getRange("A15:C17").setBackground(COLORS.LIGHT_GRAY);
 }
 
@@ -1735,56 +1786,67 @@ function rebuildLocationSheet() {
     return;
   }
 
-  // Count members and grievances by location
+  // PERFORMANCE FIX: Create lookup map from member ID to location
+  const memberToLocation = {};
   const locationStats = {};
 
-  memberData.forEach((r, i) => {
-    if (i === 0) return;
+  // First pass: count members by location and create lookup map
+  for (let i = 1; i < memberData.length; i++) {
+    const r = memberData[i];
     const location = r[4]; // Column E: Work Location
     const memberId = r[0];
+
+    memberToLocation[memberId] = location;
 
     if (!locationStats[location]) {
       locationStats[location] = { members: 0, grievances: 0, active: 0, resolved: 0, won: 0 };
     }
     locationStats[location].members++;
+  }
 
-    // Count grievances for this member
-    const memberGrievances = grievanceData.filter((g, gi) => gi > 0 && g[1] === memberId);
-    locationStats[location].grievances += memberGrievances.length;
-    locationStats[location].active += memberGrievances.filter(g => g[4] && g[4].toString().startsWith("Filed")).length;
-    locationStats[location].resolved += memberGrievances.filter(g => g[4] && g[4].toString().startsWith("Resolved")).length;
-    locationStats[location].won += memberGrievances.filter(g => g[4] === "Resolved - Won").length;
-  });
+  // Second pass: count grievances by location using lookup map
+  for (let i = 1; i < grievanceData.length; i++) {
+    const g = grievanceData[i];
+    const memberId = g[1]; // Column B: Member ID
+    const status = g[4];   // Column E: Status
+    const location = memberToLocation[memberId];
 
-  // Headers
-  locSheet.getRange("A4:F4").setFontWeight("bold").setBackground(COLORS.HEADER_BLUE).setFontColor("white");
-  locSheet.getRange("A4").setValue("Location");
-  locSheet.getRange("B4").setValue("Members");
-  locSheet.getRange("C4").setValue("Total Grievances");
-  locSheet.getRange("D4").setValue("Active");
-  locSheet.getRange("E4").setValue("Resolved");
-  locSheet.getRange("F4").setValue("Win Rate");
+    if (!location || !locationStats[location]) continue;
 
-  // Sort by grievance count
+    locationStats[location].grievances++;
+
+    if (status) {
+      const statusStr = status.toString();
+      if (statusStr.startsWith("Filed")) {
+        locationStats[location].active++;
+      } else if (statusStr.startsWith("Resolved")) {
+        locationStats[location].resolved++;
+        if (status === "Resolved - Won") locationStats[location].won++;
+      }
+    }
+  }
+
+  // Sort by grievance count and limit to top 15
   const sortedLocations = Object.entries(locationStats)
     .sort((a, b) => b[1].grievances - a[1].grievances)
-    .slice(0, 15); // Top 15 locations
+    .slice(0, 15);
 
-  let row = 5;
+  // Batch write table data
+  const tableData = [["Location", "Members", "Total Grievances", "Active", "Resolved", "Win Rate"]];
   sortedLocations.forEach(([location, stats]) => {
     const winRate = stats.resolved > 0 ? ((stats.won / stats.resolved) * 100).toFixed(1) + "%" : "N/A";
-
-    locSheet.getRange(`A${row}`).setValue(location);
-    locSheet.getRange(`B${row}`).setValue(stats.members).setNumberFormat("#,##0");
-    locSheet.getRange(`C${row}`).setValue(stats.grievances).setNumberFormat("#,##0");
-    locSheet.getRange(`D${row}`).setValue(stats.active).setNumberFormat("#,##0");
-    locSheet.getRange(`E${row}`).setValue(stats.resolved).setNumberFormat("#,##0");
-    locSheet.getRange(`F${row}`).setValue(winRate);
-    row++;
+    tableData.push([location, stats.members, stats.grievances, stats.active, stats.resolved, winRate]);
   });
+  locSheet.getRange(4, 1, tableData.length, 6).setValues(tableData);
 
-  locSheet.getRange(`A5:F${row-1}`).setBackground(COLORS.LIGHT_GRAY);
-  locSheet.getRange(`B5:F${row-1}`).setHorizontalAlignment("right");
+  // Apply formatting (batch operations)
+  locSheet.getRange("A4:F4").setFontWeight("bold").setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+  if (sortedLocations.length > 0) {
+    const dataRange = `A5:F${4 + sortedLocations.length}`;
+    locSheet.getRange(dataRange).setBackground(COLORS.LIGHT_GRAY);
+    locSheet.getRange(`B5:F${4 + sortedLocations.length}`).setHorizontalAlignment("right");
+    locSheet.getRange(`B5:E${4 + sortedLocations.length}`).setNumberFormat("#,##0");
+  }
 
   locSheet.setColumnWidth(1, 250);
 }
@@ -1805,13 +1867,13 @@ function rebuildTypeAnalysisSheet() {
     return;
   }
 
-  // Analyze by type
+  // Analyze by type in a single pass
   const typeStats = {};
 
-  grievanceData.forEach((r, i) => {
-    if (i === 0) return;
+  for (let i = 1; i < grievanceData.length; i++) {
+    const r = grievanceData[i];
     const type = r[23]; // Column X: Grievance Type
-    if (!type) return;
+    if (!type) continue;
 
     if (!typeStats[type]) {
       typeStats[type] = { total: 0, active: 0, resolved: 0, won: 0, lost: 0, settled: 0 };
@@ -1819,55 +1881,49 @@ function rebuildTypeAnalysisSheet() {
 
     typeStats[type].total++;
     const status = r[4];
-    if (status && status.toString().startsWith("Filed")) typeStats[type].active++;
-    if (status && status.toString().startsWith("Resolved")) {
-      typeStats[type].resolved++;
-      if (status === "Resolved - Won") typeStats[type].won++;
-      if (status === "Resolved - Lost") typeStats[type].lost++;
-      if (status === "Resolved - Settled") typeStats[type].settled++;
+    if (status) {
+      const statusStr = status.toString();
+      if (statusStr.startsWith("Filed")) {
+        typeStats[type].active++;
+      } else if (statusStr.startsWith("Resolved")) {
+        typeStats[type].resolved++;
+        if (status === "Resolved - Won") typeStats[type].won++;
+        if (status === "Resolved - Lost") typeStats[type].lost++;
+        if (status === "Resolved - Settled") typeStats[type].settled++;
+      }
     }
-  });
-
-  // Type Breakdown
-  typeSheet.getRange("A4:D4").setFontWeight("bold").setBackground(COLORS.HEADER_BLUE).setFontColor("white");
-  typeSheet.getRange("A4").setValue("Grievance Type");
-  typeSheet.getRange("B4").setValue("Total");
-  typeSheet.getRange("C4").setValue("Active");
-  typeSheet.getRange("D4").setValue("Resolved");
+  }
 
   const sortedTypes = Object.entries(typeStats).sort((a, b) => b[1].total - a[1].total);
 
-  let row = 5;
+  // Batch write type breakdown table
+  const breakdownData = [["Grievance Type", "Total", "Active", "Resolved"]];
   sortedTypes.forEach(([type, stats]) => {
-    typeSheet.getRange(`A${row}`).setValue(type);
-    typeSheet.getRange(`B${row}`).setValue(stats.total).setNumberFormat("#,##0");
-    typeSheet.getRange(`C${row}`).setValue(stats.active).setNumberFormat("#,##0");
-    typeSheet.getRange(`D${row}`).setValue(stats.resolved).setNumberFormat("#,##0");
-    row++;
+    breakdownData.push([type, stats.total, stats.active, stats.resolved]);
   });
+  typeSheet.getRange(4, 1, breakdownData.length, 4).setValues(breakdownData);
 
-  typeSheet.getRange(`A5:D${row-1}`).setBackground(COLORS.LIGHT_GRAY);
-  typeSheet.getRange(`B5:D${row-1}`).setHorizontalAlignment("right");
-
-  // Success Rate by Type
-  typeSheet.getRange("E4:G4").setFontWeight("bold").setBackground(COLORS.HEADER_GREEN).setFontColor("white");
-  typeSheet.getRange("E4").setValue("Grievance Type");
-  typeSheet.getRange("F4").setValue("Win Rate");
-  typeSheet.getRange("G4").setValue("Settlement Rate");
-
-  row = 5;
+  // Batch write success rate table
+  const ratesData = [["Grievance Type", "Win Rate", "Settlement Rate"]];
   sortedTypes.forEach(([type, stats]) => {
     const winRate = stats.resolved > 0 ? ((stats.won / stats.resolved) * 100).toFixed(1) + "%" : "N/A";
     const settleRate = stats.resolved > 0 ? ((stats.settled / stats.resolved) * 100).toFixed(1) + "%" : "N/A";
-
-    typeSheet.getRange(`E${row}`).setValue(type.substring(0, 30));
-    typeSheet.getRange(`F${row}`).setValue(winRate);
-    typeSheet.getRange(`G${row}`).setValue(settleRate);
-    row++;
+    ratesData.push([type.substring(0, 30), winRate, settleRate]);
   });
+  typeSheet.getRange(4, 5, ratesData.length, 3).setValues(ratesData);
 
-  typeSheet.getRange(`E5:G${row-1}`).setBackground(COLORS.LIGHT_GRAY);
-  typeSheet.getRange(`F5:G${row-1}`).setHorizontalAlignment("right");
+  // Apply formatting (batch operations)
+  typeSheet.getRange("A4:D4").setFontWeight("bold").setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+  if (sortedTypes.length > 0) {
+    typeSheet.getRange(`A5:D${4 + sortedTypes.length}`).setBackground(COLORS.LIGHT_GRAY);
+    typeSheet.getRange(`B5:D${4 + sortedTypes.length}`).setHorizontalAlignment("right").setNumberFormat("#,##0");
+  }
+
+  typeSheet.getRange("E4:G4").setFontWeight("bold").setBackground(COLORS.HEADER_GREEN).setFontColor("white");
+  if (sortedTypes.length > 0) {
+    typeSheet.getRange(`E5:G${4 + sortedTypes.length}`).setBackground(COLORS.LIGHT_GRAY);
+    typeSheet.getRange(`F5:G${4 + sortedTypes.length}`).setHorizontalAlignment("right");
+  }
 }
 
 // ============================================================================
