@@ -7,8 +7,11 @@
  * Based on Collective Bargaining Agreement 2024-2026
  *
  * FEATURES:
- * - Member Directory with auto-calculated grievance metrics
- * - Grievance Log with CBA-compliant deadline tracking
+ * - Member Directory with auto-calculated grievance metrics & snapshots
+ * - Grievance Log with CBA-compliant timeline tracking
+ * - Contract-based Timeline Rules Table in Config
+ * - Real-time deadline calculations (Days Open, Next Action Due, Days to Deadline, Overdue?)
+ * - Member snapshots (Has Open Grievance?, # Open Grievances, Next Deadline)
  * - Priority sorting (Step III → II → I, then by due date)
  * - Advanced Dashboard with KPIs and real-time metrics
  * - Interactive Visual Charts:
@@ -38,10 +41,18 @@
  * - Gradient color coding for overdue severity
  * - Easy-to-read metrics with right-aligned numbers
  *
- * CBA COMPLIANCE:
+ * CBA COMPLIANCE & TIMELINE LOGIC:
+ * - Config tab contains Timeline Rules Table with contract deadlines
  * - Article 23A: Grievance deadlines (21-day filing, 30-day decisions, 10-day appeals)
+ * - Automatic calculation of next action due dates based on current step
+ * - Tracks responsible party (Employee/Union vs Employer) for each deadline
  * - Article 8: Leave provisions
  * - Article 14: Promotions
+ *
+ * DATA STRUCTURE:
+ * - Member Directory: 35 columns (A-AI) with grievance snapshot fields
+ * - Grievance Log: 32 columns (A-AF) with timeline tracking fields
+ * - Config: Dropdown lists + Timeline Rules Table
  *
  * ============================================================================
  */
@@ -320,6 +331,54 @@ function createConfigSheet(ss) {
 
   config.setFrozenRows(1);
   config.autoResizeColumns(1, headers.length);
+
+  // ============================================================================
+  // TIMELINE RULES TABLE (Contract-based grievance deadlines)
+  // ============================================================================
+
+  // Create Timeline Rules section starting at column O (15)
+  const timelineStartCol = 15;
+
+  // Section header
+  config.getRange(1, timelineStartCol, 1, 6).merge()
+    .setValue("GRIEVANCE TIMELINE RULES (CBA Article 23A)")
+    .setFontWeight("bold")
+    .setFontSize(12)
+    .setBackground(COLORS.HEADER_ORANGE)
+    .setFontColor("white")
+    .setHorizontalAlignment("center");
+
+  // Timeline table headers
+  const timelineHeaders = [
+    "Step", "Trigger Event", "Responsible Party",
+    "Max Days Allowed", "Day Type", "What Happens if Late"
+  ];
+
+  config.getRange(2, timelineStartCol, 1, timelineHeaders.length).setValues([timelineHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.HEADER_BLUE)
+    .setFontColor("white")
+    .setWrap(true);
+
+  // Timeline rules data
+  const timelineRules = [
+    ["Initial Filing", "Incident Date", "Employee/Union", 21, "Calendar", "Grievance may be deemed untimely"],
+    ["Step I - Decision", "Date Filed (Step I)", "Employer", 30, "Calendar", "Union may advance to Step II"],
+    ["Step II - Appeal", "Step I Decision Date", "Employee/Union", 10, "Calendar", "Grievance deemed resolved at Step I"],
+    ["Step II - Decision", "Step II Filed Date", "Employer", 30, "Calendar", "Union may advance to Step III"],
+    ["Step III - Appeal", "Step II Decision Date", "Employee/Union", 10, "Calendar", "Grievance deemed resolved at Step II"],
+    ["Step III - Decision", "Step III Filed Date", "Employer", 30, "Calendar", "Union may request arbitration"],
+    ["Arbitration - Request", "Step III Decision Date", "Employee/Union", 30, "Calendar", "Grievance deemed withdrawn"],
+    ["Mediation - Optional", "Any Step", "Both Parties", 0, "N/A", "Optional dispute resolution process"]
+  ];
+
+  config.getRange(3, timelineStartCol, timelineRules.length, timelineHeaders.length)
+    .setValues(timelineRules);
+
+  // Auto-resize timeline columns
+  for (let i = 0; i < timelineHeaders.length; i++) {
+    config.setColumnWidth(timelineStartCol + i, i === 1 ? 180 : (i === 5 ? 280 : 150));
+  }
 }
 
 // ============================================================================
@@ -332,7 +391,7 @@ function createMemberDirectorySheet(ss) {
 
   sheet.clear();
 
-  // 31 columns (A-AE) per spec
+  // 35 columns (A-AI) - Added grievance snapshot fields
   const headers = [
     // Basic Info (A-F)
     "Member ID", "First Name", "Last Name", "Job Title", "Work Location (Site)", "Unit",
@@ -341,10 +400,12 @@ function createMemberDirectorySheet(ss) {
     // Grievance Metrics (M-R) - AUTO CALCULATED
     "Total Grievances Filed", "Active Grievances", "Resolved Grievances",
     "Grievances Won", "Grievances Lost", "Last Grievance Date",
-    // Participation (S-W)
+    // Grievance Snapshot (S-V) - AUTO CALCULATED
+    "Has Open Grievance?", "# Open Grievances", "Last Grievance Status", "Next Deadline (Soonest)",
+    // Participation (W-AA)
     "Engagement Level", "Events Attended (Last 12mo)", "Training Sessions Attended",
     "Committee Member", "Preferred Contact Method",
-    // Emergency & Admin (X-AE)
+    // Emergency & Admin (AB-AI)
     "Emergency Contact Name", "Emergency Contact Phone", "Notes",
     "Date of Birth", "Hire Date", "Seniority Date",
     "Last Updated", "Updated By"
@@ -368,8 +429,8 @@ function createMemberDirectorySheet(ss) {
   sheet.setColumnWidth(8, 220);  // Email
   sheet.setColumnWidth(25, 300); // Notes
 
-  // Color-code auto-calculated columns (M-R and AD)
-  const autoCols = [13, 14, 15, 16, 17, 18, 30]; // M-R (grievance metrics) and AD (Last Updated)
+  // Color-code auto-calculated columns (M-V and AH)
+  const autoCols = [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 34]; // M-R (grievance metrics), S-V (snapshot fields), AH (Last Updated)
   autoCols.forEach(col => {
     sheet.getRange(1, col).setBackground(COLORS.HEADER_GREEN);
   });
@@ -386,7 +447,7 @@ function createGrievanceLogSheet(ss) {
 
     sheet.clear();
 
-    // 28 columns (A-AB) per spec
+    // 32 columns (A-AF) - Added timeline tracking columns
     const headers = [
       // Basic Info (A-F)
       "Grievance ID", "Member ID", "First Name", "Last Name", "Status", "Current Step",
@@ -400,7 +461,9 @@ function createGrievanceLogSheet(ss) {
       "Step III Filed Date", "Step III Decision Date", "Mediation Date", "Arbitration Date",
       // Details (W-Z)
       "Final Outcome", "Grievance Type", "Description", "Steward Name",
-      // Admin (AA-AB)
+      // Timeline Tracking (AA-AD) - AUTO CALCULATED
+      "Days Open", "Next Action Due", "Days to Deadline", "Overdue?",
+      // Admin (AE-AF)
       "Notes", "Last Updated"
     ];
 
@@ -424,8 +487,8 @@ function createGrievanceLogSheet(ss) {
       Logger.log('Column width error (non-critical): ' + widthError.toString());
     }
 
-    // Color-code auto-calculated deadline columns (H, J, M, O, R, AB)
-    const autoCols = [8, 10, 13, 15, 18, 28]; // Filing Deadline, Step I Due, Step II Appeal, Step II Due, Step III Appeal, Last Updated
+    // Color-code auto-calculated deadline columns (H, J, M, O, R, AA-AD, AF)
+    const autoCols = [8, 10, 13, 15, 18, 27, 28, 29, 30, 32]; // Filing Deadline, Step I Due, Step II Appeal, Step II Due, Step III Appeal, Days Open, Next Action Due, Days to Deadline, Overdue?, Last Updated
     autoCols.forEach(col => {
       if (col <= headers.length) {
         sheet.getRange(1, col).setBackground(COLORS.HEADER_ORANGE);
@@ -768,6 +831,11 @@ function recalcGrievanceRow(sheet, row) {
   const step1Decision = sheet.getRange(row, 11).getValue(); // K: Step I Decision
   const step2Filed = sheet.getRange(row, 14).getValue();    // N: Step II Filed
   const step2Decision = sheet.getRange(row, 16).getValue(); // P: Step II Decision
+  const step3Filed = sheet.getRange(row, 19).getValue();    // S: Step III Filed
+  const step3Decision = sheet.getRange(row, 20).getValue(); // T: Step III Decision
+  const currentStep = sheet.getRange(row, 6).getValue();    // F: Current Step
+  const status = sheet.getRange(row, 5).getValue();         // E: Status
+  const finalOutcome = sheet.getRange(row, 23).getValue();  // W: Final Outcome
 
   // Calculate Filing Deadline (H = G + 21 days)
   if (incidentDate) {
@@ -804,58 +872,115 @@ function recalcGrievanceRow(sheet, row) {
     sheet.getRange(row, 18).setValue(step3AppealDeadline);
   }
 
-  // Last Updated (AB)
-  sheet.getRange(row, 28).setValue(new Date());
+  // ============================================================================
+  // TIMELINE TRACKING CALCULATIONS (AA-AD)
+  // ============================================================================
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize to midnight for date comparisons
+
+  // Calculate Days Open (AA)
+  let daysOpen = "";
+  if (dateFiled) {
+    const filedDate = new Date(dateFiled);
+    filedDate.setHours(0, 0, 0, 0);
+
+    // If resolved, calculate from filed to resolution date
+    if (status && status.toString().startsWith("Resolved")) {
+      // Find the latest resolution date from step decisions or final outcome date
+      let resolutionDate = step3Decision || step2Decision || step1Decision || today;
+      if (resolutionDate) {
+        const resDt = new Date(resolutionDate);
+        resDt.setHours(0, 0, 0, 0);
+        daysOpen = Math.floor((resDt - filedDate) / (1000 * 60 * 60 * 24));
+      }
+    } else {
+      // Active grievance - calculate from filed to today
+      daysOpen = Math.floor((today - filedDate) / (1000 * 60 * 60 * 24));
+    }
+  }
+  sheet.getRange(row, 27).setValue(daysOpen); // AA: Days Open
+
+  // Calculate Next Action Due (AB) - Based on current step
+  let nextActionDue = null;
+  if (status && !status.toString().startsWith("Resolved")) {
+    // Determine next deadline based on current step
+    if (currentStep === "Step I - Immediate Supervisor") {
+      nextActionDue = sheet.getRange(row, 10).getValue(); // J: Step I Decision Due
+    } else if (currentStep === "Step II - Agency Head") {
+      // Check if we're waiting for Step II appeal or Step II decision
+      if (step1Decision && !step2Filed) {
+        nextActionDue = sheet.getRange(row, 13).getValue(); // M: Step II Appeal Deadline
+      } else if (step2Filed) {
+        nextActionDue = sheet.getRange(row, 15).getValue(); // O: Step II Decision Due
+      }
+    } else if (currentStep === "Step III - Human Resources") {
+      // Check if we're waiting for Step III appeal or Step III decision
+      if (step2Decision && !step3Filed) {
+        nextActionDue = sheet.getRange(row, 18).getValue(); // R: Step III Appeal Deadline
+      } else if (step3Filed) {
+        // Step III decision due = Step III Filed + 30 days
+        if (step3Filed) {
+          const step3Due = new Date(step3Filed);
+          step3Due.setDate(step3Due.getDate() + CBA_DEADLINES.STEP_III_DECISION);
+          nextActionDue = step3Due;
+        }
+      }
+    } else if (currentStep === "Informal") {
+      // For informal step, use filing deadline if not yet filed
+      if (!dateFiled && incidentDate) {
+        nextActionDue = sheet.getRange(row, 8).getValue(); // H: Filing Deadline
+      } else if (dateFiled) {
+        nextActionDue = sheet.getRange(row, 10).getValue(); // J: Step I Decision Due
+      }
+    }
+  }
+  sheet.getRange(row, 28).setValue(nextActionDue || ""); // AB: Next Action Due
+
+  // Calculate Days to Deadline (AC)
+  let daysToDeadline = "";
+  if (nextActionDue && nextActionDue instanceof Date) {
+    const deadlineDt = new Date(nextActionDue);
+    deadlineDt.setHours(0, 0, 0, 0);
+    daysToDeadline = Math.floor((deadlineDt - today) / (1000 * 60 * 60 * 24));
+  }
+  sheet.getRange(row, 29).setValue(daysToDeadline); // AC: Days to Deadline
+
+  // Calculate Overdue? (AD)
+  let isOverdue = "";
+  if (daysToDeadline !== "" && !status.toString().startsWith("Resolved")) {
+    isOverdue = daysToDeadline < 0 ? "YES" : "NO";
+  }
+  sheet.getRange(row, 30).setValue(isOverdue); // AD: Overdue?
+
+  // Last Updated (AF - was AB, now moved to column 32)
+  sheet.getRange(row, 32).setValue(new Date());
 }
 
 /**
  * Gets the next deadline for a grievance based on current step
+ * Now simplified to use the pre-calculated "Next Action Due" column
  */
 function getNextDeadline(sheet, row) {
-  const currentStep = sheet.getRange(row, 6).getValue();
   const status = sheet.getRange(row, 5).getValue();
+  if (status && status.toString().startsWith("Resolved")) return null;
 
-  if (status.startsWith("Resolved")) return null;
-
-  // Check deadlines in order
-  const step1Due = sheet.getRange(row, 10).getValue();
-  const step2AppealDue = sheet.getRange(row, 13).getValue();
-  const step2Due = sheet.getRange(row, 15).getValue();
-  const step3AppealDue = sheet.getRange(row, 18).getValue();
-
-  if (currentStep === "Step I - Immediate Supervisor" && step1Due) return step1Due;
-  if (currentStep === "Step II - Agency Head") {
-    if (step2AppealDue) return step2AppealDue;
-    if (step2Due) return step2Due;
-  }
-  if (currentStep === "Step III - Human Resources" && step3AppealDue) return step3AppealDue;
-
-  return null;
+  // Simply return the pre-calculated Next Action Due (column AB = 28)
+  const nextActionDue = sheet.getRange(row, 28).getValue();
+  return nextActionDue || null;
 }
 
 /**
  * Gets the next deadline from a grievance row array (for dashboard calculations)
+ * Now simplified to use the pre-calculated "Next Action Due" column
  */
 function getNextDeadlineFromRow(row) {
-  const currentStep = row[5]; // F: Current Step
-  const status = row[4];       // E: Status
-
+  const status = row[4]; // E: Status
   if (!status || status.toString().startsWith("Resolved")) return null;
 
-  // Check deadlines in order: J, M, O, R (columns 9, 12, 14, 17 in 0-indexed)
-  const step1Due = row[9];        // J: Step I Decision Due
-  const step2AppealDue = row[12]; // M: Step II Appeal Deadline
-  const step2Due = row[14];       // O: Step II Decision Due
-  const step3AppealDue = row[17]; // R: Step III Appeal Deadline
-
-  if (currentStep === "Step I - Immediate Supervisor" && step1Due) return new Date(step1Due);
-  if (currentStep === "Step II - Agency Head") {
-    if (step2AppealDue) return new Date(step2AppealDue);
-    if (step2Due) return new Date(step2Due);
-  }
-  if (currentStep === "Step III - Human Resources" && step3AppealDue) return new Date(step3AppealDue);
-
-  return null;
+  // Simply return the pre-calculated Next Action Due (column AB = index 27)
+  const nextActionDue = row[27];
+  return nextActionDue ? new Date(nextActionDue) : null;
 }
 
 /**
@@ -889,6 +1014,10 @@ function recalcAllGrievances() {
  * - Column P: Grievances Won
  * - Column Q: Grievances Lost
  * - Column R: Last Grievance Date
+ * - Column S: Has Open Grievance?
+ * - Column T: # Open Grievances
+ * - Column U: Last Grievance Status
+ * - Column V: Next Deadline (Soonest)
  *
  * This ensures the Member Directory always reflects current grievance data from Grievance Log.
  */
@@ -898,7 +1027,7 @@ function recalcMemberRow(memberSheet, grievanceSheet, row) {
   const memberId = memberSheet.getRange(row, 1).getValue();
   if (!memberId) return;
 
-  // Get all grievances for this member from Grievance Log (28 columns in new structure)
+  // Get all grievances for this member from Grievance Log (32 columns in new structure)
   const lastRow = grievanceSheet.getLastRow();
   if (lastRow < 2) {
     // No grievances found - set all metrics to 0/blank
@@ -908,19 +1037,23 @@ function recalcMemberRow(memberSheet, grievanceSheet, row) {
     memberSheet.getRange(row, 16).setValue(0); // P: Grievances Won
     memberSheet.getRange(row, 17).setValue(0); // Q: Grievances Lost
     memberSheet.getRange(row, 18).setValue(""); // R: Last Grievance Date
-    memberSheet.getRange(row, 30).setValue(new Date()); // AD: Last Updated
-    memberSheet.getRange(row, 31).setValue("AUTO"); // AE: Updated By
+    memberSheet.getRange(row, 19).setValue("NO"); // S: Has Open Grievance?
+    memberSheet.getRange(row, 20).setValue(0); // T: # Open Grievances
+    memberSheet.getRange(row, 21).setValue(""); // U: Last Grievance Status
+    memberSheet.getRange(row, 22).setValue(""); // V: Next Deadline (Soonest)
+    memberSheet.getRange(row, 34).setValue(new Date()); // AH: Last Updated
+    memberSheet.getRange(row, 35).setValue("AUTO"); // AI: Updated By
     return;
   }
 
-  const grievanceData = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const grievanceData = grievanceSheet.getRange(2, 1, lastRow - 1, 32).getValues();
   const memberGrievances = grievanceData.filter(g => g[1] === memberId); // Column B = Member ID
 
   // Total Grievances Filed (M)
   memberSheet.getRange(row, 13).setValue(memberGrievances.length);
 
-  // Active Grievances (N)
-  const active = memberGrievances.filter(g => g[4] && g[4].toString().startsWith("Filed")).length;
+  // Active Grievances (N) - Filed or Pending Decision status
+  const active = memberGrievances.filter(g => g[4] && (g[4].toString().startsWith("Filed") || g[4] === "Pending Decision")).length;
   memberSheet.getRange(row, 14).setValue(active);
 
   // Resolved Grievances (O)
@@ -935,9 +1068,9 @@ function recalcMemberRow(memberSheet, grievanceSheet, row) {
   const lost = memberGrievances.filter(g => g[4] === "Resolved - Lost").length;
   memberSheet.getRange(row, 17).setValue(lost);
 
-  // Last Grievance Date (R)
+  // Last Grievance Date (R) - Use Date Filed instead of Incident Date
   if (memberGrievances.length > 0) {
-    const dates = memberGrievances.map(g => g[6]).filter(d => d); // Column G = Incident Date
+    const dates = memberGrievances.map(g => g[8]).filter(d => d); // Column I = Date Filed
     if (dates.length > 0) {
       const lastDate = new Date(Math.max(...dates.map(d => new Date(d))));
       memberSheet.getRange(row, 18).setValue(lastDate);
@@ -948,11 +1081,56 @@ function recalcMemberRow(memberSheet, grievanceSheet, row) {
     memberSheet.getRange(row, 18).setValue("");
   }
 
-  // Last Updated (AD)
-  memberSheet.getRange(row, 30).setValue(new Date());
+  // ============================================================================
+  // GRIEVANCE SNAPSHOT FIELDS (S-V)
+  // ============================================================================
 
-  // Updated By (AE)
-  memberSheet.getRange(row, 31).setValue("AUTO");
+  // Get open/active grievances (not resolved)
+  const openGrievances = memberGrievances.filter(g =>
+    g[4] && !g[4].toString().startsWith("Resolved") && g[4] !== "Draft"
+  );
+
+  // Has Open Grievance? (S)
+  memberSheet.getRange(row, 19).setValue(openGrievances.length > 0 ? "YES" : "NO");
+
+  // # Open Grievances (T)
+  memberSheet.getRange(row, 20).setValue(openGrievances.length);
+
+  // Last Grievance Status (U) - Most recent grievance by Date Filed
+  if (memberGrievances.length > 0) {
+    // Sort by Date Filed (column I, index 8) descending
+    const sortedGrievances = memberGrievances.slice().sort((a, b) => {
+      const dateA = a[8] ? new Date(a[8]) : new Date(0);
+      const dateB = b[8] ? new Date(b[8]) : new Date(0);
+      return dateB - dateA;
+    });
+    const lastStatus = sortedGrievances[0][4] || ""; // Column E = Status
+    memberSheet.getRange(row, 21).setValue(lastStatus);
+  } else {
+    memberSheet.getRange(row, 21).setValue("");
+  }
+
+  // Next Deadline (Soonest) (V) - Find earliest Next Action Due from open grievances
+  if (openGrievances.length > 0) {
+    const deadlines = openGrievances
+      .map(g => g[27]) // Column AB = Next Action Due (index 27 in 0-indexed array)
+      .filter(d => d && d instanceof Date);
+
+    if (deadlines.length > 0) {
+      const soonestDeadline = new Date(Math.min(...deadlines.map(d => new Date(d))));
+      memberSheet.getRange(row, 22).setValue(soonestDeadline);
+    } else {
+      memberSheet.getRange(row, 22).setValue("");
+    }
+  } else {
+    memberSheet.getRange(row, 22).setValue("");
+  }
+
+  // Last Updated (AH)
+  memberSheet.getRange(row, 34).setValue(new Date());
+
+  // Updated By (AI)
+  memberSheet.getRange(row, 35).setValue("AUTO");
 }
 
 /**
@@ -1952,7 +2130,7 @@ function sortGrievancesByPriority() {
   if (lastRow < 3) return; // Need at least 2 data rows to sort
 
   // Get all data and calculate priority scores
-  const data = sheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const data = sheet.getRange(2, 1, lastRow - 1, 32).getValues();
   const today = new Date();
 
   // Create array with priority scores and days to deadline
@@ -1978,7 +2156,7 @@ function sortGrievancesByPriority() {
 
   // Write back sorted data
   const sortedData = rowsWithPriority.map(item => item.row);
-  sheet.getRange(2, 1, sortedData.length, 28).setValues(sortedData);
+  sheet.getRange(2, 1, sortedData.length, 32).setValues(sortedData);
 
   SpreadsheetApp.getUi().alert('✅ Grievances sorted by priority!');
 }
@@ -2204,13 +2382,15 @@ function SEED_20K_MEMBERS() {
         membershipStatus[Math.floor(Math.random() * membershipStatus.length)],
         // M-R: Grievance Metrics (AUTO CALCULATED - leave blank)
         "", "", "", "", "", "",
-        // S-W: Participation
+        // S-V: Grievance Snapshot (AUTO CALCULATED - leave blank)
+        "", "", "", "",
+        // W-AA: Participation
         engagementLevels[Math.floor(Math.random() * engagementLevels.length)],
         Math.floor(Math.random() * 25),
         Math.floor(Math.random() * 15),
         isSteward === "Yes" ? committees[Math.floor(Math.random() * (committees.length - 1))] : "None",
         contactMethods[Math.floor(Math.random() * contactMethods.length)],
-        // X-AE: Emergency & Admin
+        // AB-AI: Emergency & Admin
         `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
         `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
         "",
@@ -2222,7 +2402,7 @@ function SEED_20K_MEMBERS() {
       ]);
     }
 
-    sheet.getRange(2 + (batch * BATCH), 1, BATCH, 31).setValues(data);
+    sheet.getRange(2 + (batch * BATCH), 1, BATCH, 35).setValues(data);
     SpreadsheetApp.flush();
   }
 
@@ -2402,14 +2582,19 @@ function SEED_5K_GRIEVANCES() {
         type,
         `${type} - Auto-generated description`,
         stewardName, // Steward name from actual members
-        // AA-AB: Admin (AB auto-calculated)
-        "",
-        new Date() // Last Updated (AB)
+        // AA-AD: Timeline Tracking (ALL auto-calculated)
+        "", // Days Open (AA - calculated)
+        "", // Next Action Due (AB - calculated)
+        "", // Days to Deadline (AC - calculated)
+        "", // Overdue? (AD - calculated)
+        // AE-AF: Admin (AF auto-calculated)
+        "", // Notes (AE)
+        new Date() // Last Updated (AF)
       ]);
     }
 
     const startRow = 2 + (batch * BATCH);
-    sheet.getRange(startRow, 1, BATCH, 28).setValues(data);
+    sheet.getRange(startRow, 1, BATCH, 32).setValues(data);
 
     // Recalculate this batch
     for (let row = startRow; row < startRow + BATCH; row++) {
