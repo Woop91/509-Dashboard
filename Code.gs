@@ -99,37 +99,63 @@ function CREATE_509_DASHBOARD() {
 
   SpreadsheetApp.getUi().alert('Creating 509 Dashboard...\n\nThis will take about 30 seconds.');
 
-  // Clear existing sheets (keep first one)
-  const sheets = ss.getSheets();
-  for (let i = sheets.length - 1; i > 0; i--) {
-    ss.deleteSheet(sheets[i]);
+  try {
+    // Clear existing sheets (keep first one)
+    const sheets = ss.getSheets();
+    for (let i = sheets.length - 1; i > 0; i--) {
+      ss.deleteSheet(sheets[i]);
+    }
+    SpreadsheetApp.flush(); // Let Google process sheet deletions
+
+    // Rename first sheet to Config
+    sheets[0].setName(SHEETS.CONFIG);
+    SpreadsheetApp.flush();
+
+    // Create all sheets in order with flush after each
+    createConfigSheet(ss);
+    SpreadsheetApp.flush();
+
+    createMemberDirectorySheet(ss);
+    SpreadsheetApp.flush();
+
+    createGrievanceLogSheet(ss);
+    SpreadsheetApp.flush();
+
+    createStewardWorkloadSheet(ss);
+    SpreadsheetApp.flush();
+
+    createDashboardSheet(ss);
+    SpreadsheetApp.flush();
+
+    createAnalyticsSheet(ss);
+    SpreadsheetApp.flush();
+
+    createArchiveSheet(ss);
+    SpreadsheetApp.flush();
+
+    createDiagnosticsSheet(ss);
+    SpreadsheetApp.flush();
+
+    // Setup data validation
+    setupDataValidation(ss);
+    SpreadsheetApp.flush();
+
+    // Setup triggers
+    setupTriggers();
+
+    // Build initial dashboard
+    rebuildDashboard();
+    SpreadsheetApp.flush();
+
+    SpreadsheetApp.getUi().alert('✅ 509 Dashboard created successfully!\n\n' +
+      'Next steps:\n' +
+      '1. Add members via "509 Tools > Seed 20K Members" or manually\n' +
+      '2. Add grievances via "509 Tools > Seed 5K Grievances" or manually\n' +
+      '3. View Dashboard tab for real-time metrics');
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('❌ Error creating dashboard:\n\n' + error.message + '\n\nPlease try again.');
+    Logger.log('Dashboard creation error: ' + error.toString());
   }
-  sheets[0].setName(SHEETS.CONFIG);
-
-  // Create all sheets in order
-  createConfigSheet(ss);
-  createMemberDirectorySheet(ss);
-  createGrievanceLogSheet(ss);
-  createStewardWorkloadSheet(ss);
-  createDashboardSheet(ss);
-  createAnalyticsSheet(ss);
-  createArchiveSheet(ss);
-  createDiagnosticsSheet(ss);
-
-  // Setup data validation
-  setupDataValidation(ss);
-
-  // Setup triggers
-  setupTriggers();
-
-  // Build initial dashboard
-  rebuildDashboard();
-
-  SpreadsheetApp.getUi().alert('✅ 509 Dashboard created successfully!\n\n' +
-    'Next steps:\n' +
-    '1. Add members via "509 Tools > Seed 20K Members" or manually\n' +
-    '2. Add grievances via "509 Tools > Seed 5K Grievances" or manually\n' +
-    '3. View Dashboard tab for real-time metrics');
 }
 
 // ============================================================================
@@ -333,58 +359,73 @@ function createMemberDirectorySheet(ss) {
 // ============================================================================
 
 function createGrievanceLogSheet(ss) {
-  let sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  if (!sheet) sheet = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
+  try {
+    let sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+    if (!sheet) sheet = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
 
-  sheet.clear();
+    sheet.clear();
 
-  // 32 columns with enhanced deadline tracking
-  const headers = [
-    // Basic Info (A-F)
-    "Grievance ID", "Member ID", "First Name", "Last Name", "Status", "Current Step",
-    // Incident & Filing (G-J) - H, J auto-calculated
-    "Incident Date", "Filing Deadline", "Date Filed", "Step I Decision Due",
-    // Step I (K-N) - M auto-calculated
-    "Step I Decision Date", "Step I Outcome", "Step II Appeal Deadline", "Step II Filed Date",
-    // Step II (O-R) - O auto-calculated
-    "Step II Decision Due", "Step II Decision Date", "Step II Outcome", "Step III Appeal Deadline",
-    // Step III & Beyond (S-V)
-    "Step III Filed Date", "Step III Decision Date", "Mediation Date", "Arbitration Date",
-    // Details (W-Z)
-    "Final Outcome", "Grievance Type", "Description", "Representative",
-    // Derived Fields (AA-AF) - AUTO CALCULATED
-    "Days Open", "Days to Next Deadline", "Is Overdue?", "Priority Score",
-    "Assigned Steward", "Steward Contact",
-    // Admin (AG-AH)
-    "Notes", "Last Updated"
-  ];
+    // 34 columns with enhanced deadline tracking
+    const headers = [
+      // Basic Info (A-F)
+      "Grievance ID", "Member ID", "First Name", "Last Name", "Status", "Current Step",
+      // Incident & Filing (G-J) - H, J auto-calculated
+      "Incident Date", "Filing Deadline", "Date Filed", "Step I Decision Due",
+      // Step I (K-N) - M auto-calculated
+      "Step I Decision Date", "Step I Outcome", "Step II Appeal Deadline", "Step II Filed Date",
+      // Step II (O-R) - O auto-calculated
+      "Step II Decision Due", "Step II Decision Date", "Step II Outcome", "Step III Appeal Deadline",
+      // Step III & Beyond (S-V)
+      "Step III Filed Date", "Step III Decision Date", "Mediation Date", "Arbitration Date",
+      // Details (W-Z)
+      "Final Outcome", "Grievance Type", "Description", "Representative",
+      // Derived Fields (AA-AF) - AUTO CALCULATED
+      "Days Open", "Days to Next Deadline", "Is Overdue?", "Priority Score",
+      "Assigned Steward", "Steward Contact",
+      // Admin (AG-AH)
+      "Notes", "Last Updated"
+    ];
 
-  const headerRange = sheet.getRange(1, 1, 1, headers.length);
-  headerRange.setValues([headers])
-    .setFontWeight("bold")
-    .setBackground(COLORS.HEADER_RED)
-    .setFontColor("white")
-    .setWrap(true);
+    // Set headers
+    const headerRange = sheet.getRange(1, 1, 1, headers.length);
+    headerRange.setValues([headers])
+      .setFontWeight("bold")
+      .setBackground(COLORS.HEADER_RED)
+      .setFontColor("white")
+      .setWrap(true);
 
-  sheet.setFrozenRows(1);
+    sheet.setFrozenRows(1);
 
-  // Set column widths
-  sheet.setColumnWidth(1, 120);  // Grievance ID
-  sheet.setColumnWidth(2, 110);  // Member ID
-  sheet.setColumnWidth(25, 300); // Description
-  sheet.setColumnWidth(33, 300); // Notes
+    // Set column widths (do this BEFORE accessing ranges)
+    try {
+      sheet.setColumnWidth(1, 120);  // Grievance ID
+      sheet.setColumnWidth(2, 110);  // Member ID
+      sheet.setColumnWidth(25, 300); // Description (Column Y)
+      sheet.setColumnWidth(29, 250); // Description text
+      sheet.setColumnWidth(33, 300); // Notes (Column AG)
+    } catch (widthError) {
+      Logger.log('Column width error (non-critical): ' + widthError.toString());
+    }
 
-  // Color-code auto-calculated deadline columns
-  const deadlineCols = [8, 10, 13, 15, 18]; // Filing Deadline, Step I Due, Step II Appeal, Step II Due, Step III Appeal
-  deadlineCols.forEach(col => {
-    sheet.getRange(1, col).setBackground(COLORS.HEADER_ORANGE);
-  });
+    // Color-code auto-calculated deadline columns
+    const deadlineCols = [8, 10, 13, 15, 18]; // Filing Deadline, Step I Due, Step II Appeal, Step II Due, Step III Appeal
+    deadlineCols.forEach(col => {
+      if (col <= headers.length) {
+        sheet.getRange(1, col).setBackground(COLORS.HEADER_ORANGE);
+      }
+    });
 
-  // Color-code derived fields
-  const derivedCols = [27, 28, 29, 30, 31, 32]; // Days Open through Steward Contact
-  derivedCols.forEach(col => {
-    sheet.getRange(1, col).setBackground(COLORS.HEADER_GREEN);
-  });
+    // Color-code derived fields
+    const derivedCols = [27, 28, 29, 30, 31, 32]; // Days Open through Steward Contact
+    derivedCols.forEach(col => {
+      if (col <= headers.length) {
+        sheet.getRange(1, col).setBackground(COLORS.HEADER_GREEN);
+      }
+    });
+  } catch (error) {
+    Logger.log('Error in createGrievanceLogSheet: ' + error.toString());
+    throw new Error('Failed to create Grievance Log sheet: ' + error.message);
+  }
 }
 
 // ============================================================================
@@ -818,14 +859,20 @@ function recalcAllMembers() {
  * Rebuilds the entire dashboard with current data
  */
 function rebuildDashboard() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
-  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+    const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+    const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  // Get data
-  const memberData = memberSheet.getDataRange().getValues();
-  const grievanceData = grievanceSheet.getDataRange().getValues();
+    if (!dashboard || !memberSheet || !grievanceSheet) {
+      Logger.log('Required sheets not found for dashboard rebuild');
+      return;
+    }
+
+    // Get data
+    const memberData = memberSheet.getDataRange().getValues();
+    const grievanceData = grievanceSheet.getDataRange().getValues();
 
   // Member Metrics (A4:B9)
   const totalMembers = memberData.length - 1;
@@ -949,11 +996,18 @@ function rebuildDashboard() {
     }
   }
 
-  // Build Steward Workload Sheet
-  rebuildStewardWorkload();
+    // Build Steward Workload Sheet
+    rebuildStewardWorkload();
+    SpreadsheetApp.flush();
 
-  // Create all dashboard charts
-  createDashboardCharts();
+    // Create all dashboard charts
+    createDashboardCharts();
+    SpreadsheetApp.flush();
+
+  } catch (error) {
+    Logger.log('Error in rebuildDashboard: ' + error.toString());
+    SpreadsheetApp.getUi().alert('⚠️ Dashboard rebuild error:\n\n' + error.message);
+  }
 }
 
 // ============================================================================
