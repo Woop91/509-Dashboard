@@ -269,7 +269,7 @@ function createConfigSheet(ss) {
   ];
 
   config.getRange(1, 1, 1, headers.length).setValues([headers])
-    .setFontWeight("bold").setBackground(COLORS.HEADER_BLUE).setFontColor("white").setFontFamily("Roboto");
+    .setFontWeight("bold").setBackground(COLORS.PRIMARY_BLUE).setFontColor("white").setFontFamily("Roboto");
 
   // Column A: Job Titles (from CBA Appendix C)
   const jobTitles = [
@@ -476,7 +476,7 @@ function createMemberDirectorySheet(ss) {
   const headerRange = sheet.getRange(1, 1, 1, headers.length);
   headerRange.setValues([headers])
     .setFontWeight("bold")
-    .setBackground(COLORS.HEADER_BLUE)
+    .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white")
     .setFontFamily("Roboto")
     .setWrap(true);
@@ -495,7 +495,7 @@ function createMemberDirectorySheet(ss) {
   // Color-code auto-calculated columns (M-V and AH)
   const autoCols = [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 34]; // M-R (grievance metrics), S-V (snapshot fields), AH (Last Updated)
   autoCols.forEach(col => {
-    sheet.getRange(1, col).setBackground(COLORS.HEADER_GREEN);
+    sheet.getRange(1, col).setBackground(COLORS.ACCENT_TEAL);
   });
 }
 
@@ -534,7 +534,7 @@ function createGrievanceLogSheet(ss) {
     const headerRange = sheet.getRange(1, 1, 1, headers.length);
     headerRange.setValues([headers])
       .setFontWeight("bold")
-      .setBackground(COLORS.HEADER_RED)
+      .setBackground(COLORS.PRIMARY_BLUE)
       .setFontColor("white")
       .setFontFamily("Roboto")
       .setWrap(true);
@@ -555,7 +555,7 @@ function createGrievanceLogSheet(ss) {
     const autoCols = [8, 10, 13, 15, 18, 27, 28, 29, 30, 32]; // Filing Deadline, Step I Due, Step II Appeal, Step II Due, Step III Appeal, Days Open, Next Action Due, Days to Deadline, Overdue?, Last Updated
     autoCols.forEach(col => {
       if (col <= headers.length) {
-        sheet.getRange(1, col).setBackground(COLORS.HEADER_ORANGE);
+        sheet.getRange(1, col).setBackground(COLORS.ACCENT_TEAL);
       }
     });
   } catch (error) {
@@ -583,7 +583,7 @@ function createStewardWorkloadSheet(ss) {
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers])
     .setFontWeight("bold")
-    .setBackground(COLORS.HEADER_PURPLE)
+    .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white")
     .setFontFamily("Roboto");
 
@@ -607,7 +607,7 @@ function createDashboardSheet(ss) {
     .setFontSize(20).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
-    .setBackground(COLORS.HEADER_BLUE)
+    .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
   // Section headers (will be populated by rebuildDashboard())
@@ -618,7 +618,7 @@ function createDashboardSheet(ss) {
 
   // Chart area headers
   sheet.getRange("A26").setValue("VISUAL ANALYTICS").setFontWeight("bold").setFontSize(14).setFontFamily("Roboto")
-    .setBackground(COLORS.HEADER_GREEN).setFontColor("white");
+    .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setColumnWidth(1, 250);
   sheet.setColumnWidth(2, 120);
@@ -643,7 +643,7 @@ function createAnalyticsSheet(ss) {
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers])
     .setFontWeight("bold")
-    .setBackground(COLORS.HEADER_GREEN)
+    .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white")
     .setFontFamily("Roboto");
 
@@ -2211,7 +2211,9 @@ function createArchiveSheet(ss) {
 
   sheet.getRange("A1").setValue("Archived Grievances")
     .setFontWeight("bold")
-    .setFontSize(14).setFontFamily("Roboto");
+    .setFontSize(14).setFontFamily("Roboto")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
 
   sheet.getRange("A2").setValue("Resolved grievances are automatically moved here after 90 days")
     .setFontStyle("italic");
@@ -2231,7 +2233,9 @@ function createDiagnosticsSheet(ss) {
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers])
     .setFontWeight("bold")
-    .setFontFamily("Roboto");
+    .setFontFamily("Roboto")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
 
   const checks = [
     ["Data Validation", "OK", "All dropdowns configured", new Date()],
@@ -3769,16 +3773,16 @@ function rebuildExecutiveOverview() {
   if (!metrics) return;
 
   // KPI Cards - Row 7 contains the main values
-  sheet.getRange("A7:C7").merge().setValue(metrics.totalMembers);
-  sheet.getRange("E7:G7").merge().setValue(metrics.activeGrievances);
-  sheet.getRange("I7:K7").merge().setValue(metrics.winRate.toFixed(1) + "%");
-  sheet.getRange("M7:O7").merge().setValue(metrics.avgResolutionDays + " days");
+  sheet.getRange("A7:C7").breakApart().merge().setValue(metrics.totalMembers);
+  sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.activeGrievances);
+  sheet.getRange("I7:K7").breakApart().merge().setValue(metrics.winRate.toFixed(1) + "%");
+  sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.avgResolutionDays + " days");
 
   // Union Health Section - Row 15 contains values
-  sheet.getRange("A15:C15").merge().setValue(metrics.totalStewards);
-  sheet.getRange("E15:G15").merge().setValue(metrics.memberEngagementRate.toFixed(1) + "%");
-  sheet.getRange("I15:K15").merge().setValue(metrics.activeMembers);
-  sheet.getRange("M15:O15").merge().setValue(metrics.committeeMembers);
+  sheet.getRange("A15:C15").breakApart().merge().setValue(metrics.totalStewards);
+  sheet.getRange("E15:G15").breakApart().merge().setValue(metrics.memberEngagementRate.toFixed(1) + "%");
+  sheet.getRange("I15:K15").breakApart().merge().setValue(metrics.activeMembers);
+  sheet.getRange("M15:O15").breakApart().merge().setValue(metrics.committeeMembers);
 }
 
 /**
@@ -3793,30 +3797,30 @@ function rebuildKPIDashboard() {
   if (!metrics) return;
 
   // THIS MONTH section - Row 7
-  sheet.getRange("A7:C7").merge().setValue(metrics.thisMonthFiled);
-  sheet.getRange("A8:C9").merge().setValue("+" + metrics.thisMonthFiled + " from last month");
+  sheet.getRange("A7:C7").breakApart().merge().setValue(metrics.thisMonthFiled);
+  sheet.getRange("A8:C9").breakApart().merge().setValue("+" + metrics.thisMonthFiled + " from last month");
 
-  sheet.getRange("E7:G7").merge().setValue(metrics.thisMonthResolved);
-  sheet.getRange("E8:G9").merge().setValue(metrics.thisMonthResolved + " cases closed");
+  sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.thisMonthResolved);
+  sheet.getRange("E8:G9").breakApart().merge().setValue(metrics.thisMonthResolved + " cases closed");
 
-  sheet.getRange("I7:K7").merge().setValue(metrics.pendingDecision);
-  sheet.getRange("I8:K9").merge().setValue("Awaiting decisions");
+  sheet.getRange("I7:K7").breakApart().merge().setValue(metrics.pendingDecision);
+  sheet.getRange("I8:K9").breakApart().merge().setValue("Awaiting decisions");
 
-  sheet.getRange("M7:O7").merge().setValue(metrics.winRate.toFixed(1) + "%");
-  sheet.getRange("M8:O9").merge().setValue("Success rate");
+  sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.winRate.toFixed(1) + "%");
+  sheet.getRange("M8:O9").breakApart().merge().setValue("Success rate");
 
   // YEAR TO DATE section - Row 15
-  sheet.getRange("A15:C15").merge().setValue(metrics.ytdFiled);
-  sheet.getRange("A16:C17").merge().setValue("Cases filed YTD");
+  sheet.getRange("A15:C15").breakApart().merge().setValue(metrics.ytdFiled);
+  sheet.getRange("A16:C17").breakApart().merge().setValue("Cases filed YTD");
 
-  sheet.getRange("E15:G15").merge().setValue(metrics.ytdResolved);
-  sheet.getRange("E16:G17").merge().setValue("Cases resolved YTD");
+  sheet.getRange("E15:G15").breakApart().merge().setValue(metrics.ytdResolved);
+  sheet.getRange("E16:G17").breakApart().merge().setValue("Cases resolved YTD");
 
-  sheet.getRange("I15:K15").merge().setValue(metrics.activeGrievances);
-  sheet.getRange("I16:K17").merge().setValue("Currently active");
+  sheet.getRange("I15:K15").breakApart().merge().setValue(metrics.activeGrievances);
+  sheet.getRange("I16:K17").breakApart().merge().setValue("Currently active");
 
-  sheet.getRange("M15:O15").merge().setValue(metrics.overdue);
-  sheet.getRange("M16:O17").merge().setValue("Cases overdue");
+  sheet.getRange("M15:O15").breakApart().merge().setValue(metrics.overdue);
+  sheet.getRange("M16:O17").breakApart().merge().setValue("Cases overdue");
 }
 
 /**
@@ -3831,10 +3835,10 @@ function rebuildMemberEngagement() {
   if (!metrics) return;
 
   // Engagement KPIs - Row 7
-  sheet.getRange("A7:C7").merge().setValue(metrics.memberEngagementRate.toFixed(1) + "%");
-  sheet.getRange("E7:G7").merge().setValue(metrics.totalStewards);
-  sheet.getRange("I7:K7").merge().setValue(metrics.committeeMembers);
-  sheet.getRange("M7:O7").merge().setValue(metrics.activeMembers);
+  sheet.getRange("A7:C7").breakApart().merge().setValue(metrics.memberEngagementRate.toFixed(1) + "%");
+  sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.totalStewards);
+  sheet.getRange("I7:K7").breakApart().merge().setValue(metrics.committeeMembers);
+  sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.activeMembers);
 
   // Engagement breakdown - Starting at row 15
   sheet.getRange("A15").setValue(metrics.engagementCounts["Very Active"]);
@@ -3858,16 +3862,16 @@ function rebuildCostImpact() {
   // Financial KPIs - Row 7
   const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
 
-  sheet.getRange("A7:C7").merge().setValue(formatter.format(metrics.financialRecovery));
-  sheet.getRange("E7:G7").merge().setValue(metrics.won);
-  sheet.getRange("I7:K7").merge().setValue(formatter.format(metrics.financialRecovery / Math.max(1, metrics.won + metrics.settled)));
-  sheet.getRange("M7:O7").merge().setValue(metrics.winRate.toFixed(1) + "%");
+  sheet.getRange("A7:C7").breakApart().merge().setValue(formatter.format(metrics.financialRecovery));
+  sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.won);
+  sheet.getRange("I7:K7").breakApart().merge().setValue(formatter.format(metrics.financialRecovery / Math.max(1, metrics.won + metrics.settled)));
+  sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.winRate.toFixed(1) + "%");
 
   // Additional financial metrics - Row 15
   const avgPerMember = metrics.totalMembers > 0 ? metrics.financialRecovery / metrics.totalMembers : 0;
-  sheet.getRange("A15:C15").merge().setValue(formatter.format(avgPerMember));
-  sheet.getRange("E15:G15").merge().setValue(metrics.won + metrics.settled);
-  sheet.getRange("I15:K15").merge().setValue(formatter.format(metrics.financialRecovery * 1.2)); // Projected
+  sheet.getRange("A15:C15").breakApart().merge().setValue(formatter.format(avgPerMember));
+  sheet.getRange("E15:G15").breakApart().merge().setValue(metrics.won + metrics.settled);
+  sheet.getRange("I15:K15").breakApart().merge().setValue(formatter.format(metrics.financialRecovery * 1.2)); // Projected
 }
 
 /**
@@ -3882,16 +3886,16 @@ function rebuildQuickStats() {
   if (!metrics) return;
 
   // Large stat cards - Row 7
-  sheet.getRange("A7:C7").merge().setValue(metrics.totalGrievances);
-  sheet.getRange("E7:G7").merge().setValue(metrics.activeGrievances);
-  sheet.getRange("I7:K7").merge().setValue(metrics.overdue);
-  sheet.getRange("M7:O7").merge().setValue(metrics.totalMembers);
+  sheet.getRange("A7:C7").breakApart().merge().setValue(metrics.totalGrievances);
+  sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.activeGrievances);
+  sheet.getRange("I7:K7").breakApart().merge().setValue(metrics.overdue);
+  sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.totalMembers);
 
   // Secondary stats - Row 15
-  sheet.getRange("A15:C15").merge().setValue(metrics.winRate.toFixed(1) + "%");
-  sheet.getRange("E15:G15").merge().setValue(metrics.avgResolutionDays);
-  sheet.getRange("I15:K15").merge().setValue(metrics.totalStewards);
-  sheet.getRange("M15:O15").merge().setValue(metrics.dueThisWeek);
+  sheet.getRange("A15:C15").breakApart().merge().setValue(metrics.winRate.toFixed(1) + "%");
+  sheet.getRange("E15:G15").breakApart().merge().setValue(metrics.avgResolutionDays);
+  sheet.getRange("I15:K15").breakApart().merge().setValue(metrics.totalStewards);
+  sheet.getRange("M15:O15").breakApart().merge().setValue(metrics.dueThisWeek);
 }
 
 // ============================================================================
@@ -4212,7 +4216,7 @@ function SEED_5K_GRIEVANCES() {
   // Get steward names (members where column J = "Yes")
   const stewards = members.filter(m => m[9] === "Yes");
   if (stewards.length === 0) {
-    SpreadsheetApp.getUi().alert("❌ No stewards found!\n\nPlease ensure some members have 'Is Steward' set to Yes.");
+    SpreadsheetApp.getUi().alert("❌ No stewards found!\n\nPlease ensure some members have 'Is Steward' set to Yes.\n\n💡 TIP: Use '509 Tools > Data Management > Seed All Test Data (Recommended)' to seed both members and grievances in the correct order.\n\nOr manually seed members first using 'Seed 20K Members' before seeding grievances.");
     return;
   }
 
