@@ -790,103 +790,269 @@ function createExecutiveOverviewSheet(ss) {
   sheet.clear();
 
   // Main title with union blue
-  sheet.getRange("A1:L1").merge()
-    .setValue("EXECUTIVE OVERVIEW - 509 DASHBOARD")
-    .setFontSize(22)
+  sheet.getRange("A1:P1").merge()
+    .setValue("📋 EXECUTIVE OVERVIEW - 509 DASHBOARD")
+    .setFontSize(24)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
   // Subtitle/date range
-  sheet.getRange("A2:L2").merge()
+  sheet.getRange("A2:P2").merge()
     .setValue("Union-wide Performance Metrics & Key Indicators")
-    .setFontSize(11)
+    .setFontSize(12)
     .setFontStyle("italic")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.LIGHT_GRAY)
     .setFontColor(COLORS.TEXT_GRAY);
 
   // Section: Key Metrics (Row 4-10)
-  sheet.getRange("A4:L4").merge()
+  sheet.getRange("A4:P4").merge()
     .setValue("📊 KEY PERFORMANCE INDICATORS")
-    .setFontSize(14)
+    .setFontSize(15)
     .setFontWeight("bold")
-    .setBackground(COLORS.LIGHT_GRAY)
-    .setFontColor(COLORS.TEXT_DARK);
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
 
-  // KPI card labels (will be filled by rebuild function)
-  const kpiLabels = [
-    ["TOTAL MEMBERS", "ACTIVE GRIEVANCES", "WIN RATE", "AVG RESOLUTION TIME"],
-    ["", "", "", ""],
-    ["vs Last Month", "vs Last Month", "vs Last Month", "vs Last Month"]
-  ];
+  // ===== KPI CARD 1: Total Members =====
+  const kpiCard1 = sheet.getRange("A6:C9");
+  kpiCard1.setBackground(COLORS.WHITE);
 
-  sheet.getRange("A6:D8").setValues([
-    kpiLabels[0],
-    kpiLabels[1],
-    kpiLabels[2]
-  ]);
+  sheet.getRange("A6:C6").setBorder(true, null, null, null, null, null, COLORS.ACCENT_TEAL, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("A6:A9").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("C6:C9").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("A9:C9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
-  // Style KPI card labels
-  sheet.getRange("A6:D6").setFontWeight("bold").setFontSize(10)
-    .setFontColor(COLORS.TEXT_GRAY).setHorizontalAlignment("center");
+  sheet.getRange("A6:C6").merge().setValue("TOTAL MEMBERS")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("A7:C7").merge().setFontSize(42).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.ACCENT_TEAL);
+  sheet.getRange("A8:C9").merge().setFontSize(10).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
+    .setValue("vs Last Month");
 
-  // Section: Union Health Metrics (Row 11-17)
-  sheet.getRange("A11:L11").merge()
+  // ===== KPI CARD 2: Active Grievances =====
+  const kpiCard2 = sheet.getRange("E6:G9");
+  kpiCard2.setBackground(COLORS.WHITE);
+
+  sheet.getRange("E6:G6").setBorder(true, null, null, null, null, null, COLORS.ACCENT_ORANGE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("E6:E9").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("G6:G9").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("E9:G9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("E6:G6").merge().setValue("ACTIVE GRIEVANCES")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("E7:G7").merge().setFontSize(42).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.ACCENT_ORANGE);
+  sheet.getRange("E8:G9").merge().setFontSize(10).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
+    .setValue("vs Last Month");
+
+  // ===== KPI CARD 3: Win Rate =====
+  const kpiCard3 = sheet.getRange("I6:K9");
+  kpiCard3.setBackground(COLORS.WHITE);
+
+  sheet.getRange("I6:K6").setBorder(true, null, null, null, null, null, COLORS.UNION_GREEN, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("I6:I9").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("K6:K9").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("I9:K9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("I6:K6").merge().setValue("WIN RATE")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("I7:K7").merge().setFontSize(42).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.UNION_GREEN);
+  sheet.getRange("I8:K9").merge().setFontSize(10).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
+    .setValue("vs Last Month");
+
+  // ===== KPI CARD 4: Avg Resolution Time =====
+  const kpiCard4 = sheet.getRange("M6:O9");
+  kpiCard4.setBackground(COLORS.WHITE);
+
+  sheet.getRange("M6:O6").setBorder(true, null, null, null, null, null, COLORS.PRIMARY_BLUE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("M6:M9").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("O6:O9").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("M9:O9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("M6:O6").merge().setValue("AVG RESOLUTION TIME")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("M7:O7").merge().setFontSize(42).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.PRIMARY_BLUE);
+  sheet.getRange("M8:O9").merge().setFontSize(10).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
+    .setValue("vs Last Month");
+
+  // ===== UNION HEALTH SECTION =====
+  sheet.getRange("A12:P12").merge()
     .setValue("💪 UNION HEALTH & ENGAGEMENT")
-    .setFontSize(14)
+    .setFontSize(15)
     .setFontWeight("bold")
-    .setBackground(COLORS.LIGHT_GRAY)
-    .setFontColor(COLORS.TEXT_DARK);
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.UNION_GREEN)
+    .setFontColor("white");
 
-  const healthLabels = [
-    ["STEWARD COUNT", "MEMBER ENGAGEMENT", "ACTIVE COMMITTEES", "TRAINING SESSIONS"],
-    ["", "", "", ""],
-    ["Change YTD", "Avg Score", "This Quarter", "Last 12 Months"]
-  ];
+  // ===== HEALTH CARD 1: Steward Count =====
+  const healthCard1 = sheet.getRange("A14:C17");
+  healthCard1.setBackground(COLORS.WHITE);
 
-  sheet.getRange("A13:D15").setValues([
-    healthLabels[0],
-    healthLabels[1],
-    healthLabels[2]
-  ]);
+  sheet.getRange("A14:C14").setBorder(true, null, null, null, null, null, COLORS.ACCENT_PURPLE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("A14:A17").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("C14:C17").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("A17:C17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
-  sheet.getRange("A13:D13").setFontWeight("bold").setFontSize(10)
-    .setFontColor(COLORS.TEXT_GRAY).setHorizontalAlignment("center");
+  sheet.getRange("A14:C14").merge().setValue("STEWARD COUNT")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("A15:C15").merge().setFontSize(42).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.ACCENT_PURPLE);
+  sheet.getRange("A16:C17").merge().setFontSize(10).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
+    .setValue("Change YTD");
 
-  // Section: Critical Alerts (Row 18-24)
-  sheet.getRange("A18:L18").merge()
+  // ===== HEALTH CARD 2: Member Engagement =====
+  const healthCard2 = sheet.getRange("E14:G17");
+  healthCard2.setBackground(COLORS.WHITE);
+
+  sheet.getRange("E14:G14").setBorder(true, null, null, null, null, null, COLORS.ACCENT_TEAL, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("E14:E17").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("G14:G17").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("E17:G17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("E14:G14").merge().setValue("MEMBER ENGAGEMENT")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("E15:G15").merge().setFontSize(42).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.ACCENT_TEAL);
+  sheet.getRange("E16:G17").merge().setFontSize(10).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
+    .setValue("Avg Score");
+
+  // ===== HEALTH CARD 3: Active Committees =====
+  const healthCard3 = sheet.getRange("I14:K17");
+  healthCard3.setBackground(COLORS.WHITE);
+
+  sheet.getRange("I14:K14").setBorder(true, null, null, null, null, null, COLORS.PRIMARY_BLUE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("I14:I17").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("K14:K17").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("I17:K17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("I14:K14").merge().setValue("ACTIVE COMMITTEES")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("I15:K15").merge().setFontSize(42).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.PRIMARY_BLUE);
+  sheet.getRange("I16:K17").merge().setFontSize(10).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
+    .setValue("This Quarter");
+
+  // ===== HEALTH CARD 4: Training Sessions =====
+  const healthCard4 = sheet.getRange("M14:O17");
+  healthCard4.setBackground(COLORS.WHITE);
+
+  sheet.getRange("M14:O14").setBorder(true, null, null, null, null, null, COLORS.ACCENT_ORANGE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("M14:M17").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("O14:O17").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("M17:O17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("M14:O14").merge().setValue("TRAINING SESSIONS")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("M15:O15").merge().setFontSize(42).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.ACCENT_ORANGE);
+  sheet.getRange("M16:O17").merge().setFontSize(10).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY)
+    .setValue("Last 12 Months");
+
+  // ===== PRIORITY ALERTS SECTION =====
+  sheet.getRange("A20:P20").merge()
     .setValue("🚨 PRIORITY ALERTS & ACTION ITEMS")
-    .setFontSize(14)
+    .setFontSize(15)
     .setFontWeight("bold")
+    .setHorizontalAlignment("center")
     .setBackground(COLORS.SOLIDARITY_RED)
     .setFontColor("white");
 
-  sheet.getRange("A20").setValue("Overdue Grievances:").setFontWeight("bold");
-  sheet.getRange("A21").setValue("Due This Week:").setFontWeight("bold");
-  sheet.getRange("A22").setValue("Arbitrations Pending:").setFontWeight("bold");
-  sheet.getRange("A23").setValue("High-Priority Cases:").setFontWeight("bold");
+  // Alert cards with borders
+  const alertCard = sheet.getRange("A22:O25");
+  alertCard.setBackground(COLORS.WHITE)
+    .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // Section: Visual Summaries (Row 26+)
-  sheet.getRange("A26:L26").merge()
+  sheet.getRange("A22").setValue("Overdue Grievances:").setFontWeight("bold").setFontSize(11);
+  sheet.getRange("A23").setValue("Due This Week:").setFontWeight("bold").setFontSize(11);
+  sheet.getRange("A24").setValue("Arbitrations Pending:").setFontWeight("bold").setFontSize(11);
+  sheet.getRange("A25").setValue("High-Priority Cases:").setFontWeight("bold").setFontSize(11);
+
+  // Add colored left borders for alert severity
+  sheet.getRange("A22:A22").setBorder(null, true, null, null, null, null, COLORS.SOLIDARITY_RED, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("A23:A23").setBorder(null, true, null, null, null, null, COLORS.ACCENT_ORANGE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("A24:A24").setBorder(null, true, null, null, null, null, COLORS.ACCENT_YELLOW, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("A25:A25").setBorder(null, true, null, null, null, null, COLORS.PRIMARY_BLUE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+
+  // ===== VISUAL SUMMARIES SECTION =====
+  sheet.getRange("A28:P28").merge()
     .setValue("📈 VISUAL SUMMARIES")
-    .setFontSize(14)
+    .setFontSize(15)
     .setFontWeight("bold")
+    .setHorizontalAlignment("center")
     .setBackground(COLORS.UNION_GREEN)
     .setFontColor("white");
 
   // Chart placeholders
-  sheet.getRange("A28").setValue("Status Breakdown").setFontWeight("bold").setFontSize(11);
-  sheet.getRange("E28").setValue("Monthly Trends").setFontWeight("bold").setFontSize(11);
-  sheet.getRange("I28").setValue("Win/Loss Outcomes").setFontWeight("bold").setFontSize(11);
+  sheet.getRange("A30").setValue("Status Breakdown").setFontWeight("bold").setFontSize(12);
+  sheet.getRange("F30").setValue("Monthly Trends").setFontWeight("bold").setFontSize(12);
+  sheet.getRange("K30").setValue("Win/Loss Outcomes").setFontWeight("bold").setFontSize(12);
 
   // Formatting
-  sheet.setRowHeight(1, 50);
-  sheet.setRowHeight(2, 30);
-  sheet.setColumnWidths(1, 4, 180);
-  sheet.setColumnWidths(5, 4, 180);
-  sheet.setColumnWidths(9, 4, 180);
+  sheet.setRowHeight(1, 55);
+  sheet.setRowHeight(2, 35);
+  sheet.setRowHeight(4, 40);
+  sheet.setRowHeight(6, 30);
+  sheet.setRowHeight(7, 60);
+  sheet.setRowHeight(8, 15);
+  sheet.setRowHeight(9, 15);
+  sheet.setRowHeight(12, 40);
+  sheet.setRowHeight(14, 30);
+  sheet.setRowHeight(15, 60);
+  sheet.setRowHeight(16, 15);
+  sheet.setRowHeight(17, 15);
+  sheet.setRowHeight(20, 40);
+  sheet.setRowHeight(28, 40);
+
+  // Set column widths (cards are 3 columns wide, with 1 column spacing)
+  sheet.setColumnWidth(1, 140); // A
+  sheet.setColumnWidth(2, 140); // B
+  sheet.setColumnWidth(3, 140); // C
+  sheet.setColumnWidth(4, 30);  // D (spacer)
+  sheet.setColumnWidth(5, 140); // E
+  sheet.setColumnWidth(6, 140); // F
+  sheet.setColumnWidth(7, 140); // G
+  sheet.setColumnWidth(8, 30);  // H (spacer)
+  sheet.setColumnWidth(9, 140); // I
+  sheet.setColumnWidth(10, 140); // J
+  sheet.setColumnWidth(11, 140); // K
+  sheet.setColumnWidth(12, 30);  // L (spacer)
+  sheet.setColumnWidth(13, 140); // M
+  sheet.setColumnWidth(14, 140); // N
+  sheet.setColumnWidth(15, 140); // O
+
+  // Set background for spacing columns
+  sheet.getRange("D1:D35").setBackground(COLORS.LIGHT_GRAY);
+  sheet.getRange("H1:H35").setBackground(COLORS.LIGHT_GRAY);
+  sheet.getRange("L1:L35").setBackground(COLORS.LIGHT_GRAY);
 }
 
 // ============================================================================
@@ -904,9 +1070,9 @@ function createKPIDashboardSheet(ss) {
   sheet.clear();
 
   // Bold header with gradient feel
-  sheet.getRange("A1:M1").merge()
+  sheet.getRange("A1:P1").merge()
     .setValue("⚡ REAL-TIME KPI DASHBOARD")
-    .setFontSize(24)
+    .setFontSize(26)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.ACCENT_PURPLE)
@@ -914,7 +1080,7 @@ function createKPIDashboardSheet(ss) {
 
   // Current period indicator
   const today = new Date();
-  sheet.getRange("A2:M2").merge()
+  sheet.getRange("A2:P2").merge()
     .setValue(`Performance Period: ${today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`)
     .setFontSize(12)
     .setHorizontalAlignment("center")
@@ -922,62 +1088,187 @@ function createKPIDashboardSheet(ss) {
     .setFontColor(COLORS.TEXT_DARK);
 
   // Main KPI Grid - Large Numbers Section
-  sheet.getRange("A4:M4").merge()
-    .setValue("THIS MONTH")
+  sheet.getRange("A4:P4").merge()
+    .setValue("📊 THIS MONTH")
     .setFontSize(16)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
-  // KPI Cards Row 1
-  const kpiRow1 = ["GRIEVANCES FILED", "GRIEVANCES RESOLVED", "PENDING DECISIONS", "WIN RATE %"];
-  sheet.getRange("A6:D6").setValues([kpiRow1])
-    .setFontWeight("bold")
-    .setFontSize(10)
-    .setHorizontalAlignment("center")
-    .setFontColor(COLORS.TEXT_GRAY);
+  // ===== KPI CARD 1: Grievances Filed =====
+  const card1Range = sheet.getRange("A6:C9");
+  card1Range.setBackground(COLORS.WHITE);
 
-  // Large number placeholders (will be filled by rebuild)
-  sheet.getRange("A7:D7").setFontSize(36).setFontWeight("bold").setHorizontalAlignment("center");
+  // Card 1: Top border (color accent)
+  sheet.getRange("A6:C6").setBorder(true, null, null, null, null, null, COLORS.PRIMARY_BLUE, SpreadsheetApp.BorderStyle.SOLID_THICK);
 
-  // Trend indicators row
-  sheet.getRange("A8:D8").setFontSize(11).setHorizontalAlignment("center");
+  // Card 1: Side and bottom borders
+  sheet.getRange("A6:A9").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("C6:C9").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("A9:C9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
-  // KPI Cards Row 2
-  sheet.getRange("A11:M11").merge()
-    .setValue("YEAR TO DATE")
+  sheet.getRange("A6:C6").merge().setValue("GRIEVANCES FILED")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("A7:C7").merge().setFontSize(48).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.PRIMARY_BLUE);
+  sheet.getRange("A8:C9").merge().setFontSize(11).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
+
+  // ===== KPI CARD 2: Grievances Resolved =====
+  const card2Range = sheet.getRange("E6:G9");
+  card2Range.setBackground(COLORS.WHITE);
+
+  sheet.getRange("E6:G6").setBorder(true, null, null, null, null, null, COLORS.UNION_GREEN, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("E6:E9").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("G6:G9").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("E9:G9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("E6:G6").merge().setValue("GRIEVANCES RESOLVED")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("E7:G7").merge().setFontSize(48).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.UNION_GREEN);
+  sheet.getRange("E8:G9").merge().setFontSize(11).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
+
+  // ===== KPI CARD 3: Pending Decisions =====
+  const card3Range = sheet.getRange("I6:K9");
+  card3Range.setBackground(COLORS.WHITE);
+
+  sheet.getRange("I6:K6").setBorder(true, null, null, null, null, null, COLORS.ACCENT_ORANGE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("I6:I9").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("K6:K9").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("I9:K9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("I6:K6").merge().setValue("PENDING DECISIONS")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("I7:K7").merge().setFontSize(48).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.ACCENT_ORANGE);
+  sheet.getRange("I8:K9").merge().setFontSize(11).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
+
+  // ===== KPI CARD 4: Win Rate % =====
+  const card4Range = sheet.getRange("M6:O9");
+  card4Range.setBackground(COLORS.WHITE);
+
+  sheet.getRange("M6:O6").setBorder(true, null, null, null, null, null, COLORS.ACCENT_PURPLE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("M6:M9").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("O6:O9").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("M9:O9").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("M6:O6").merge().setValue("WIN RATE %")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("M7:O7").merge().setFontSize(48).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.ACCENT_PURPLE);
+  sheet.getRange("M8:O9").merge().setFontSize(11).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
+
+  // ===== YEAR TO DATE SECTION =====
+  sheet.getRange("A12:P12").merge()
+    .setValue("📈 YEAR TO DATE")
     .setFontSize(16)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.UNION_GREEN)
     .setFontColor("white");
 
-  const kpiRow2 = ["TOTAL FILINGS", "TOTAL RESOLVED", "SETTLEMENTS", "ARBITRATIONS"];
-  sheet.getRange("A13:D13").setValues([kpiRow2])
-    .setFontWeight("bold")
-    .setFontSize(10)
-    .setHorizontalAlignment("center")
-    .setFontColor(COLORS.TEXT_GRAY);
+  // ===== YTD CARD 1: Total Filings =====
+  const ytdCard1Range = sheet.getRange("A14:C17");
+  ytdCard1Range.setBackground(COLORS.WHITE);
 
-  sheet.getRange("A14:D14").setFontSize(36).setFontWeight("bold").setHorizontalAlignment("center");
-  sheet.getRange("A15:D15").setFontSize(11).setHorizontalAlignment("center");
+  sheet.getRange("A14:C14").setBorder(true, null, null, null, null, null, COLORS.PRIMARY_BLUE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("A14:A17").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("C14:C17").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("A17:C17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
-  // Performance Breakdown Section
-  sheet.getRange("A18:M18").merge()
-    .setValue("PERFORMANCE BREAKDOWN")
+  sheet.getRange("A14:C14").merge().setValue("TOTAL FILINGS")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("A15:C15").merge().setFontSize(48).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.PRIMARY_BLUE);
+  sheet.getRange("A16:C17").merge().setFontSize(11).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
+
+  // ===== YTD CARD 2: Total Resolved =====
+  const ytdCard2Range = sheet.getRange("E14:G17");
+  ytdCard2Range.setBackground(COLORS.WHITE);
+
+  sheet.getRange("E14:G14").setBorder(true, null, null, null, null, null, COLORS.UNION_GREEN, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("E14:E17").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("G14:G17").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("E17:G17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("E14:G14").merge().setValue("TOTAL RESOLVED")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("E15:G15").merge().setFontSize(48).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.UNION_GREEN);
+  sheet.getRange("E16:G17").merge().setFontSize(11).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
+
+  // ===== YTD CARD 3: Settlements =====
+  const ytdCard3Range = sheet.getRange("I14:K17");
+  ytdCard3Range.setBackground(COLORS.WHITE);
+
+  sheet.getRange("I14:K14").setBorder(true, null, null, null, null, null, COLORS.ACCENT_TEAL, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("I14:I17").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("K14:K17").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("I17:K17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("I14:K14").merge().setValue("SETTLEMENTS")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("I15:K15").merge().setFontSize(48).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.ACCENT_TEAL);
+  sheet.getRange("I16:K17").merge().setFontSize(11).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
+
+  // ===== YTD CARD 4: Arbitrations =====
+  const ytdCard4Range = sheet.getRange("M14:O17");
+  ytdCard4Range.setBackground(COLORS.WHITE);
+
+  sheet.getRange("M14:O14").setBorder(true, null, null, null, null, null, COLORS.SOLIDARITY_RED, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("M14:M17").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("O14:O17").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("M17:O17").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("M14:O14").merge().setValue("ARBITRATIONS")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("M15:O15").merge().setFontSize(48).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.SOLIDARITY_RED);
+  sheet.getRange("M16:O17").merge().setFontSize(11).setHorizontalAlignment("center")
+    .setVerticalAlignment("middle").setFontColor(COLORS.TEXT_GRAY);
+
+  // ===== PERFORMANCE BREAKDOWN SECTION =====
+  sheet.getRange("A20:P20").merge()
+    .setValue("⚡ PERFORMANCE BREAKDOWN")
     .setFontSize(16)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.ACCENT_ORANGE)
     .setFontColor("white");
 
-  // Table headers for detailed breakdown
+  // Table headers for detailed breakdown with enhanced styling
   const perfHeaders = ["Metric", "Current", "Target", "Variance", "Status"];
-  sheet.getRange("A20:E20").setValues([perfHeaders])
+  sheet.getRange("A22:E22").setValues([perfHeaders])
     .setFontWeight("bold")
-    .setBackground(COLORS.LIGHT_GRAY)
-    .setFontColor(COLORS.TEXT_DARK);
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white")
+    .setHorizontalAlignment("center")
+    .setVerticalAlignment("middle");
 
   const perfMetrics = [
     ["Avg Days to Resolution", "", "30 days", "", ""],
@@ -987,13 +1278,55 @@ function createKPIDashboardSheet(ss) {
     ["Settlement Success Rate", "", "75%", "", ""]
   ];
 
-  sheet.getRange("A21:E25").setValues(perfMetrics);
+  sheet.getRange("A23:E27").setValues(perfMetrics);
+
+  // Add borders to performance table
+  sheet.getRange("A22:E27").setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+
+  // Alternating row colors for readability
+  sheet.getRange("A23:E23").setBackground("#F9FAFB");
+  sheet.getRange("A24:E24").setBackground(COLORS.WHITE);
+  sheet.getRange("A25:E25").setBackground("#F9FAFB");
+  sheet.getRange("A26:E26").setBackground(COLORS.WHITE);
+  sheet.getRange("A27:E27").setBackground("#F9FAFB");
 
   // Formatting
-  sheet.setRowHeight(1, 55);
-  sheet.setRowHeight(7, 50); // Large number rows
-  sheet.setRowHeight(14, 50);
-  sheet.setColumnWidths(1, 5, 150);
+  sheet.setRowHeight(1, 60);
+  sheet.setRowHeight(2, 35);
+  sheet.setRowHeight(4, 40);
+  sheet.setRowHeight(6, 30); // Card label row
+  sheet.setRowHeight(7, 65); // Large number row
+  sheet.setRowHeight(8, 20); // Trend indicator row
+  sheet.setRowHeight(9, 20);
+  sheet.setRowHeight(12, 40);
+  sheet.setRowHeight(14, 30); // YTD Card label row
+  sheet.setRowHeight(15, 65); // YTD Large number row
+  sheet.setRowHeight(16, 20);
+  sheet.setRowHeight(17, 20);
+  sheet.setRowHeight(20, 40);
+  sheet.setRowHeight(22, 35);
+
+  // Set column widths (cards are 3 columns wide, with 1 column spacing)
+  sheet.setColumnWidth(1, 140); // A
+  sheet.setColumnWidth(2, 140); // B
+  sheet.setColumnWidth(3, 140); // C
+  sheet.setColumnWidth(4, 30);  // D (spacer)
+  sheet.setColumnWidth(5, 140); // E
+  sheet.setColumnWidth(6, 140); // F
+  sheet.setColumnWidth(7, 140); // G
+  sheet.setColumnWidth(8, 30);  // H (spacer)
+  sheet.setColumnWidth(9, 140); // I
+  sheet.setColumnWidth(10, 140); // J
+  sheet.setColumnWidth(11, 140); // K
+  sheet.setColumnWidth(12, 30);  // L (spacer)
+  sheet.setColumnWidth(13, 140); // M
+  sheet.setColumnWidth(14, 140); // N
+  sheet.setColumnWidth(15, 140); // O
+
+  // Set background for spacing columns to distinguish them
+  sheet.getRange("D1:D30").setBackground(COLORS.LIGHT_GRAY);
+  sheet.getRange("H1:H30").setBackground(COLORS.LIGHT_GRAY);
+  sheet.getRange("L1:L30").setBackground(COLORS.LIGHT_GRAY);
 }
 
 // ============================================================================
@@ -1244,9 +1577,9 @@ function createQuickStatsSheet(ss) {
   sheet.clear();
 
   // Bold, eye-catching title
-  sheet.getRange("A1:K1").merge()
+  sheet.getRange("A1:O1").merge()
     .setValue("⚡ QUICK STATS - AT A GLANCE")
-    .setFontSize(24)
+    .setFontSize(26)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.UNION_GREEN)
@@ -1254,124 +1587,220 @@ function createQuickStatsSheet(ss) {
 
   // Today's snapshot
   const today = new Date();
-  sheet.getRange("A2:K2").merge()
+  sheet.getRange("A2:O2").merge()
     .setValue(`Snapshot: ${today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`)
-    .setFontSize(11)
+    .setFontSize(12)
     .setHorizontalAlignment("center")
     .setBackground(COLORS.LIGHT_GRAY)
     .setFontColor(COLORS.TEXT_DARK);
 
-  // TODAY section
-  sheet.getRange("A4:K4").merge()
-    .setValue("TODAY")
-    .setFontSize(18)
+  // ===== TODAY SECTION =====
+  sheet.getRange("A4:O4").merge()
+    .setValue("📅 TODAY")
+    .setFontSize(16)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
-  const todayStats = ["NEW GRIEVANCES", "DEADLINES DUE", "MEETINGS SCHEDULED"];
-  sheet.getRange("A6:C6").setValues([todayStats])
-    .setFontWeight("bold")
-    .setFontSize(11)
-    .setHorizontalAlignment("center")
-    .setFontColor(COLORS.TEXT_GRAY);
+  // TODAY CARD 1: New Grievances
+  sheet.getRange("A6:D8").setBackground(COLORS.WHITE);
+  sheet.getRange("A6:D6").setBorder(true, null, null, null, null, null, COLORS.PRIMARY_BLUE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("A6:A8").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("D6:D8").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("A8:D8").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
-  sheet.getRange("A7:C7").setFontSize(42).setFontWeight("bold").setHorizontalAlignment("center");
+  sheet.getRange("A6:D6").merge().setValue("NEW GRIEVANCES")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("A7:D8").merge().setFontSize(48).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.PRIMARY_BLUE);
 
-  // THIS WEEK section
-  sheet.getRange("A10:K10").merge()
-    .setValue("THIS WEEK")
-    .setFontSize(18)
+  // TODAY CARD 2: Deadlines Due
+  sheet.getRange("F6:I8").setBackground(COLORS.WHITE);
+  sheet.getRange("F6:I6").setBorder(true, null, null, null, null, null, COLORS.SOLIDARITY_RED, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("F6:F8").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("I6:I8").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("F8:I8").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("F6:I6").merge().setValue("DEADLINES DUE")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("F7:I8").merge().setFontSize(48).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.SOLIDARITY_RED);
+
+  // TODAY CARD 3: Meetings Scheduled
+  sheet.getRange("K6:N8").setBackground(COLORS.WHITE);
+  sheet.getRange("K6:N6").setBorder(true, null, null, null, null, null, COLORS.ACCENT_TEAL, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("K6:K8").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("N6:N8").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  sheet.getRange("K8:N8").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+
+  sheet.getRange("K6:N6").merge().setValue("MEETINGS SCHEDULED")
+    .setFontWeight("bold").setFontSize(11).setHorizontalAlignment("center")
+    .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+  sheet.getRange("K7:N8").merge().setFontSize(48).setFontWeight("bold")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle")
+    .setFontColor(COLORS.ACCENT_TEAL);
+
+  // ===== THIS WEEK SECTION =====
+  sheet.getRange("A11:O11").merge()
+    .setValue("📊 THIS WEEK")
+    .setFontSize(16)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.ACCENT_TEAL)
     .setFontColor("white");
 
-  const weekStats = ["FILED", "RESOLVED", "DUE SOON", "OVERDUE"];
-  sheet.getRange("A12:D12").setValues([weekStats])
-    .setFontWeight("bold")
-    .setFontSize(11)
-    .setHorizontalAlignment("center")
-    .setFontColor(COLORS.TEXT_GRAY);
+  // Helper function to create mini cards for this week
+  const createMiniCard = (range, topColor, label, valueColor) => {
+    sheet.getRange(range).setBackground(COLORS.WHITE);
+    const cells = range.split(":");
+    const topRow = cells[0].match(/[A-Z]+/)[0] + cells[0].match(/\d+/)[0];
+    const bottomRow = cells[1].match(/[A-Z]+/)[0] + cells[1].match(/\d+/)[0];
+    const topRowRange = cells[0].match(/[A-Z]+/)[0] + cells[0].match(/\d+/)[0] + ":" + cells[1].match(/[A-Z]+/)[0] + cells[0].match(/\d+/)[0];
 
-  sheet.getRange("A13:D13").setFontSize(36).setFontWeight("bold").setHorizontalAlignment("center");
+    sheet.getRange(topRowRange).setBorder(true, null, null, null, null, null, topColor, SpreadsheetApp.BorderStyle.SOLID_THICK);
+    sheet.getRange(cells[0].match(/[A-Z]+/)[0] + cells[0].match(/\d+/)[0] + ":" + cells[0].match(/[A-Z]+/)[0] + cells[1].match(/\d+/)[0])
+      .setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+    sheet.getRange(cells[1].match(/[A-Z]+/)[0] + cells[0].match(/\d+/)[0] + ":" + cells[1].match(/[A-Z]+/)[0] + cells[1].match(/\d+/)[0])
+      .setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+    sheet.getRange(bottomRow).setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
-  // THIS MONTH section
-  sheet.getRange("A16:K16").merge()
-    .setValue("THIS MONTH")
-    .setFontSize(18)
+    sheet.getRange(topRowRange).merge().setValue(label)
+      .setFontWeight("bold").setFontSize(10).setHorizontalAlignment("center")
+      .setFontColor(COLORS.TEXT_GRAY).setVerticalAlignment("middle");
+    sheet.getRange(range.split(":")[0].match(/[A-Z]+/)[0] + (parseInt(range.split(":")[0].match(/\d+/)[0]) + 1) + ":" + bottomRow).merge()
+      .setFontSize(38).setFontWeight("bold")
+      .setHorizontalAlignment("center").setVerticalAlignment("middle")
+      .setFontColor(valueColor);
+  };
+
+  createMiniCard("A13:C15", COLORS.PRIMARY_BLUE, "FILED", COLORS.PRIMARY_BLUE);
+  createMiniCard("E13:G15", COLORS.UNION_GREEN, "RESOLVED", COLORS.UNION_GREEN);
+  createMiniCard("I13:K15", COLORS.ACCENT_ORANGE, "DUE SOON", COLORS.ACCENT_ORANGE);
+  createMiniCard("M13:O15", COLORS.SOLIDARITY_RED, "OVERDUE", COLORS.SOLIDARITY_RED);
+
+  // ===== THIS MONTH SECTION =====
+  sheet.getRange("A18:O18").merge()
+    .setValue("📈 THIS MONTH")
+    .setFontSize(16)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.ACCENT_PURPLE)
     .setFontColor("white");
 
-  const monthStats = ["FILED", "RESOLVED", "WON", "LOST", "SETTLED"];
-  sheet.getRange("A18:E18").setValues([monthStats])
-    .setFontWeight("bold")
-    .setFontSize(11)
-    .setHorizontalAlignment("center")
-    .setFontColor(COLORS.TEXT_GRAY);
+  // Slightly wider mini cards for 5 items
+  const monthRanges = ["A20:B22", "D20:E22", "G20:H22", "J20:K22", "M20:N22"];
+  const monthLabels = ["FILED", "RESOLVED", "WON", "LOST", "SETTLED"];
+  const monthColors = [COLORS.PRIMARY_BLUE, COLORS.ACCENT_TEAL, COLORS.UNION_GREEN, COLORS.SOLIDARITY_RED, COLORS.ACCENT_ORANGE];
 
-  sheet.getRange("A19:E19").setFontSize(32).setFontWeight("bold").setHorizontalAlignment("center");
+  for (let i = 0; i < monthRanges.length; i++) {
+    createMiniCard(monthRanges[i], monthColors[i], monthLabels[i], monthColors[i]);
+  }
 
-  // YEAR TO DATE section
-  sheet.getRange("A22:K22").merge()
-    .setValue("YEAR TO DATE")
-    .setFontSize(18)
+  // ===== YEAR TO DATE SECTION =====
+  sheet.getRange("A25:O25").merge()
+    .setValue("🎯 YEAR TO DATE")
+    .setFontSize(16)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.SOLIDARITY_RED)
     .setFontColor("white");
 
-  const ytdStats = ["TOTAL FILED", "TOTAL RESOLVED", "WIN RATE %", "AVG DAYS", "ACTIVE NOW"];
-  sheet.getRange("A24:E24").setValues([ytdStats])
-    .setFontWeight("bold")
-    .setFontSize(11)
-    .setHorizontalAlignment("center")
-    .setFontColor(COLORS.TEXT_GRAY);
+  const ytdRanges = ["A27:B29", "D27:E29", "G27:H29", "J27:K29", "M27:N29"];
+  const ytdLabels = ["TOTAL FILED", "TOTAL RESOLVED", "WIN RATE %", "AVG DAYS", "ACTIVE NOW"];
+  const ytdColors = [COLORS.PRIMARY_BLUE, COLORS.UNION_GREEN, COLORS.ACCENT_PURPLE, COLORS.ACCENT_ORANGE, COLORS.ACCENT_TEAL];
 
-  sheet.getRange("A25:E25").setFontSize(32).setFontWeight("bold").setHorizontalAlignment("center");
+  for (let i = 0; i < ytdRanges.length; i++) {
+    createMiniCard(ytdRanges[i], ytdColors[i], ytdLabels[i], ytdColors[i]);
+  }
 
-  // ALL TIME section
-  sheet.getRange("A28:K28").merge()
-    .setValue("ALL TIME RECORDS")
-    .setFontSize(18)
+  // ===== ALL TIME SECTION =====
+  sheet.getRange("A32:O32").merge()
+    .setValue("🏆 ALL TIME RECORDS")
+    .setFontSize(16)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.ACCENT_ORANGE)
     .setFontColor("white");
 
-  const allTimeStats = ["MEMBERS SERVED", "GRIEVANCES FILED", "TOTAL WINS", "SUCCESS RATE"];
-  sheet.getRange("A30:D30").setValues([allTimeStats])
-    .setFontWeight("bold")
-    .setFontSize(11)
-    .setHorizontalAlignment("center")
-    .setFontColor(COLORS.TEXT_GRAY);
+  createMiniCard("A34:C36", COLORS.ACCENT_TEAL, "MEMBERS SERVED", COLORS.ACCENT_TEAL);
+  createMiniCard("E34:G36", COLORS.PRIMARY_BLUE, "GRIEVANCES FILED", COLORS.PRIMARY_BLUE);
+  createMiniCard("I34:K36", COLORS.UNION_GREEN, "TOTAL WINS", COLORS.UNION_GREEN);
+  createMiniCard("M34:O36", COLORS.ACCENT_PURPLE, "SUCCESS RATE", COLORS.ACCENT_PURPLE);
 
-  sheet.getRange("A31:D31").setFontSize(32).setFontWeight("bold").setHorizontalAlignment("center");
-
-  // Critical Alerts Box
-  sheet.getRange("A34:K34").merge()
+  // ===== CRITICAL ALERTS BOX =====
+  sheet.getRange("A39:O39").merge()
     .setValue("🚨 CRITICAL ALERTS")
-    .setFontSize(14)
+    .setFontSize(16)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.SOLIDARITY_RED)
     .setFontColor("white");
 
-  sheet.getRange("A36").setValue("Grievances Overdue:").setFontWeight("bold").setFontColor(COLORS.SOLIDARITY_RED);
-  sheet.getRange("A37").setValue("Due in Next 48 Hours:").setFontWeight("bold").setFontColor(COLORS.ACCENT_ORANGE);
-  sheet.getRange("A38").setValue("Arbitrations Pending:").setFontWeight("bold").setFontColor(COLORS.ACCENT_PURPLE);
+  const alertBox = sheet.getRange("A41:O44");
+  alertBox.setBackground(COLORS.WHITE)
+    .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+
+  sheet.getRange("A41").setValue("Grievances Overdue:").setFontWeight("bold").setFontSize(12).setFontColor(COLORS.SOLIDARITY_RED);
+  sheet.getRange("A42").setValue("Due in Next 48 Hours:").setFontWeight("bold").setFontSize(12).setFontColor(COLORS.ACCENT_ORANGE);
+  sheet.getRange("A43").setValue("Arbitrations Pending:").setFontWeight("bold").setFontSize(12).setFontColor(COLORS.ACCENT_PURPLE);
+  sheet.getRange("A44").setValue("Step III Cases:").setFontWeight("bold").setFontSize(12).setFontColor(COLORS.PRIMARY_BLUE);
+
+  // Add colored left borders for alert severity
+  sheet.getRange("A41:A41").setBorder(null, true, null, null, null, null, COLORS.SOLIDARITY_RED, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("A42:A42").setBorder(null, true, null, null, null, null, COLORS.ACCENT_ORANGE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("A43:A43").setBorder(null, true, null, null, null, null, COLORS.ACCENT_PURPLE, SpreadsheetApp.BorderStyle.SOLID_THICK);
+  sheet.getRange("A44:A44").setBorder(null, true, null, null, null, null, COLORS.PRIMARY_BLUE, SpreadsheetApp.BorderStyle.SOLID_THICK);
 
   // Formatting
-  sheet.setRowHeight(1, 55);
-  sheet.setRowHeight(7, 60);  // Extra large numbers
-  sheet.setRowHeight(13, 55);
-  sheet.setRowHeight(19, 50);
-  sheet.setRowHeight(25, 50);
-  sheet.setRowHeight(31, 50);
-  sheet.setColumnWidths(1, 11, 130);
+  sheet.setRowHeight(1, 60);
+  sheet.setRowHeight(2, 35);
+  sheet.setRowHeight(4, 40);
+  sheet.setRowHeight(6, 30);
+  sheet.setRowHeight(7, 40);
+  sheet.setRowHeight(8, 40);
+  sheet.setRowHeight(11, 40);
+  sheet.setRowHeight(13, 28);
+  sheet.setRowHeight(14, 45);
+  sheet.setRowHeight(15, 30);
+  sheet.setRowHeight(18, 40);
+  sheet.setRowHeight(20, 28);
+  sheet.setRowHeight(21, 40);
+  sheet.setRowHeight(22, 25);
+  sheet.setRowHeight(25, 40);
+  sheet.setRowHeight(27, 28);
+  sheet.setRowHeight(28, 40);
+  sheet.setRowHeight(29, 25);
+  sheet.setRowHeight(32, 40);
+  sheet.setRowHeight(34, 28);
+  sheet.setRowHeight(35, 45);
+  sheet.setRowHeight(36, 30);
+  sheet.setRowHeight(39, 40);
+
+  // Column widths
+  sheet.setColumnWidth(1, 100);  // A
+  sheet.setColumnWidth(2, 100);  // B
+  sheet.setColumnWidth(3, 100);  // C
+  sheet.setColumnWidth(4, 100);  // D
+  sheet.setColumnWidth(5, 25);   // E (spacer)
+  sheet.setColumnWidth(6, 100);  // F
+  sheet.setColumnWidth(7, 100);  // G
+  sheet.setColumnWidth(8, 100);  // H
+  sheet.setColumnWidth(9, 100);  // I
+  sheet.setColumnWidth(10, 25);  // J (spacer)
+  sheet.setColumnWidth(11, 100); // K
+  sheet.setColumnWidth(12, 100); // L
+  sheet.setColumnWidth(13, 100); // M
+  sheet.setColumnWidth(14, 100); // N
+  sheet.setColumnWidth(15, 100); // O
+
+  // Set background for spacing columns
+  sheet.getRange("E1:E50").setBackground(COLORS.LIGHT_GRAY);
+  sheet.getRange("J1:J50").setBackground(COLORS.LIGHT_GRAY);
 }
 
 // ============================================================================
