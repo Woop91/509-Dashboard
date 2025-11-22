@@ -399,7 +399,7 @@ function createGrievanceLogSheet(ss) {
       // Step III & Beyond (S-V)
       "Step III Filed Date", "Step III Decision Date", "Mediation Date", "Arbitration Date",
       // Details (W-Z)
-      "Final Outcome", "Grievance Type", "Description", "Representative",
+      "Final Outcome", "Grievance Type", "Description", "Steward Name",
       // Admin (AA-AB)
       "Notes", "Last Updated"
     ];
@@ -1214,12 +1214,12 @@ function rebuildStewardWorkload() {
   // PERFORMANCE FIX: Build grievance assignments in one pass
   for (let i = 1; i < grievanceData.length; i++) {
     const g = grievanceData[i];
-    const representative = g[25]; // Column Z: Representative
-    if (representative) {
-      const repStr = representative.toString();
-      // Check if any steward name is in the representative field
+    const assignedSteward = g[25]; // Column Z: Steward Name
+    if (assignedSteward) {
+      const stewardStr = assignedSteward.toString();
+      // Check if any steward name matches
       for (const stewardName in stewardMap) {
-        if (repStr.includes(stewardName)) {
+        if (stewardStr.includes(stewardName)) {
           stewardMap[stewardName].grievances.push(g);
           break; // Assign to first matching steward only
         }
@@ -2079,11 +2079,31 @@ function onFormSubmitTrigger(e) {
 /**
  * Generates a random unique Member ID
  */
-function generateRandomMemberId(existingIds) {
+/**
+ * Generates a random Member ID in format: Initials-XXX-L
+ * Example: JD-123-A (John Doe)
+ */
+function generateRandomMemberId(existingIds, firstName, lastName) {
   let newId;
   do {
-    const randomNum = Math.floor(Math.random() * 1000000);
-    newId = `MEM${String(randomNum).padStart(6, '0')}`;
+    const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+    const randomNum = Math.floor(Math.random() * 1000); // 0-999
+    const randomLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26)); // A-Z
+    newId = `${initials}-${String(randomNum).padStart(3, '0')}-${randomLetter}`;
+  } while (existingIds.has(newId));
+  return newId;
+}
+
+/**
+ * Generates a random Grievance ID in format: GRV-XXX-L
+ * Example: GRV-123-A
+ */
+function generateRandomGrievanceId(existingIds) {
+  let newId;
+  do {
+    const randomNum = Math.floor(Math.random() * 1000); // 0-999
+    const randomLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26)); // A-Z
+    newId = `GRV-${String(randomNum).padStart(3, '0')}-${randomLetter}`;
   } while (existingIds.has(newId));
   return newId;
 }
@@ -2163,8 +2183,8 @@ function SEED_20K_MEMBERS() {
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
       const isSteward = Math.random() < 0.1 ? "Yes" : "No";
 
-      // Generate random unique Member ID
-      const memberId = generateRandomMemberId(existingIds);
+      // Generate random unique Member ID with initials
+      const memberId = generateRandomMemberId(existingIds, firstName, lastName);
       existingIds.add(memberId);
 
       data.push([
@@ -2223,12 +2243,19 @@ function SEED_5K_GRIEVANCES() {
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  // Get actual member data from Member Directory (columns A-D: ID, FirstName, LastName, JobTitle)
-  const memberData = memberSheet.getRange("A2:D" + memberSheet.getLastRow()).getValues();
-  const members = memberData.filter(r => r[0]);
+  // Get actual member data from Member Directory (columns A-J: ID, FirstName, LastName, JobTitle, Location, Unit, OffDays, Email, Phone, IsSteward)
+  const allMemberData = memberSheet.getRange("A2:J" + memberSheet.getLastRow()).getValues();
+  const members = allMemberData.filter(r => r[0]);
 
   if (members.length === 0) {
     SpreadsheetApp.getUi().alert("❌ Please seed members first!\n\nGrievances must reference actual Member IDs.");
+    return;
+  }
+
+  // Get steward names (members where column J = "Yes")
+  const stewards = members.filter(m => m[9] === "Yes");
+  if (stewards.length === 0) {
+    SpreadsheetApp.getUi().alert("❌ No stewards found!\n\nPlease ensure some members have 'Is Steward' set to Yes.");
     return;
   }
 
@@ -2242,23 +2269,119 @@ function SEED_5K_GRIEVANCES() {
 
   SpreadsheetApp.getUi().alert(`Seeding ${TOTAL} grievances in ${TOTAL/BATCH} batches...\n\nThis will take 2-3 minutes.`);
 
+  // Track all generated IDs to ensure uniqueness
+  const existingIds = new Set();
+
   for (let batch = 0; batch < TOTAL / BATCH; batch++) {
     const data = [];
 
     for (let i = 0; i < BATCH; i++) {
-      const num = (batch * BATCH) + i + 1;
+      // Generate unique Grievance ID
+      const grievanceId = generateRandomGrievanceId(existingIds);
+      existingIds.add(grievanceId);
+
       // Select a random ACTUAL member from Member Directory
       const member = members[Math.floor(Math.random() * members.length)];
+
+      // Select a random steward
+      const steward = stewards[Math.floor(Math.random() * stewards.length)];
+      const stewardName = `${steward[1]} ${steward[2]}`; // FirstName LastName
+
       const incidentDate = randomDateWithinDays(730);
-      const hasFiled = Math.random() > 0.1;
+
+      // More realistic status distribution
+      const statusRand = Math.random();
+      let status, step;
+      if (statusRand < 0.15) {
+        status = "Resolved - Won";
+      } else if (statusRand < 0.25) {
+        status = "Resolved - Lost";
+      } else if (statusRand < 0.30) {
+        status = "Resolved - Settled";
+      } else if (statusRand < 0.35) {
+        status = "Resolved - Withdrawn";
+      } else if (statusRand < 0.40) {
+        status = "In Mediation";
+      } else if (statusRand < 0.43) {
+        status = "In Arbitration";
+      } else {
+        status = "Filed - Active";
+      }
+
+      // Realistic step distribution based on status
+      if (status.startsWith("Resolved") || status === "In Mediation" || status === "In Arbitration") {
+        const stepRand = Math.random();
+        if (stepRand < 0.6) {
+          step = "Step I - Immediate Supervisor";
+        } else if (stepRand < 0.85) {
+          step = "Step II - Agency Head";
+        } else {
+          step = "Step III - Human Resources";
+        }
+      } else {
+        const stepRand = Math.random();
+        if (stepRand < 0.7) {
+          step = "Step I - Immediate Supervisor";
+        } else if (stepRand < 0.90) {
+          step = "Step II - Agency Head";
+        } else {
+          step = "Step III - Human Resources";
+        }
+      }
+
+      const hasFiled = Math.random() > 0.05; // 95% have been filed
       const filedDate = hasFiled ? addDays(incidentDate, Math.floor(Math.random() * 20)) : null;
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
-      const step = steps[Math.floor(Math.random() * steps.length)];
       const type = types[Math.floor(Math.random() * types.length)];
+
+      // More realistic step dates based on progression
+      let step1DecisionDate = null, step1Outcome = "", step2FiledDate = null, step2DecisionDate = null, step2Outcome = "";
+      let step3FiledDate = null, step3DecisionDate = null, mediationDate = null, arbitrationDate = null;
+      let finalOutcome = "Pending";
+
+      if (hasFiled) {
+        // Step I
+        if (step === "Step I - Immediate Supervisor" || step === "Step II - Agency Head" || step === "Step III - Human Resources" || status.startsWith("Resolved")) {
+          step1DecisionDate = addDays(filedDate, Math.floor(Math.random() * 35) + 15);
+          if (step !== "Step I - Immediate Supervisor" || status.startsWith("Resolved")) {
+            step1Outcome = Math.random() < 0.3 ? "Denied" : "Partial";
+          }
+        }
+
+        // Step II
+        if (step === "Step II - Agency Head" || step === "Step III - Human Resources" || status.startsWith("Resolved")) {
+          if (step1DecisionDate) {
+            step2FiledDate = addDays(step1DecisionDate, Math.floor(Math.random() * 12) + 1);
+            step2DecisionDate = addDays(step2FiledDate, Math.floor(Math.random() * 35) + 15);
+            if (step !== "Step II - Agency Head" || status.startsWith("Resolved")) {
+              step2Outcome = Math.random() < 0.4 ? "Denied" : "Partial";
+            }
+          }
+        }
+
+        // Step III
+        if (step === "Step III - Human Resources" || status === "In Mediation" || status === "In Arbitration" || (status.startsWith("Resolved") && Math.random() < 0.3)) {
+          if (step2DecisionDate) {
+            step3FiledDate = addDays(step2DecisionDate, Math.floor(Math.random() * 12) + 1);
+            step3DecisionDate = addDays(step3FiledDate, Math.floor(Math.random() * 40) + 20);
+          }
+        }
+
+        // Mediation/Arbitration
+        if (status === "In Mediation") {
+          mediationDate = step3DecisionDate || step2DecisionDate || step1DecisionDate || addDays(filedDate, 60);
+        } else if (status === "In Arbitration") {
+          arbitrationDate = step3DecisionDate || step2DecisionDate || step1DecisionDate || addDays(filedDate, 90);
+        }
+
+        // Final outcome
+        if (status.startsWith("Resolved")) {
+          finalOutcome = outcomes[Math.floor(Math.random() * outcomes.length)];
+        }
+      }
 
       data.push([
         // A-F: Basic Info
-        `GRV${String(num).padStart(6, '0')}`,
+        grievanceId,
         member[0], // Member ID from Member Directory
         member[1], // First Name from Member Directory
         member[2], // Last Name from Member Directory
@@ -2269,16 +2392,16 @@ function SEED_5K_GRIEVANCES() {
         filedDate,
         "", // Step I due (J - calculated)
         // K-M: Step I (M auto-calculated)
-        null, "", "", // Step I Decision Date, Outcome, Appeal Deadline (M - calculated)
+        step1DecisionDate, step1Outcome, "", // Step I Decision Date, Outcome, Appeal Deadline (M - calculated)
         // N-R: Step II (O, R auto-calculated)
-        null, "", null, "", "", // Step II Filed, Decision Due (O - calc), Decision, Outcome, Appeal Deadline (R - calc)
+        step2FiledDate, "", step2DecisionDate, step2Outcome, "", // Step II Filed, Decision Due (O - calc), Decision, Outcome, Appeal Deadline (R - calc)
         // S-V: Step III & Beyond
-        null, null, null, null, // Step III Filed, Decision, Mediation, Arbitration
+        step3FiledDate, step3DecisionDate, mediationDate, arbitrationDate,
         // W-Z: Details
-        status.startsWith("Resolved") ? outcomes[Math.floor(Math.random() * outcomes.length)] : "Pending",
+        finalOutcome,
         type,
         `${type} - Auto-generated description`,
-        "Union Rep " + (Math.floor(Math.random() * 10) + 1),
+        stewardName, // Steward name from actual members
         // AA-AB: Admin (AB auto-calculated)
         "",
         new Date() // Last Updated (AB)
@@ -2332,9 +2455,6 @@ function onOpen() {
     .addItem('🔧 Create Dashboard', 'CREATE_509_DASHBOARD')
     .addSeparator()
     .addSubMenu(ui.createMenu('📊 Data Management')
-      .addItem('Seed 20K Members', 'SEED_20K_MEMBERS')
-      .addItem('Seed 5K Grievances', 'SEED_5K_GRIEVANCES')
-      .addSeparator()
       .addItem('Recalc All Grievances', 'recalcAllGrievances')
       .addItem('Recalc All Members', 'recalcAllMembers')
       .addItem('Rebuild Dashboard', 'rebuildDashboard'))
@@ -2345,8 +2465,336 @@ function onOpen() {
       .addItem('Rebuild Performance Metrics', 'rebuildPerformanceSheet')
       .addItem('Rebuild Location Analytics', 'rebuildLocationSheet')
       .addItem('Rebuild Type Analysis', 'rebuildTypeAnalysisSheet'))
+    .addSubMenu(ui.createMenu('📤 Export Data')
+      .addItem('Export Dashboard to PDF', 'exportDashboardToPDF')
+      .addItem('Export Member Directory to CSV', 'exportMembersToCsv')
+      .addItem('Export Grievances to CSV', 'exportGrievancesToCsv')
+      .addItem('Export Steward Workload to CSV', 'exportStewardWorkloadToCsv'))
+    .addSubMenu(ui.createMenu('🎨 Theme Options')
+      .addItem('Light Theme', 'applyLightTheme')
+      .addItem('Dark Theme', 'applyDarkTheme')
+      .addItem('High Contrast Theme', 'applyHighContrastTheme'))
     .addSubMenu(ui.createMenu('⚙️ Utilities')
       .addItem('Sort by Priority', 'sortGrievancesByPriority')
+      .addItem('Toggle Mobile Mode', 'toggleMobileMode')
       .addItem('Setup Triggers', 'setupTriggers'))
     .addToUi();
+}
+
+// ============================================================================
+// EXPORT FUNCTIONS
+// ============================================================================
+
+/**
+ * Exports the Dashboard sheet to PDF
+ */
+function exportDashboardToPDF() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+
+    if (!dashboard) {
+      SpreadsheetApp.getUi().alert('❌ Dashboard sheet not found!');
+      return;
+    }
+
+    const url = ss.getUrl();
+    const sheetId = dashboard.getSheetId();
+    const pdfUrl = url.replace(/edit.*$/, '') +
+      'export?exportFormat=pdf&format=pdf' +
+      '&size=letter' +
+      '&portrait=true' +
+      '&fitw=true' +
+      '&sheetnames=false&printtitle=false' +
+      '&pagenumbers=false&gridlines=false' +
+      '&fzr=false' +
+      '&gid=' + sheetId;
+
+    SpreadsheetApp.getUi().showModelessDialog(
+      HtmlService.createHtmlOutput(
+        '<p>Click the link below to download the PDF:</p>' +
+        '<p><a href="' + pdfUrl + '" target="_blank">Download Dashboard PDF</a></p>' +
+        '<p><button onclick="google.script.host.close()">Close</button></p>'
+      ).setWidth(400).setHeight(150),
+      'Export Dashboard to PDF'
+    );
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('⚠️ Export error: ' + error.message);
+  }
+}
+
+/**
+ * Exports Member Directory to CSV
+ */
+function exportMembersToCsv() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+    if (!sheet) {
+      SpreadsheetApp.getUi().alert('❌ Member Directory sheet not found!');
+      return;
+    }
+
+    const data = sheet.getDataRange().getValues();
+    const csv = convertToCsv(data);
+    const fileName = '509_Member_Directory_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') + '.csv';
+
+    const blob = Utilities.newBlob(csv, 'text/csv', fileName);
+    const url = DriveApp.createFile(blob).getUrl();
+
+    SpreadsheetApp.getUi().alert('✅ CSV exported!\n\nFile saved to your Google Drive:\n' + fileName + '\n\nURL: ' + url);
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('⚠️ Export error: ' + error.message);
+  }
+}
+
+/**
+ * Exports Grievance Log to CSV
+ */
+function exportGrievancesToCsv() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+    if (!sheet) {
+      SpreadsheetApp.getUi().alert('❌ Grievance Log sheet not found!');
+      return;
+    }
+
+    const data = sheet.getDataRange().getValues();
+    const csv = convertToCsv(data);
+    const fileName = '509_Grievance_Log_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') + '.csv';
+
+    const blob = Utilities.newBlob(csv, 'text/csv', fileName);
+    const url = DriveApp.createFile(blob).getUrl();
+
+    SpreadsheetApp.getUi().alert('✅ CSV exported!\n\nFile saved to your Google Drive:\n' + fileName + '\n\nURL: ' + url);
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('⚠️ Export error: ' + error.message);
+  }
+}
+
+/**
+ * Exports Steward Workload to CSV
+ */
+function exportStewardWorkloadToCsv() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
+
+    if (!sheet) {
+      SpreadsheetApp.getUi().alert('❌ Steward Workload sheet not found!');
+      return;
+    }
+
+    const data = sheet.getDataRange().getValues();
+    const csv = convertToCsv(data);
+    const fileName = '509_Steward_Workload_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd') + '.csv';
+
+    const blob = Utilities.newBlob(csv, 'text/csv', fileName);
+    const url = DriveApp.createFile(blob).getUrl();
+
+    SpreadsheetApp.getUi().alert('✅ CSV exported!\n\nFile saved to your Google Drive:\n' + fileName + '\n\nURL: ' + url);
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('⚠️ Export error: ' + error.message);
+  }
+}
+
+/**
+ * Helper function to convert 2D array to CSV format
+ */
+function convertToCsv(data) {
+  return data.map(row =>
+    row.map(cell => {
+      if (cell == null) return '';
+      const str = cell.toString();
+      // Escape quotes and wrap in quotes if contains comma, quote, or newline
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    }).join(',')
+  ).join('\n');
+}
+
+// ============================================================================
+// THEME FUNCTIONS
+// ============================================================================
+
+/**
+ * Applies light theme to the dashboard
+ */
+function applyLightTheme() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+
+  if (!dashboard) {
+    SpreadsheetApp.getUi().alert('❌ Dashboard sheet not found!');
+    return;
+  }
+
+  // Apply light theme colors
+  dashboard.getRange("A3:B3").setBackground("#4A86E8").setFontColor("#FFFFFF");
+  dashboard.getRange("A11:B11").setBackground("#E06666").setFontColor("#FFFFFF");
+  dashboard.getRange("A21:B21").setBackground("#F6B26B").setFontColor("#FFFFFF");
+  dashboard.getRange("E4:H4").setBackground("#F6B26B").setFontColor("#FFFFFF");
+
+  SpreadsheetApp.getUi().alert('✅ Light theme applied!');
+}
+
+/**
+ * Applies dark theme to the dashboard
+ */
+function applyDarkTheme() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+
+  if (!dashboard) {
+    SpreadsheetApp.getUi().alert('❌ Dashboard sheet not found!');
+    return;
+  }
+
+  // Apply dark theme colors
+  dashboard.getRange("A3:B3").setBackground("#1E3A5F").setFontColor("#FFFFFF");
+  dashboard.getRange("A11:B11").setBackground("#5C1010").setFontColor("#FFFFFF");
+  dashboard.getRange("A21:B21").setBackground("#5C3A10").setFontColor("#FFFFFF");
+  dashboard.getRange("E4:H4").setBackground("#5C3A10").setFontColor("#FFFFFF");
+
+  SpreadsheetApp.getUi().alert('✅ Dark theme applied!');
+}
+
+/**
+ * Applies high contrast theme to the dashboard
+ */
+function applyHighContrastTheme() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+
+  if (!dashboard) {
+    SpreadsheetApp.getUi().alert('❌ Dashboard sheet not found!');
+    return;
+  }
+
+  // Apply high contrast theme colors
+  dashboard.getRange("A3:B3").setBackground("#000000").setFontColor("#FFFF00");
+  dashboard.getRange("A11:B11").setBackground("#000000").setFontColor("#00FF00");
+  dashboard.getRange("A21:B21").setBackground("#000000").setFontColor("#FF8800");
+  dashboard.getRange("E4:H4").setBackground("#000000").setFontColor("#FF8800");
+
+  SpreadsheetApp.getUi().alert('✅ High contrast theme applied!');
+}
+
+// ============================================================================
+// MOBILE MODE FUNCTIONS
+// ============================================================================
+
+/**
+ * Toggles mobile mode for better viewing on phones
+ */
+function toggleMobileMode() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const props = PropertiesService.getDocumentProperties();
+  const isMobile = props.getProperty('MOBILE_MODE') === 'true';
+
+  if (isMobile) {
+    // Switch to desktop mode
+    props.setProperty('MOBILE_MODE', 'false');
+    applyDesktopLayout();
+    SpreadsheetApp.getUi().alert('✅ Desktop mode enabled!\n\nThe dashboard is now optimized for desktop viewing.');
+  } else {
+    // Switch to mobile mode
+    props.setProperty('MOBILE_MODE', 'true');
+    applyMobileLayout();
+    SpreadsheetApp.getUi().alert('✅ Mobile mode enabled!\n\nThe dashboard is now optimized for mobile viewing with:\n• Wider columns\n• Larger text\n• Simplified layout');
+  }
+}
+
+/**
+ * Applies mobile-friendly layout
+ */
+function applyMobileLayout() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  // Dashboard: Larger text and wider columns
+  if (dashboard) {
+    dashboard.setColumnWidth(1, 250);
+    dashboard.setColumnWidth(2, 150);
+    dashboard.getRange("A1:H50").setFontSize(14);
+  }
+
+  // Member Directory: Essential columns only visible
+  if (memberDir) {
+    memberDir.setColumnWidth(1, 150);  // Member ID
+    memberDir.setColumnWidth(2, 150);  // First Name
+    memberDir.setColumnWidth(3, 150);  // Last Name
+    memberDir.setColumnWidth(4, 200);  // Job Title
+    memberDir.setColumnWidth(5, 200);  // Location
+    memberDir.getRange("1:1").setFontSize(12).setFontWeight("bold");
+  }
+
+  // Grievance Log: Essential columns only visible
+  if (grievanceLog) {
+    grievanceLog.setColumnWidth(1, 150);  // Grievance ID
+    grievanceLog.setColumnWidth(2, 150);  // Member ID
+    grievanceLog.setColumnWidth(3, 150);  // First Name
+    grievanceLog.setColumnWidth(4, 150);  // Last Name
+    grievanceLog.setColumnWidth(5, 150);  // Status
+    grievanceLog.getRange("1:1").setFontSize(12).setFontWeight("bold");
+  }
+}
+
+/**
+ * Applies desktop layout
+ */
+function applyDesktopLayout() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  // Dashboard: Standard text and column widths
+  if (dashboard) {
+    dashboard.setColumnWidth(1, 200);
+    dashboard.setColumnWidth(2, 120);
+    dashboard.getRange("A1:H50").setFontSize(10);
+  }
+
+  // Member Directory: Standard column widths
+  if (memberDir) {
+    memberDir.setColumnWidth(1, 110);  // Member ID
+    memberDir.setColumnWidth(2, 100);  // First Name
+    memberDir.setColumnWidth(3, 100);  // Last Name
+    memberDir.setColumnWidth(4, 150);  // Job Title
+    memberDir.setColumnWidth(5, 150);  // Location
+    memberDir.getRange("1:1").setFontSize(10).setFontWeight("bold");
+  }
+
+  // Grievance Log: Standard column widths
+  if (grievanceLog) {
+    grievanceLog.setColumnWidth(1, 120);  // Grievance ID
+    grievanceLog.setColumnWidth(2, 110);  // Member ID
+    grievanceLog.setColumnWidth(3, 100);  // First Name
+    grievanceLog.setColumnWidth(4, 100);  // Last Name
+    grievanceLog.setColumnWidth(5, 120);  // Status
+    grievanceLog.getRange("1:1").setFontSize(10).setFontWeight("bold");
+  }
+}
+
+/**
+ * Auto-detects mobile device and applies appropriate layout on open
+ */
+function autoDetectMobile() {
+  // Note: Google Sheets Apps Script doesn't have direct access to user agent
+  // This function would need to be triggered manually or through a custom UI
+  // For now, users can manually toggle mobile mode via the menu
+  const props = PropertiesService.getDocumentProperties();
+  const isMobile = props.getProperty('MOBILE_MODE') === 'true';
+
+  if (isMobile) {
+    applyMobileLayout();
+  }
 }
