@@ -48,6 +48,17 @@ The **509 Dashboard** is a comprehensive Google Sheets-based system designed spe
 - **Warehouse-style views** - Location analytics with horizontal bar charts
 - **See full guide:** [INTERACTIVE_DASHBOARD_GUIDE.md](INTERACTIVE_DASHBOARD_GUIDE.md)
 
+### 🧠 ADHD-Friendly Features (NEW!)
+- **Soft, calming colors** - Gentle pastels instead of harsh brights
+- **No gridlines** - Clean, minimal visual clutter
+- **Emoji icons** - Every tab has a visual icon for quick scanning
+- **Big numbers** - 48pt font for key metrics (glanceable data)
+- **User customization** - Each person can set their own preferences
+- **Visual guides** - Icon-based instructions, minimal text
+- **Logical organization** - Important tabs first, admin tabs last
+- **Quick setup** - One-click ADHD optimization (509 Tools > ADHD Tools)
+- **See full guide:** [ADHD_FRIENDLY_GUIDE.md](ADHD_FRIENDLY_GUIDE.md)
+
 ### 📊 Advanced Dashboard
 - **Real-time KPI metrics** - Member counts, grievance statistics, win rates
 - **6 interactive visual charts** - Donut charts, bar charts, and column charts
@@ -810,6 +821,18 @@ This system enforces **Article 23A** grievance procedure deadlines:
    ├─ Setup Controls (first time setup)
    ├─ Refresh Charts (update visualizations)
    └─ View Interactive Dashboard (open and get instructions)
+
+🧠 ADHD-Friendly Tools (NEW!)
+   ├─ ⚡ Quick Setup (Do This First!) - One-click optimization
+   ├─ (separator)
+   ├─ 📑 Reorder Sheets Logically - Put important tabs first
+   ├─ 👁️ Hide Gridlines (Cleaner View) - Remove visual clutter
+   ├─ 👁️‍🗨️ Show Gridlines (If Needed) - Bring them back
+   ├─ (separator)
+   ├─ ⚙️ Create My Settings Page - Personal customization
+   ├─ ✅ Apply My Settings - Apply your preferences
+   ├─ (separator)
+   └─ 📋 Add Visual Guide to Steward Workload - Icon-based instructions
 
 📊 Data Management
    ├─ Seed All Test Data (RECOMMENDED - unified function) 🆕
