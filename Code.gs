@@ -501,6 +501,53 @@ function createMemberDirectorySheet(ss) {
   autoCols.forEach(col => {
     sheet.getRange(1, col).setBackground(COLORS.ACCENT_TEAL);
   });
+
+  // Apply conditional formatting for Member Directory
+  applyMemberDirectoryConditionalFormatting(sheet);
+}
+
+/**
+ * Applies conditional formatting to Member Directory sheet:
+ * - Red background for empty email/phone fields
+ * - Light purple background for stewards
+ */
+function applyMemberDirectoryConditionalFormatting(sheet) {
+  if (!sheet) {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  }
+  if (!sheet) return;
+
+  // Clear existing conditional format rules
+  sheet.clearConditionalFormatRules();
+
+  const rules = [];
+
+  // Rule 1: Red background for empty Email Address (column H/8)
+  const emailRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=AND(ROW()>1, ISBLANK($H:$H))')
+    .setBackground('#ffcccc')
+    .setRanges([sheet.getRange('H2:H')])
+    .build();
+  rules.push(emailRule);
+
+  // Rule 2: Red background for empty Phone Number (column I/9)
+  const phoneRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=AND(ROW()>1, ISBLANK($I:$I))')
+    .setBackground('#ffcccc')
+    .setRanges([sheet.getRange('I2:I')])
+    .build();
+  rules.push(phoneRule);
+
+  // Rule 3: Light purple background for Is Steward = "Yes" (entire row when column J/10 is "Yes")
+  const stewardRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=AND(ROW()>1, UPPER($J:$J)="YES")')
+    .setBackground('#e6d9f5')
+    .setRanges([sheet.getRange('A2:AG')])
+    .build();
+  rules.push(stewardRule);
+
+  sheet.setConditionalFormatRules(rules);
 }
 
 // ============================================================================
@@ -698,7 +745,7 @@ function createPerformanceSheet(ss) {
   sheet.clear();
 
   // Title - Unified color scheme
-  sheet.getRange("A1:L1").merge()
+  sheet.getRange("A1:G1").merge()
     .setValue("PERFORMANCE METRICS & KPIs")
     .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
@@ -707,21 +754,26 @@ function createPerformanceSheet(ss) {
     .setFontColor("white");
 
   // Section headers - Unified color scheme
-  sheet.getRange("A3").setValue("RESOLUTION PERFORMANCE").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("A3:B3").merge().setValue("RESOLUTION PERFORMANCE").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("E3").setValue("EFFICIENCY METRICS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("E3:F3").merge().setValue("EFFICIENCY METRICS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A13").setValue("OUTCOME ANALYSIS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("A13:C13").merge().setValue("OUTCOME ANALYSIS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A23").setValue("STEP PROGRESSION ANALYSIS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("A23:C23").merge().setValue("STEP PROGRESSION ANALYSIS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
   sheet.setColumnWidth(1, 250);
   sheet.setColumnWidth(2, 120);
+  sheet.setColumnWidth(5, 200);
+  sheet.setColumnWidth(6, 120);
+
+  // Delete unused columns beyond G
+  deleteUnusedColumns(sheet, 8);
 }
 
 // ============================================================================
@@ -735,7 +787,7 @@ function createLocationSheet(ss) {
   sheet.clear();
 
   // Title - Unified color scheme
-  sheet.getRange("A1:L1").merge()
+  sheet.getRange("A1:E1").merge()
     .setValue("LOCATION ANALYTICS")
     .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
@@ -744,14 +796,20 @@ function createLocationSheet(ss) {
     .setFontColor("white");
 
   // Section headers - Unified color scheme
-  sheet.getRange("A3").setValue("GRIEVANCES BY LOCATION").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("A3:D3").merge().setValue("GRIEVANCES BY LOCATION").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A15").setValue("LOCATION PERFORMANCE METRICS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("A15:D15").merge().setValue("LOCATION PERFORMANCE METRICS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
   sheet.setColumnWidth(1, 250);
+  sheet.setColumnWidth(2, 100);
+  sheet.setColumnWidth(3, 100);
+  sheet.setColumnWidth(4, 100);
+
+  // Delete unused columns beyond E
+  deleteUnusedColumns(sheet, 6);
 }
 
 // ============================================================================
@@ -765,7 +823,7 @@ function createTypeAnalysisSheet(ss) {
   sheet.clear();
 
   // Title - Unified color scheme
-  sheet.getRange("A1:L1").merge()
+  sheet.getRange("A1:F1").merge()
     .setValue("GRIEVANCE TYPE ANALYSIS")
     .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
@@ -774,21 +832,26 @@ function createTypeAnalysisSheet(ss) {
     .setFontColor("white");
 
   // Section headers - Unified color scheme
-  sheet.getRange("A3").setValue("TYPE BREAKDOWN").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("A3:B3").merge().setValue("TYPE BREAKDOWN").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("E3").setValue("SUCCESS RATE BY TYPE").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("E3:F3").merge().setValue("SUCCESS RATE BY TYPE").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A15").setValue("TYPE TRENDS OVER TIME").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("A15:B15").merge().setValue("TYPE TRENDS OVER TIME").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A27").setValue("AVERAGE RESOLUTION TIME BY TYPE").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("A27:C27").merge().setValue("AVERAGE RESOLUTION TIME BY TYPE").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
   sheet.setColumnWidth(1, 250);
   sheet.setColumnWidth(2, 120);
+  sheet.setColumnWidth(5, 180);
+  sheet.setColumnWidth(6, 120);
+
+  // Delete unused columns beyond G
+  deleteUnusedColumns(sheet, 7);
 }
 
 // ============================================================================
@@ -1069,6 +1132,12 @@ function createExecutiveOverviewSheet(ss) {
   sheet.getRange("D1:D35").setBackground(COLORS.LIGHT_GRAY);
   sheet.getRange("H1:H35").setBackground(COLORS.LIGHT_GRAY);
   sheet.getRange("L1:L35").setBackground(COLORS.LIGHT_GRAY);
+
+  // Hide gridlines for cleaner look
+  sheet.setHiddenGridlines(true);
+
+  // Delete unused columns beyond P
+  deleteUnusedColumns(sheet, 17);
 }
 
 // ============================================================================
@@ -1343,6 +1412,12 @@ function createKPIDashboardSheet(ss) {
   sheet.getRange("D1:D30").setBackground(COLORS.LIGHT_GRAY);
   sheet.getRange("H1:H30").setBackground(COLORS.LIGHT_GRAY);
   sheet.getRange("L1:L30").setBackground(COLORS.LIGHT_GRAY);
+
+  // Hide gridlines for cleaner look
+  sheet.setHiddenGridlines(true);
+
+  // Delete unused columns beyond P
+  deleteUnusedColumns(sheet, 17);
 }
 
 // ============================================================================
@@ -1462,8 +1537,27 @@ function createMemberEngagementSheet(ss) {
 
   // Formatting
   sheet.setRowHeight(1, 45);
+  sheet.setRowHeight(5, 50);  // Increase height for row 5 to prevent cutoff
+  sheet.setRowHeight(7, 35);  // Adjust row 7 height for alignment
   sheet.setColumnWidth(1, 200);
   sheet.setColumnWidths(2, 4, 130);
+
+  // Ensure engagement score cards span the full width
+  sheet.getRange("A5:D5").merge().setValue("OVERALL ENGAGEMENT")
+    .setFontWeight("bold").setFontSize(10).setFontFamily("Roboto")
+    .setHorizontalAlignment("center").setFontColor(COLORS.TEXT_GRAY)
+    .setWrap(true).setVerticalAlignment("middle");
+
+  // Fix row 7 alignment
+  sheet.getRange("A7").setValue("Avg Level")
+    .setFontSize(9).setFontFamily("Roboto")
+    .setHorizontalAlignment("center").setVerticalAlignment("middle");
+
+  // Hide gridlines for cleaner look
+  sheet.setHiddenGridlines(true);
+
+  // Delete unused columns beyond L
+  deleteUnusedColumns(sheet, 13);
 }
 
 // ============================================================================
@@ -1574,8 +1668,19 @@ function createCostImpactSheet(ss) {
 
   // Formatting
   sheet.setRowHeight(1, 45);
+  sheet.setRowHeight(7, 35);  // Fix row 7 height for proper alignment
+  sheet.setRowHeight(15, 30);  // Fix row 15 height for proper alignment
   sheet.setColumnWidth(1, 220);
   sheet.setColumnWidths(2, 4, 130);
+
+  // Fix row 7 alignment - ensure data cells are properly sized
+  sheet.getRange("A7:D7").setVerticalAlignment("middle").setHorizontalAlignment("center");
+
+  // Fix row 15 alignment - ensure data cells are properly sized
+  sheet.getRange("A15:E15").setVerticalAlignment("middle");
+
+  // Delete unused columns beyond F
+  deleteUnusedColumns(sheet, 7);
 }
 
 // ============================================================================
@@ -1817,6 +1922,9 @@ function createQuickStatsSheet(ss) {
   // Set background for spacing columns
   sheet.getRange("E1:E50").setBackground(COLORS.LIGHT_GRAY);
   sheet.getRange("J1:J50").setBackground(COLORS.LIGHT_GRAY);
+
+  // Delete unused columns beyond O
+  deleteUnusedColumns(sheet, 16);
 }
 
 // ============================================================================
@@ -1979,6 +2087,9 @@ function createFutureFeaturesSheet(ss) {
 
   // Freeze header rows
   sheet.setFrozenRows(2);
+
+  // Delete unused columns beyond H
+  deleteUnusedColumns(sheet, 9);
 }
 
 // ============================================================================
@@ -2201,6 +2312,9 @@ function createPendingFeaturesSheet(ss) {
 
   // Freeze header rows
   sheet.setFrozenRows(2);
+
+  // Delete unused columns beyond G
+  deleteUnusedColumns(sheet, 8);
 }
 
 // ============================================================================
@@ -2221,6 +2335,9 @@ function createArchiveSheet(ss) {
 
   sheet.getRange("A2").setValue("Resolved grievances are automatically moved here after 90 days")
     .setFontStyle("italic");
+
+  // Hide the Archive tab
+  sheet.hideSheet();
 }
 
 // ============================================================================
@@ -4623,6 +4740,27 @@ function SEED_ALL_CUSTOM() {
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
+
+/**
+ * Helper function to delete unused columns from a sheet
+ * @param {Sheet} sheet - The sheet to modify
+ * @param {number} startColumn - The first column to delete (1-indexed)
+ */
+function deleteUnusedColumns(sheet, startColumn) {
+  if (!sheet) return;
+
+  const maxColumns = sheet.getMaxColumns();
+  const columnsToDelete = maxColumns - startColumn + 1;
+
+  if (columnsToDelete > 0) {
+    try {
+      sheet.deleteColumns(startColumn, columnsToDelete);
+    } catch (e) {
+      Logger.log('Error deleting columns: ' + e.toString());
+      // Non-critical error, continue
+    }
+  }
+}
 
 function randomDate(startYear, endYear) {
   const start = new Date(startYear, 0, 1);
