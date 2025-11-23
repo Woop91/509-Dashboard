@@ -98,6 +98,7 @@ const SHEETS = {
 const COLORS = {
   // Primary Soft Pastels (ADHD-friendly - calming but visible)
   PRIMARY_BLUE: "#7EC8E3",      // Soft Sky Blue - main headers (calming)
+  PRIMARY_PURPLE: "#7B68A6",    // Medium Purple - tab headers (professional)
   SOLIDARITY_RED: "#F4A3A8",    // Soft Coral - urgent (not alarming)
   UNION_GREEN: "#A8D5BA",       // Soft Mint Green - success/wins (calming)
 
@@ -114,6 +115,10 @@ const COLORS = {
   BORDER_GRAY: "#E8EDF2",      // Subtle borders (almost invisible)
   TEXT_DARK: "#4A5568",        // Softer dark text (not harsh black)
   TEXT_GRAY: "#8B95A5",        // Medium gray for secondary text
+
+  // Alternating Row Colors (for tables)
+  ROW_LIGHT: "#FFFFFF",        // White for primary rows
+  ROW_PURPLE_ALT: "#F3F0F9",   // Very light purple for alternating rows
 
   // Status Colors (Soft but distinguishable)
   OVERDUE: "#F4A3A8",          // Soft Coral (gentle urgency)
@@ -1374,7 +1379,7 @@ function createConfigSheet(ss) {
   ];
 
   config.getRange(1, 1, 1, headers.length).setValues([headers])
-    .setFontWeight("bold").setBackground(COLORS.PRIMARY_BLUE).setFontColor("white").setFontFamily("Roboto");
+    .setFontWeight("bold").setBackground(COLORS.PRIMARY_PURPLE).setFontColor("white").setFontFamily("Roboto");
 
   // Column A: Job Titles (from CBA Appendix C)
   const jobTitles = [
@@ -1656,7 +1661,7 @@ function createMemberDirectorySheet(ss) {
   const headerRange = sheet.getRange(1, 1, 1, headers.length);
   headerRange.setValues([headers])
     .setFontWeight("bold")
-    .setBackground(COLORS.PRIMARY_BLUE)
+    .setBackground(COLORS.PRIMARY_PURPLE)
     .setFontColor("white")
     .setFontFamily("Roboto")
     .setWrap(true);
@@ -1761,6 +1766,15 @@ function applyMemberDirectoryConditionalFormatting(sheet) {
   sheet.clearConditionalFormatRules();
 
   const rules = [];
+
+  // Rule 0: Alternating row colors (light purple for even rows)
+  // This rule has lowest priority and will be overridden by other rules
+  const alternatingRowRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=ISEVEN(ROW())')
+    .setBackground(COLORS.ROW_PURPLE_ALT)
+    .setRanges([sheet.getRange('A2:AQ')])
+    .build();
+  rules.push(alternatingRowRule);
 
   // Rule 1: Red background for empty Email Address (column I/9)
   const emailRule = SpreadsheetApp.newConditionalFormatRule()
@@ -1882,7 +1896,7 @@ function createGrievanceLogSheet(ss) {
     const headerRange = sheet.getRange(1, 1, 1, headers.length);
     headerRange.setValues([headers])
       .setFontWeight("bold")
-      .setBackground(COLORS.PRIMARY_BLUE)
+      .setBackground(COLORS.PRIMARY_PURPLE)
       .setFontColor("white")
       .setFontFamily("Roboto")
       .setWrap(true);
@@ -1907,6 +1921,14 @@ function createGrievanceLogSheet(ss) {
         sheet.getRange(1, col).setBackground(COLORS.ACCENT_TEAL);
       }
     });
+
+    // Apply alternating row colors
+    const alternatingRowRule = SpreadsheetApp.newConditionalFormatRule()
+      .whenFormulaSatisfied('=ISEVEN(ROW())')
+      .setBackground(COLORS.ROW_PURPLE_ALT)
+      .setRanges([sheet.getRange('A2:AG')])
+      .build();
+    sheet.setConditionalFormatRules([alternatingRowRule]);
   } catch (error) {
     Logger.log('Error in createGrievanceLogSheet: ' + error.toString());
     throw new Error('Failed to create Grievance Log sheet: ' + error.message);
@@ -1932,7 +1954,7 @@ function createStewardWorkloadSheet(ss) {
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers])
     .setFontWeight("bold")
-    .setBackground(COLORS.PRIMARY_BLUE)
+    .setBackground(COLORS.PRIMARY_PURPLE)
     .setFontColor("white")
     .setFontFamily("Roboto");
 
@@ -1995,7 +2017,7 @@ function createAnalyticsSheet(ss) {
 
   sheet.getRange(1, 1, 1, headers.length).setValues([headers])
     .setFontWeight("bold")
-    .setBackground(COLORS.PRIMARY_BLUE)
+    .setBackground(COLORS.PRIMARY_PURPLE)
     .setFontColor("white")
     .setFontFamily("Roboto");
 
@@ -2018,7 +2040,7 @@ function createTrendsSheet(ss) {
     .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
-    .setBackground(COLORS.PRIMARY_BLUE)
+    .setBackground(COLORS.PRIMARY_PURPLE)
     .setFontColor("white");
 
   // Section headers - Unified color scheme
@@ -2051,7 +2073,7 @@ function createPerformanceSheet(ss) {
     .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
-    .setBackground(COLORS.PRIMARY_BLUE)
+    .setBackground(COLORS.PRIMARY_PURPLE)
     .setFontColor("white");
 
   // Section headers - Unified color scheme
@@ -2093,7 +2115,7 @@ function createLocationSheet(ss) {
     .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
-    .setBackground(COLORS.PRIMARY_BLUE)
+    .setBackground(COLORS.PRIMARY_PURPLE)
     .setFontColor("white");
 
   // Section headers - Unified color scheme
@@ -2131,7 +2153,7 @@ function createTypeAnalysisSheet(ss) {
     .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
-    .setBackground(COLORS.PRIMARY_BLUE)
+    .setBackground(COLORS.PRIMARY_PURPLE)
     .setFontColor("white");
 
   // Section headers - Unified color scheme
@@ -3602,7 +3624,7 @@ function createArchiveSheet(ss) {
   sheet.getRange("A1").setValue("Archived Grievances")
     .setFontWeight("bold")
     .setFontSize(14).setFontFamily("Roboto")
-    .setBackground(COLORS.PRIMARY_BLUE)
+    .setBackground(COLORS.PRIMARY_PURPLE)
     .setFontColor("white");
 
   sheet.getRange("A2").setValue("Resolved grievances are automatically moved here after 90 days")
@@ -3627,7 +3649,7 @@ function createDiagnosticsSheet(ss) {
   sheet.getRange(1, 1, 1, headers.length).setValues([headers])
     .setFontWeight("bold")
     .setFontFamily("Roboto")
-    .setBackground(COLORS.PRIMARY_BLUE)
+    .setBackground(COLORS.PRIMARY_PURPLE)
     .setFontColor("white");
 
   const checks = [
@@ -14634,7 +14656,7 @@ function createGettingStartedSheet(ss) {
     .setValue("📚 Getting Started with SEIU Local 509 Dashboard")
     .setFontSize(24)
     .setFontWeight("bold")
-    .setBackground(COLORS.PRIMARY_BLUE)
+    .setBackground(COLORS.PRIMARY_PURPLE)
     .setFontColor("white")
     .setFontFamily("Roboto")
     .setVerticalAlignment("middle")
@@ -14854,7 +14876,7 @@ function createFAQSheet(ss) {
     .setValue("❓ Frequently Asked Questions (FAQ)")
     .setFontSize(24)
     .setFontWeight("bold")
-    .setBackground(COLORS.PRIMARY_BLUE)
+    .setBackground(COLORS.PRIMARY_PURPLE)
     .setFontColor("white")
     .setFontFamily("Roboto")
     .setVerticalAlignment("middle")
