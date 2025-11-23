@@ -3835,17 +3835,25 @@ function rebuildKPIDashboard() {
   sheet.getRange("M6:O6").breakApart();
 
   // THIS MONTH section - Row 7
-  sheet.getRange("A7:C7").breakApart().merge().setValue(metrics.thisMonthFiled);
-  sheet.getRange("A8:C9").breakApart().merge().setValue("+" + metrics.thisMonthFiled + " from last month");
+  sheet.getRange("A7:C7").breakApart();
+  sheet.getRange("A7:C7").merge().setValue(metrics.thisMonthFiled);
+  sheet.getRange("A8:C9").breakApart();
+  sheet.getRange("A8:C9").merge().setValue("+" + metrics.thisMonthFiled + " from last month");
 
-  sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.thisMonthResolved);
-  sheet.getRange("E8:G9").breakApart().merge().setValue(metrics.thisMonthResolved + " cases closed");
+  sheet.getRange("E7:G7").breakApart();
+  sheet.getRange("E7:G7").merge().setValue(metrics.thisMonthResolved);
+  sheet.getRange("E8:G9").breakApart();
+  sheet.getRange("E8:G9").merge().setValue(metrics.thisMonthResolved + " cases closed");
 
-  sheet.getRange("I7:K7").breakApart().merge().setValue(metrics.pendingDecision);
-  sheet.getRange("I8:K9").breakApart().merge().setValue("Awaiting decisions");
+  sheet.getRange("I7:K7").breakApart();
+  sheet.getRange("I7:K7").merge().setValue(metrics.pendingDecision);
+  sheet.getRange("I8:K9").breakApart();
+  sheet.getRange("I8:K9").merge().setValue("Awaiting decisions");
 
-  sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.winRate.toFixed(1) + "%");
-  sheet.getRange("M8:O9").breakApart().merge().setValue("Success rate");
+  sheet.getRange("M7:O7").breakApart();
+  sheet.getRange("M7:O7").merge().setValue(metrics.winRate.toFixed(1) + "%");
+  sheet.getRange("M8:O9").breakApart();
+  sheet.getRange("M8:O9").merge().setValue("Success rate");
 
   // Break apart row 14 headers first to avoid conflicts
   sheet.getRange("A14:C14").breakApart();
@@ -3854,17 +3862,25 @@ function rebuildKPIDashboard() {
   sheet.getRange("M14:O14").breakApart();
 
   // YEAR TO DATE section - Row 15
-  sheet.getRange("A15:C15").breakApart().merge().setValue(metrics.ytdFiled);
-  sheet.getRange("A16:C17").breakApart().merge().setValue("Cases filed YTD");
+  sheet.getRange("A15:C15").breakApart();
+  sheet.getRange("A15:C15").merge().setValue(metrics.ytdFiled);
+  sheet.getRange("A16:C17").breakApart();
+  sheet.getRange("A16:C17").merge().setValue("Cases filed YTD");
 
-  sheet.getRange("E15:G15").breakApart().merge().setValue(metrics.ytdResolved);
-  sheet.getRange("E16:G17").breakApart().merge().setValue("Cases resolved YTD");
+  sheet.getRange("E15:G15").breakApart();
+  sheet.getRange("E15:G15").merge().setValue(metrics.ytdResolved);
+  sheet.getRange("E16:G17").breakApart();
+  sheet.getRange("E16:G17").merge().setValue("Cases resolved YTD");
 
-  sheet.getRange("I15:K15").breakApart().merge().setValue(metrics.activeGrievances);
-  sheet.getRange("I16:K17").breakApart().merge().setValue("Currently active");
+  sheet.getRange("I15:K15").breakApart();
+  sheet.getRange("I15:K15").merge().setValue(metrics.activeGrievances);
+  sheet.getRange("I16:K17").breakApart();
+  sheet.getRange("I16:K17").merge().setValue("Currently active");
 
-  sheet.getRange("M15:O15").breakApart().merge().setValue(metrics.overdue);
-  sheet.getRange("M16:O17").breakApart().merge().setValue("Cases overdue");
+  sheet.getRange("M15:O15").breakApart();
+  sheet.getRange("M15:O15").merge().setValue(metrics.overdue);
+  sheet.getRange("M16:O17").breakApart();
+  sheet.getRange("M16:O17").merge().setValue("Cases overdue");
 }
 
 /**
@@ -3889,10 +3905,14 @@ function rebuildMemberEngagement() {
   sheet.getRange("M8:O9").breakApart();
 
   // Engagement KPIs - Row 7
-  sheet.getRange("A7:C7").breakApart().merge().setValue(metrics.memberEngagementRate.toFixed(1) + "%");
-  sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.totalStewards);
-  sheet.getRange("I7:K7").breakApart().merge().setValue(metrics.committeeMembers);
-  sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.activeMembers);
+  sheet.getRange("A7:C7").breakApart();
+  sheet.getRange("A7:C7").merge().setValue(metrics.memberEngagementRate.toFixed(1) + "%");
+  sheet.getRange("E7:G7").breakApart();
+  sheet.getRange("E7:G7").merge().setValue(metrics.totalStewards);
+  sheet.getRange("I7:K7").breakApart();
+  sheet.getRange("I7:K7").merge().setValue(metrics.committeeMembers);
+  sheet.getRange("M7:O7").breakApart();
+  sheet.getRange("M7:O7").merge().setValue(metrics.activeMembers);
 
   // Engagement breakdown - Starting at row 15
   sheet.getRange("A15").setValue(metrics.engagementCounts["Very Active"]);
@@ -3926,10 +3946,14 @@ function rebuildCostImpact() {
   // Financial KPIs - Row 7
   const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
 
-  sheet.getRange("A7:C7").breakApart().merge().setValue(formatter.format(metrics.financialRecovery));
-  sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.won);
-  sheet.getRange("I7:K7").breakApart().merge().setValue(formatter.format(metrics.financialRecovery / Math.max(1, metrics.won + metrics.settled)));
-  sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.winRate.toFixed(1) + "%");
+  sheet.getRange("A7:C7").breakApart();
+  sheet.getRange("A7:C7").merge().setValue(formatter.format(metrics.financialRecovery));
+  sheet.getRange("E7:G7").breakApart();
+  sheet.getRange("E7:G7").merge().setValue(metrics.won);
+  sheet.getRange("I7:K7").breakApart();
+  sheet.getRange("I7:K7").merge().setValue(formatter.format(metrics.financialRecovery / Math.max(1, metrics.won + metrics.settled)));
+  sheet.getRange("M7:O7").breakApart();
+  sheet.getRange("M7:O7").merge().setValue(metrics.winRate.toFixed(1) + "%");
 
   // Break apart row 14 and 16-17 to avoid conflicts
   sheet.getRange("A14:C14").breakApart();
@@ -3943,9 +3967,12 @@ function rebuildCostImpact() {
 
   // Additional financial metrics - Row 15
   const avgPerMember = metrics.totalMembers > 0 ? metrics.financialRecovery / metrics.totalMembers : 0;
-  sheet.getRange("A15:C15").breakApart().merge().setValue(formatter.format(avgPerMember));
-  sheet.getRange("E15:G15").breakApart().merge().setValue(metrics.won + metrics.settled);
-  sheet.getRange("I15:K15").breakApart().merge().setValue(formatter.format(metrics.financialRecovery * 1.2)); // Projected
+  sheet.getRange("A15:C15").breakApart();
+  sheet.getRange("A15:C15").merge().setValue(formatter.format(avgPerMember));
+  sheet.getRange("E15:G15").breakApart();
+  sheet.getRange("E15:G15").merge().setValue(metrics.won + metrics.settled);
+  sheet.getRange("I15:K15").breakApart();
+  sheet.getRange("I15:K15").merge().setValue(formatter.format(metrics.financialRecovery * 1.2)); // Projected
 }
 
 /**
@@ -3968,10 +3995,14 @@ function rebuildQuickStats() {
   sheet.getRange("K7:N8").breakApart();
 
   // Large stat cards - Row 7
-  sheet.getRange("A7:C7").breakApart().merge().setValue(metrics.totalGrievances);
-  sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.activeGrievances);
-  sheet.getRange("I7:K7").breakApart().merge().setValue(metrics.overdue);
-  sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.totalMembers);
+  sheet.getRange("A7:C7").breakApart();
+  sheet.getRange("A7:C7").merge().setValue(metrics.totalGrievances);
+  sheet.getRange("E7:G7").breakApart();
+  sheet.getRange("E7:G7").merge().setValue(metrics.activeGrievances);
+  sheet.getRange("I7:K7").breakApart();
+  sheet.getRange("I7:K7").merge().setValue(metrics.overdue);
+  sheet.getRange("M7:O7").breakApart();
+  sheet.getRange("M7:O7").merge().setValue(metrics.totalMembers);
 
   // Break apart row 14 ranges to avoid conflicts
   sheet.getRange("A14:C14").breakApart();
@@ -3984,10 +4015,14 @@ function rebuildQuickStats() {
   sheet.getRange("M16:O17").breakApart();
 
   // Secondary stats - Row 15
-  sheet.getRange("A15:C15").breakApart().merge().setValue(metrics.winRate.toFixed(1) + "%");
-  sheet.getRange("E15:G15").breakApart().merge().setValue(metrics.avgResolutionDays);
-  sheet.getRange("I15:K15").breakApart().merge().setValue(metrics.totalStewards);
-  sheet.getRange("M15:O15").breakApart().merge().setValue(metrics.dueThisWeek);
+  sheet.getRange("A15:C15").breakApart();
+  sheet.getRange("A15:C15").merge().setValue(metrics.winRate.toFixed(1) + "%");
+  sheet.getRange("E15:G15").breakApart();
+  sheet.getRange("E15:G15").merge().setValue(metrics.avgResolutionDays);
+  sheet.getRange("I15:K15").breakApart();
+  sheet.getRange("I15:K15").merge().setValue(metrics.totalStewards);
+  sheet.getRange("M15:O15").breakApart();
+  sheet.getRange("M15:O15").merge().setValue(metrics.dueThisWeek);
 }
 
 // ============================================================================
