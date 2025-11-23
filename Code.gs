@@ -1215,6 +1215,33 @@ function writeDashboardData(metrics, chartData) {
 // ============================================================================
 
 /**
+ * Hides gridlines on all dashboard and visualization sheets
+ */
+function hideGridlinesOnDashboards(ss) {
+  const dashboardSheets = [
+    SHEETS.DASHBOARD,
+    SHEETS.INTERACTIVE_DASHBOARD,
+    SHEETS.ANALYTICS,
+    SHEETS.TRENDS,
+    SHEETS.PERFORMANCE,
+    SHEETS.LOCATION,
+    SHEETS.TYPE_ANALYSIS,
+    SHEETS.EXECUTIVE_OVERVIEW,
+    SHEETS.KPI_DASHBOARD,
+    SHEETS.MEMBER_ENGAGEMENT,
+    SHEETS.COST_IMPACT,
+    SHEETS.QUICK_STATS
+  ];
+
+  dashboardSheets.forEach(sheetName => {
+    const sheet = ss.getSheetByName(sheetName);
+    if (sheet) {
+      sheet.setHiddenGridlines(true);
+    }
+  });
+}
+
+/**
  * Main setup function - Creates entire 509 Dashboard system
  * Run this once to set up everything
  */
@@ -1264,6 +1291,9 @@ function CREATE_509_DASHBOARD() {
     createFAQSheet(ss);
     createArchiveSheet(ss);
     createDiagnosticsSheet(ss);
+
+    Logger.log('Hiding gridlines on dashboard sheets...');
+    hideGridlinesOnDashboards(ss);
 
     Logger.log('Setting up data validation and triggers...');
     setupDataValidation(ss);
@@ -1555,36 +1585,36 @@ function createMemberDirectorySheet(ss) {
   if (!sheet) sheet = ss.insertSheet(SHEETS.MEMBER_DIR);
 
   sheet.clear();
+  sheet.setHiddenGridlines(true); // Remove gridlines
 
-  // Updated columns with renames and new fields
+  // Reordered columns for logical grouping with toggles
   const headers = [
+    // === ALWAYS VISIBLE (A-T) ===
     // Basic Info (A-H)
     "Member ID", "First Name", "Last Name", "Job Title / Position",
     "Department / Unit", "Worksite / Office Location", "Work Schedule / Office Days",
     "Unit (8 or 10)",
-    // Contact & Role (I-O)
-    "Email Address", "Phone Number", "Is Steward (Y/N)",
-    "Assigned Steward", "Share Phone in Directory? (Steward Only)",
-    "Membership Status", "Immediate Supervisor", "Manager / Program Director",
-    // Grievance Metrics (N-S) - AUTO CALCULATED
-    "Total Grievances Filed", "Active Grievances", "Resolved Grievances",
-    "Grievances Won", "Grievances Lost", "Last Grievance Date",
-    // Grievance Snapshot (T-W) - AUTO CALCULATED
-    "Has Open Grievance?", "# Open Grievances", "Last Grievance Status", "Next Deadline (Soonest)",
-    // Participation (X-AC)
-    "Engagement Level", "Events Attended (Last 12mo)", "Training Sessions Attended",
-    "Committee Member", "Please select your preferred communication methods (check all that apply)",
-    "What time(s) are best for us to reach you? (check all that apply)",
-    // Emergency & Admin (AD-AH)
-    "Emergency Contact Name", "Emergency Contact Phone", "Notes",
-    "Date of Birth", "Hire Date",
+    // Contact Info (I-L)
+    "Email Address", "Phone Number", "Is Steward (Y/N)", "Assigned Steward",
+    // Management (M-N)
+    "Immediate Supervisor", "Manager / Program Director",
+    // Personal & Admin (O-T)
+    "Date of Birth", "Hire Date", "Emergency Contact Phone", "Notes",
     "Last Updated", "Updated By",
-    // Level 2 Columns (AI-AV) - Advanced engagement tracking
-    "Last Virtual Mtg (Date)", "Last In-Person Mtg (Date)", "Last Survey (Date)",
-    "Last Email Open (Date)", "Open Rate (%)", "Volunteer Hours (YTD)",
-    "Interest: Local Actions", "Interest: Chapter Actions", "Interest: Allied Chapter Actions",
+
+    // === LEVEL TWO TOGGLE (U-AD) ===
+    "Share Phone in Directory? (Steward Only)", "Membership Status",
+    "Engagement Level", "Events Attended (Last 12mo)", "Training Sessions Attended",
+    "Committee Member", "Emergency Contact Name", "Interest: Allied Chapter Actions",
     "Preferred Communication Methods", "Best Time(s) to Reach Member",
-    "Most Recent Steward Contact Date", "Steward Who Contacted Member", "Notes from Steward Contact"
+
+    // === STEWARD CONTACT TOGGLE (AE-AG) ===
+    "Most Recent Steward Contact Date", "Steward Who Contacted Member", "Notes from Steward Contact",
+
+    // === GRIEVANCE TOGGLE (AH-AQ) ===
+    "Total Grievances Filed", "Resolved Grievances", "Grievances Won", "Grievances Lost",
+    "Last Grievance Date", "Has Open Grievance?", "# Open Grievances",
+    "Last Grievance Status", "Next Deadline (Soonest)", "Active Grievances"
   ];
 
   const headerRange = sheet.getRange(1, 1, 1, headers.length);
@@ -1597,40 +1627,92 @@ function createMemberDirectorySheet(ss) {
 
   sheet.setFrozenRows(1);
 
-  // Set column widths
-  sheet.setColumnWidth(1, 110);  // Member ID
-  sheet.setColumnWidth(2, 120);  // First Name
-  sheet.setColumnWidth(3, 120);  // Last Name
-  sheet.setColumnWidth(4, 200);  // Job Title / Position
-  sheet.setColumnWidth(5, 180);  // Department / Unit
-  sheet.setColumnWidth(6, 220);  // Worksite / Office Location
-  sheet.setColumnWidth(7, 180);  // Work Schedule / Office Days
-  sheet.setColumnWidth(9, 220);  // Email
-  sheet.setColumnWidth(12, 180); // Assigned Steward
-  sheet.setColumnWidth(13, 220); // Share Phone in Directory?
-  sheet.setColumnWidth(15, 180); // Immediate Supervisor
-  sheet.setColumnWidth(16, 200); // Manager / Program Director
-  sheet.setColumnWidth(31, 250); // Preferred communication methods
-  sheet.setColumnWidth(32, 250); // Best time to reach
-  sheet.setColumnWidth(33, 300); // Notes
-  sheet.setColumnWidth(44, 200); // Preferred Communication Methods (Level 2)
-  sheet.setColumnWidth(45, 200); // Best Time(s) to Reach Member (Level 2)
-  sheet.setColumnWidth(48, 300); // Notes from Steward Contact
+  // Set column widths for new layout
+  sheet.setColumnWidth(1, 110);  // A: Member ID
+  sheet.setColumnWidth(2, 120);  // B: First Name
+  sheet.setColumnWidth(3, 120);  // C: Last Name
+  sheet.setColumnWidth(4, 200);  // D: Job Title
+  sheet.setColumnWidth(5, 180);  // E: Department / Unit
+  sheet.setColumnWidth(6, 220);  // F: Worksite
+  sheet.setColumnWidth(7, 180);  // G: Work Schedule
+  sheet.setColumnWidth(9, 220);  // I: Email
+  sheet.setColumnWidth(12, 180); // L: Assigned Steward
+  sheet.setColumnWidth(13, 180); // M: Immediate Supervisor
+  sheet.setColumnWidth(14, 200); // N: Manager
+  sheet.setColumnWidth(17, 150); // Q: Emergency Contact Phone
+  sheet.setColumnWidth(18, 300); // R: Notes
+  sheet.setColumnWidth(21, 220); // U: Share Phone in Directory
+  sheet.setColumnWidth(23, 150); // W: Engagement Level
+  sheet.setColumnWidth(26, 200); // Z: Committee Member
+  sheet.setColumnWidth(29, 250); // AC: Preferred Communication Methods
+  sheet.setColumnWidth(30, 250); // AD: Best Time to Reach
+  sheet.setColumnWidth(31, 180); // AE: Most Recent Steward Contact Date
+  sheet.setColumnWidth(32, 180); // AF: Steward Who Contacted Member
+  sheet.setColumnWidth(33, 300); // AG: Notes from Steward Contact
+  sheet.setColumnWidth(41, 200); // AO: Last Grievance Status
+  sheet.setColumnWidth(42, 180); // AP: Next Deadline
 
-  // Color-code auto-calculated columns (P-U and V-Y and AI-AJ)
-  const autoCols = [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 35, 36]; // P-U (grievance metrics), V-Y (snapshot fields), AI-AJ (Last Updated, Updated By)
+  // Color-code auto-calculated columns (S-T: Last Updated/Updated By, AH-AQ: Grievance data)
+  const autoCols = [19, 20, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43];
   autoCols.forEach(col => {
     sheet.getRange(1, col).setBackground(COLORS.ACCENT_TEAL);
   });
+
+  // Create column groups for toggles
+  createMemberDirectoryToggles(sheet);
 
   // Apply conditional formatting for Member Directory
   applyMemberDirectoryConditionalFormatting(sheet);
 }
 
 /**
+ * Creates column groups (toggles) for Member Directory
+ */
+function createMemberDirectoryToggles(sheet) {
+  if (!sheet) {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  }
+  if (!sheet) return;
+
+  // Level Two Toggle: columns U-AD (21-30)
+  const levelTwoGroup = sheet.getColumnGroup(21, 10);
+  if (levelTwoGroup) {
+    levelTwoGroup.collapse();
+  } else {
+    sheet.getRange("U:AD").shiftColumnGroupDepth(1);
+    const newGroup = sheet.getColumnGroup(21, 10);
+    if (newGroup) newGroup.collapse();
+  }
+
+  // Steward Contact Toggle: columns AE-AG (31-33)
+  const stewardGroup = sheet.getColumnGroup(31, 3);
+  if (stewardGroup) {
+    stewardGroup.collapse();
+  } else {
+    sheet.getRange("AE:AG").shiftColumnGroupDepth(1);
+    const newGroup = sheet.getColumnGroup(31, 3);
+    if (newGroup) newGroup.collapse();
+  }
+
+  // Grievance Toggle: columns AH-AQ (34-43)
+  const grievanceGroup = sheet.getColumnGroup(34, 10);
+  if (grievanceGroup) {
+    grievanceGroup.collapse();
+  } else {
+    sheet.getRange("AH:AQ").shiftColumnGroupDepth(1);
+    const newGroup = sheet.getColumnGroup(34, 10);
+    if (newGroup) newGroup.collapse();
+  }
+}
+
+/**
  * Applies conditional formatting to Member Directory sheet:
  * - Red background for empty email/phone fields
  * - Light purple background for stewards
+ * - Color-coded Engagement Level
+ * - Red background for open grievances
+ * - Heat map for next deadline
  */
 function applyMemberDirectoryConditionalFormatting(sheet) {
   if (!sheet) {
@@ -1664,9 +1746,67 @@ function applyMemberDirectoryConditionalFormatting(sheet) {
   const stewardRule = SpreadsheetApp.newConditionalFormatRule()
     .whenFormulaSatisfied('=UPPER($K2)="YES"')
     .setBackground('#e6d9f5')
-    .setRanges([sheet.getRange('A2:AV')])
+    .setRanges([sheet.getRange('A2:AQ')])
     .build();
   rules.push(stewardRule);
+
+  // Rule 4: Engagement Level color coding (column W/23) - High=Green, Medium=Yellow, Low=Red
+  const engagementHighRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo('High')
+    .setBackground('#b7e1cd')
+    .setRanges([sheet.getRange('W2:W')])
+    .build();
+  rules.push(engagementHighRule);
+
+  const engagementMediumRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo('Medium')
+    .setBackground('#ffe599')
+    .setRanges([sheet.getRange('W2:W')])
+    .build();
+  rules.push(engagementMediumRule);
+
+  const engagementLowRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo('Low')
+    .setBackground('#f4cccc')
+    .setRanges([sheet.getRange('W2:W')])
+    .build();
+  rules.push(engagementLowRule);
+
+  // Rule 5: Has Open Grievance (column AM/39) - Red if "Yes"
+  const hasOpenGrievanceRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=UPPER($AM2)="YES"')
+    .setBackground('#ea4335')
+    .setFontColor('#ffffff')
+    .setRanges([sheet.getRange('AM2:AM')])
+    .build();
+  rules.push(hasOpenGrievanceRule);
+
+  // Rule 6: Next Deadline (column AP/42) - Heat map based on days until deadline
+  // Red: overdue or < 7 days
+  const deadlineUrgentRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=AND(NOT(ISBLANK($AP2)), $AP2 < TODAY()+7)')
+    .setBackground('#ea4335')
+    .setFontColor('#ffffff')
+    .setRanges([sheet.getRange('AP2:AP')])
+    .build();
+  rules.push(deadlineUrgentRule);
+
+  // Orange: 7-14 days
+  const deadlineSoonRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=AND(NOT(ISBLANK($AP2)), $AP2 >= TODAY()+7, $AP2 < TODAY()+14)')
+    .setBackground('#ff9900')
+    .setFontColor('#ffffff')
+    .setRanges([sheet.getRange('AP2:AP')])
+    .build();
+  rules.push(deadlineSoonRule);
+
+  // Yellow: 14-30 days
+  const deadlineComingRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=AND(NOT(ISBLANK($AP2)), $AP2 >= TODAY()+14, $AP2 < TODAY()+30)')
+    .setBackground('#ffe599')
+    .setRanges([sheet.getRange('AP2:AP')])
+    .build();
+  rules.push(deadlineComingRule);
 
   sheet.setConditionalFormatRules(rules);
 }
@@ -3474,17 +3614,16 @@ function setupDataValidation(ss) {
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  // Member Directory Validations
+  // Member Directory Validations - Updated for new column layout
   const validations = [
-    { sheet: memberDir, column: "D", range: "A2:A19", name: "Job Title" },      // Job Titles
-    { sheet: memberDir, column: "E", range: "B2:B16", name: "Work Location" },  // Locations
-    { sheet: memberDir, column: "H", range: "C2:C3", name: "Unit" },            // Unit (8 or 10)
-    { sheet: memberDir, column: "K", range: "D2:D3", name: "Steward" },         // Is Steward (Y/N)
-    { sheet: memberDir, column: "M", range: "Q2:Q3", name: "Phone Share" },     // Share Phone in Directory? (Y/N)
-    { sheet: memberDir, column: "N", range: "M2:M5", name: "Membership" },      // Membership Status
-    { sheet: memberDir, column: "X", range: "J2:J6", name: "Engagement" },      // Engagement Level (column X, shifted by 2)
-    { sheet: memberDir, column: "AA", range: "L2:L8", name: "Committee" },      // Committee Member (column AA, shifted by 2)
-    { sheet: memberDir, column: "AB", range: "K2:K5", name: "Contact Method" }  // Preferred Contact Method (column AB, shifted by 2)
+    { sheet: memberDir, column: "D", range: "A2:A19", name: "Job Title" },      // D: Job Title / Position
+    { sheet: memberDir, column: "F", range: "B2:B16", name: "Work Location" },  // F: Worksite / Office Location
+    { sheet: memberDir, column: "H", range: "C2:C3", name: "Unit" },            // H: Unit (8 or 10)
+    { sheet: memberDir, column: "K", range: "D2:D3", name: "Steward" },         // K: Is Steward (Y/N)
+    { sheet: memberDir, column: "U", range: "Q2:Q3", name: "Phone Share" },     // U: Share Phone in Directory? (Y/N)
+    { sheet: memberDir, column: "V", range: "M2:M5", name: "Membership" },      // V: Membership Status
+    { sheet: memberDir, column: "W", range: "J2:J6", name: "Engagement" },      // W: Engagement Level
+    { sheet: memberDir, column: "AC", range: "K2:K5", name: "Contact Method" }  // AC: Preferred Communication Methods
   ];
 
   validations.forEach(v => {
@@ -3496,8 +3635,7 @@ function setupDataValidation(ss) {
     v.sheet.getRange(`${v.column}2:${v.column}10000`).setDataValidation(rule);
   });
 
-  // Office Days validation (Column G) - Allow multiple selections (comma-separated)
-  // Using a more permissive validation that shows dropdown but allows custom input
+  // Work Schedule / Office Days (Column G) - Allow multiple selections (comma-separated)
   const officeDaysRange = config.getRange("N2:N8");
   const officeDaysRule = SpreadsheetApp.newDataValidation()
     .requireValueInRange(officeDaysRange, true)
@@ -3506,16 +3644,19 @@ function setupDataValidation(ss) {
     .build();
   memberDir.getRange("G2:G10000").setDataValidation(officeDaysRule);
 
-  // Assigned Steward validation (Column L) - Text field with help text only
-  // NOTE: For dynamic validation against active stewards, this should be updated
-  // by a function that queries members where "Is Steward (Y/N)" = "Yes"
-  // Using requireTextIsEmail() as a workaround isn't appropriate here, so we'll skip validation
-  // and just add a note for manual entry. Google Sheets will handle text input validation.
-  // If strict validation is needed, this should be updated to use a dynamic dropdown
-  // of steward names from the Member Directory where "Is Steward (Y/N)" = "Yes"
+  // Committee Member (Column Z) - Allow multiple selections (comma-separated)
+  const committeeRange = config.getRange("L2:L8");
+  const committeeRule = SpreadsheetApp.newDataValidation()
+    .requireValueInRange(committeeRange, true)
+    .setAllowInvalid(true)  // Allow custom values (comma-separated)
+    .setHelpText("Select one or enter multiple committees separated by commas")
+    .build();
+  memberDir.getRange("Z2:Z10000").setDataValidation(committeeRule);
 
-  // No validation rule set - free text entry for Assigned Steward column
-  // Users can manually enter steward names
+  // Assigned Steward (Column L) - Free text entry
+  // NOTE: For dynamic validation against active stewards, this could be updated
+  // by a function that queries members where "Is Steward (Y/N)" = "Yes"
+  // Currently allows free text entry for steward names
 
   // Grievance Log Validations
   const grievanceValidations = [
@@ -5813,51 +5954,66 @@ function SEED_20K_MEMBERS() {
       existingIds.add(memberId);
 
       data.push([
-        // A-D: Basic Info
+        // === ALWAYS VISIBLE (A-T) ===
+        // A-H: Basic Info
         memberId,                                                              // A: Member ID
         firstName,                                                             // B: First Name
         lastName,                                                              // C: Last Name
         jobTitles[Math.floor(Math.random() * jobTitles.length)],              // D: Job Title / Position
-        // E-H: Location & Unit
-        "",                                                                    // E: Department / Unit (blank for now)
+        "",                                                                    // E: Department / Unit (blank)
         locations[Math.floor(Math.random() * locations.length)],              // F: Worksite / Office Location
         generateOfficeDays(officeDays),                                       // G: Work Schedule / Office Days
         units[Math.floor(Math.random() * units.length)],                      // H: Unit (8 or 10)
-        // I-N: Contact & Role
+        // I-L: Contact Info
         `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mass.gov`,      // I: Email Address
         `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`, // J: Phone Number
         isSteward,                                                             // K: Is Steward (Y/N)
         "",                                                                    // L: Assigned Steward (blank)
-        "No",                                                                  // M: Share Phone in Directory? (default No)
-        membershipStatus[Math.floor(Math.random() * membershipStatus.length)], // N: Membership Status
-        "",                                                                    // O: Immediate Supervisor (blank)
-        "",                                                                    // P: Manager / Program Director (blank)
-        // Q-V: Grievance Metrics (AUTO CALCULATED - leave blank)
-        "", "", "", "", "", "",                                               // Q-V: Total/Active/Resolved/Won/Lost/Last Date
-        // W-Z: Grievance Snapshot (AUTO CALCULATED - leave blank)
-        "", "", "", "",                                                       // W-Z: Has Open?/# Open/Last Status/Next Deadline
-        // AA-AE: Participation
-        engagementLevels[Math.floor(Math.random() * engagementLevels.length)], // AA: Engagement Level
-        Math.floor(Math.random() * 25),                                       // AB: Events Attended
-        Math.floor(Math.random() * 15),                                       // AC: Training Sessions
-        // Stewards get assigned to committees (excluding "None"), non-stewards get "None"
-        isSteward === stewardOptions[0] ?                                     // AD: Committee Member
+        // M-N: Management
+        "",                                                                    // M: Immediate Supervisor (blank)
+        "",                                                                    // N: Manager / Program Director (blank)
+        // O-T: Personal & Admin
+        randomDate(1960, 2000),                                               // O: Date of Birth
+        randomDate(2015, 2024),                                               // P: Hire Date
+        `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`, // Q: Emergency Contact Phone
+        "",                                                                    // R: Notes (blank)
+        new Date(),                                                           // S: Last Updated
+        "SEED_SCRIPT",                                                        // T: Updated By
+
+        // === LEVEL TWO TOGGLE (U-AD) ===
+        "No",                                                                  // U: Share Phone in Directory? (default No)
+        membershipStatus[Math.floor(Math.random() * membershipStatus.length)], // V: Membership Status
+        engagementLevels[Math.floor(Math.random() * engagementLevels.length)], // W: Engagement Level
+        Math.floor(Math.random() * 25),                                       // X: Events Attended (Last 12mo)
+        Math.floor(Math.random() * 15),                                       // Y: Training Sessions Attended
+        isSteward === stewardOptions[0] ?                                     // Z: Committee Member
           committees.filter(c => c !== "None")[Math.floor(Math.random() * committees.filter(c => c !== "None").length)] :
           "None",
-        contactMethods[Math.floor(Math.random() * contactMethods.length)],   // AE: Preferred Contact Method
-        "",                                                                    // AF: Best Time to Reach (blank for now)
-        // AG-AM: Emergency & Admin
-        `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`, // AG: Emergency Contact Name
-        `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`, // AH: Emergency Contact Phone
-        "",                                                                    // AI: Notes (blank)
-        randomDate(1960, 2000),                                               // AJ: Date of Birth
-        randomDate(2015, 2024),                                               // AK: Hire Date
-        new Date(),                                                           // AL: Last Updated
-        "SEED_SCRIPT"                                                         // AM: Updated By
+        `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`, // AA: Emergency Contact Name
+        "",                                                                    // AB: Interest: Allied Chapter Actions (blank)
+        contactMethods[Math.floor(Math.random() * contactMethods.length)],   // AC: Preferred Communication Methods
+        "",                                                                    // AD: Best Time(s) to Reach Member (blank)
+
+        // === STEWARD CONTACT TOGGLE (AE-AG) ===
+        "",                                                                    // AE: Most Recent Steward Contact Date (blank)
+        "",                                                                    // AF: Steward Who Contacted Member (blank)
+        "",                                                                    // AG: Notes from Steward Contact (blank)
+
+        // === GRIEVANCE TOGGLE (AH-AQ) - AUTO CALCULATED ===
+        "",                                                                    // AH: Total Grievances Filed
+        "",                                                                    // AI: Resolved Grievances
+        "",                                                                    // AJ: Grievances Won
+        "",                                                                    // AK: Grievances Lost
+        "",                                                                    // AL: Last Grievance Date
+        "",                                                                    // AM: Has Open Grievance?
+        "",                                                                    // AN: # Open Grievances
+        "",                                                                    // AO: Last Grievance Status
+        "",                                                                    // AP: Next Deadline (Soonest)
+        ""                                                                     // AQ: Active Grievances
       ]);
     }
 
-    sheet.getRange(2 + (batch * BATCH), 1, BATCH, 39).setValues(data);
+    sheet.getRange(2 + (batch * BATCH), 1, BATCH, 43).setValues(data);
     SpreadsheetApp.flush();
   }
 
