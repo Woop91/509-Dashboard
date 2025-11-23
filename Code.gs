@@ -4248,13 +4248,15 @@ function SEED_20K_MEMBERS() {
   const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
+  // Pull all values from Config sheet to ensure consistency with validation rules
   const jobTitles = config.getRange("A2:A19").getValues().flat().filter(String);
   const locations = config.getRange("B2:B16").getValues().flat().filter(String);
-  const units = ["Unit 8", "Unit 10"];
+  const units = config.getRange("C2:C3").getValues().flat().filter(String);
+  const stewardOptions = config.getRange("D2:D3").getValues().flat().filter(String);
   const engagementLevels = config.getRange("J2:J6").getValues().flat().filter(String);
-  const membershipStatus = ["Active", "Inactive", "On Leave"];
-  const contactMethods = ["Email", "Phone", "Text", "Mail"];
-  const committees = ["Executive Board", "Bargaining Committee", "Grievance Committee", "None"];
+  const contactMethods = config.getRange("K2:K5").getValues().flat().filter(String);
+  const committees = config.getRange("L2:L8").getValues().flat().filter(String);
+  const membershipStatus = config.getRange("M2:M5").getValues().flat().filter(String);
   const officeDays = config.getRange("N2:N8").getValues().flat().filter(String);
 
   const firstNames = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda",
@@ -4279,7 +4281,7 @@ function SEED_20K_MEMBERS() {
     for (let i = 0; i < BATCH; i++) {
       const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
       const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-      const isSteward = Math.random() < 0.1 ? "Yes" : "No";
+      const isSteward = Math.random() < 0.1 ? stewardOptions[0] : stewardOptions[1]; // 10% stewards (Yes/No from config)
 
       // Generate random unique Member ID with initials
       const memberId = generateRandomMemberId(existingIds, firstName, lastName);
@@ -4307,7 +4309,10 @@ function SEED_20K_MEMBERS() {
         engagementLevels[Math.floor(Math.random() * engagementLevels.length)],
         Math.floor(Math.random() * 25),
         Math.floor(Math.random() * 15),
-        isSteward === "Yes" ? committees[Math.floor(Math.random() * (committees.length - 1))] : "None",
+        // Stewards get assigned to committees (excluding "None"), non-stewards get "None"
+        isSteward === stewardOptions[0] ?
+          committees.filter(c => c !== "None")[Math.floor(Math.random() * committees.filter(c => c !== "None").length)] :
+          "None",
         contactMethods[Math.floor(Math.random() * contactMethods.length)],
         // AA-AG: Emergency & Admin
         `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
