@@ -1056,12 +1056,20 @@ function buildInteractiveChartsIfNeeded() {
 
 /**
  * Placeholder for extracted chart building logic
- * This should contain just the chart creation parts of rebuildDashboard
+ * TODO: Extract chart creation code from rebuildDashboard() to this function
+ *
+ * This function should contain ONLY the chart creation logic without data recalculation.
+ * Called by buildDashboardChartsIfNeeded() when lazy loading charts.
+ *
+ * Implementation notes:
+ * - Read chart data from existing ranges (don't recalculate)
+ * - Create/update charts only
+ * - Keep this function lightweight for fast lazy loading
  */
 function buildDashboardCharts() {
-  Logger.log('Building dashboard charts...');
-  // Chart building logic would go here
-  // Extracted from rebuildDashboard to avoid recalculating all data
+  Logger.log('⚠️  buildDashboardCharts() is a stub - needs implementation');
+  // TODO: Extract chart building logic from rebuildDashboard
+  // For now, this is a placeholder to prevent errors
 }
 
 // ============================================================================
@@ -1154,34 +1162,52 @@ function calculateAllMetrics(dataCache) {
 
 /**
  * Prepare chart data from cached data
+ * TODO: Implement chart data aggregation
+ *
  * @param {Object} dataCache - Cached member and grievance data
- * @returns {Object} Chart data
+ * @returns {Object} Chart data aggregated for visualization
+ *
+ * Implementation notes:
+ * - Aggregate grievances by status, type, step
+ * - Aggregate members by unit, location
+ * - Calculate outcome distributions
+ * - Return structured data ready for chart creation
  */
 function prepareAllChartData(dataCache) {
-  // This would prepare data for all charts
-  // For now, return empty object - actual implementation would aggregate data
+  Logger.log('⚠️  prepareAllChartData() is a stub - needs full implementation');
+
+  // TODO: Implement full chart data preparation
+  // For now, return minimal structure to prevent errors
   return {
     grievancesByStatus: {},
     grievancesByType: {},
     membersByUnit: {},
-    // etc.
+    resolvedOutcomes: {}
   };
 }
 
 /**
  * Write dashboard data in batch operations
+ * TODO: Implement batch writing of dashboard metrics and chart data
+ *
  * @param {Object} metrics - Calculated metrics
  * @param {Object} chartData - Prepared chart data
+ *
+ * Implementation notes:
+ * - Write all KPI metrics to dashboard in single batch
+ * - Update chart data ranges
+ * - Use batch operations to minimize API calls
+ * - Match existing dashboard layout from rebuildDashboard()
  */
 function writeDashboardData(metrics, chartData) {
+  Logger.log('⚠️  writeDashboardData() is a stub - needs full implementation');
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
 
-  // Write all metrics in a single batch operation
-  // This is a placeholder - actual implementation would write to specific ranges
-  Logger.log('Writing dashboard metrics...');
-
-  // Would write metrics and chart data here
+  // TODO: Implement actual batch writing
+  // For now, log metrics to prevent errors
+  Logger.log(`Metrics to write: ${JSON.stringify(metrics)}`);
 }
 
 // ============================================================================
@@ -3745,7 +3771,7 @@ function recalcAllGrievances() {
 
       if (step2Filed) {
         const s2 = new Date(step2Filed);
-        s2.setDate(s2.setDate() + CBA_DEADLINES.STEP_II_DECISION);
+        s2.setDate(s2.getDate() + CBA_DEADLINES.STEP_II_DECISION);
         step2Due = s2;
       }
 
@@ -3822,13 +3848,22 @@ function recalcAllGrievances() {
       }
     }
 
-    // Write all deadline updates at once (Columns H, J, M, O, R)
+    // Write all deadline updates (Columns H, J, M, O, R)
+    // Note: Columns are non-contiguous, so we write them individually but prepare data efficiently
     if (deadlineUpdates.length > 0) {
-      sheet.getRange(2, 8, deadlineUpdates.length, 1).setValues(deadlineUpdates.map(r => [r[0]])); // H
-      sheet.getRange(2, 10, deadlineUpdates.length, 1).setValues(deadlineUpdates.map(r => [r[1]])); // J
-      sheet.getRange(2, 13, deadlineUpdates.length, 1).setValues(deadlineUpdates.map(r => [r[2]])); // M
-      sheet.getRange(2, 15, deadlineUpdates.length, 1).setValues(deadlineUpdates.map(r => [r[3]])); // O
-      sheet.getRange(2, 18, deadlineUpdates.length, 1).setValues(deadlineUpdates.map(r => [r[4]])); // R
+      // Prepare each column's data once
+      const colH = deadlineUpdates.map(r => [r[0]]);
+      const colJ = deadlineUpdates.map(r => [r[1]]);
+      const colM = deadlineUpdates.map(r => [r[2]]);
+      const colO = deadlineUpdates.map(r => [r[3]]);
+      const colR = deadlineUpdates.map(r => [r[4]]);
+
+      // Write all columns (5 API calls - unavoidable due to non-contiguous columns)
+      sheet.getRange(2, 8, deadlineUpdates.length, 1).setValues(colH);   // H: Filing Deadline
+      sheet.getRange(2, 10, deadlineUpdates.length, 1).setValues(colJ);  // J: Step I Due
+      sheet.getRange(2, 13, deadlineUpdates.length, 1).setValues(colM);  // M: Step II Appeal Deadline
+      sheet.getRange(2, 15, deadlineUpdates.length, 1).setValues(colO);  // O: Step II Due
+      sheet.getRange(2, 18, deadlineUpdates.length, 1).setValues(colR);  // R: Step III Appeal Deadline
     }
 
     // Write all timeline updates at once (Columns AA-AD)
