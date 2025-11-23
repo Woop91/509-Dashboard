@@ -3776,17 +3776,45 @@ function rebuildExecutiveOverview() {
   const metrics = calculateDashboardMetrics();
   if (!metrics) return;
 
-  // KPI Cards - Row 7 contains the main values
-  sheet.getRange("A7:C7").breakApart().merge().setValue(metrics.totalMembers);
-  sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.activeGrievances);
-  sheet.getRange("I7:K7").breakApart().merge().setValue(metrics.winRate.toFixed(1) + "%");
-  sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.avgResolutionDays + " days");
+  // Break apart all merged ranges in the KPI Cards section first to avoid conflicts
+  sheet.getRange("A6:C6").breakApart();
+  sheet.getRange("A7:C7").breakApart();
+  sheet.getRange("A8:C9").breakApart();
+  sheet.getRange("E6:G6").breakApart();
+  sheet.getRange("E7:G7").breakApart();
+  sheet.getRange("E8:G9").breakApart();
+  sheet.getRange("I6:K6").breakApart();
+  sheet.getRange("I7:K7").breakApart();
+  sheet.getRange("I8:K9").breakApart();
+  sheet.getRange("M6:O6").breakApart();
+  sheet.getRange("M7:O7").breakApart();
+  sheet.getRange("M8:O9").breakApart();
 
-  // Union Health Section - Row 15 contains values
-  sheet.getRange("A15:C15").breakApart().merge().setValue(metrics.totalStewards);
-  sheet.getRange("E15:G15").breakApart().merge().setValue(metrics.memberEngagementRate.toFixed(1) + "%");
-  sheet.getRange("I15:K15").breakApart().merge().setValue(metrics.activeMembers);
-  sheet.getRange("M15:O15").breakApart().merge().setValue(metrics.committeeMembers);
+  // KPI Cards - Row 7 contains the main values (re-merge after breaking apart)
+  sheet.getRange("A7:C7").merge().setValue(metrics.totalMembers);
+  sheet.getRange("E7:G7").merge().setValue(metrics.activeGrievances);
+  sheet.getRange("I7:K7").merge().setValue(metrics.winRate.toFixed(1) + "%");
+  sheet.getRange("M7:O7").merge().setValue(metrics.avgResolutionDays + " days");
+
+  // Break apart all merged ranges in the Union Health section first
+  sheet.getRange("A14:C14").breakApart();
+  sheet.getRange("A15:C15").breakApart();
+  sheet.getRange("A16:C17").breakApart();
+  sheet.getRange("E14:G14").breakApart();
+  sheet.getRange("E15:G15").breakApart();
+  sheet.getRange("E16:G17").breakApart();
+  sheet.getRange("I14:K14").breakApart();
+  sheet.getRange("I15:K15").breakApart();
+  sheet.getRange("I16:K17").breakApart();
+  sheet.getRange("M14:O14").breakApart();
+  sheet.getRange("M15:O15").breakApart();
+  sheet.getRange("M16:O17").breakApart();
+
+  // Union Health Section - Row 15 contains values (re-merge after breaking apart)
+  sheet.getRange("A15:C15").merge().setValue(metrics.totalStewards);
+  sheet.getRange("E15:G15").merge().setValue(metrics.memberEngagementRate.toFixed(1) + "%");
+  sheet.getRange("I15:K15").merge().setValue(metrics.activeMembers);
+  sheet.getRange("M15:O15").merge().setValue(metrics.committeeMembers);
 }
 
 /**
@@ -3800,6 +3828,12 @@ function rebuildKPIDashboard() {
   const metrics = calculateDashboardMetrics();
   if (!metrics) return;
 
+  // Break apart row 6 headers first to avoid conflicts
+  sheet.getRange("A6:C6").breakApart();
+  sheet.getRange("E6:G6").breakApart();
+  sheet.getRange("I6:K6").breakApart();
+  sheet.getRange("M6:O6").breakApart();
+
   // THIS MONTH section - Row 7
   sheet.getRange("A7:C7").breakApart().merge().setValue(metrics.thisMonthFiled);
   sheet.getRange("A8:C9").breakApart().merge().setValue("+" + metrics.thisMonthFiled + " from last month");
@@ -3812,6 +3846,12 @@ function rebuildKPIDashboard() {
 
   sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.winRate.toFixed(1) + "%");
   sheet.getRange("M8:O9").breakApart().merge().setValue("Success rate");
+
+  // Break apart row 14 headers first to avoid conflicts
+  sheet.getRange("A14:C14").breakApart();
+  sheet.getRange("E14:G14").breakApart();
+  sheet.getRange("I14:K14").breakApart();
+  sheet.getRange("M14:O14").breakApart();
 
   // YEAR TO DATE section - Row 15
   sheet.getRange("A15:C15").breakApart().merge().setValue(metrics.ytdFiled);
@@ -3838,6 +3878,16 @@ function rebuildMemberEngagement() {
   const metrics = calculateDashboardMetrics();
   if (!metrics) return;
 
+  // Break apart potential merged ranges to avoid conflicts
+  sheet.getRange("A6:C6").breakApart();
+  sheet.getRange("E6:G6").breakApart();
+  sheet.getRange("I6:K6").breakApart();
+  sheet.getRange("M6:O6").breakApart();
+  sheet.getRange("A8:C9").breakApart();
+  sheet.getRange("E8:G9").breakApart();
+  sheet.getRange("I8:K9").breakApart();
+  sheet.getRange("M8:O9").breakApart();
+
   // Engagement KPIs - Row 7
   sheet.getRange("A7:C7").breakApart().merge().setValue(metrics.memberEngagementRate.toFixed(1) + "%");
   sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.totalStewards);
@@ -3863,6 +3913,16 @@ function rebuildCostImpact() {
   const metrics = calculateDashboardMetrics();
   if (!metrics) return;
 
+  // Break apart potential merged ranges to avoid conflicts
+  sheet.getRange("A6:C6").breakApart();
+  sheet.getRange("E6:G6").breakApart();
+  sheet.getRange("I6:K6").breakApart();
+  sheet.getRange("M6:O6").breakApart();
+  sheet.getRange("A8:C9").breakApart();
+  sheet.getRange("E8:G9").breakApart();
+  sheet.getRange("I8:K9").breakApart();
+  sheet.getRange("M8:O9").breakApart();
+
   // Financial KPIs - Row 7
   const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
 
@@ -3870,6 +3930,16 @@ function rebuildCostImpact() {
   sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.won);
   sheet.getRange("I7:K7").breakApart().merge().setValue(formatter.format(metrics.financialRecovery / Math.max(1, metrics.won + metrics.settled)));
   sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.winRate.toFixed(1) + "%");
+
+  // Break apart row 14 and 16-17 to avoid conflicts
+  sheet.getRange("A14:C14").breakApart();
+  sheet.getRange("E14:G14").breakApart();
+  sheet.getRange("I14:K14").breakApart();
+  sheet.getRange("M14:O14").breakApart();
+  sheet.getRange("A16:C17").breakApart();
+  sheet.getRange("E16:G17").breakApart();
+  sheet.getRange("I16:K17").breakApart();
+  sheet.getRange("M16:O17").breakApart();
 
   // Additional financial metrics - Row 15
   const avgPerMember = metrics.totalMembers > 0 ? metrics.financialRecovery / metrics.totalMembers : 0;
@@ -3889,11 +3959,29 @@ function rebuildQuickStats() {
   const metrics = calculateDashboardMetrics();
   if (!metrics) return;
 
+  // Break apart potential merged ranges to avoid conflicts
+  sheet.getRange("A6:D6").breakApart();
+  sheet.getRange("F6:I6").breakApart();
+  sheet.getRange("K6:N6").breakApart();
+  sheet.getRange("A7:D8").breakApart();
+  sheet.getRange("F7:I8").breakApart();
+  sheet.getRange("K7:N8").breakApart();
+
   // Large stat cards - Row 7
   sheet.getRange("A7:C7").breakApart().merge().setValue(metrics.totalGrievances);
   sheet.getRange("E7:G7").breakApart().merge().setValue(metrics.activeGrievances);
   sheet.getRange("I7:K7").breakApart().merge().setValue(metrics.overdue);
   sheet.getRange("M7:O7").breakApart().merge().setValue(metrics.totalMembers);
+
+  // Break apart row 14 ranges to avoid conflicts
+  sheet.getRange("A14:C14").breakApart();
+  sheet.getRange("E14:G14").breakApart();
+  sheet.getRange("I14:K14").breakApart();
+  sheet.getRange("M14:O14").breakApart();
+  sheet.getRange("A16:C17").breakApart();
+  sheet.getRange("E16:G17").breakApart();
+  sheet.getRange("I16:K17").breakApart();
+  sheet.getRange("M16:O17").breakApart();
 
   // Secondary stats - Row 15
   sheet.getRange("A15:C15").breakApart().merge().setValue(metrics.winRate.toFixed(1) + "%");
@@ -4123,6 +4211,7 @@ function SEED_20K_MEMBERS() {
   const membershipStatus = ["Active", "Inactive", "On Leave"];
   const contactMethods = ["Email", "Phone", "Text", "Mail"];
   const committees = ["Executive Board", "Bargaining Committee", "Grievance Committee", "None"];
+  const officeDays = config.getRange("N2:N8").getValues().flat().filter(String);
 
   const firstNames = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda",
     "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas",
@@ -4161,7 +4250,7 @@ function SEED_20K_MEMBERS() {
         locations[Math.floor(Math.random() * locations.length)],
         units[Math.floor(Math.random() * units.length)],
         // G-K: Contact & Role
-        "Mon-Fri",
+        officeDays[Math.floor(Math.random() * officeDays.length)],
         `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mass.gov`,
         `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
         isSteward,
