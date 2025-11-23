@@ -70,61 +70,67 @@
 // ============================================================================
 
 const SHEETS = {
-  CONFIG: "Config",
-  MEMBER_DIR: "Member Directory",
-  GRIEVANCE_LOG: "Grievance Log",
-  DASHBOARD: "Dashboard",
-  INTERACTIVE_DASHBOARD: "Interactive Dashboard",
-  STEWARD_WORKLOAD: "Steward Workload",
-  ANALYTICS: "Analytics Data",
-  TRENDS: "Trends & Timeline",
-  PERFORMANCE: "Performance Metrics",
-  LOCATION: "Location Analytics",
-  TYPE_ANALYSIS: "Type Analysis",
-  EXECUTIVE: "Executive Overview",
-  KPI_BOARD: "KPI Dashboard",
-  MEMBER_ENGAGEMENT: "Member Engagement",
-  COST_IMPACT: "Cost Impact Analysis",
-  QUICK_STATS: "Quick Stats",
-  FUTURE_FEATURES: "Future Features",
-  PENDING_FEATURES: "Pending Features",
-  ARCHIVE: "Archive",
-  DIAGNOSTICS: "Diagnostics"
+  CONFIG: "⚙️ Config",
+  MEMBER_DIR: "👥 Member Directory",
+  GRIEVANCE_LOG: "📋 Grievance Log",
+  DASHBOARD: "📊 Main Dashboard",
+  INTERACTIVE_DASHBOARD: "🎯 Interactive (Your Custom View)",
+  STEWARD_WORKLOAD: "👨‍⚖️ Steward Workload",
+  ANALYTICS: "📈 Analytics Data",
+  TRENDS: "📉 Test 1: Trends",
+  PERFORMANCE: "🎯 Test 2: Performance",
+  LOCATION: "📍 Test 3: Locations",
+  TYPE_ANALYSIS: "📁 Test 4: Types",
+  EXECUTIVE: "👔 Test 5: Executive View",
+  KPI_BOARD: "💼 Test 6: KPI View",
+  MEMBER_ENGAGEMENT: "🤝 Test 7: Engagement",
+  COST_IMPACT: "💰 Test 8: Cost Impact",
+  QUICK_STATS: "⚡ Test 9: Quick Stats",
+  FUTURE_FEATURES: "🔮 Future Features",
+  PENDING_FEATURES: "📝 Pending Features",
+  ARCHIVE: "🗄️ Archive",
+  DIAGNOSTICS: "🔧 Diagnostics"
 };
 
-// Unified Professional Union Color Scheme (inspired by design references)
+// ADHD-Friendly Color Scheme - Soft, calming, high contrast for quick scanning
 const COLORS = {
-  // Primary Union Theme
-  PRIMARY_BLUE: "#2563EB",      // Union Blue - main headers
-  SOLIDARITY_RED: "#DC2626",    // Solidarity Red - urgent/critical
-  UNION_GREEN: "#059669",       // Success/wins
+  // Primary Soft Pastels (ADHD-friendly - calming but visible)
+  PRIMARY_BLUE: "#7EC8E3",      // Soft Sky Blue - main headers (calming)
+  SOLIDARITY_RED: "#F4A3A8",    // Soft Coral - urgent (not alarming)
+  UNION_GREEN: "#A8D5BA",       // Soft Mint Green - success/wins (calming)
 
-  // Secondary Colors
-  ACCENT_TEAL: "#0891B2",       // Info/neutral
-  ACCENT_PURPLE: "#7C3AED",     // In progress/pending
-  ACCENT_ORANGE: "#EA580C",     // Warning/attention
-  ACCENT_YELLOW: "#CA8A04",     // Due soon
+  // Secondary Soft Colors
+  ACCENT_TEAL: "#9AD3DE",       // Soft Teal - info/neutral
+  ACCENT_PURPLE: "#C5B3E6",     // Soft Lavender - in progress/pending
+  ACCENT_ORANGE: "#FFD4A3",     // Soft Peach - warning/attention
+  ACCENT_YELLOW: "#FFF4A3",     // Soft Butter Yellow - due soon
 
-  // Backgrounds & Neutrals
+  // Backgrounds & Neutrals (minimal contrast for comfort)
   WHITE: "#FFFFFF",
-  CARD_BG: "#FFFFFF",
-  LIGHT_GRAY: "#F9FAFB",
-  BORDER_GRAY: "#E5E7EB",
-  TEXT_DARK: "#1F2937",
-  TEXT_GRAY: "#6B7280",
+  CARD_BG: "#FAFBFC",          // Very light blue-gray (easier on eyes)
+  LIGHT_GRAY: "#F5F7FA",       // Soft gray background
+  BORDER_GRAY: "#E8EDF2",      // Subtle borders (almost invisible)
+  TEXT_DARK: "#4A5568",        // Softer dark text (not harsh black)
+  TEXT_GRAY: "#8B95A5",        // Medium gray for secondary text
 
-  // Status Colors
-  OVERDUE: "#DC2626",           // Red
-  DUE_SOON: "#F59E0B",          // Orange
-  ON_TRACK: "#10B981",          // Green
-  IN_PROGRESS: "#8B5CF6",       // Purple
+  // Status Colors (Soft but distinguishable)
+  OVERDUE: "#F4A3A8",          // Soft Coral (gentle urgency)
+  DUE_SOON: "#FFD4A3",         // Soft Peach (attention without stress)
+  ON_TRACK: "#A8D5BA",         // Soft Mint (calm reassurance)
+  IN_PROGRESS: "#C5B3E6",      // Soft Lavender (active work)
 
-  // Legacy compatibility (mapped to new colors)
-  HEADER_BLUE: "#2563EB",
-  HEADER_RED: "#DC2626",
-  HEADER_GREEN: "#059669",
-  HEADER_ORANGE: "#EA580C",
-  HEADER_PURPLE: "#7C3AED"
+  // Visual Cue Colors (for icons and highlights)
+  SUCCESS_LIGHT: "#D4F1E3",    // Very light green background
+  WARNING_LIGHT: "#FFF4E5",    // Very light orange background
+  ERROR_LIGHT: "#FFE9EB",      // Very light red background
+  INFO_LIGHT: "#E3F2FD",       // Very light blue background
+
+  // Legacy compatibility (mapped to softer colors)
+  HEADER_BLUE: "#7EC8E3",
+  HEADER_RED: "#F4A3A8",
+  HEADER_GREEN: "#A8D5BA",
+  HEADER_ORANGE: "#FFD4A3",
+  HEADER_PURPLE: "#C5B3E6"
 };
 
 const CBA_DEADLINES = {
@@ -4818,6 +4824,18 @@ function onOpen() {
       .addItem('Sort by Priority', 'sortGrievancesByPriority')
       .addItem('Toggle Mobile Mode', 'toggleMobileMode')
       .addItem('Setup Triggers', 'setupTriggers'))
+    .addSeparator()
+    .addSubMenu(ui.createMenu('🧠 ADHD-Friendly Tools')
+      .addItem('⚡ Quick Setup (Do This First!)', 'setupADHDDefaults')
+      .addSeparator()
+      .addItem('📑 Reorder Sheets Logically', 'reorderSheetsLogically')
+      .addItem('👁️ Hide Gridlines (Cleaner View)', 'hideAllGridlines')
+      .addItem('👁️‍🗨️ Show Gridlines (If Needed)', 'showAllGridlines')
+      .addSeparator()
+      .addItem('⚙️ Create My Settings Page', 'createUserSettingsSheet')
+      .addItem('✅ Apply My Settings', 'applyUserSettings')
+      .addSeparator()
+      .addItem('📋 Add Visual Guide to Steward Workload', 'addStewardWorkloadInstructions'))
     .addToUi();
 
   // Add enhancement menus with all advanced features
