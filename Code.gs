@@ -1294,7 +1294,9 @@ function createConfigSheet(ss) {
   let config = ss.getSheetByName(SHEETS.CONFIG);
   if (!config) config = ss.insertSheet(SHEETS.CONFIG);
 
+  // Clear all content, formatting, AND validation rules to prevent conflicts
   config.clear();
+  config.clearDataValidations();
 
   // Headers
   const headers = [
@@ -3504,15 +3506,16 @@ function setupDataValidation(ss) {
     .build();
   memberDir.getRange("G2:G10000").setDataValidation(officeDaysRule);
 
-  // Assigned Steward validation (Column L) - Text validation with help text
+  // Assigned Steward validation (Column L) - Text field with help text only
   // NOTE: For dynamic validation against active stewards, this should be updated
   // by a function that queries members where "Is Steward (Y/N)" = "Yes"
-  const assignedStewardRule = SpreadsheetApp.newDataValidation()
-    .requireTextLength(0, 200)
-    .setAllowInvalid(true)
-    .setHelpText("Enter the full name of the steward assigned to this member (First Last)")
-    .build();
-  memberDir.getRange("L2:L10000").setDataValidation(assignedStewardRule);
+  // Using requireTextIsEmail() as a workaround isn't appropriate here, so we'll skip validation
+  // and just add a note for manual entry. Google Sheets will handle text input validation.
+  // If strict validation is needed, this should be updated to use a dynamic dropdown
+  // of steward names from the Member Directory where "Is Steward (Y/N)" = "Yes"
+
+  // No validation rule set - free text entry for Assigned Steward column
+  // Users can manually enter steward names
 
   // Grievance Log Validations
   const grievanceValidations = [
@@ -5810,44 +5813,51 @@ function SEED_20K_MEMBERS() {
       existingIds.add(memberId);
 
       data.push([
-        // A-F: Basic Info
-        memberId,
-        firstName,
-        lastName,
-        jobTitles[Math.floor(Math.random() * jobTitles.length)],
-        locations[Math.floor(Math.random() * locations.length)],
-        units[Math.floor(Math.random() * units.length)],
-        // G-K: Contact & Role
-        generateOfficeDays(officeDays),
-        `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mass.gov`,
-        `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
-        isSteward,
-        membershipStatus[Math.floor(Math.random() * membershipStatus.length)],
-        // L-Q: Grievance Metrics (AUTO CALCULATED - leave blank)
-        "", "", "", "", "", "",
-        // R-U: Grievance Snapshot (AUTO CALCULATED - leave blank)
-        "", "", "", "",
-        // V-Z: Participation
-        engagementLevels[Math.floor(Math.random() * engagementLevels.length)],
-        Math.floor(Math.random() * 25),
-        Math.floor(Math.random() * 15),
+        // A-D: Basic Info
+        memberId,                                                              // A: Member ID
+        firstName,                                                             // B: First Name
+        lastName,                                                              // C: Last Name
+        jobTitles[Math.floor(Math.random() * jobTitles.length)],              // D: Job Title / Position
+        // E-H: Location & Unit
+        "",                                                                    // E: Department / Unit (blank for now)
+        locations[Math.floor(Math.random() * locations.length)],              // F: Worksite / Office Location
+        generateOfficeDays(officeDays),                                       // G: Work Schedule / Office Days
+        units[Math.floor(Math.random() * units.length)],                      // H: Unit (8 or 10)
+        // I-N: Contact & Role
+        `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mass.gov`,      // I: Email Address
+        `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`, // J: Phone Number
+        isSteward,                                                             // K: Is Steward (Y/N)
+        "",                                                                    // L: Assigned Steward (blank)
+        "No",                                                                  // M: Share Phone in Directory? (default No)
+        membershipStatus[Math.floor(Math.random() * membershipStatus.length)], // N: Membership Status
+        "",                                                                    // O: Immediate Supervisor (blank)
+        "",                                                                    // P: Manager / Program Director (blank)
+        // Q-V: Grievance Metrics (AUTO CALCULATED - leave blank)
+        "", "", "", "", "", "",                                               // Q-V: Total/Active/Resolved/Won/Lost/Last Date
+        // W-Z: Grievance Snapshot (AUTO CALCULATED - leave blank)
+        "", "", "", "",                                                       // W-Z: Has Open?/# Open/Last Status/Next Deadline
+        // AA-AE: Participation
+        engagementLevels[Math.floor(Math.random() * engagementLevels.length)], // AA: Engagement Level
+        Math.floor(Math.random() * 25),                                       // AB: Events Attended
+        Math.floor(Math.random() * 15),                                       // AC: Training Sessions
         // Stewards get assigned to committees (excluding "None"), non-stewards get "None"
-        isSteward === stewardOptions[0] ?
+        isSteward === stewardOptions[0] ?                                     // AD: Committee Member
           committees.filter(c => c !== "None")[Math.floor(Math.random() * committees.filter(c => c !== "None").length)] :
           "None",
-        contactMethods[Math.floor(Math.random() * contactMethods.length)],
-        // AA-AG: Emergency & Admin
-        `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`,
-        `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
-        "",
-        randomDate(1960, 2000),
-        randomDate(2015, 2024),
-        new Date(),
-        "SEED_SCRIPT"
+        contactMethods[Math.floor(Math.random() * contactMethods.length)],   // AE: Preferred Contact Method
+        "",                                                                    // AF: Best Time to Reach (blank for now)
+        // AG-AM: Emergency & Admin
+        `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`, // AG: Emergency Contact Name
+        `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`, // AH: Emergency Contact Phone
+        "",                                                                    // AI: Notes (blank)
+        randomDate(1960, 2000),                                               // AJ: Date of Birth
+        randomDate(2015, 2024),                                               // AK: Hire Date
+        new Date(),                                                           // AL: Last Updated
+        "SEED_SCRIPT"                                                         // AM: Updated By
       ]);
     }
 
-    sheet.getRange(2 + (batch * BATCH), 1, BATCH, 33).setValues(data);
+    sheet.getRange(2 + (batch * BATCH), 1, BATCH, 39).setValues(data);
     SpreadsheetApp.flush();
   }
 
@@ -5877,17 +5887,39 @@ function SEED_5K_GRIEVANCES() {
     return;
   }
 
-  // Get steward names (members where column J = "Yes")
-  const stewards = members.filter(m => m[9] === "Yes");
+  // Get steward names (members where column K = "Yes")
+  // Column K is "Is Steward (Y/N)" based on the Member Directory headers
+  const allMemberDataFull = memberSheet.getRange("A2:K" + memberSheet.getLastRow()).getValues();
+  const membersFull = allMemberDataFull.filter(r => r[0]);
+  const stewards = membersFull.filter(m => m[10] === "Yes"); // Column K is index 10 (0-based)
+
   if (stewards.length === 0) {
-    SpreadsheetApp.getUi().alert("❌ No stewards found!\n\nPlease ensure some members have 'Is Steward' set to Yes.\n\n💡 TIP: Use '509 Tools > Data Management > Seed All Test Data (Recommended)' to seed both members and grievances in the correct order.\n\nOr manually seed members first using 'Seed 20K Members' before seeding grievances.");
+    // Diagnostic: Check what values are in the Is Steward column
+    const stewardValues = membersFull.slice(0, Math.min(10, membersFull.length)).map(m => `'${m[10]}'`);
+    Logger.log("Sample Is Steward values (column K): " + stewardValues.join(", "));
+    Logger.log("Total members: " + membersFull.length);
+    SpreadsheetApp.getUi().alert("❌ No stewards found!\n\nPlease ensure some members have 'Is Steward' set to Yes.\n\n💡 TIP: Use '509 Tools > Data Management > Seed All Test Data (Recommended)' to seed both members and grievances in the correct order.\n\nOr manually seed members first using 'Seed 20K Members' before seeding grievances.\n\nDEBUG: Check the execution log for diagnostic information.");
     return;
   }
 
-  const statuses = config.getRange("E2:E12").getValues().flat().filter(String);
-  const steps = config.getRange("F2:F7").getValues().flat().filter(String);
-  const types = config.getRange("G2:G16").getValues().flat().filter(String);
-  const outcomes = config.getRange("H2:H10").getValues().flat().filter(String);
+  // Read Config data with validation to ensure it exists
+  try {
+    const statuses = config.getRange("E2:E12").getValues().flat().filter(String);
+    const steps = config.getRange("F2:F7").getValues().flat().filter(String);
+    const types = config.getRange("G2:G16").getValues().flat().filter(String);
+    const outcomes = config.getRange("H2:H10").getValues().flat().filter(String);
+
+    // Validate Config data
+    if (statuses.length === 0 || steps.length === 0 || types.length === 0 || outcomes.length === 0) {
+      SpreadsheetApp.getUi().alert("❌ Config sheet data is incomplete!\n\nPlease ensure the Config sheet has been set up properly.\n\n💡 TIP: Run 'CREATE_509_DASHBOARD()' to initialize all sheets.");
+      Logger.log(`Config validation failed: statuses=${statuses.length}, steps=${steps.length}, types=${types.length}, outcomes=${outcomes.length}`);
+      return;
+    }
+  } catch (e) {
+    SpreadsheetApp.getUi().alert("❌ Error reading Config sheet!\n\n" + e.message + "\n\n💡 TIP: Ensure Config sheet exists and is properly formatted.");
+    Logger.log("Config read error: " + e.toString());
+    return;
+  }
 
   const TOTAL = 5000;
   const BATCH = 500;
@@ -6454,6 +6486,7 @@ function applyLightTheme() {
 
 /**
  * Applies dark theme to the dashboard
+ * Enhanced to cover all major dashboard sections
  */
 function applyDarkTheme() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -6464,13 +6497,46 @@ function applyDarkTheme() {
     return;
   }
 
-  // Apply dark theme colors
-  dashboard.getRange("A3:B3").setBackground("#1E3A5F").setFontColor("#FFFFFF");
-  dashboard.getRange("A11:B11").setBackground("#5C1010").setFontColor("#FFFFFF");
-  dashboard.getRange("A21:B21").setBackground("#5C3A10").setFontColor("#FFFFFF");
-  dashboard.getRange("E4:H4").setBackground("#5C3A10").setFontColor("#FFFFFF");
+  // Dark theme colors
+  const darkBg = "#1A1A1A";        // Main dark background
+  const darkHeader = "#2D2D2D";    // Section headers
+  const darkBlue = "#1E3A5F";      // Member metrics (dark blue)
+  const darkRed = "#5C1010";       // Grievance metrics (dark red)
+  const darkOrange = "#5C3A10";    // Deadline tracking (dark orange)
+  const lightText = "#FFFFFF";     // White text
+  const accentText = "#A0D5FF";    // Light blue accent
 
-  SpreadsheetApp.getUi().alert('✅ Dark theme applied!');
+  // Title bar
+  dashboard.getRange("A1:L1").setBackground(darkHeader).setFontColor(lightText);
+
+  // Section headers with dark theme variants
+  dashboard.getRange("A3:B3").setBackground(darkBlue).setFontColor(lightText);     // MEMBER METRICS
+  dashboard.getRange("A11:B11").setBackground(darkRed).setFontColor(lightText);    // GRIEVANCE METRICS
+  dashboard.getRange("A21:B21").setBackground(darkOrange).setFontColor(lightText); // DEADLINE TRACKING
+  dashboard.getRange("E3:H3").setBackground(darkOrange).setFontColor(lightText);   // TOP 10 OVERDUE (fixed from E4:H4)
+
+  // Visual Analytics section
+  dashboard.getRange("A26").setBackground(darkHeader).setFontColor(accentText);
+
+  // Optional: Set background for the entire sheet to dark
+  const maxRows = dashboard.getMaxRows();
+  const maxCols = dashboard.getMaxColumns();
+  dashboard.getRange(1, 1, maxRows, maxCols).setBackground(darkBg);
+
+  // Re-apply section colors on top of dark background
+  dashboard.getRange("A1:L1").setBackground(darkHeader).setFontColor(lightText);
+  dashboard.getRange("A3:B3").setBackground(darkBlue).setFontColor(lightText);
+  dashboard.getRange("A11:B11").setBackground(darkRed).setFontColor(lightText);
+  dashboard.getRange("A21:B21").setBackground(darkOrange).setFontColor(lightText);
+  dashboard.getRange("E3:H3").setBackground(darkOrange).setFontColor(lightText);
+  dashboard.getRange("A26").setBackground(darkHeader).setFontColor(accentText);
+
+  // Set data text to light color for better contrast
+  if (maxRows > 1) {
+    dashboard.getRange(2, 1, maxRows - 1, maxCols).setFontColor(lightText);
+  }
+
+  SpreadsheetApp.getUi().alert('✅ Dark theme applied!\n\nNote: Chart colors are not modified by this theme.');
 }
 
 /**
