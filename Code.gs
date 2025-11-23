@@ -455,6 +455,57 @@ function createConfigSheet(ss) {
   for (let i = 0; i < timelineHeaders.length; i++) {
     config.setColumnWidth(timelineStartCol + i, i === 1 ? 180 : (i === 5 ? 280 : 150));
   }
+
+  // ============================================================================
+  // STEWARD CONTACT INFO SECTION
+  // ============================================================================
+
+  // Add Steward Contact Info section starting at column U (21)
+  const stewardStartCol = 21;
+
+  // Section header
+  config.getRange(1, stewardStartCol, 1, 4).merge()
+    .setValue("STEWARD CONTACT INFORMATION")
+    .setFontWeight("bold")
+    .setFontSize(12)
+    .setFontFamily("Roboto")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white")
+    .setHorizontalAlignment("center");
+
+  // Field labels and input cells
+  const stewardLabels = [
+    ["Steward Name:", ""],
+    ["Steward Email:", ""],
+    ["Steward Phone:", ""]
+  ];
+
+  config.getRange(2, stewardStartCol, stewardLabels.length, 2)
+    .setValues(stewardLabels)
+    .setBorder(true, true, true, true, true, true);
+
+  // Format labels column
+  config.getRange(2, stewardStartCol, stewardLabels.length, 1)
+    .setFontWeight("bold")
+    .setBackground("#E8F0FE")
+    .setHorizontalAlignment("right");
+
+  // Format input column
+  config.getRange(2, stewardStartCol + 1, stewardLabels.length, 1)
+    .setBackground("#FFFFFF");
+
+  // Instruction text
+  config.getRange(5, stewardStartCol, 1, 4).merge()
+    .setValue("⬆️ Enter the primary steward contact info above. This will be used when starting grievances from the Member Directory.")
+    .setFontStyle("italic")
+    .setFontSize(10)
+    .setWrap(true)
+    .setBackground("#FFF9E6")
+    .setBorder(true, true, true, true, false, false);
+
+  // Auto-resize steward columns
+  config.setColumnWidth(stewardStartCol, 150);
+  config.setColumnWidth(stewardStartCol + 1, 250);
 }
 
 // ============================================================================
@@ -4788,23 +4839,43 @@ function addDays(date, days) {
 
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('509 Tools')
+  const seedNuked = isSeedNuked();
+
+  const mainMenu = ui.createMenu('509 Tools')
     .addItem('🔧 Create Dashboard', 'CREATE_509_DASHBOARD')
     .addSeparator()
     .addSubMenu(ui.createMenu('🎯 Interactive Dashboard')
       .addItem('Setup Controls', 'setupInteractiveDashboardControls')
       .addItem('Refresh Charts', 'rebuildInteractiveDashboard')
       .addSeparator()
-      .addItem('View Interactive Dashboard', 'openInteractiveDashboard'))
-    .addSubMenu(ui.createMenu('📊 Data Management')
+      .addItem('View Interactive Dashboard', 'openInteractiveDashboard'));
+
+  // Only show seed/demo data menu if not nuked
+  if (!seedNuked) {
+    mainMenu.addSubMenu(ui.createMenu('📊 Data Management')
       .addItem('Seed All Test Data (Recommended)', 'seedAll')
       .addSeparator()
       .addItem('Seed 20K Members', 'SEED_20K_MEMBERS')
       .addItem('Seed 5K Grievances', 'SEED_5K_GRIEVANCES')
       .addSeparator()
+      .addItem('🚨 Nuke Seed Data (Exit Demo Mode)', 'nukeSeedData')
+      .addSeparator()
       .addItem('Recalc All Grievances', 'recalcAllGrievances')
       .addItem('Recalc All Members', 'recalcAllMembers')
-      .addItem('Rebuild Dashboard', 'rebuildDashboard'))
+      .addItem('Rebuild Dashboard', 'rebuildDashboard'));
+  } else {
+    mainMenu.addSubMenu(ui.createMenu('📊 Data Management')
+      .addItem('Recalc All Grievances', 'recalcAllGrievances')
+      .addItem('Recalc All Members', 'recalcAllMembers')
+      .addItem('Rebuild Dashboard', 'rebuildDashboard'));
+  }
+
+  mainMenu
+    .addSubMenu(ui.createMenu('⚖️ Grievance Tools')
+      .addItem('🚀 Start New Grievance', 'showStartGrievanceDialog')
+      .addSeparator()
+      .addItem('⚙️ Setup Steward Contact Info', 'addStewardContactInfoToConfig')
+      .addItem('📖 Getting Started Guide', 'showGettingStartedGuide'))
     .addSubMenu(ui.createMenu('📈 Rebuild Analytics')
       .addItem('Rebuild All Tabs', 'rebuildDashboard')
       .addSeparator()

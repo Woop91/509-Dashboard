@@ -39,7 +39,24 @@ The **509 Dashboard** is a comprehensive Google Sheets-based system designed spe
 
 ## ⭐ Key Features
 
-### 🎯 Interactive Dashboard (NEW!)
+### 🚀 Grievance Workflow (NEW!)
+- **Start grievances from Member Directory** - Click a member to begin
+- **Pre-filled Google Forms** - Member and steward info automatically populated
+- **Automatic log entry** - Form submissions added to Grievance Log
+- **PDF generation** - Professional grievance forms as PDFs
+- **Email or download** - Send to multiple addresses or download directly
+- **Steward-only access** - Only stewards can start grievances
+- **See full guide:** [GRIEVANCE_WORKFLOW_GUIDE.md](GRIEVANCE_WORKFLOW_GUIDE.md)
+
+### 🚨 Seed Nuke - Exit Demo Mode (NEW!)
+- **Remove all test data** - One-click removal of seeded members and grievances
+- **Preserve structure** - All headers, formulas, and layouts remain intact
+- **Production ready** - Transition from demo to live use
+- **Hide seed menus** - Clean up menu after nuking
+- **Getting started guide** - Post-nuke setup instructions
+- **See full guide:** [SEED_NUKE_GUIDE.md](SEED_NUKE_GUIDE.md)
+
+### 🎯 Interactive Dashboard
 - **User-selectable metrics** - Choose from 20+ metrics to display
 - **Dynamic chart types** - Pie, Donut, Bar, Line, Column, Area, or Table
 - **Side-by-side comparison** - Compare any two metrics simultaneously
