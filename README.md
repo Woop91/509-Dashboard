@@ -16,6 +16,7 @@ Built for Massachusetts State Employees | CBA-Compliant | Real-Time Analytics
 - [Using the Dashboard](#using-the-dashboard)
 - [Data Entry](#data-entry)
 - [CBA Compliance](#cba-compliance)
+- [For Stewards](#for-stewards)
 - [Troubleshooting](#troubleshooting)
 - [Support](#support)
 
@@ -740,6 +741,28 @@ This system enforces **Article 23A** grievance procedure deadlines:
 - 🟡 **Yellow:** 0-7 days until deadline (due soon!)
 - 🔴 **Red:** Past deadline (overdue!)
 - 🔴 **Dark Red:** 30+ days overdue (urgent!)
+
+---
+
+## 🌟 For Stewards
+
+### Excellence Guide for Stewards
+
+**Are you a steward?** We've created a special guide just for you!
+
+The **[Steward Excellence Guide](STEWARD_GUIDE.md)** uses positive reinforcement and celebrates your essential work maintaining member data and engaging with less-active members.
+
+**This guide includes:**
+- 🏆 Achievement system to track your progress
+- 💪 Special missions for re-engaging less-active members
+- 🎯 Weekly rituals to build data maintenance habits
+- 🎉 Celebration strategies for every win (big and small!)
+- 💡 Pro tips from legendary stewards
+- 🌈 Motivational affirmations and mindset coaching
+
+**Your work matters!** Every field you complete strengthens our union. Every less-active member you reach out to is a potential future leader.
+
+👉 **[Read the Steward Excellence Guide](STEWARD_GUIDE.md)** to discover how your data work creates powerful solidarity!
 
 ---
 
