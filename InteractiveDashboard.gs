@@ -26,7 +26,7 @@ function createInteractiveDashboardSheet(ss) {
   // HEADER SECTION
   // =====================================================================
   sheet.getRange("A1:T1").merge()
-    .setValue("📊 INTERACTIVE DASHBOARD - CUSTOMIZABLE ANALYTICS")
+    .setValue("✨ YOUR UNION DASHBOARD - Where Data Comes Alive!")
     .setFontSize(22).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
@@ -36,18 +36,27 @@ function createInteractiveDashboardSheet(ss) {
 
   // Subtitle
   sheet.getRange("A2:T2").merge()
-    .setValue("Select your metrics, choose chart types, and compare data in real-time")
+    .setValue("🎉 Welcome! Watch your data dance, celebrate your victories, and track your progress together!")
     .setFontSize(11).setFontFamily("Roboto")
     .setFontStyle("italic")
     .setHorizontalAlignment("center")
     .setBackground(COLORS.LIGHT_GRAY)
     .setFontColor(COLORS.TEXT_GRAY);
 
+  // Gentle guidance tip
+  sheet.getRange("A3:T3").merge()
+    .setValue("💡 Pro Tip: Select your metrics below, then watch as your dashboard springs to life with insights and celebrations!")
+    .setFontSize(10).setFontFamily("Roboto")
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.WHITE)
+    .setFontColor(COLORS.ACCENT_TEAL);
+
   // =====================================================================
   // CONTROL PANEL - Row 4
   // =====================================================================
   sheet.getRange("A4:T4").merge()
-    .setValue("🎛️ CONTROL PANEL - Customize Your Dashboard")
+    .setValue("🎛️ YOUR COMMAND CENTER - Make This Dashboard Your Own!")
     .setFontSize(14).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
@@ -89,7 +98,7 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.LIGHT_GRAY)
     .setHorizontalAlignment("right");
 
-  sheet.getRange("I7").setValue("Click '509 Tools > Interactive Dashboard > Refresh Charts'")
+  sheet.getRange("I7").setValue("✨ Ready to see the magic? Click '509 Tools > Interactive Dashboard > Refresh Charts'")
     .setFontSize(9).setFontFamily("Roboto")
     .setFontStyle("italic")
     .setBackground(COLORS.LIGHT_GRAY)
@@ -99,7 +108,7 @@ function createInteractiveDashboardSheet(ss) {
   // METRIC CARDS SECTION - Row 10-18 (4 cards)
   // =====================================================================
   sheet.getRange("A10:T10").merge()
-    .setValue("📈 KEY METRICS - Real-Time Statistics")
+    .setValue("📈 YOUR VICTORIES AT A GLANCE - Watch These Numbers Grow!")
     .setFontSize(14).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
@@ -108,10 +117,10 @@ function createInteractiveDashboardSheet(ss) {
 
   // Create 4 metric cards
   const cardPositions = [
-    {col: "A", endCol: "E", title: "Total Members", color: COLORS.ACCENT_TEAL},
-    {col: "F", endCol: "J", title: "Active Grievances", color: COLORS.ACCENT_ORANGE},
-    {col: "K", endCol: "O", title: "Win Rate", color: COLORS.UNION_GREEN},
-    {col: "P", endCol: "T", title: "Overdue Cases", color: COLORS.SOLIDARITY_RED}
+    {col: "A", endCol: "E", title: "💙 Our Growing Family", color: COLORS.ACCENT_TEAL},
+    {col: "F", endCol: "J", title: "🔥 Active Cases", color: COLORS.ACCENT_ORANGE},
+    {col: "K", endCol: "O", title: "🏆 Victory Rate", color: COLORS.UNION_GREEN},
+    {col: "P", endCol: "T", title: "⏰ Needs Attention", color: COLORS.SOLIDARITY_RED}
   ];
 
   cardPositions.forEach((card, idx) => {
@@ -151,14 +160,14 @@ function createInteractiveDashboardSheet(ss) {
       .setHorizontalAlignment("center")
       .setVerticalAlignment("middle")
       .setFontColor(COLORS.TEXT_GRAY)
-      .setValue("vs Last Month");
+      .setValue("📈 Growing Together");
   });
 
   // =====================================================================
   // CHART AREA 1 - Row 21-42 (Selected Metric 1)
   // =====================================================================
   sheet.getRange("A21:J21").merge()
-    .setValue("📊 PRIMARY CHART - Your Selected Metric")
+    .setValue("📊 YOUR STORY IN CHARTS - Watch Your Data Come to Life!")
     .setFontSize(13).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
@@ -170,7 +179,7 @@ function createInteractiveDashboardSheet(ss) {
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
   sheet.getRange("A23:J23").merge()
-    .setValue("Chart will appear here after selecting a metric")
+    .setValue("🎨 Your chart is waiting to spring to life! Select a metric above and hit refresh")
     .setFontSize(11).setFontFamily("Roboto")
     .setFontStyle("italic")
     .setHorizontalAlignment("center")
@@ -181,7 +190,7 @@ function createInteractiveDashboardSheet(ss) {
   // CHART AREA 2 - Row 21-42 (Comparison or Selected Metric 2)
   // =====================================================================
   sheet.getRange("L21:T21").merge()
-    .setValue("📊 COMPARISON CHART - Compare Metrics")
+    .setValue("📊 DOUBLE THE INSIGHTS - See Two Stories Side by Side!")
     .setFontSize(13).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
@@ -193,7 +202,7 @@ function createInteractiveDashboardSheet(ss) {
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
   sheet.getRange("L23:T23").merge()
-    .setValue("Comparison chart will appear here")
+    .setValue("🌟 Enable comparison mode above to see another dimension of your success!")
     .setFontSize(11).setFontFamily("Roboto")
     .setFontStyle("italic")
     .setHorizontalAlignment("center")
@@ -204,7 +213,7 @@ function createInteractiveDashboardSheet(ss) {
   // PIE CHARTS SECTION - Row 45-65
   // =====================================================================
   sheet.getRange("A45:T45").merge()
-    .setValue("🥧 PIE & DONUT CHARTS - Visual Distribution")
+    .setValue("🥧 COLORFUL INSIGHTS - Your Work in Living Color!")
     .setFontSize(14).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
@@ -213,7 +222,7 @@ function createInteractiveDashboardSheet(ss) {
 
   // Pie Chart 1 - Grievances by Status
   sheet.getRange("A47:J47").merge()
-    .setValue("Grievances by Status (Donut)")
+    .setValue("🎯 Status Snapshot - See Progress at a Glance")
     .setFontSize(12).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
@@ -226,7 +235,7 @@ function createInteractiveDashboardSheet(ss) {
 
   // Pie Chart 2 - Grievances by Location
   sheet.getRange("L47:T47").merge()
-    .setValue("Top Locations by Grievances (Pie)")
+    .setValue("🗺️ Location Hotspots - Where the Action Is!")
     .setFontSize(12).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
@@ -241,7 +250,7 @@ function createInteractiveDashboardSheet(ss) {
   // WAREHOUSE-STYLE LOCATION CHART - Row 68-88
   // =====================================================================
   sheet.getRange("A68:T68").merge()
-    .setValue("🏢 LOCATION ANALYTICS - Warehouse Style View")
+    .setValue("🏢 UNITED ACROSS LOCATIONS - Our Collective Strength!")
     .setFontSize(14).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
@@ -249,7 +258,7 @@ function createInteractiveDashboardSheet(ss) {
     .setFontColor("white");
 
   sheet.getRange("A70:T70").merge()
-    .setValue("Grievances by City/Location")
+    .setValue("💪 Every City, Every Worker - Together We Stand!")
     .setFontSize(12).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
@@ -264,7 +273,7 @@ function createInteractiveDashboardSheet(ss) {
   // DATA TABLE - Top Performers/Issues - Row 91-110
   // =====================================================================
   sheet.getRange("A91:T91").merge()
-    .setValue("📋 DETAILED DATA - Top 15 Items")
+    .setValue("📋 THE DETAILS THAT MATTER - Celebrating Excellence!")
     .setFontSize(14).setFontFamily("Roboto")
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
@@ -406,12 +415,12 @@ function rebuildInteractiveDashboard() {
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
   if (!sheet || !memberSheet || !grievanceSheet) {
-    SpreadsheetApp.getUi().alert('❌ Required sheets not found!');
+    SpreadsheetApp.getUi().alert('Oops! We need a few more pieces to make the magic happen!\n\n🔍 We\'re looking for your Member Directory and Grievance Log sheets.\n\n💡 Make sure they\'re set up and try again!');
     return;
   }
 
   try {
-    SpreadsheetApp.getUi().alert('🔄 Refreshing Interactive Dashboard...\n\nThis may take a moment.');
+    SpreadsheetApp.getUi().alert('✨ Bringing your dashboard to life...\n\n🎨 Painting your data with insights!\n⏱️ Just a moment while we celebrate your work...');
 
     // Get user selections
     const metric1 = sheet.getRange("A7").getValue() || "Total Members";
@@ -452,9 +461,12 @@ function rebuildInteractiveDashboard() {
     // Apply theme
     applyDashboardTheme(sheet, theme);
 
-    SpreadsheetApp.getUi().alert('✅ Interactive Dashboard refreshed successfully!');
+    // Create victory message based on metrics
+    const victoryMsg = getVictoryMessage(metrics);
+
+    SpreadsheetApp.getUi().alert('🎉 Your dashboard is alive and celebrating!\n\n' + victoryMsg + '\n\n✨ Keep up the amazing work!');
   } catch (error) {
-    SpreadsheetApp.getUi().alert('❌ Error refreshing dashboard:\n\n' + error.message);
+    SpreadsheetApp.getUi().alert('Oops! We hit a small bump...\n\n' + error.message + '\n\n💪 No worries, let\'s try again!');
     Logger.log('Error: ' + error.toString());
   }
 }
@@ -497,7 +509,7 @@ function calculateAllMetrics(memberData, grievanceData) {
 }
 
 /**
- * Update metric cards with current data
+ * Update metric cards with current data and celebratory messages
  */
 function updateMetricCards(sheet, metrics) {
   // Card 1: Total Members
@@ -505,20 +517,56 @@ function updateMetricCards(sheet, metrics) {
     .setValue(formatNumber(metrics.totalMembers))
     .setNumberFormat("#,##0");
 
+  // Add celebration message for members
+  const memberMsg = getMemberCelebration(metrics.totalMembers);
+  sheet.getRange("A18:E18").merge()
+    .setValue(memberMsg)
+    .setFontSize(9)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setFontColor(COLORS.UNION_GREEN);
+
   // Card 2: Active Grievances
   sheet.getRange("F15:J17").merge()
     .setValue(formatNumber(metrics.activeGrievances))
     .setNumberFormat("#,##0");
+
+  // Add encouraging message for grievances
+  const grievanceMsg = getGrievanceCelebration(metrics.activeGrievances);
+  sheet.getRange("F18:J18").merge()
+    .setValue(grievanceMsg)
+    .setFontSize(9)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setFontColor(COLORS.ACCENT_ORANGE);
 
   // Card 3: Win Rate
   sheet.getRange("K15:O17").merge()
     .setValue(metrics.winRate + "%")
     .setNumberFormat("0.0\"%\"");
 
+  // Add victory celebration for win rate
+  const winMsg = getWinRateCelebration(parseFloat(metrics.winRate));
+  sheet.getRange("K18:O18").merge()
+    .setValue(winMsg)
+    .setFontSize(9)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setFontColor(COLORS.UNION_GREEN);
+
   // Card 4: Overdue Cases
   sheet.getRange("P15:T17").merge()
     .setValue(formatNumber(metrics.overdueGrievances))
     .setNumberFormat("#,##0");
+
+  // Add encouraging message for overdue
+  const overdueMsg = getOverdueCelebration(metrics.overdueGrievances, metrics.activeGrievances);
+  sheet.getRange("P18:T18").merge()
+    .setValue(overdueMsg)
+    .setFontSize(9)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setFontColor(metrics.overdueGrievances === 0 ? COLORS.UNION_GREEN : COLORS.ACCENT_ORANGE);
 }
 
 /**
@@ -526,6 +574,81 @@ function updateMetricCards(sheet, metrics) {
  */
 function formatNumber(num) {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+/**
+ * Get celebration message for member count
+ */
+function getMemberCelebration(count) {
+  if (count > 1000) return "🎊 Wow! Over 1,000 strong!";
+  if (count > 500) return "💪 Growing stronger every day!";
+  if (count > 100) return "⭐ Our union is thriving!";
+  return "🌱 Building our movement!";
+}
+
+/**
+ * Get celebration message for active grievances
+ */
+function getGrievanceCelebration(count) {
+  if (count === 0) return "🎉 All caught up! Amazing!";
+  if (count < 5) return "👍 Nice work staying on top!";
+  if (count < 20) return "💼 You're handling it!";
+  return "🔥 Busy defending rights!";
+}
+
+/**
+ * Get victory celebration for win rate
+ */
+function getWinRateCelebration(rate) {
+  if (rate >= 90) return "🏆 INCREDIBLE! Nearly perfect!";
+  if (rate >= 80) return "🌟 Outstanding success rate!";
+  if (rate >= 70) return "✨ Great work winning cases!";
+  if (rate >= 60) return "👏 Making solid progress!";
+  if (rate >= 50) return "💪 Keep fighting!";
+  return "🎯 Every win counts!";
+}
+
+/**
+ * Get encouraging message for overdue cases
+ */
+function getOverdueCelebration(overdue, total) {
+  if (overdue === 0) return "🎊 PERFECT! Nothing overdue!";
+  const percentage = (overdue / total) * 100;
+  if (percentage < 5) return "👍 Almost there!";
+  if (percentage < 10) return "⚡ Making progress!";
+  if (percentage < 20) return "💪 You've got this!";
+  return "🔔 Time to catch up!";
+}
+
+/**
+ * Get overall victory message based on all metrics
+ */
+function getVictoryMessage(metrics) {
+  const winRate = parseFloat(metrics.winRate);
+  const messages = [];
+
+  // Check for major victories
+  if (winRate >= 80) {
+    messages.push("🏆 Your win rate is OUTSTANDING!");
+  } else if (winRate >= 70) {
+    messages.push("⭐ Great job winning cases!");
+  }
+
+  if (metrics.overdueGrievances === 0) {
+    messages.push("🎊 PERFECT record - nothing overdue!");
+  } else if (metrics.overdueGrievances < 5) {
+    messages.push("👍 Nearly perfect on deadlines!");
+  }
+
+  if (metrics.totalMembers > 500) {
+    messages.push("💪 Your union is thriving with " + formatNumber(metrics.totalMembers) + " members!");
+  }
+
+  if (messages.length === 0) {
+    return "📊 Your data is looking good! Every day brings progress!";
+  }
+
+  return messages.join("\n");
 }
 
 /**
@@ -823,14 +946,16 @@ function openInteractiveDashboard() {
   const sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
 
   if (!sheet) {
-    SpreadsheetApp.getUi().alert('❌ Interactive Dashboard not found!\n\nPlease run "509 Tools > Create Dashboard" first.');
+    SpreadsheetApp.getUi().alert('Hmm, looks like your dashboard isn\'t set up yet!\n\n✨ No worries! Just run "509 Tools > Create Dashboard" and we\'ll get you started!');
     return;
   }
 
   ss.setActiveSheet(sheet);
-  SpreadsheetApp.getUi().alert('📊 Interactive Dashboard opened!\n\n' +
-    '1. Use the dropdowns in Row 7 to select metrics and chart types\n' +
-    '2. Click "509 Tools > Interactive Dashboard > Refresh Charts" to update\n' +
-    '3. Enable comparison mode to view two metrics side-by-side\n' +
-    '4. Choose different themes to customize colors');
+  SpreadsheetApp.getUi().alert('🎉 Welcome to your Interactive Dashboard!\n\n' +
+    '✨ Here\'s how to make it dance:\n\n' +
+    '1️⃣ Pick your favorite metrics from the dropdowns in Row 7\n' +
+    '2️⃣ Click "509 Tools > Interactive Dashboard > Refresh Charts" to see the magic\n' +
+    '3️⃣ Turn on comparison mode to see two stories at once\n' +
+    '4️⃣ Choose a theme that makes you smile!\n\n' +
+    '💪 Your data is ready to tell its story!');
 }
