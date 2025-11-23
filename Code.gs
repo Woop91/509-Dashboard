@@ -2266,12 +2266,11 @@ function setupDataValidation(ss) {
     { sheet: memberDir, column: "D", range: "A2:A19", name: "Job Title" },      // Job Titles
     { sheet: memberDir, column: "E", range: "B2:B16", name: "Work Location" },  // Locations
     { sheet: memberDir, column: "F", range: "C2:C3", name: "Unit" },            // Units
-    { sheet: memberDir, column: "G", range: "N2:N8", name: "Office Days" },     // Office Days (allows comma-separated values)
     { sheet: memberDir, column: "J", range: "D2:D3", name: "Steward" },         // Is Steward (Y/N)
-    { sheet: memberDir, column: "K", range: "M2:M5", name: "Membership" },      // Membership Status (was column L)
-    { sheet: memberDir, column: "R", range: "J2:J6", name: "Engagement" },      // Engagement Level (was column S, now column R)
-    { sheet: memberDir, column: "U", range: "L2:L8", name: "Committee" },       // Committee Member (was column V, now column U)
-    { sheet: memberDir, column: "V", range: "K2:K5", name: "Contact Method" }   // Preferred Contact Method (was column W, now column V)
+    { sheet: memberDir, column: "K", range: "M2:M5", name: "Membership" },      // Membership Status
+    { sheet: memberDir, column: "V", range: "J2:J6", name: "Engagement" },      // Engagement Level (column V)
+    { sheet: memberDir, column: "Y", range: "L2:L8", name: "Committee" },       // Committee Member (column Y)
+    { sheet: memberDir, column: "Z", range: "K2:K5", name: "Contact Method" }   // Preferred Contact Method (column Z)
   ];
 
   validations.forEach(v => {
@@ -2282,6 +2281,16 @@ function setupDataValidation(ss) {
       .build();
     v.sheet.getRange(`${v.column}2:${v.column}10000`).setDataValidation(rule);
   });
+
+  // Office Days validation (Column G) - Allow multiple selections (comma-separated)
+  // Using a more permissive validation that shows dropdown but allows custom input
+  const officeDaysRange = config.getRange("N2:N8");
+  const officeDaysRule = SpreadsheetApp.newDataValidation()
+    .requireValueInRange(officeDaysRange, true)
+    .setAllowInvalid(true)  // Allow custom values (comma-separated)
+    .setHelpText("Select one day or enter multiple days separated by commas (e.g., Mon, Wed, Fri)")
+    .build();
+  memberDir.getRange("G2:G10000").setDataValidation(officeDaysRule);
 
   // Grievance Log Validations
   const grievanceValidations = [
@@ -4285,7 +4294,7 @@ function SEED_20K_MEMBERS() {
         locations[Math.floor(Math.random() * locations.length)],
         units[Math.floor(Math.random() * units.length)],
         // G-K: Contact & Role
-        officeDays[Math.floor(Math.random() * officeDays.length)],
+        generateOfficeDays(officeDays),
         `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mass.gov`,
         `617-555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
         isSteward,
@@ -4620,6 +4629,24 @@ function randomDateWithinDays(days) {
   const now = new Date();
   const past = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
   return new Date(past.getTime() + Math.random() * (now.getTime() - past.getTime()));
+}
+
+/**
+ * Generate office days - can be single day or comma-separated multiple days
+ * 70% chance of single day, 30% chance of multiple days
+ */
+function generateOfficeDays(officeDaysList) {
+  const numDays = Math.random() < 0.7 ? 1 : Math.floor(Math.random() * 3) + 2; // 1 day (70%) or 2-4 days (30%)
+  const selectedDays = [];
+  const availableDays = [...officeDaysList]; // Clone array
+
+  for (let i = 0; i < numDays && availableDays.length > 0; i++) {
+    const idx = Math.floor(Math.random() * availableDays.length);
+    selectedDays.push(availableDays[idx]);
+    availableDays.splice(idx, 1); // Remove to avoid duplicates
+  }
+
+  return selectedDays.join(", ");
 }
 
 function addDays(date, days) {
