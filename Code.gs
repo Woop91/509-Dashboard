@@ -2256,6 +2256,7 @@ function createPendingFeaturesSheet(ss) {
     ["Daily Backup", "Create daily backup to Drive", "createAutomatedBackup()", "Daily at 3am", "Pending", "High", "Requires BACKUP_FOLDER_ID"],
     ["Overdue Alerts", "Send alerts for overdue grievances", "sendOverdueAlerts()", "Daily at 7am", "Pending", "High", "Notifies responsible parties"],
     ["Welcome Email", "Send welcome note when email added but profile incomplete", "sendWelcomeEmail()", "Weekends/non-office days, 8am-11am", "Pending", "Medium", "Triggers when email exists but other contact fields missing; encourages profile completion"],
+    ["Steward Directory Email", "Auto-send email to new members with steward contact information", "sendStewardDirectoryEmail()", "When new email address added", "Pending", "Medium", "Includes assigned steward and other stewards with name, work location, email, and phone (if steward consented to share)"],
     ["Data Retention", "Clean up old audit logs", "enforceDataRetention()", "Weekly Sunday at midnight", "Pending", "Low", "Keeps system clean"]
   ];
 
