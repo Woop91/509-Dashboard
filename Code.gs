@@ -144,6 +144,42 @@ const CBA_DEADLINES = {
   STEP_III_DECISION: 30 // Days for Step III decision
 };
 
+// Member Directory Column Indices (0-based array indices)
+// CRITICAL: Use these constants when accessing member data arrays!
+const MEMBER_COL = {
+  ID: 0,              // A: Member ID
+  FIRST_NAME: 1,      // B: First Name
+  LAST_NAME: 2,       // C: Last Name
+  JOB_TITLE: 3,       // D: Job Title / Position
+  DEPARTMENT: 4,      // E: Department / Unit
+  WORKSITE: 5,        // F: Worksite / Office Location
+  SCHEDULE: 6,        // G: Work Schedule / Office Days
+  UNIT: 7,            // H: Unit (8 or 10)
+  EMAIL: 8,           // I: Email Address
+  PHONE: 9,           // J: Phone Number
+  IS_STEWARD: 10,     // K: Is Steward (Y/N)
+  ASSIGNED_STEWARD: 11, // L: Assigned Steward
+  SUPERVISOR: 12,     // M: Immediate Supervisor
+  MANAGER: 13,        // N: Manager / Program Director
+  DOB: 14,            // O: Date of Birth
+  HIRE_DATE: 15,      // P: Hire Date
+  EMERGENCY_PHONE: 16, // Q: Emergency Contact Phone
+  NOTES: 17,          // R: Notes
+  LAST_UPDATED: 18,   // S: Last Updated
+  UPDATED_BY: 19,     // T: Updated By
+  SHARE_PHONE: 20,    // U: Share Phone in Directory?
+  MEMBERSHIP_STATUS: 21, // V: Membership Status
+  ENGAGEMENT_LEVEL: 22,  // W: Engagement Level
+  EVENTS_ATTENDED: 23,   // X: Events Attended (Last 12mo)
+  TRAINING_SESSIONS: 24, // Y: Training Sessions Attended
+  COMMITTEE: 25,      // Z: Committee Member
+  EMERGENCY_NAME: 26, // AA: Emergency Contact Name
+  INTEREST_ALLIED: 27, // AB: Interest: Allied Chapter Actions
+  PREFERRED_COMM: 28,  // AC: Preferred Communication Methods
+  BEST_TIME: 29       // AD: Best Time(s) to Reach Member
+  // Note: Steward Contact (AE-AG) and Grievance (AH-AQ) columns not typically accessed directly
+};
+
 const PRIORITY_ORDER = {
   "Step III - Human Resources": 1,
   "Step II - Agency Head": 2,
@@ -6034,8 +6070,9 @@ function SEED_5K_GRIEVANCES() {
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  // Get actual member data from Member Directory (columns A-J: ID, FirstName, LastName, JobTitle, Location, Unit, OffDays, Email, Phone, IsSteward)
-  const allMemberData = memberSheet.getRange("A2:J" + memberSheet.getLastRow()).getValues();
+  // Get actual member data from Member Directory - need enough columns for grievance creation
+  // A-L: Member ID, First/Last Name, Job Title, Dept, Worksite, Schedule, Unit, Email, Phone, Is Steward, Assigned Steward
+  const allMemberData = memberSheet.getRange("A2:L" + memberSheet.getLastRow()).getValues();
   const members = allMemberData.filter(r => r[0]);
 
   if (members.length === 0) {
@@ -6098,7 +6135,7 @@ function SEED_5K_GRIEVANCES() {
 
       // Select a random steward
       const steward = stewards[Math.floor(Math.random() * stewards.length)];
-      const stewardName = `${steward[1]} ${steward[2]}`; // FirstName LastName
+      const stewardName = `${steward[MEMBER_COL.FIRST_NAME]} ${steward[MEMBER_COL.LAST_NAME]}`;
 
       const incidentDate = randomDateWithinDays(730);
 
@@ -6195,9 +6232,9 @@ function SEED_5K_GRIEVANCES() {
       data.push([
         // A-F: Basic Info
         grievanceId,
-        member[0], // Member ID from Member Directory
-        member[1], // First Name from Member Directory
-        member[2], // Last Name from Member Directory
+        member[MEMBER_COL.ID],         // Member ID
+        member[MEMBER_COL.FIRST_NAME], // First Name
+        member[MEMBER_COL.LAST_NAME],  // Last Name
         status, step,
         // G-J: Incident & Filing (H, J auto-calculated)
         incidentDate,
@@ -7924,7 +7961,7 @@ function generateLocationAnalysis() {
     const member = memberData.find(row => row[0] === memberId);
 
     if (member) {
-      const location = member[4];
+      const location = member[MEMBER_COL.WORKSITE];
       if (locationStats[location]) {
         locationStats[location].grievances++;
 
@@ -8167,19 +8204,19 @@ function calculateEngagementScore(memberId) {
   let score = 0;
 
   // Points for events attended
-  const eventsAttended = member[21] || 0;
+  const eventsAttended = member[MEMBER_COL.EVENTS_ATTENDED] || 0;
   score += eventsAttended * 5;
 
   // Points for training sessions
-  const trainingSessions = member[22] || 0;
+  const trainingSessions = member[MEMBER_COL.TRAINING_SESSIONS] || 0;
   score += trainingSessions * 10;
 
   // Points for committee membership
-  const committee = member[23];
+  const committee = member[MEMBER_COL.COMMITTEE];
   if (committee && committee !== 'None') score += 20;
 
   // Points for being a steward
-  const isSteward = member[9];
+  const isSteward = member[MEMBER_COL.IS_STEWARD];
   if (isSteward === 'Yes') score += 30;
 
   // Points for grievances filed (shows engagement)
@@ -8275,10 +8312,10 @@ function sendReEngagementEmail(memberId) {
   const data = sheet.getDataRange().getValues();
   const member = data.find(row => row[0] === memberId);
 
-  if (!member || !member[7]) return false; // No email found
+  if (!member || !member[MEMBER_COL.EMAIL]) return false; // No email found
 
   const name = `${member[1]} ${member[2]}`;
-  const email = member[7];
+  const email = member[MEMBER_COL.EMAIL];
 
   const emailBody = `Dear ${member[1]},\n\n` +
                     `We haven't seen you at recent union events or activities. We'd love to have you more involved!\n\n` +
@@ -8314,11 +8351,11 @@ function sendContactUpdateEmail(memberId) {
   const data = sheet.getDataRange().getValues();
   const member = data.find(row => row[0] === memberId);
 
-  if (!member || !member[7]) return false; // No email found
+  if (!member || !member[MEMBER_COL.EMAIL]) return false; // No email found
 
   const firstName = member[1];
   const lastName = member[2];
-  const email = member[7];
+  const email = member[MEMBER_COL.EMAIL];
 
   const emailBody = `Dear ${firstName},\n\n` +
                     `We want to make sure we have your most current contact information on file. ` +
@@ -8782,7 +8819,7 @@ function identifySystemicIssues() {
     const member = memberData.find(row => row[0] === memberId);
     if (!member) continue;
 
-    const location = member[4];
+    const location = member[MEMBER_COL.WORKSITE];
     if (!location) continue;
 
     if (!locationIssues[location]) {
@@ -8893,7 +8930,7 @@ function generateGrievanceHeatMap() {
     const member = memberData.find(row => row[0] === memberId);
     if (!member) continue;
 
-    const location = member[4];
+    const location = member[MEMBER_COL.WORKSITE];
     const date = new Date(dateFiled);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
@@ -9077,7 +9114,7 @@ function autoAssignGrievance(grievanceId) {
   const member = memberData.find(row => row[0] === memberId);
   if (!member) return null;
 
-  const memberLocation = member[4];
+  const memberLocation = member[MEMBER_COL.WORKSITE];
 
   // Find available stewards at same location
   const stewardsAtLocation = memberData.filter(row =>
@@ -10369,9 +10406,9 @@ function showMemberProfile(memberId) {
       <body>
         <h2>${member[1]} ${member[2]}</h2>
         <div class="info"><span class="label">Member ID:</span> ${member[0]}</div>
-        <div class="info"><span class="label">Location:</span> ${member[4]}</div>
-        <div class="info"><span class="label">Email:</span> ${member[7]}</div>
-        <div class="info"><span class="label">Phone:</span> ${member[8]}</div>
+        <div class="info"><span class="label">Location:</span> ${member[MEMBER_COL.WORKSITE]}</div>
+        <div class="info"><span class="label">Email:</span> ${member[MEMBER_COL.EMAIL]}</div>
+        <div class="info"><span class="label">Phone:</span> ${member[MEMBER_COL.PHONE]}</div>
         <h3>Grievance Summary</h3>
         <div class="info"><span class="label">Total Grievances:</span> ${memberGrievances.length}</div>
         <div class="info"><span class="label">Active:</span> ${memberGrievances.filter(row => row[4] && row[4].startsWith('Filed')).length}</div>
