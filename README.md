@@ -281,42 +281,45 @@ Contains all dropdown options used throughout the system:
 
 ### 4. **Member Directory** Sheet
 
-**35 columns** tracking comprehensive member information:
+**37 columns** tracking comprehensive member information:
 
-**Basic Information (A-F):**
+**Basic Information (A-H):**
 - Member ID (auto-generated: MEM000001)
 - First Name, Last Name
-- Job Title, Work Location, Unit
+- Job Title, Department/Unit, Worksite/Office Location
+- Work Schedule/Office Days, Unit (8 or 10)
 
-**Contact & Role (G-M):**
-- Office Days, Email, Phone
+**Contact & Role (I-P):**
+- Email Address, Phone Number
 - Is Steward (Yes/No)
-- Date Joined Union
+- **Assigned Steward** - Primary steward assigned to this member
+- **Share Phone in Directory? (Steward Only)** - Steward consent to share phone number
 - Membership Status
-- Engagement Level
+- Immediate Supervisor, Manager/Program Director
 
-**Grievance Metrics (N-T) - AUTO CALCULATED:**
-- Total Grievances
+**Grievance Metrics (P-U) - AUTO CALCULATED:**
+- Total Grievances Filed
 - Active Grievances
 - Resolved Grievances
 - Grievances Won
 - Grievances Lost
 - Last Grievance Date
-- Win Rate %
 
-**Derived Fields (U-X) - AUTO CALCULATED:**
+**Grievance Snapshot (V-Y) - AUTO CALCULATED:**
 - Has Open Grievance?
-- Current Grievance Status
-- Next Deadline
-- Days to Deadline
+- # Open Grievances
+- Last Grievance Status
+- Next Deadline (Soonest)
 
-**Participation & Admin (Y-AI):**
+**Participation & Admin (Z-AK):**
+- Engagement Level
 - Events Attended, Training Sessions
 - Committee Membership
 - Emergency Contacts
-- Date of Birth, Hire Date, Seniority Date
+- Date of Birth, Hire Date
+- Last Updated, Updated By
 
-*Green-highlighted columns = auto-calculated (don't edit manually)*
+*Teal-highlighted columns = auto-calculated (don't edit manually)*
 
 ---
 

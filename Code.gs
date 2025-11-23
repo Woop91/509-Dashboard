@@ -546,9 +546,10 @@ function createMemberDirectorySheet(ss) {
     "Member ID", "First Name", "Last Name", "Job Title / Position",
     "Department / Unit", "Worksite / Office Location", "Work Schedule / Office Days",
     "Unit (8 or 10)",
-    // Contact & Role (I-M)
-    "Email Address", "Phone Number", "Is Steward (Y/N)", "Membership Status",
-    "Immediate Supervisor", "Manager / Program Director",
+    // Contact & Role (I-O)
+    "Email Address", "Phone Number", "Is Steward (Y/N)",
+    "Assigned Steward", "Share Phone in Directory? (Steward Only)",
+    "Membership Status", "Immediate Supervisor", "Manager / Program Director",
     // Grievance Metrics (N-S) - AUTO CALCULATED
     "Total Grievances Filed", "Active Grievances", "Resolved Grievances",
     "Grievances Won", "Grievances Lost", "Last Grievance Date",
@@ -589,17 +590,19 @@ function createMemberDirectorySheet(ss) {
   sheet.setColumnWidth(6, 220);  // Worksite / Office Location
   sheet.setColumnWidth(7, 180);  // Work Schedule / Office Days
   sheet.setColumnWidth(9, 220);  // Email
-  sheet.setColumnWidth(13, 180); // Immediate Supervisor
-  sheet.setColumnWidth(14, 200); // Manager / Program Director
-  sheet.setColumnWidth(29, 250); // Preferred communication methods
-  sheet.setColumnWidth(30, 250); // Best time to reach
-  sheet.setColumnWidth(31, 300); // Notes
-  sheet.setColumnWidth(42, 200); // Preferred Communication Methods (Level 2)
-  sheet.setColumnWidth(43, 200); // Best Time(s) to Reach Member (Level 2)
-  sheet.setColumnWidth(46, 300); // Notes from Steward Contact
+  sheet.setColumnWidth(12, 180); // Assigned Steward
+  sheet.setColumnWidth(13, 220); // Share Phone in Directory?
+  sheet.setColumnWidth(15, 180); // Immediate Supervisor
+  sheet.setColumnWidth(16, 200); // Manager / Program Director
+  sheet.setColumnWidth(31, 250); // Preferred communication methods
+  sheet.setColumnWidth(32, 250); // Best time to reach
+  sheet.setColumnWidth(33, 300); // Notes
+  sheet.setColumnWidth(44, 200); // Preferred Communication Methods (Level 2)
+  sheet.setColumnWidth(45, 200); // Best Time(s) to Reach Member (Level 2)
+  sheet.setColumnWidth(48, 300); // Notes from Steward Contact
 
-  // Color-code auto-calculated columns (N-W and AG-AH)
-  const autoCols = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 33, 34]; // N-S (grievance metrics), T-W (snapshot fields), AG-AH (Last Updated, Updated By)
+  // Color-code auto-calculated columns (P-U and V-Y and AI-AJ)
+  const autoCols = [16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 35, 36]; // P-U (grievance metrics), V-Y (snapshot fields), AI-AJ (Last Updated, Updated By)
   autoCols.forEach(col => {
     sheet.getRange(1, col).setBackground(COLORS.ACCENT_TEAL);
   });
@@ -2256,7 +2259,7 @@ function createPendingFeaturesSheet(ss) {
     ["Daily Backup", "Create daily backup to Drive", "createAutomatedBackup()", "Daily at 3am", "Pending", "High", "Requires BACKUP_FOLDER_ID"],
     ["Overdue Alerts", "Send alerts for overdue grievances", "sendOverdueAlerts()", "Daily at 7am", "Pending", "High", "Notifies responsible parties"],
     ["Welcome Email", "Send welcome note when email added but profile incomplete", "sendWelcomeEmail()", "Weekends/non-office days, 8am-11am", "Pending", "Medium", "Triggers when email exists but other contact fields missing; encourages profile completion"],
-    ["Steward Directory Email", "Auto-send email to new members with steward contact information", "sendStewardDirectoryEmail()", "When new email address added", "Pending", "Medium", "Includes assigned steward and other stewards with name, work location, email, and phone (if steward consented to share)"],
+    ["Steward Directory Email", "Auto-send email to new members with steward contact information", "sendStewardDirectoryEmail()", "When new email address added", "Pending", "Medium", "REQUIRES: Member Directory fields 'Assigned Steward' (Col L) and 'Share Phone in Directory?' (Col M). Includes assigned steward and other stewards with name, work location, email, and phone (only if steward consented to share via Col M)"],
     ["Data Retention", "Clean up old audit logs", "enforceDataRetention()", "Weekly Sunday at midnight", "Pending", "Low", "Keeps system clean"]
   ];
 
@@ -2459,12 +2462,13 @@ function setupDataValidation(ss) {
   const validations = [
     { sheet: memberDir, column: "D", range: "A2:A19", name: "Job Title" },      // Job Titles
     { sheet: memberDir, column: "E", range: "B2:B16", name: "Work Location" },  // Locations
-    { sheet: memberDir, column: "F", range: "C2:C3", name: "Unit" },            // Units
-    { sheet: memberDir, column: "J", range: "D2:D3", name: "Steward" },         // Is Steward (Y/N)
-    { sheet: memberDir, column: "K", range: "M2:M5", name: "Membership" },      // Membership Status
-    { sheet: memberDir, column: "V", range: "J2:J6", name: "Engagement" },      // Engagement Level (column V)
-    { sheet: memberDir, column: "Y", range: "L2:L8", name: "Committee" },       // Committee Member (column Y)
-    { sheet: memberDir, column: "Z", range: "K2:K5", name: "Contact Method" }   // Preferred Contact Method (column Z)
+    { sheet: memberDir, column: "H", range: "C2:C3", name: "Unit" },            // Unit (8 or 10)
+    { sheet: memberDir, column: "K", range: "D2:D3", name: "Steward" },         // Is Steward (Y/N)
+    { sheet: memberDir, column: "M", range: "Q2:Q3", name: "Phone Share" },     // Share Phone in Directory? (Y/N)
+    { sheet: memberDir, column: "N", range: "M2:M5", name: "Membership" },      // Membership Status
+    { sheet: memberDir, column: "X", range: "J2:J6", name: "Engagement" },      // Engagement Level (column X, shifted by 2)
+    { sheet: memberDir, column: "AA", range: "L2:L8", name: "Committee" },      // Committee Member (column AA, shifted by 2)
+    { sheet: memberDir, column: "AB", range: "K2:K5", name: "Contact Method" }  // Preferred Contact Method (column AB, shifted by 2)
   ];
 
   validations.forEach(v => {
@@ -2485,6 +2489,16 @@ function setupDataValidation(ss) {
     .setHelpText("Select one day or enter multiple days separated by commas (e.g., Mon, Wed, Fri)")
     .build();
   memberDir.getRange("G2:G10000").setDataValidation(officeDaysRule);
+
+  // Assigned Steward validation (Column L) - Text validation with help text
+  // NOTE: For dynamic validation against active stewards, this should be updated
+  // by a function that queries members where "Is Steward (Y/N)" = "Yes"
+  const assignedStewardRule = SpreadsheetApp.newDataValidation()
+    .requireTextLength(0, 200)
+    .setAllowInvalid(true)
+    .setHelpText("Enter the full name of the steward assigned to this member (First Last)")
+    .build();
+  memberDir.getRange("L2:L10000").setDataValidation(assignedStewardRule);
 
   // Grievance Log Validations
   const grievanceValidations = [
