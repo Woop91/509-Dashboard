@@ -74,6 +74,7 @@ const SHEETS = {
   MEMBER_DIR: "Member Directory",
   GRIEVANCE_LOG: "Grievance Log",
   DASHBOARD: "Dashboard",
+  INTERACTIVE_DASHBOARD: "Interactive Dashboard",
   STEWARD_WORKLOAD: "Steward Workload",
   ANALYTICS: "Analytics Data",
   TRENDS: "Trends & Timeline",
@@ -187,6 +188,9 @@ function CREATE_509_DASHBOARD() {
     SpreadsheetApp.flush();
 
     createDashboardSheet(ss);
+    SpreadsheetApp.flush();
+
+    createInteractiveDashboardSheet(ss);
     SpreadsheetApp.flush();
 
     createAnalyticsSheet(ss);
@@ -4780,6 +4784,11 @@ function onOpen() {
   ui.createMenu('509 Tools')
     .addItem('🔧 Create Dashboard', 'CREATE_509_DASHBOARD')
     .addSeparator()
+    .addSubMenu(ui.createMenu('🎯 Interactive Dashboard')
+      .addItem('Setup Controls', 'setupInteractiveDashboardControls')
+      .addItem('Refresh Charts', 'rebuildInteractiveDashboard')
+      .addSeparator()
+      .addItem('View Interactive Dashboard', 'openInteractiveDashboard'))
     .addSubMenu(ui.createMenu('📊 Data Management')
       .addItem('Seed All Test Data (Recommended)', 'seedAll')
       .addSeparator()

@@ -38,6 +38,16 @@ The **509 Dashboard** is a comprehensive Google Sheets-based system designed spe
 
 ## ⭐ Key Features
 
+### 🎯 Interactive Dashboard (NEW!)
+- **User-selectable metrics** - Choose from 20+ metrics to display
+- **Dynamic chart types** - Pie, Donut, Bar, Line, Column, Area, or Table
+- **Side-by-side comparison** - Compare any two metrics simultaneously
+- **6 professional themes** - Union Blue, Solidarity Red, Success Green, and more
+- **Real-time updates** - Charts refresh instantly with your data
+- **Card-based layout** - Modern design with large KPI cards
+- **Warehouse-style views** - Location analytics with horizontal bar charts
+- **See full guide:** [INTERACTIVE_DASHBOARD_GUIDE.md](INTERACTIVE_DASHBOARD_GUIDE.md)
+
 ### 📊 Advanced Dashboard
 - **Real-time KPI metrics** - Member counts, grievance statistics, win rates
 - **6 interactive visual charts** - Donut charts, bar charts, and column charts
@@ -532,6 +542,29 @@ System health checks:
 
 ## 💼 Using the Dashboard
 
+### 🎯 Using the Interactive Dashboard (NEW!)
+
+**Quick Start:**
+1. Click **509 Tools** → **Interactive Dashboard** → **View Interactive Dashboard**
+2. First time: Click **Setup Controls** to enable dropdowns
+3. Use Row 7 dropdowns to select:
+   - Your primary metric (e.g., "Total Members")
+   - Chart type (e.g., "Donut Chart")
+   - Comparison metric (e.g., "Active Grievances")
+   - Comparison chart type (e.g., "Bar Chart")
+   - Theme (e.g., "Union Blue")
+   - Enable/disable comparison mode
+4. Click **Refresh Charts** to update visualizations
+
+**Benefits:**
+- Customize what you see
+- Compare metrics side-by-side
+- Export presentation-ready charts
+- Switch themes for different audiences
+- 20+ metrics × 7 chart types = 140+ combinations
+
+**Full Instructions:** See [INTERACTIVE_DASHBOARD_GUIDE.md](INTERACTIVE_DASHBOARD_GUIDE.md)
+
 ### Daily Tasks
 
 **1. Check Overdue Items:**
@@ -772,6 +805,11 @@ This system enforces **Article 23A** grievance procedure deadlines:
 ```
 🔧 Create Dashboard
    └─ Initial setup (run once)
+
+🎯 Interactive Dashboard (NEW!)
+   ├─ Setup Controls (first time setup)
+   ├─ Refresh Charts (update visualizations)
+   └─ View Interactive Dashboard (open and get instructions)
 
 📊 Data Management
    ├─ Seed All Test Data (RECOMMENDED - unified function) 🆕
