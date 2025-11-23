@@ -525,7 +525,7 @@ function applyMemberDirectoryConditionalFormatting(sheet) {
 
   // Rule 1: Red background for empty Email Address (column H/8)
   const emailRule = SpreadsheetApp.newConditionalFormatRule()
-    .whenFormulaSatisfied('=AND(ROW()>1, ISBLANK($H:$H))')
+    .whenFormulaSatisfied('=ISBLANK($H2)')
     .setBackground('#ffcccc')
     .setRanges([sheet.getRange('H2:H')])
     .build();
@@ -533,7 +533,7 @@ function applyMemberDirectoryConditionalFormatting(sheet) {
 
   // Rule 2: Red background for empty Phone Number (column I/9)
   const phoneRule = SpreadsheetApp.newConditionalFormatRule()
-    .whenFormulaSatisfied('=AND(ROW()>1, ISBLANK($I:$I))')
+    .whenFormulaSatisfied('=ISBLANK($I2)')
     .setBackground('#ffcccc')
     .setRanges([sheet.getRange('I2:I')])
     .build();
@@ -541,7 +541,7 @@ function applyMemberDirectoryConditionalFormatting(sheet) {
 
   // Rule 3: Light purple background for Is Steward = "Yes" (entire row when column J/10 is "Yes")
   const stewardRule = SpreadsheetApp.newConditionalFormatRule()
-    .whenFormulaSatisfied('=AND(ROW()>1, UPPER($J:$J)="YES")')
+    .whenFormulaSatisfied('=UPPER($J2)="YES"')
     .setBackground('#e6d9f5')
     .setRanges([sheet.getRange('A2:AG')])
     .build();
@@ -787,7 +787,7 @@ function createLocationSheet(ss) {
   sheet.clear();
 
   // Title - Unified color scheme
-  sheet.getRange("A1:E1").merge()
+  sheet.getRange("A1:F1").merge()
     .setValue("LOCATION ANALYTICS")
     .setFontSize(18).setFontFamily("Roboto")
     .setFontWeight("bold")
@@ -796,10 +796,10 @@ function createLocationSheet(ss) {
     .setFontColor("white");
 
   // Section headers - Unified color scheme
-  sheet.getRange("A3:D3").merge().setValue("GRIEVANCES BY LOCATION").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("A3:F3").merge().setValue("GRIEVANCES BY LOCATION").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
-  sheet.getRange("A15:D15").merge().setValue("LOCATION PERFORMANCE METRICS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
+  sheet.getRange("A15:F15").merge().setValue("LOCATION PERFORMANCE METRICS").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto")
     .setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
 
   sheet.setRowHeight(1, 40);
@@ -807,9 +807,11 @@ function createLocationSheet(ss) {
   sheet.setColumnWidth(2, 100);
   sheet.setColumnWidth(3, 100);
   sheet.setColumnWidth(4, 100);
+  sheet.setColumnWidth(5, 100);
+  sheet.setColumnWidth(6, 100);
 
-  // Delete unused columns beyond E
-  deleteUnusedColumns(sheet, 6);
+  // Delete unused columns beyond F
+  deleteUnusedColumns(sheet, 7);
 }
 
 // ============================================================================
@@ -849,9 +851,10 @@ function createTypeAnalysisSheet(ss) {
   sheet.setColumnWidth(2, 120);
   sheet.setColumnWidth(5, 180);
   sheet.setColumnWidth(6, 120);
+  sheet.setColumnWidth(7, 120);
 
   // Delete unused columns beyond G
-  deleteUnusedColumns(sheet, 7);
+  deleteUnusedColumns(sheet, 8);
 }
 
 // ============================================================================
@@ -1542,16 +1545,8 @@ function createMemberEngagementSheet(ss) {
   sheet.setColumnWidth(1, 200);
   sheet.setColumnWidths(2, 4, 130);
 
-  // Ensure engagement score cards span the full width
-  sheet.getRange("A5:D5").merge().setValue("OVERALL ENGAGEMENT")
-    .setFontWeight("bold").setFontSize(10).setFontFamily("Roboto")
-    .setHorizontalAlignment("center").setFontColor(COLORS.TEXT_GRAY)
-    .setWrap(true).setVerticalAlignment("middle");
-
   // Fix row 7 alignment
-  sheet.getRange("A7").setValue("Avg Level")
-    .setFontSize(9).setFontFamily("Roboto")
-    .setHorizontalAlignment("center").setVerticalAlignment("middle");
+  sheet.getRange("A7:D7").setVerticalAlignment("middle").setHorizontalAlignment("center");
 
   // Hide gridlines for cleaner look
   sheet.setHiddenGridlines(true);
@@ -1679,8 +1674,8 @@ function createCostImpactSheet(ss) {
   // Fix row 15 alignment - ensure data cells are properly sized
   sheet.getRange("A15:E15").setVerticalAlignment("middle");
 
-  // Delete unused columns beyond F
-  deleteUnusedColumns(sheet, 7);
+  // Delete unused columns beyond L
+  deleteUnusedColumns(sheet, 13);
 }
 
 // ============================================================================
