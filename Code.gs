@@ -2162,6 +2162,7 @@ function createPendingFeaturesSheet(ss) {
     ["Schedule Updates", "Auto-refresh dashboard hourly", "scheduleAutomaticUpdates()", "Every hour + daily at 2am", "Pending", "Low", "Keeps dashboard current"],
     ["Daily Backup", "Create daily backup to Drive", "createAutomatedBackup()", "Daily at 3am", "Pending", "High", "Requires BACKUP_FOLDER_ID"],
     ["Overdue Alerts", "Send alerts for overdue grievances", "sendOverdueAlerts()", "Daily at 7am", "Pending", "High", "Notifies responsible parties"],
+    ["Welcome Email", "Send welcome note when email added but profile incomplete", "sendWelcomeEmail()", "Weekends/non-office days, 8am-11am", "Pending", "Medium", "Triggers when email exists but other contact fields missing; encourages profile completion"],
     ["Data Retention", "Clean up old audit logs", "enforceDataRetention()", "Weekly Sunday at midnight", "Pending", "Low", "Keeps system clean"]
   ];
 
