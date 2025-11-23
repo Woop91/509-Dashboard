@@ -674,6 +674,9 @@ function createDashboardSheet(ss) {
   sheet.setColumnWidth(1, 250);
   sheet.setColumnWidth(2, 120);
   sheet.setRowHeight(1, 40);
+
+  // Delete unused columns beyond L (column 12)
+  deleteUnusedColumns(sheet, 13);
 }
 
 // ============================================================================
@@ -1721,10 +1724,6 @@ function createQuickStatsSheet(ss) {
 
   // TODAY CARD 1: New Grievances
   sheet.getRange("A6:D8").setBackground(COLORS.WHITE);
-  sheet.getRange("A6:D6").setBorder(true, null, null, null, null, null, COLORS.PRIMARY_BLUE, SpreadsheetApp.BorderStyle.SOLID_THICK);
-  sheet.getRange("A6:A8").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  sheet.getRange("D6:D8").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  sheet.getRange("A8:D8").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("A6:D6").merge().setValue("NEW GRIEVANCES")
     .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
@@ -1735,10 +1734,6 @@ function createQuickStatsSheet(ss) {
 
   // TODAY CARD 2: Deadlines Due
   sheet.getRange("F6:I8").setBackground(COLORS.WHITE);
-  sheet.getRange("F6:I6").setBorder(true, null, null, null, null, null, COLORS.SOLIDARITY_RED, SpreadsheetApp.BorderStyle.SOLID_THICK);
-  sheet.getRange("F6:F8").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  sheet.getRange("I6:I8").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  sheet.getRange("F8:I8").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("F6:I6").merge().setValue("DEADLINES DUE")
     .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
@@ -1749,10 +1744,6 @@ function createQuickStatsSheet(ss) {
 
   // TODAY CARD 3: Meetings Scheduled
   sheet.getRange("K6:N8").setBackground(COLORS.WHITE);
-  sheet.getRange("K6:N6").setBorder(true, null, null, null, null, null, COLORS.ACCENT_TEAL, SpreadsheetApp.BorderStyle.SOLID_THICK);
-  sheet.getRange("K6:K8").setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  sheet.getRange("N6:N8").setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  sheet.getRange("K8:N8").setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   sheet.getRange("K6:N6").merge().setValue("MEETINGS SCHEDULED")
     .setFontWeight("bold").setFontSize(11).setFontFamily("Roboto").setHorizontalAlignment("center")
@@ -1777,13 +1768,6 @@ function createQuickStatsSheet(ss) {
     const topRow = cells[0].match(/[A-Z]+/)[0] + cells[0].match(/\d+/)[0];
     const bottomRow = cells[1].match(/[A-Z]+/)[0] + cells[1].match(/\d+/)[0];
     const topRowRange = cells[0].match(/[A-Z]+/)[0] + cells[0].match(/\d+/)[0] + ":" + cells[1].match(/[A-Z]+/)[0] + cells[0].match(/\d+/)[0];
-
-    sheet.getRange(topRowRange).setBorder(true, null, null, null, null, null, topColor, SpreadsheetApp.BorderStyle.SOLID_THICK);
-    sheet.getRange(cells[0].match(/[A-Z]+/)[0] + cells[0].match(/\d+/)[0] + ":" + cells[0].match(/[A-Z]+/)[0] + cells[1].match(/\d+/)[0])
-      .setBorder(null, true, null, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-    sheet.getRange(cells[1].match(/[A-Z]+/)[0] + cells[0].match(/\d+/)[0] + ":" + cells[1].match(/[A-Z]+/)[0] + cells[1].match(/\d+/)[0])
-      .setBorder(null, null, null, true, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-    sheet.getRange(bottomRow).setBorder(null, null, true, null, null, null, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
     sheet.getRange(topRowRange).merge().setValue(label)
       .setFontWeight("bold").setFontSize(10).setFontFamily("Roboto").setHorizontalAlignment("center")
@@ -1858,19 +1842,12 @@ function createQuickStatsSheet(ss) {
     .setFontColor("white");
 
   const alertBox = sheet.getRange("A41:O44");
-  alertBox.setBackground(COLORS.WHITE)
-    .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+  alertBox.setBackground(COLORS.WHITE);
 
   sheet.getRange("A41").setValue("Grievances Overdue:").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto").setFontColor(COLORS.SOLIDARITY_RED);
   sheet.getRange("A42").setValue("Due in Next 48 Hours:").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto").setFontColor(COLORS.ACCENT_ORANGE);
   sheet.getRange("A43").setValue("Arbitrations Pending:").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto").setFontColor(COLORS.ACCENT_PURPLE);
   sheet.getRange("A44").setValue("Step III Cases:").setFontWeight("bold").setFontSize(12).setFontFamily("Roboto").setFontColor(COLORS.PRIMARY_BLUE);
-
-  // Add colored left borders for alert severity
-  sheet.getRange("A41:A41").setBorder(null, true, null, null, null, null, COLORS.SOLIDARITY_RED, SpreadsheetApp.BorderStyle.SOLID_THICK);
-  sheet.getRange("A42:A42").setBorder(null, true, null, null, null, null, COLORS.ACCENT_ORANGE, SpreadsheetApp.BorderStyle.SOLID_THICK);
-  sheet.getRange("A43:A43").setBorder(null, true, null, null, null, null, COLORS.ACCENT_PURPLE, SpreadsheetApp.BorderStyle.SOLID_THICK);
-  sheet.getRange("A44:A44").setBorder(null, true, null, null, null, null, COLORS.PRIMARY_BLUE, SpreadsheetApp.BorderStyle.SOLID_THICK);
 
   // Formatting
   sheet.setRowHeight(1, 60);
