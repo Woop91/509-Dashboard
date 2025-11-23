@@ -88,6 +88,8 @@ const SHEETS = {
   QUICK_STATS: "⚡ Test 9: Quick Stats",
   FUTURE_FEATURES: "🔮 Future Features",
   PENDING_FEATURES: "📝 Pending Features",
+  GETTING_STARTED: "📚 Getting Started",
+  FAQ: "❓ FAQ",
   ARCHIVE: "🗄️ Archive",
   DIAGNOSTICS: "🔧 Diagnostics"
 };
@@ -236,6 +238,12 @@ function CREATE_509_DASHBOARD() {
     createPendingFeaturesSheet(ss);
     SpreadsheetApp.flush();
 
+    createGettingStartedSheet(ss);
+    SpreadsheetApp.flush();
+
+    createFAQSheet(ss);
+    SpreadsheetApp.flush();
+
     createArchiveSheet(ss);
     SpreadsheetApp.flush();
 
@@ -279,7 +287,8 @@ function createConfigSheet(ss) {
     "Job Titles", "Work Locations", "Units", "Steward Status",
     "Grievance Status", "Grievance Steps", "Grievance Types",
     "Outcomes", "Satisfaction Levels", "Engagement Levels",
-    "Contact Methods", "Committee Types", "Membership Status", "Office Days"
+    "Contact Methods", "Committee Types", "Membership Status", "Office Days",
+    "Issue Categories", "Best Time to Reach", "Yes/No Options"
   ];
 
   config.getRange(1, 1, 1, headers.length).setValues([headers])
@@ -393,11 +402,24 @@ function createConfigSheet(ss) {
   // Column N: Office Days
   const officeDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+  // Column O: Issue Categories (for Grievance Log - multi-select)
+  const issueCategories = [
+    "Pay", "Scheduling", "Safety", "Benefits", "Harassment",
+    "Discipline", "Leave", "Overtime", "Classification", "Other"
+  ];
+
+  // Column P: Best Time to Reach (multi-select options)
+  const bestTimeOptions = ["8am-12pm", "12pm-4pm", "4pm-8pm"];
+
+  // Column Q: Yes/No Options (for Level 2 Interest fields)
+  const yesNoOptions = ["Yes", "No"];
+
   // Write all data
   const allData = [
     jobTitles, workLocations, units, stewardStatus, grievanceStatus,
     grievanceSteps, grievanceTypes, outcomes, satisfactionLevels,
-    engagementLevels, contactMethods, committeeTypes, membershipStatus, officeDays
+    engagementLevels, contactMethods, committeeTypes, membershipStatus, officeDays,
+    issueCategories, bestTimeOptions, yesNoOptions
   ];
 
   for (let i = 0; i < allData.length; i++) {
@@ -518,24 +540,34 @@ function createMemberDirectorySheet(ss) {
 
   sheet.clear();
 
-  // 33 columns (A-AG) - Added grievance snapshot fields
+  // Updated columns with renames and new fields
   const headers = [
-    // Basic Info (A-F)
-    "Member ID", "First Name", "Last Name", "Job Title", "Work Location (Site)", "Unit",
-    // Contact & Role (G-K)
-    "Office Days", "Email Address", "Phone Number", "Is Steward (Y/N)", "Membership Status",
-    // Grievance Metrics (L-Q) - AUTO CALCULATED
+    // Basic Info (A-H)
+    "Member ID", "First Name", "Last Name", "Job Title / Position",
+    "Department / Unit", "Worksite / Office Location", "Work Schedule / Office Days",
+    "Unit (8 or 10)",
+    // Contact & Role (I-M)
+    "Email Address", "Phone Number", "Is Steward (Y/N)", "Membership Status",
+    "Immediate Supervisor", "Manager / Program Director",
+    // Grievance Metrics (N-S) - AUTO CALCULATED
     "Total Grievances Filed", "Active Grievances", "Resolved Grievances",
     "Grievances Won", "Grievances Lost", "Last Grievance Date",
-    // Grievance Snapshot (R-U) - AUTO CALCULATED
+    // Grievance Snapshot (T-W) - AUTO CALCULATED
     "Has Open Grievance?", "# Open Grievances", "Last Grievance Status", "Next Deadline (Soonest)",
-    // Participation (V-Z)
+    // Participation (X-AC)
     "Engagement Level", "Events Attended (Last 12mo)", "Training Sessions Attended",
-    "Committee Member", "Preferred Contact Method",
-    // Emergency & Admin (AA-AF)
+    "Committee Member", "Please select your preferred communication methods (check all that apply)",
+    "What time(s) are best for us to reach you? (check all that apply)",
+    // Emergency & Admin (AD-AH)
     "Emergency Contact Name", "Emergency Contact Phone", "Notes",
     "Date of Birth", "Hire Date",
-    "Last Updated", "Updated By"
+    "Last Updated", "Updated By",
+    // Level 2 Columns (AI-AV) - Advanced engagement tracking
+    "Last Virtual Mtg (Date)", "Last In-Person Mtg (Date)", "Last Survey (Date)",
+    "Last Email Open (Date)", "Open Rate (%)", "Volunteer Hours (YTD)",
+    "Interest: Local Actions", "Interest: Chapter Actions", "Interest: Allied Chapter Actions",
+    "Preferred Communication Methods", "Best Time(s) to Reach Member",
+    "Most Recent Steward Contact Date", "Steward Who Contacted Member", "Notes from Steward Contact"
   ];
 
   const headerRange = sheet.getRange(1, 1, 1, headers.length);
@@ -552,13 +584,22 @@ function createMemberDirectorySheet(ss) {
   sheet.setColumnWidth(1, 110);  // Member ID
   sheet.setColumnWidth(2, 120);  // First Name
   sheet.setColumnWidth(3, 120);  // Last Name
-  sheet.setColumnWidth(4, 200);  // Job Title
-  sheet.setColumnWidth(5, 220);  // Work Location
-  sheet.setColumnWidth(8, 220);  // Email
-  sheet.setColumnWidth(25, 300); // Notes
+  sheet.setColumnWidth(4, 200);  // Job Title / Position
+  sheet.setColumnWidth(5, 180);  // Department / Unit
+  sheet.setColumnWidth(6, 220);  // Worksite / Office Location
+  sheet.setColumnWidth(7, 180);  // Work Schedule / Office Days
+  sheet.setColumnWidth(9, 220);  // Email
+  sheet.setColumnWidth(13, 180); // Immediate Supervisor
+  sheet.setColumnWidth(14, 200); // Manager / Program Director
+  sheet.setColumnWidth(29, 250); // Preferred communication methods
+  sheet.setColumnWidth(30, 250); // Best time to reach
+  sheet.setColumnWidth(31, 300); // Notes
+  sheet.setColumnWidth(42, 200); // Preferred Communication Methods (Level 2)
+  sheet.setColumnWidth(43, 200); // Best Time(s) to Reach Member (Level 2)
+  sheet.setColumnWidth(46, 300); // Notes from Steward Contact
 
-  // Color-code auto-calculated columns (M-V and AH)
-  const autoCols = [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 34]; // M-R (grievance metrics), S-V (snapshot fields), AH (Last Updated)
+  // Color-code auto-calculated columns (N-W and AG-AH)
+  const autoCols = [14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 33, 34]; // N-S (grievance metrics), T-W (snapshot fields), AG-AH (Last Updated, Updated By)
   autoCols.forEach(col => {
     sheet.getRange(1, col).setBackground(COLORS.ACCENT_TEAL);
   });
@@ -584,27 +625,27 @@ function applyMemberDirectoryConditionalFormatting(sheet) {
 
   const rules = [];
 
-  // Rule 1: Red background for empty Email Address (column H/8)
+  // Rule 1: Red background for empty Email Address (column I/9)
   const emailRule = SpreadsheetApp.newConditionalFormatRule()
-    .whenFormulaSatisfied('=ISBLANK($H2)')
-    .setBackground('#ffcccc')
-    .setRanges([sheet.getRange('H2:H')])
-    .build();
-  rules.push(emailRule);
-
-  // Rule 2: Red background for empty Phone Number (column I/9)
-  const phoneRule = SpreadsheetApp.newConditionalFormatRule()
     .whenFormulaSatisfied('=ISBLANK($I2)')
     .setBackground('#ffcccc')
     .setRanges([sheet.getRange('I2:I')])
     .build();
+  rules.push(emailRule);
+
+  // Rule 2: Red background for empty Phone Number (column J/10)
+  const phoneRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=ISBLANK($J2)')
+    .setBackground('#ffcccc')
+    .setRanges([sheet.getRange('J2:J')])
+    .build();
   rules.push(phoneRule);
 
-  // Rule 3: Light purple background for Is Steward = "Yes" (entire row when column J/10 is "Yes")
+  // Rule 3: Light purple background for Is Steward = "Yes" (entire row when column K/11 is "Yes")
   const stewardRule = SpreadsheetApp.newConditionalFormatRule()
-    .whenFormulaSatisfied('=UPPER($J2)="YES"')
+    .whenFormulaSatisfied('=UPPER($K2)="YES"')
     .setBackground('#e6d9f5')
-    .setRanges([sheet.getRange('A2:AG')])
+    .setRanges([sheet.getRange('A2:AV')])
     .build();
   rules.push(stewardRule);
 
@@ -622,7 +663,7 @@ function createGrievanceLogSheet(ss) {
 
     sheet.clear();
 
-    // 32 columns (A-AF) - Added timeline tracking columns
+    // 33 columns (A-AG) - Added timeline tracking columns and Issue Category
     const headers = [
       // Basic Info (A-F)
       "Grievance ID", "Member ID", "First Name", "Last Name", "Status", "Current Step",
@@ -634,11 +675,11 @@ function createGrievanceLogSheet(ss) {
       "Step II Filed Date", "Step II Decision Due (30d)", "Step II Decision Date", "Step II Outcome", "Step III Appeal Deadline (10d)",
       // Step III & Beyond (S-V)
       "Step III Filed Date", "Step III Decision Date", "Mediation Date", "Arbitration Date",
-      // Details (W-Z)
-      "Final Outcome", "Grievance Type", "Description", "Steward Name",
-      // Timeline Tracking (AA-AD) - AUTO CALCULATED
+      // Details (W-AA)
+      "Final Outcome", "Grievance Type", "Issue Category (select multiple)", "Description", "Steward Name",
+      // Timeline Tracking (AB-AE) - AUTO CALCULATED
       "Days Open", "Next Action Due", "Days to Deadline", "Overdue?",
-      // Admin (AE-AF)
+      // Admin (AF-AG)
       "Notes", "Last Updated"
     ];
 
@@ -657,14 +698,15 @@ function createGrievanceLogSheet(ss) {
     try {
       sheet.setColumnWidth(1, 120);  // Grievance ID
       sheet.setColumnWidth(2, 110);  // Member ID
-      sheet.setColumnWidth(25, 300); // Description (Column Y)
-      sheet.setColumnWidth(27, 300); // Notes (Column AA)
+      sheet.setColumnWidth(25, 250); // Issue Category (Column Y)
+      sheet.setColumnWidth(26, 300); // Description (Column Z)
+      sheet.setColumnWidth(32, 300); // Notes (Column AF)
     } catch (widthError) {
       Logger.log('Column width error (non-critical): ' + widthError.toString());
     }
 
-    // Color-code auto-calculated deadline columns (H, J, M, O, R, AA-AD, AF)
-    const autoCols = [8, 10, 13, 15, 18, 27, 28, 29, 30, 32]; // Filing Deadline, Step I Due, Step II Appeal, Step II Due, Step III Appeal, Days Open, Next Action Due, Days to Deadline, Overdue?, Last Updated
+    // Color-code auto-calculated deadline columns (H, J, M, O, R, AB-AE, AG)
+    const autoCols = [8, 10, 13, 15, 18, 28, 29, 30, 31, 33]; // Filing Deadline, Step I Due, Step II Appeal, Step II Due, Step III Appeal, Days Open, Next Action Due, Days to Deadline, Overdue?, Last Updated
     autoCols.forEach(col => {
       if (col <= headers.length) {
         sheet.getRange(1, col).setBackground(COLORS.ACCENT_TEAL);
@@ -4896,6 +4938,11 @@ function onOpen() {
       .addItem('Sort by Priority', 'sortGrievancesByPriority')
       .addItem('Toggle Mobile Mode', 'toggleMobileMode')
       .addItem('Setup Triggers', 'setupTriggers'))
+    .addSubMenu(ui.createMenu('👁️ View Options')
+      .addItem('Toggle Grievance Columns', 'toggleGrievanceColumns')
+      .addItem('Toggle Level 2 Columns', 'toggleLevel2Columns')
+      .addSeparator()
+      .addItem('Show All Columns', 'showAllMemberColumns'))
     .addSeparator()
     .addSubMenu(ui.createMenu('🧠 ADHD-Friendly Tools')
       .addItem('⚡ Quick Setup (Do This First!)', 'setupADHDDefaults')
