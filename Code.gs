@@ -1367,7 +1367,7 @@ function createConfigSheet(ss) {
 
   // Clear all content, formatting, AND validation rules to prevent conflicts
   config.clear();
-  config.clearDataValidations();
+  config.getDataRange().clearDataValidations();
 
   // Headers
   const headers = [
