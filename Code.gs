@@ -7184,6 +7184,9 @@ function autoDetectMobile() {
  * Checks for duplicate Member IDs, missing required fields, and invalid email formats
  */
 function validateMemberData() {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   if (!sheet) return { valid: false, errors: ['Member Directory sheet not found'] };
@@ -7194,10 +7197,10 @@ function validateMemberData() {
 
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
-    const memberId = row[0];
-    const firstName = row[1];
-    const lastName = row[2];
-    const email = row[7];
+    const memberId = row[MEMBER_COL.ID];
+    const firstName = row[MEMBER_COL.FIRST_NAME];
+    const lastName = row[MEMBER_COL.LAST_NAME];
+    const email = row[MEMBER_COL.EMAIL];
 
     // Check for duplicate Member IDs
     if (memberId && memberIds.has(memberId)) {
@@ -7224,6 +7227,10 @@ function validateMemberData() {
  * Checks for valid Member IDs, required dates, and logical date sequences
  */
 function validateGrievanceData() {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -7234,14 +7241,14 @@ function validateGrievanceData() {
 
   const grievanceData = grievanceSheet.getDataRange().getValues();
   const memberData = memberSheet.getDataRange().getValues();
-  const validMemberIds = new Set(memberData.slice(1).map(row => row[0]));
+  const validMemberIds = new Set(memberData.slice(1).map(row => row[MEMBER_COL.ID]));
   const errors = [];
 
   for (let i = 1; i < grievanceData.length; i++) {
     const row = grievanceData[i];
-    const memberId = row[1];
-    const incidentDate = row[6];
-    const dateFiled = row[8];
+    const memberId = row[GRIEVANCE_COL.MEMBER_ID];
+    const incidentDate = row[GRIEVANCE_COL.INCIDENT_DATE];
+    const dateFiled = row[GRIEVANCE_COL.DATE_FILED];
 
     // Check for valid Member ID
     if (memberId && !validMemberIds.has(memberId)) {
@@ -7267,6 +7274,9 @@ function validateGrievanceData() {
  * Fixes case, trims whitespace, standardizes phone numbers
  */
 function autoCorrectDataErrors() {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   if (!sheet) return;
@@ -7287,30 +7297,30 @@ function autoCorrectDataErrors() {
       }
     }
 
-    // Proper case for names (columns 1-2: First Name, Last Name)
-    if (data[i][1]) {
-      const properFirst = data[i][1].charAt(0).toUpperCase() + data[i][1].slice(1).toLowerCase();
-      if (properFirst !== data[i][1]) {
-        data[i][1] = properFirst;
+    // Proper case for names
+    if (data[i][MEMBER_COL.FIRST_NAME]) {
+      const properFirst = data[i][MEMBER_COL.FIRST_NAME].charAt(0).toUpperCase() + data[i][MEMBER_COL.FIRST_NAME].slice(1).toLowerCase();
+      if (properFirst !== data[i][MEMBER_COL.FIRST_NAME]) {
+        data[i][MEMBER_COL.FIRST_NAME] = properFirst;
         modified = true;
       }
     }
 
-    if (data[i][2]) {
-      const properLast = data[i][2].charAt(0).toUpperCase() + data[i][2].slice(1).toLowerCase();
-      if (properLast !== data[i][2]) {
-        data[i][2] = properLast;
+    if (data[i][MEMBER_COL.LAST_NAME]) {
+      const properLast = data[i][MEMBER_COL.LAST_NAME].charAt(0).toUpperCase() + data[i][MEMBER_COL.LAST_NAME].slice(1).toLowerCase();
+      if (properLast !== data[i][MEMBER_COL.LAST_NAME]) {
+        data[i][MEMBER_COL.LAST_NAME] = properLast;
         modified = true;
       }
     }
 
-    // Standardize phone numbers (column 8)
-    if (data[i][8]) {
-      const phone = data[i][8].toString().replace(/\D/g, '');
+    // Standardize phone numbers
+    if (data[i][MEMBER_COL.PHONE]) {
+      const phone = data[i][MEMBER_COL.PHONE].toString().replace(/\D/g, '');
       if (phone.length === 10) {
         const formatted = `(${phone.slice(0,3)}) ${phone.slice(3,6)}-${phone.slice(6)}`;
-        if (formatted !== data[i][8]) {
-          data[i][8] = formatted;
+        if (formatted !== data[i][MEMBER_COL.PHONE]) {
+          data[i][MEMBER_COL.PHONE] = formatted;
           modified = true;
         }
       }
@@ -7324,6 +7334,10 @@ function autoCorrectDataErrors() {
  * Feature 4: Checks for orphaned grievances (invalid Member IDs)
  */
 function findOrphanedGrievances() {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -7332,19 +7346,19 @@ function findOrphanedGrievances() {
 
   const grievanceData = grievanceSheet.getDataRange().getValues();
   const memberData = memberSheet.getDataRange().getValues();
-  const validMemberIds = new Set(memberData.slice(1).map(row => row[0]).filter(id => id));
+  const validMemberIds = new Set(memberData.slice(1).map(row => row[MEMBER_COL.ID]).filter(id => id));
 
   const orphaned = [];
 
   for (let i = 1; i < grievanceData.length; i++) {
-    const memberId = grievanceData[i][1];
+    const memberId = grievanceData[i][GRIEVANCE_COL.MEMBER_ID];
     if (memberId && !validMemberIds.has(memberId)) {
       orphaned.push({
         row: i + 1,
-        grievanceId: grievanceData[i][0],
+        grievanceId: grievanceData[i][GRIEVANCE_COL.ID],
         memberId: memberId,
-        firstName: grievanceData[i][2],
-        lastName: grievanceData[i][3]
+        firstName: grievanceData[i][GRIEVANCE_COL.FIRST_NAME],
+        lastName: grievanceData[i][GRIEVANCE_COL.LAST_NAME]
       });
     }
   }
