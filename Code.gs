@@ -9419,6 +9419,10 @@ function predictGrievanceVolume(monthsAhead = 3) {
  * Feature 51: Auto-assigns grievances to stewards based on workload
  */
 function autoAssignGrievance(grievanceId) {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -9431,7 +9435,7 @@ function autoAssignGrievance(grievanceId) {
   // Find the grievance
   let grievanceIndex = -1;
   for (let i = 1; i < grievanceData.length; i++) {
-    if (grievanceData[i][0] === grievanceId) {
+    if (grievanceData[i][GRIEVANCE_COL.ID] === grievanceId) {
       grievanceIndex = i;
       break;
     }
@@ -9440,31 +9444,31 @@ function autoAssignGrievance(grievanceId) {
   if (grievanceIndex === -1) return null;
 
   // Get member location
-  const memberId = grievanceData[grievanceIndex][1];
-  const member = memberData.find(row => row[0] === memberId);
+  const memberId = grievanceData[grievanceIndex][GRIEVANCE_COL.MEMBER_ID];
+  const member = memberData.find(row => row[MEMBER_COL.ID] === memberId);
   if (!member) return null;
 
   const memberLocation = member[MEMBER_COL.WORKSITE];
 
-  // Find available stewards at same location
+  // Find available stewards at same location (fixed: was using wrong indices)
   const stewardsAtLocation = memberData.filter(row =>
-    row[9] === 'Yes' && // Is Steward
-    row[4] === memberLocation // Same location
+    row[MEMBER_COL.IS_STEWARD] === 'Yes' && // Is Steward
+    row[MEMBER_COL.WORKSITE] === memberLocation // Same location
   );
 
   if (stewardsAtLocation.length === 0) {
     // Fall back to any steward
-    stewardsAtLocation.push(...memberData.filter(row => row[9] === 'Yes'));
+    stewardsAtLocation.push(...memberData.filter(row => row[MEMBER_COL.IS_STEWARD] === 'Yes'));
   }
 
   if (stewardsAtLocation.length === 0) return null;
 
   // Calculate current workload for each steward
   const stewardWorkloads = stewardsAtLocation.map(steward => {
-    const stewardName = `${steward[1]} ${steward[2]}`;
+    const stewardName = `${steward[MEMBER_COL.FIRST_NAME]} ${steward[MEMBER_COL.LAST_NAME]}`;
     const activeCases = grievanceData.filter(row =>
-      row[26] === stewardName && // Representative matches
-      row[4] && row[4].startsWith('Filed') // Active status
+      row[GRIEVANCE_COL.STEWARD_NAME] === stewardName && // Representative matches
+      row[GRIEVANCE_COL.STATUS] && row[GRIEVANCE_COL.STATUS].startsWith('Filed') // Active status
     ).length;
 
     return {
@@ -10708,12 +10712,16 @@ function showVisualizationSelector() {
  * Feature 92: Creates member profile quick view
  */
 function showMemberProfile(memberId) {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
   const memberData = memberSheet.getDataRange().getValues();
-  const member = memberData.find(row => row[0] === memberId);
+  const member = memberData.find(row => row[MEMBER_COL.ID] === memberId);
 
   if (!member) {
     SpreadsheetApp.getUi().alert('Member not found');
@@ -10721,7 +10729,7 @@ function showMemberProfile(memberId) {
   }
 
   const grievanceData = grievanceSheet.getDataRange().getValues();
-  const memberGrievances = grievanceData.filter(row => row[1] === memberId);
+  const memberGrievances = grievanceData.filter(row => row[GRIEVANCE_COL.MEMBER_ID] === memberId);
 
   const html = HtmlService.createHtmlOutput(`
     <html>
@@ -10734,15 +10742,15 @@ function showMemberProfile(memberId) {
         </style>
       </head>
       <body>
-        <h2>${member[1]} ${member[2]}</h2>
-        <div class="info"><span class="label">Member ID:</span> ${member[0]}</div>
+        <h2>${member[MEMBER_COL.FIRST_NAME]} ${member[MEMBER_COL.LAST_NAME]}</h2>
+        <div class="info"><span class="label">Member ID:</span> ${member[MEMBER_COL.ID]}</div>
         <div class="info"><span class="label">Location:</span> ${member[MEMBER_COL.WORKSITE]}</div>
         <div class="info"><span class="label">Email:</span> ${member[MEMBER_COL.EMAIL]}</div>
         <div class="info"><span class="label">Phone:</span> ${member[MEMBER_COL.PHONE]}</div>
         <h3>Grievance Summary</h3>
         <div class="info"><span class="label">Total Grievances:</span> ${memberGrievances.length}</div>
-        <div class="info"><span class="label">Active:</span> ${memberGrievances.filter(row => row[4] && row[4].startsWith('Filed')).length}</div>
-        <div class="info"><span class="label">Resolved:</span> ${memberGrievances.filter(row => row[4] && row[4].startsWith('Resolved')).length}</div>
+        <div class="info"><span class="label">Active:</span> ${memberGrievances.filter(row => row[GRIEVANCE_COL.STATUS] && row[GRIEVANCE_COL.STATUS].startsWith('Filed')).length}</div>
+        <div class="info"><span class="label">Resolved:</span> ${memberGrievances.filter(row => row[GRIEVANCE_COL.STATUS] && row[GRIEVANCE_COL.STATUS].startsWith('Resolved')).length}</div>
       </body>
     </html>
   `).setWidth(400).setHeight(500);
