@@ -198,6 +198,11 @@ const PRIORITY_ORDER = {
 // TODO: Replace this URL with your actual Google Form URL for member contact updates
 const MEMBER_CONTACT_UPDATE_FORM_URL = "https://forms.gle/YOUR_FORM_ID_HERE";
 
+// Validate form URL is configured
+if (!MEMBER_CONTACT_UPDATE_FORM_URL.includes("forms.gle/") || MEMBER_CONTACT_UPDATE_FORM_URL.includes("YOUR_FORM_ID_HERE")) {
+  Logger.log("⚠️  WARNING: MEMBER_CONTACT_UPDATE_FORM_URL is not configured. Please update line 199 with your actual Google Form URL.");
+}
+
 // ============================================================================
 // UTILITY FUNCTIONS - Performance, Reliability, Resiliency
 // ============================================================================
