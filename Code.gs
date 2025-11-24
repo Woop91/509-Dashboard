@@ -8490,6 +8490,10 @@ function trackMemberParticipation(memberId, eventType, eventDate) {
  * Feature 32: Calculates member engagement score
  */
 function calculateEngagementScore(memberId) {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -8499,7 +8503,7 @@ function calculateEngagementScore(memberId) {
   const memberData = memberSheet.getDataRange().getValues();
   const grievanceData = grievanceSheet.getDataRange().getValues();
 
-  const member = memberData.find(row => row[0] === memberId);
+  const member = memberData.find(row => row[MEMBER_COL.ID] === memberId);
   if (!member) return 0;
 
   let score = 0;
@@ -8521,7 +8525,7 @@ function calculateEngagementScore(memberId) {
   if (isSteward === 'Yes') score += 30;
 
   // Points for grievances filed (shows engagement)
-  const grievancesFiled = grievanceData.filter(row => row[1] === memberId).length;
+  const grievancesFiled = grievanceData.filter(row => row[GRIEVANCE_COL.MEMBER_ID] === memberId).length;
   score += grievancesFiled * 3;
 
   return score;
@@ -8570,6 +8574,9 @@ function updateEngagementLevels() {
  * Feature 34: Identifies inactive members
  */
 function identifyInactiveMembers(monthsInactive = 6) {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -8583,17 +8590,17 @@ function identifyInactiveMembers(monthsInactive = 6) {
   cutoffDate.setMonth(cutoffDate.getMonth() - monthsInactive);
 
   for (let i = 1; i < memberData.length; i++) {
-    const memberId = memberData[i][0];
-    const eventsAttended = memberData[i][21] || 0;
-    const lastGrievance = memberData[i][17]; // Last Grievance Date
+    const memberId = memberData[i][MEMBER_COL.ID];
+    const eventsAttended = memberData[i][MEMBER_COL.EVENTS_ATTENDED] || 0;
+    const lastGrievance = memberData[i][MEMBER_COL.LAST_UPDATED]; // Last activity date
 
     // Check if no events and no recent grievances
     if (eventsAttended === 0 && (!lastGrievance || new Date(lastGrievance) < cutoffDate)) {
       inactiveMembers.push({
         memberId: memberId,
-        name: `${memberData[i][1]} ${memberData[i][2]}`,
-        location: memberData[i][4],
-        email: memberData[i][7],
+        name: `${memberData[i][MEMBER_COL.FIRST_NAME]} ${memberData[i][MEMBER_COL.LAST_NAME]}`,
+        location: memberData[i][MEMBER_COL.DEPARTMENT],
+        email: memberData[i][MEMBER_COL.EMAIL],
         lastGrievanceDate: lastGrievance || 'Never'
       });
     }
@@ -8606,19 +8613,23 @@ function identifyInactiveMembers(monthsInactive = 6) {
  * Feature 35: Sends member re-engagement email
  */
 function sendReEngagementEmail(memberId) {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   if (!sheet) return false;
 
   const data = sheet.getDataRange().getValues();
-  const member = data.find(row => row[0] === memberId);
+  const member = data.find(row => row[MEMBER_COL.ID] === memberId);
 
   if (!member || !member[MEMBER_COL.EMAIL]) return false; // No email found
 
-  const name = `${member[1]} ${member[2]}`;
+  const firstName = member[MEMBER_COL.FIRST_NAME];
+  const name = `${firstName} ${member[MEMBER_COL.LAST_NAME]}`;
   const email = member[MEMBER_COL.EMAIL];
 
-  const emailBody = `Dear ${member[1]},\n\n` +
+  const emailBody = `Dear ${firstName},\n\n` +
                     `We haven't seen you at recent union events or activities. We'd love to have you more involved!\n\n` +
                     `Here are some ways to get engaged:\n` +
                     `• Attend union meetings\n` +
@@ -8645,17 +8656,20 @@ function sendReEngagementEmail(memberId) {
  * Sends contact update email to a single member with Google Form link
  */
 function sendContactUpdateEmail(memberId) {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   if (!sheet) return false;
 
   const data = sheet.getDataRange().getValues();
-  const member = data.find(row => row[0] === memberId);
+  const member = data.find(row => row[MEMBER_COL.ID] === memberId);
 
   if (!member || !member[MEMBER_COL.EMAIL]) return false; // No email found
 
-  const firstName = member[1];
-  const lastName = member[2];
+  const firstName = member[MEMBER_COL.FIRST_NAME];
+  const lastName = member[MEMBER_COL.LAST_NAME];
   const email = member[MEMBER_COL.EMAIL];
 
   const emailBody = `Dear ${firstName},\n\n` +
