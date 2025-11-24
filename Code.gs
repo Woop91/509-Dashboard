@@ -8090,6 +8090,10 @@ function exportGrievancesToCSV() {
  * Feature 23: Creates executive summary report
  */
 function createExecutiveSummary() {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -8103,14 +8107,14 @@ function createExecutiveSummary() {
     reportDate: new Date().toLocaleString(),
     memberMetrics: {
       total: memberData.length - 1,
-      active: memberData.slice(1).filter(row => row[10] === 'Active').length,
-      stewards: memberData.slice(1).filter(row => row[9] === 'Yes').length
+      active: memberData.slice(1).filter(row => row[MEMBER_COL.MEMBERSHIP_STATUS] === 'Active').length,
+      stewards: memberData.slice(1).filter(row => row[MEMBER_COL.IS_STEWARD] === 'Yes').length
     },
     grievanceMetrics: {
       total: grievanceData.length - 1,
-      active: grievanceData.slice(1).filter(row => row[4] && row[4].startsWith('Filed')).length,
-      resolved: grievanceData.slice(1).filter(row => row[4] && row[4].startsWith('Resolved')).length,
-      overdue: grievanceData.slice(1).filter(row => row[28] === 'YES').length
+      active: grievanceData.slice(1).filter(row => row[GRIEVANCE_COL.STATUS] && row[GRIEVANCE_COL.STATUS].startsWith('Filed')).length,
+      resolved: grievanceData.slice(1).filter(row => row[GRIEVANCE_COL.STATUS] && row[GRIEVANCE_COL.STATUS].startsWith('Resolved')).length,
+      overdue: grievanceData.slice(1).filter(row => row[GRIEVANCE_COL.OVERDUE] === 'YES').length
     },
     performanceMetrics: {
       winRate: 0,
@@ -8120,9 +8124,9 @@ function createExecutiveSummary() {
   };
 
   // Calculate performance metrics
-  const resolved = grievanceData.slice(1).filter(row => row[4] && row[4].startsWith('Resolved'));
-  const won = resolved.filter(row => row[24] && row[24].includes('Won')).length;
-  const settled = resolved.filter(row => row[24] && row[24].includes('Settled')).length;
+  const resolved = grievanceData.slice(1).filter(row => row[GRIEVANCE_COL.STATUS] && row[GRIEVANCE_COL.STATUS].startsWith('Resolved'));
+  const won = resolved.filter(row => row[GRIEVANCE_COL.FINAL_OUTCOME] && row[GRIEVANCE_COL.FINAL_OUTCOME].includes('Won')).length;
+  const settled = resolved.filter(row => row[GRIEVANCE_COL.FINAL_OUTCOME] && row[GRIEVANCE_COL.FINAL_OUTCOME].includes('Settled')).length;
 
   if (resolved.length > 0) {
     summary.performanceMetrics.winRate = ((won / resolved.length) * 100).toFixed(1);
