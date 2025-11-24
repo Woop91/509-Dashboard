@@ -8234,6 +8234,10 @@ function createStewardPerformanceReport() {
  * Feature 26: Generates location-based analysis report
  */
 function generateLocationAnalysis() {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -8247,7 +8251,7 @@ function generateLocationAnalysis() {
 
   // Count members by location
   for (let i = 1; i < memberData.length; i++) {
-    const location = memberData[i][4]; // Work Location
+    const location = memberData[i][MEMBER_COL.WORKSITE]; // Work Location (fixed: was using wrong index)
     if (!location) continue;
 
     if (!locationStats[location]) {
@@ -8258,15 +8262,15 @@ function generateLocationAnalysis() {
 
   // Count grievances by member location
   for (let i = 1; i < grievanceData.length; i++) {
-    const memberId = grievanceData[i][1];
-    const member = memberData.find(row => row[0] === memberId);
+    const memberId = grievanceData[i][GRIEVANCE_COL.MEMBER_ID];
+    const member = memberData.find(row => row[MEMBER_COL.ID] === memberId);
 
     if (member) {
       const location = member[MEMBER_COL.WORKSITE];
       if (locationStats[location]) {
         locationStats[location].grievances++;
 
-        const status = grievanceData[i][4];
+        const status = grievanceData[i][GRIEVANCE_COL.STATUS];
         if (status && status.startsWith('Filed')) {
           locationStats[location].active++;
         }
@@ -9113,6 +9117,10 @@ function predictGrievanceOutcome(grievanceId) {
  * Feature 45: Identifies systemic workplace issues
  */
 function identifySystemicIssues() {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -9125,13 +9133,13 @@ function identifySystemicIssues() {
   const locationIssues = {};
 
   for (let i = 1; i < grievanceData.length; i++) {
-    const memberId = grievanceData[i][1];
-    const type = grievanceData[i][25];
-    const dateFiled = grievanceData[i][8];
+    const memberId = grievanceData[i][GRIEVANCE_COL.MEMBER_ID];
+    const type = grievanceData[i][GRIEVANCE_COL.GRIEVANCE_TYPE];
+    const dateFiled = grievanceData[i][GRIEVANCE_COL.DATE_FILED];
 
     if (!memberId || !type) continue;
 
-    const member = memberData.find(row => row[0] === memberId);
+    const member = memberData.find(row => row[MEMBER_COL.ID] === memberId);
     if (!member) continue;
 
     const location = member[MEMBER_COL.WORKSITE];
@@ -9176,6 +9184,9 @@ function identifySystemicIssues() {
  * Feature 46: Tracks grievance escalation patterns
  */
 function analyzeEscalationPatterns() {
+  // Ensure column mappings are initialized
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   if (!sheet) return null;
@@ -9192,11 +9203,11 @@ function analyzeEscalationPatterns() {
   };
 
   for (let i = 1; i < data.length; i++) {
-    const step1Decision = data[i][10];
-    const step2Filed = data[i][13];
-    const step3Filed = data[i][19];
-    const arbitrationDate = data[i][22];
-    const status = data[i][4];
+    const step1Decision = data[i][GRIEVANCE_COL.STEP_I_DECISION_DATE];
+    const step2Filed = data[i][GRIEVANCE_COL.STEP_II_FILED_DATE];
+    const step3Filed = data[i][GRIEVANCE_COL.STEP_III_FILED_DATE];
+    const arbitrationDate = data[i][GRIEVANCE_COL.ARBITRATION_DATE];
+    const status = data[i][GRIEVANCE_COL.STATUS];
 
     if (status && status.startsWith('Resolved') && step1Decision && !step2Filed) {
       patterns.resolvedAtStepI++;
@@ -9225,6 +9236,10 @@ function analyzeEscalationPatterns() {
  * Feature 47: Generates grievance heat map data
  */
 function generateGrievanceHeatMap() {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -9237,12 +9252,12 @@ function generateGrievanceHeatMap() {
   const heatMap = {};
 
   for (let i = 1; i < grievanceData.length; i++) {
-    const memberId = grievanceData[i][1];
-    const dateFiled = grievanceData[i][8];
+    const memberId = grievanceData[i][GRIEVANCE_COL.MEMBER_ID];
+    const dateFiled = grievanceData[i][GRIEVANCE_COL.DATE_FILED];
 
     if (!memberId || !dateFiled) continue;
 
-    const member = memberData.find(row => row[0] === memberId);
+    const member = memberData.find(row => row[MEMBER_COL.ID] === memberId);
     if (!member) continue;
 
     const location = member[MEMBER_COL.WORKSITE];
