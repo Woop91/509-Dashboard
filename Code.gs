@@ -149,6 +149,46 @@ const CBA_DEADLINES = {
   STEP_III_DECISION: 30 // Days for Step III decision
 };
 
+// ============================================================================
+// COLUMN MAPPING - IMPORTANT MAINTENANCE NOTES
+// ============================================================================
+//
+// ⚠️  KNOWN ARCHITECTURAL CONCERN:
+// Hardcoded column indices (below) will break if columns are inserted/deleted
+// in the spreadsheet. This is a tradeoff between performance and maintainability.
+//
+// CURRENT APPROACH (Hardcoded Indices):
+// ✅ Pros: Fast O(1) access, no overhead, simple
+// ❌ Cons: Breaks if spreadsheet columns change
+//
+// ALTERNATIVE APPROACHES FOR FUTURE CONSIDERATION:
+//
+// Option 1: Dynamic Header Reading
+// const MEMBER_COL = initializeColumnIndices(SHEETS.MEMBER_DIR);
+// function initializeColumnIndices(sheetName) {
+//   const headers = ss.getSheetByName(sheetName).getRange(1, 1, 1, lastCol).getValues()[0];
+//   const cols = {};
+//   headers.forEach((header, i) => {
+//     const key = header.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+//     cols[key] = i;
+//   });
+//   return cols;
+// }
+// ✅ Pros: Resilient to column changes, self-documenting
+// ❌ Cons: Slower (reads headers on every load), requires header standardization
+//
+// Option 2: Named Ranges
+// Use SpreadsheetApp.getActiveSpreadsheet().getRangeByName("MemberFirstName")
+// ✅ Pros: Most resilient, spreadsheet-native
+// ❌ Cons: High setup overhead (35+ named ranges), slower access
+//
+// RECOMMENDATION: Implement Option 1 (Dynamic Headers) if:
+// - Users frequently modify spreadsheet structure
+// - Maintenance errors become frequent
+// - Performance impact is acceptable (measured < 100ms overhead)
+//
+// ============================================================================
+
 // Member Directory Column Indices (0-based array indices)
 // CRITICAL: Use these constants when accessing member data arrays!
 const MEMBER_COL = {
