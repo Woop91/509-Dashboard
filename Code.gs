@@ -688,26 +688,29 @@ const Validator = {
   },
 
   validateMemberRow: function(row) {
+    // Ensure column mappings are initialized
+    if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+
     const errors = [];
 
     // Required fields
-    if (!row[1] || !row[2]) {
+    if (!row[MEMBER_COL.FIRST_NAME] || !row[MEMBER_COL.LAST_NAME]) {
       errors.push('First and Last name are required');
     }
 
     // Email format
-    if (row[8] && !this.isValidEmail(row[8])) {
-      errors.push(`Invalid email: ${row[8]}`);
+    if (row[MEMBER_COL.EMAIL] && !this.isValidEmail(row[MEMBER_COL.EMAIL])) {
+      errors.push(`Invalid email: ${row[MEMBER_COL.EMAIL]}`);
     }
 
     // Phone format
-    if (row[9] && !this.isValidPhone(row[9])) {
-      errors.push(`Invalid phone: ${row[9]}`);
+    if (row[MEMBER_COL.PHONE] && !this.isValidPhone(row[MEMBER_COL.PHONE])) {
+      errors.push(`Invalid phone: ${row[MEMBER_COL.PHONE]}`);
     }
 
     // Unit validation
-    if (row[7] && !this.isValidUnit(row[7])) {
-      errors.push(`Invalid unit: ${row[7]}`);
+    if (row[MEMBER_COL.UNIT] && !this.isValidUnit(row[MEMBER_COL.UNIT])) {
+      errors.push(`Invalid unit: ${row[MEMBER_COL.UNIT]}`);
     }
 
     return errors;
@@ -1442,22 +1445,26 @@ function rebuildDashboardOptimized() {
  * @returns {Object} Calculated metrics
  */
 function calculateAllMetrics(dataCache) {
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const metrics = {
     totalMembers: dataCache.members.length - 1,
-    activeMembers: dataCache.members.filter(r => r[13] === 'Active').length,
-    totalStewards: dataCache.members.filter(r => r[10] === 'Yes').length,
-    unit8Members: dataCache.members.filter(r => r[7] === 'Unit 8').length,
-    unit10Members: dataCache.members.filter(r => r[7] === 'Unit 10').length,
+    activeMembers: dataCache.members.filter(r => r[MEMBER_COL.MEMBERSHIP_STATUS] === 'Active').length,
+    totalStewards: dataCache.members.filter(r => r[MEMBER_COL.IS_STEWARD] === 'Yes').length,
+    unit8Members: dataCache.members.filter(r => r[MEMBER_COL.UNIT] === 'Unit 8').length,
+    unit10Members: dataCache.members.filter(r => r[MEMBER_COL.UNIT] === 'Unit 10').length,
 
     totalGrievances: dataCache.grievances.length - 1,
     activeGrievances: dataCache.grievances.filter(r =>
-      r[4] && (r[4].toString().startsWith('Filed') || r[4] === 'Pending Decision')
+      r[GRIEVANCE_COL.STATUS] && (r[GRIEVANCE_COL.STATUS].toString().startsWith('Filed') || r[GRIEVANCE_COL.STATUS] === 'Pending Decision')
     ).length,
     resolvedGrievances: dataCache.grievances.filter(r =>
-      r[4] && r[4].toString().startsWith('Resolved')
+      r[GRIEVANCE_COL.STATUS] && r[GRIEVANCE_COL.STATUS].toString().startsWith('Resolved')
     ).length,
-    wonGrievances: dataCache.grievances.filter(r => r[4] === 'Resolved - Won').length,
-    lostGrievances: dataCache.grievances.filter(r => r[4] === 'Resolved - Lost').length
+    wonGrievances: dataCache.grievances.filter(r => r[GRIEVANCE_COL.STATUS] === 'Resolved - Won').length,
+    lostGrievances: dataCache.grievances.filter(r => r[GRIEVANCE_COL.STATUS] === 'Resolved - Lost').length
   };
 
   // Calculate win rate
