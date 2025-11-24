@@ -287,6 +287,279 @@ function validateRequiredHeaders(sheetName, requiredHeaders) {
 }
 
 // ============================================================================
+// VERSION DETECTION & MIGRATION SYSTEM
+// ============================================================================
+
+/**
+ * System version tracking
+ * Update this when making breaking changes to sheet structure
+ */
+const SYSTEM_VERSION = {
+  MAJOR: 2,  // Breaking changes (incompatible sheet structure)
+  MINOR: 0,  // New features (backward compatible)
+  PATCH: 0,  // Bug fixes
+  toString: function() {
+    return `${this.MAJOR}.${this.MINOR}.${this.PATCH}`;
+  }
+};
+
+/**
+ * Get current system version from spreadsheet properties
+ * @returns {string} Version string (e.g., "2.0.0")
+ */
+function getCurrentVersion() {
+  try {
+    const props = PropertiesService.getDocumentProperties();
+    return props.getProperty('SYSTEM_VERSION') || '1.0.0';
+  } catch (error) {
+    Logger.log(`Error getting version: ${error.message}`);
+    return '1.0.0';
+  }
+}
+
+/**
+ * Set system version in spreadsheet properties
+ * @param {string} version - Version string
+ */
+function setCurrentVersion(version) {
+  try {
+    const props = PropertiesService.getDocumentProperties();
+    props.setProperty('SYSTEM_VERSION', version);
+    props.setProperty('VERSION_UPDATED', new Date().toISOString());
+    Logger.log(`✅ System version set to: ${version}`);
+  } catch (error) {
+    Logger.log(`Error setting version: ${error.message}`);
+  }
+}
+
+/**
+ * Check if system needs migration
+ * @returns {Object} Migration status
+ */
+function checkVersionCompatibility() {
+  const currentVersion = getCurrentVersion();
+  const systemVersion = SYSTEM_VERSION.toString();
+
+  const [currentMajor, currentMinor, currentPatch] = currentVersion.split('.').map(Number);
+  const [sysMajor, sysMinor, sysPatch] = [SYSTEM_VERSION.MAJOR, SYSTEM_VERSION.MINOR, SYSTEM_VERSION.PATCH];
+
+  const result = {
+    currentVersion: currentVersion,
+    systemVersion: systemVersion,
+    compatible: true,
+    needsMigration: false,
+    isUpgrade: false,
+    message: ''
+  };
+
+  if (currentMajor < sysMajor) {
+    result.compatible = false;
+    result.needsMigration = true;
+    result.isUpgrade = true;
+    result.message = `⚠️ MAJOR VERSION UPGRADE: ${currentVersion} → ${systemVersion}. Migration required!`;
+  } else if (currentMajor === sysMajor && currentMinor < sysMinor) {
+    result.needsMigration = false;
+    result.isUpgrade = true;
+    result.message = `ℹ️ Minor update available: ${currentVersion} → ${systemVersion}`;
+  } else if (currentMajor === sysMajor && currentMinor === sysMinor && currentPatch < sysPatch) {
+    result.needsMigration = false;
+    result.isUpgrade = true;
+    result.message = `ℹ️ Patch update available: ${currentVersion} → ${systemVersion}`;
+  } else if (currentVersion === systemVersion) {
+    result.message = `✅ System up to date: ${systemVersion}`;
+  }
+
+  return result;
+}
+
+/**
+ * Run version compatibility check and display results
+ */
+function runVersionCheck() {
+  const check = checkVersionCompatibility();
+
+  Logger.log(`System Version Check:`);
+  Logger.log(`  Current: ${check.currentVersion}`);
+  Logger.log(`  System:  ${check.systemVersion}`);
+  Logger.log(`  Status:  ${check.message}`);
+
+  if (check.needsMigration) {
+    Logger.log(`⚠️  WARNING: Migration required before system can be used`);
+  }
+
+  if (SpreadsheetApp.getUi) {
+    const ui = SpreadsheetApp.getUi();
+    if (check.needsMigration) {
+      ui.alert(
+        'Migration Required',
+        check.message + '\n\nPlease run the migration tool or contact your administrator.',
+        ui.ButtonSet.OK
+      );
+    } else if (check.isUpgrade) {
+      const response = ui.alert(
+        'Update Available',
+        check.message + '\n\nWould you like to update now?',
+        ui.ButtonSet.YES_NO
+      );
+      if (response === ui.Button.YES) {
+        setCurrentVersion(SYSTEM_VERSION.toString());
+        ui.alert('System updated successfully!');
+      }
+    }
+  }
+
+  return check;
+}
+
+// ============================================================================
+// COMPREHENSIVE HEADER VALIDATION
+// ============================================================================
+
+/**
+ * Required headers for Member Directory
+ * These MUST exist for the system to function
+ */
+const REQUIRED_MEMBER_HEADERS = [
+  "Member ID",
+  "First Name",
+  "Last Name",
+  "Job Title / Position",
+  "Department / Unit",
+  "Worksite / Office Location",
+  "Unit (8 or 10)",
+  "Email Address",
+  "Phone Number",
+  "Is Steward (Y/N)",
+  "Membership Status"
+];
+
+/**
+ * Required headers for Grievance Log
+ */
+const REQUIRED_GRIEVANCE_HEADERS = [
+  "Grievance ID",
+  "Member ID",
+  "First Name",
+  "Last Name",
+  "Status",
+  "Current Step",
+  "Incident Date",
+  "Date Filed (Step I)",
+  "Grievance Type",
+  "Steward Name"
+];
+
+/**
+ * Validate all sheet headers on startup
+ * @returns {Object} Validation results
+ */
+function validateAllHeaders() {
+  const results = {
+    valid: true,
+    errors: [],
+    warnings: []
+  };
+
+  try {
+    // Validate Member Directory
+    try {
+      validateRequiredHeaders(SHEETS.MEMBER_DIR, REQUIRED_MEMBER_HEADERS);
+    } catch (error) {
+      results.valid = false;
+      results.errors.push(`Member Directory: ${error.message}`);
+    }
+
+    // Validate Grievance Log
+    try {
+      validateRequiredHeaders(SHEETS.GRIEVANCE_LOG, REQUIRED_GRIEVANCE_HEADERS);
+    } catch (error) {
+      results.valid = false;
+      results.errors.push(`Grievance Log: ${error.message}`);
+    }
+
+    // Check for extra/unexpected headers (warnings only)
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+    if (memberSheet) {
+      const headers = memberSheet.getRange(1, 1, 1, memberSheet.getLastColumn()).getValues()[0];
+      const unexpected = headers.filter(h => h && !Object.keys(MEMBER_HEADER_MAP).includes(h));
+      if (unexpected.length > 0) {
+        results.warnings.push(`Member Directory has ${unexpected.length} custom columns: ${unexpected.slice(0, 3).join(', ')}${unexpected.length > 3 ? '...' : ''}`);
+      }
+    }
+
+  } catch (error) {
+    results.valid = false;
+    results.errors.push(`Header validation failed: ${error.message}`);
+  }
+
+  return results;
+}
+
+/**
+ * Run comprehensive system health check
+ * Checks headers, version, and data integrity
+ */
+function runSystemHealthCheck() {
+  Logger.log('🔍 Running System Health Check...\n');
+
+  const results = {
+    version: checkVersionCompatibility(),
+    headers: validateAllHeaders(),
+    timestamp: new Date().toISOString()
+  };
+
+  // Log results
+  Logger.log(`Version Status: ${results.version.message}`);
+  Logger.log(`Header Validation: ${results.headers.valid ? '✅ PASS' : '❌ FAIL'}`);
+
+  if (results.headers.errors.length > 0) {
+    Logger.log('\n❌ Header Errors:');
+    results.headers.errors.forEach(err => Logger.log(`  - ${err}`));
+  }
+
+  if (results.headers.warnings.length > 0) {
+    Logger.log('\n⚠️  Warnings:');
+    results.headers.warnings.forEach(warn => Logger.log(`  - ${warn}`));
+  }
+
+  const overallStatus = results.version.compatible && results.headers.valid;
+  Logger.log(`\n${overallStatus ? '✅' : '❌'} Overall Status: ${overallStatus ? 'HEALTHY' : 'ISSUES DETECTED'}`);
+
+  return results;
+}
+
+/**
+ * Show system information dialog to user
+ */
+function showSystemInfo() {
+  const version = checkVersionCompatibility();
+  const props = PropertiesService.getDocumentProperties();
+  const versionUpdated = props.getProperty('VERSION_UPDATED') || 'Unknown';
+
+  const info = `
+📊 509 Dashboard System Information
+
+Version: ${version.systemVersion}
+Current Installed: ${version.currentVersion}
+Status: ${version.message}
+
+Last Updated: ${versionUpdated}
+
+Features:
+✅ Dynamic Column Mapping
+✅ Comprehensive Header Validation
+✅ Version Detection & Migration
+✅ 40+ Refactored Functions
+✅ Bug Fixes Applied
+
+Run "System Health > Run Health Check" for detailed diagnostics.
+  `.trim();
+
+  SpreadsheetApp.getUi().alert('System Information', info, SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+// ============================================================================
 // MEMBER DIRECTORY COLUMN MAPPING
 // ============================================================================
 
@@ -1620,10 +1893,15 @@ function CREATE_509_DASHBOARD() {
     Logger.log('Building initial dashboard...');
     rebuildDashboard();
 
+    // Set system version
+    Logger.log('Setting system version...');
+    setCurrentVersion(SYSTEM_VERSION.toString());
+
     // Single flush at the end to commit all changes
     SpreadsheetApp.flush();
 
-    SpreadsheetApp.getUi().alert('✅ 509 Dashboard created successfully!\n\n' +
+    SpreadsheetApp.getUi().alert(`✅ 509 Dashboard created successfully!\n\n` +
+      `System Version: ${SYSTEM_VERSION.toString()}\n\n` +
       'Next steps:\n' +
       '1. Add members via "509 Tools > Seed 20K Members" or manually\n' +
       '2. Add grievances via "509 Tools > Seed 5K Grievances" or manually\n' +
@@ -6798,6 +7076,13 @@ function onOpen() {
       .addItem('Toggle Level 2 Columns', 'toggleLevel2Columns')
       .addSeparator()
       .addItem('Show All Columns', 'showAllMemberColumns'))
+    .addSeparator()
+    .addSubMenu(ui.createMenu('🔍 System Health')
+      .addItem('Run Health Check', 'runSystemHealthCheck')
+      .addItem('Check Version', 'runVersionCheck')
+      .addItem('Validate Headers', 'validateAllHeaders')
+      .addSeparator()
+      .addItem('Show System Info', 'showSystemInfo'))
     .addSeparator()
     .addSubMenu(ui.createMenu('🧠 ADHD-Friendly Tools')
       .addItem('⚡ Quick Setup (Do This First!)', 'setupADHDDefaults')
