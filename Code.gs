@@ -1639,21 +1639,25 @@ function buildInteractiveChartsIfNeeded() {
 }
 
 /**
- * Placeholder for extracted chart building logic
- * TODO: Extract chart creation code from rebuildDashboard() to this function
+ * Builds dashboard charts without recalculating data
  *
- * This function should contain ONLY the chart creation logic without data recalculation.
+ * This function delegates to createDashboardCharts() which handles all chart creation logic.
  * Called by buildDashboardChartsIfNeeded() when lazy loading charts.
  *
  * Implementation notes:
- * - Read chart data from existing ranges (don't recalculate)
- * - Create/update charts only
- * - Keep this function lightweight for fast lazy loading
+ * - Calls existing createDashboardCharts() function
+ * - createDashboardCharts() reads data and builds all charts
+ * - Keeps this function lightweight for fast lazy loading
  */
 function buildDashboardCharts() {
-  Logger.log('⚠️  buildDashboardCharts() is a stub - needs implementation');
-  // TODO: Extract chart building logic from rebuildDashboard
-  // For now, this is a placeholder to prevent errors
+  Logger.log('Building dashboard charts...');
+  try {
+    createDashboardCharts();
+    Logger.log('✅ Dashboard charts built successfully');
+  } catch (error) {
+    Logger.log('❌ Error building dashboard charts: ' + error.message);
+    throw error;
+  }
 }
 
 // ============================================================================
@@ -1750,7 +1754,6 @@ function calculateAllMetrics(dataCache) {
 
 /**
  * Prepare chart data from cached data
- * TODO: Implement chart data aggregation
  *
  * @param {Object} dataCache - Cached member and grievance data
  * @returns {Object} Chart data aggregated for visualization
@@ -1762,21 +1765,76 @@ function calculateAllMetrics(dataCache) {
  * - Return structured data ready for chart creation
  */
 function prepareAllChartData(dataCache) {
-  Logger.log('⚠️  prepareAllChartData() is a stub - needs full implementation');
+  // Ensure column mappings are initialized
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
 
-  // TODO: Implement full chart data preparation
-  // For now, return minimal structure to prevent errors
-  return {
+  const chartData = {
     grievancesByStatus: {},
     grievancesByType: {},
+    grievancesByStep: {},
     membersByUnit: {},
-    resolvedOutcomes: {}
+    membersByLocation: {},
+    resolvedOutcomes: {
+      won: 0,
+      lost: 0,
+      settled: 0,
+      withdrawn: 0
+    }
   };
+
+  // Aggregate grievance data
+  dataCache.grievances.forEach((row, index) => {
+    if (index === 0) return; // Skip header row
+
+    // Count by status
+    if (row[GRIEVANCE_COL.STATUS]) {
+      const status = row[GRIEVANCE_COL.STATUS].toString();
+      chartData.grievancesByStatus[status] = (chartData.grievancesByStatus[status] || 0) + 1;
+
+      // Count resolved outcomes
+      if (status === 'Resolved - Won') chartData.resolvedOutcomes.won++;
+      if (status === 'Resolved - Lost') chartData.resolvedOutcomes.lost++;
+      if (status === 'Resolved - Settled') chartData.resolvedOutcomes.settled++;
+      if (status === 'Resolved - Withdrawn') chartData.resolvedOutcomes.withdrawn++;
+    }
+
+    // Count by type
+    if (row[GRIEVANCE_COL.TYPE]) {
+      const type = row[GRIEVANCE_COL.TYPE].toString();
+      chartData.grievancesByType[type] = (chartData.grievancesByType[type] || 0) + 1;
+    }
+
+    // Count by step
+    if (row[GRIEVANCE_COL.CURRENT_STEP]) {
+      const step = row[GRIEVANCE_COL.CURRENT_STEP].toString();
+      chartData.grievancesByStep[step] = (chartData.grievancesByStep[step] || 0) + 1;
+    }
+  });
+
+  // Aggregate member data
+  dataCache.members.forEach((row, index) => {
+    if (index === 0) return; // Skip header row
+
+    // Count by unit
+    if (row[MEMBER_COL.UNIT]) {
+      const unit = row[MEMBER_COL.UNIT].toString();
+      chartData.membersByUnit[unit] = (chartData.membersByUnit[unit] || 0) + 1;
+    }
+
+    // Count by location
+    if (row[MEMBER_COL.LOCATION]) {
+      const location = row[MEMBER_COL.LOCATION].toString();
+      chartData.membersByLocation[location] = (chartData.membersByLocation[location] || 0) + 1;
+    }
+  });
+
+  Logger.log('✅ Chart data prepared successfully');
+  return chartData;
 }
 
 /**
  * Write dashboard data in batch operations
- * TODO: Implement batch writing of dashboard metrics and chart data
  *
  * @param {Object} metrics - Calculated metrics
  * @param {Object} chartData - Prepared chart data
@@ -1788,14 +1846,58 @@ function prepareAllChartData(dataCache) {
  * - Match existing dashboard layout from rebuildDashboard()
  */
 function writeDashboardData(metrics, chartData) {
-  Logger.log('⚠️  writeDashboardData() is a stub - needs full implementation');
-
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
 
-  // TODO: Implement actual batch writing
-  // For now, log metrics to prevent errors
-  Logger.log(`Metrics to write: ${JSON.stringify(metrics)}`);
+  if (!dashboard) {
+    Logger.log('❌ Dashboard sheet not found');
+    return;
+  }
+
+  // Batch write member metrics (A4:B9)
+  const memberMetrics = [
+    ["Total Members:", metrics.totalMembers],
+    ["Active Members:", metrics.activeMembers],
+    ["Total Stewards:", metrics.totalStewards],
+    ["Unit 8 Members:", metrics.unit8Members],
+    ["Unit 10 Members:", metrics.unit10Members],
+    ["", ""] // Empty row for spacing
+  ];
+  dashboard.getRange(4, 1, 6, 2).setValues(memberMetrics);
+  dashboard.getRange("A4:A8").setFontWeight("bold");
+  dashboard.getRange("B4:B8").setNumberFormat("#,##0").setHorizontalAlignment("right");
+
+  // Batch write grievance metrics (A11:B19)
+  const grievanceMetrics = [
+    ["", ""], // Empty row
+    ["Total Grievances:", metrics.totalGrievances],
+    ["Active Grievances:", metrics.activeGrievances],
+    ["Resolved Grievances:", metrics.resolvedGrievances],
+    ["Grievances Won:", metrics.wonGrievances],
+    ["Grievances Lost:", metrics.lostGrievances],
+    ["Win Rate:", metrics.winRate],
+    ["", ""], // Additional metrics could go here
+    ["", ""]
+  ];
+  dashboard.getRange(11, 1, 9, 2).setValues(grievanceMetrics);
+  dashboard.getRange("A12:A17").setFontWeight("bold");
+  dashboard.getRange("B12:B16").setNumberFormat("#,##0").setHorizontalAlignment("right");
+  dashboard.getRange("B17").setHorizontalAlignment("right");
+
+  // Apply color formatting for member section
+  dashboard.getRange("A3:B3").setBackground(COLORS.HEADER_BLUE).setFontColor("white");
+  dashboard.getRange("A4:B9").setBackground(COLORS.LIGHT_GRAY);
+
+  // Apply color formatting for grievance section
+  dashboard.getRange("A11:B11").setBackground(COLORS.HEADER_RED).setFontColor("white");
+  dashboard.getRange("A12:B14").setBackground(COLORS.LIGHT_GRAY);
+  dashboard.getRange("A15").setBackground(COLORS.LIGHT_GRAY);
+  dashboard.getRange("B15").setBackground(COLORS.ON_TRACK).setFontColor("white");
+  dashboard.getRange("A16").setBackground(COLORS.LIGHT_GRAY);
+  dashboard.getRange("B16").setBackground(COLORS.OVERDUE).setFontColor("white");
+  dashboard.getRange("A17:B17").setBackground("#E8F5E9").setFontSize(12).setFontFamily("Roboto").setFontWeight("bold");
+
+  Logger.log('✅ Dashboard data written successfully');
 }
 
 // ============================================================================
