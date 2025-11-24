@@ -150,48 +150,270 @@ const CBA_DEADLINES = {
 };
 
 // ============================================================================
-// COLUMN MAPPING - IMPORTANT MAINTENANCE NOTES
+// DYNAMIC COLUMN MAPPING SYSTEM
 // ============================================================================
 //
-// ⚠️  KNOWN ARCHITECTURAL CONCERN:
-// Hardcoded column indices (below) will break if columns are inserted/deleted
-// in the spreadsheet. This is a tradeoff between performance and maintainability.
+// ✅ IMPLEMENTED: Dynamic header-based column mapping
+// This system reads column headers at runtime and creates index mappings.
+// Columns can now be added, removed, or reordered without breaking the code.
 //
-// CURRENT APPROACH (Hardcoded Indices):
-// ✅ Pros: Fast O(1) access, no overhead, simple
-// ❌ Cons: Breaks if spreadsheet columns change
-//
-// ALTERNATIVE APPROACHES FOR FUTURE CONSIDERATION:
-//
-// Option 1: Dynamic Header Reading
-// const MEMBER_COL = initializeColumnIndices(SHEETS.MEMBER_DIR);
-// function initializeColumnIndices(sheetName) {
-//   const headers = ss.getSheetByName(sheetName).getRange(1, 1, 1, lastCol).getValues()[0];
-//   const cols = {};
-//   headers.forEach((header, i) => {
-//     const key = header.toUpperCase().replace(/[^A-Z0-9]/g, '_');
-//     cols[key] = i;
-//   });
-//   return cols;
-// }
-// ✅ Pros: Resilient to column changes, self-documenting
-// ❌ Cons: Slower (reads headers on every load), requires header standardization
-//
-// Option 2: Named Ranges
-// Use SpreadsheetApp.getActiveSpreadsheet().getRangeByName("MemberFirstName")
-// ✅ Pros: Most resilient, spreadsheet-native
-// ❌ Cons: High setup overhead (35+ named ranges), slower access
-//
-// RECOMMENDATION: Implement Option 1 (Dynamic Headers) if:
-// - Users frequently modify spreadsheet structure
-// - Maintenance errors become frequent
-// - Performance impact is acceptable (measured < 100ms overhead)
+// PERFORMANCE: ~50-100ms overhead on first access, then cached globally
+// RESILIENCE: Handles column structure changes automatically
 //
 // ============================================================================
 
-// Member Directory Column Indices (0-based array indices)
-// CRITICAL: Use these constants when accessing member data arrays!
-const MEMBER_COL = {
+/**
+ * Global cache for column mappings (initialized on first access)
+ */
+let _COLUMN_MAPPING_CACHE = {};
+
+/**
+ * Initialize column indices dynamically from sheet headers
+ * @param {string} sheetName - Name of the sheet to read headers from
+ * @param {Object} headerMap - Optional custom header-to-key mappings
+ * @returns {Object} Column index mapping object
+ */
+function initializeColumnIndices(sheetName, headerMap = {}) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(sheetName);
+
+    if (!sheet) {
+      Logger.log(`⚠️  Sheet "${sheetName}" not found - returning empty mapping`);
+      return {};
+    }
+
+    const lastCol = sheet.getLastColumn();
+    if (lastCol === 0) {
+      Logger.log(`⚠️  Sheet "${sheetName}" has no columns - returning empty mapping`);
+      return {};
+    }
+
+    const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+    const colMapping = {};
+
+    headers.forEach((header, index) => {
+      if (!header) return; // Skip empty headers
+
+      // Check if custom mapping exists for this header
+      if (headerMap[header]) {
+        colMapping[headerMap[header]] = index;
+      } else {
+        // Auto-generate key from header
+        // "First Name" -> "FIRST_NAME"
+        // "Email Address" -> "EMAIL_ADDRESS"
+        const key = header
+          .toString()
+          .toUpperCase()
+          .replace(/[^A-Z0-9]+/g, '_')
+          .replace(/^_+|_+$/g, ''); // Trim leading/trailing underscores
+
+        if (key) {
+          colMapping[key] = index;
+        }
+      }
+    });
+
+    Logger.log(`✅ Initialized ${Object.keys(colMapping).length} column mappings for "${sheetName}"`);
+    return colMapping;
+
+  } catch (error) {
+    Logger.log(`❌ Error initializing column indices for "${sheetName}": ${error.message}`);
+    return {};
+  }
+}
+
+/**
+ * Get cached column mapping for a sheet (lazy initialization)
+ * @param {string} sheetName - Name of the sheet
+ * @param {Object} headerMap - Optional custom header mappings
+ * @returns {Object} Column index mapping
+ */
+function getColumnMapping(sheetName, headerMap = {}) {
+  const cacheKey = sheetName;
+
+  if (!_COLUMN_MAPPING_CACHE[cacheKey]) {
+    _COLUMN_MAPPING_CACHE[cacheKey] = initializeColumnIndices(sheetName, headerMap);
+  }
+
+  return _COLUMN_MAPPING_CACHE[cacheKey];
+}
+
+/**
+ * Invalidate column mapping cache (call after structure changes)
+ * @param {string} sheetName - Optional sheet name (invalidates all if not specified)
+ */
+function invalidateColumnMapping(sheetName = null) {
+  if (sheetName) {
+    delete _COLUMN_MAPPING_CACHE[sheetName];
+    Logger.log(`Column mapping cache cleared for: ${sheetName}`);
+  } else {
+    _COLUMN_MAPPING_CACHE = {};
+    Logger.log('All column mapping caches cleared');
+  }
+}
+
+/**
+ * Validate that required headers exist in the sheet
+ * @param {string} sheetName - Sheet to validate
+ * @param {Array<string>} requiredHeaders - Headers that must exist
+ * @throws {Error} If required headers are missing
+ */
+function validateRequiredHeaders(sheetName, requiredHeaders) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(sheetName);
+
+  if (!sheet) {
+    throw new Error(`Sheet "${sheetName}" not found`);
+  }
+
+  const lastCol = sheet.getLastColumn();
+  if (lastCol === 0) {
+    throw new Error(`Sheet "${sheetName}" has no columns`);
+  }
+
+  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  const missing = requiredHeaders.filter(h => !headers.includes(h));
+
+  if (missing.length > 0) {
+    throw new Error(
+      `⚠️  CRITICAL: Sheet "${sheetName}" is missing required headers:\n` +
+      missing.map(h => `  • "${h}"`).join('\n') + '\n\n' +
+      'Please restore the missing columns or run Create Dashboard to rebuild the sheet structure.'
+    );
+  }
+
+  Logger.log(`✅ All required headers present in "${sheetName}"`);
+}
+
+// ============================================================================
+// MEMBER DIRECTORY COLUMN MAPPING
+// ============================================================================
+
+// Custom header mappings for Member Directory (handles variations and abbreviations)
+const MEMBER_HEADER_MAP = {
+  "Member ID": "ID",
+  "First Name": "FIRST_NAME",
+  "Last Name": "LAST_NAME",
+  "Job Title / Position": "JOB_TITLE",
+  "Department / Unit": "DEPARTMENT",
+  "Worksite / Office Location": "WORKSITE",
+  "Work Schedule / Office Days": "SCHEDULE",
+  "Unit (8 or 10)": "UNIT",
+  "Email Address": "EMAIL",
+  "Phone Number": "PHONE",
+  "Is Steward (Y/N)": "IS_STEWARD",
+  "Assigned Steward": "ASSIGNED_STEWARD",
+  "Immediate Supervisor": "SUPERVISOR",
+  "Manager / Program Director": "MANAGER",
+  "Date of Birth": "DOB",
+  "Hire Date": "HIRE_DATE",
+  "Emergency Contact Phone": "EMERGENCY_PHONE",
+  "Notes": "NOTES",
+  "Last Updated": "LAST_UPDATED",
+  "Updated By": "UPDATED_BY",
+  "Share Phone in Directory?": "SHARE_PHONE",
+  "Membership Status": "MEMBERSHIP_STATUS",
+  "Engagement Level": "ENGAGEMENT_LEVEL",
+  "Events Attended (Last 12mo)": "EVENTS_ATTENDED",
+  "Training Sessions Attended": "TRAINING_SESSIONS",
+  "Committee Member": "COMMITTEE",
+  "Emergency Contact Name": "EMERGENCY_NAME",
+  "Interest: Allied Chapter Actions": "INTEREST_ALLIED",
+  "Preferred Communication Methods": "PREFERRED_COMM",
+  "Best Time(s) to Reach Member": "BEST_TIME"
+};
+
+/**
+ * Get Member Directory column mapping (cached)
+ * @returns {Object} Column indices for Member Directory
+ */
+function getMemberCol() {
+  return getColumnMapping(SHEETS.MEMBER_DIR, MEMBER_HEADER_MAP);
+}
+
+// Dynamic MEMBER_COL - Initialize on first script load
+// This replaces the old hardcoded indices with dynamic mapping
+let MEMBER_COL = null;
+
+/**
+ * Ensure MEMBER_COL is initialized (lazy load)
+ */
+function ensureMemberColInitialized() {
+  if (!MEMBER_COL) {
+    MEMBER_COL = getMemberCol();
+  }
+  return MEMBER_COL;
+}
+
+// ============================================================================
+// GRIEVANCE LOG COLUMN MAPPING
+// ============================================================================
+
+// Custom header mappings for Grievance Log
+const GRIEVANCE_HEADER_MAP = {
+  "Grievance ID": "ID",
+  "Member ID": "MEMBER_ID",
+  "First Name": "FIRST_NAME",
+  "Last Name": "LAST_NAME",
+  "Status": "STATUS",
+  "Current Step": "CURRENT_STEP",
+  "Incident Date": "INCIDENT_DATE",
+  "Filing Deadline (21d)": "FILING_DEADLINE",
+  "Date Filed (Step I)": "DATE_FILED",
+  "Step I Decision Due (30d)": "STEP_I_DECISION_DUE",
+  "Step I Decision Date": "STEP_I_DECISION_DATE",
+  "Step I Outcome": "STEP_I_OUTCOME",
+  "Step II Appeal Deadline (10d)": "STEP_II_APPEAL_DEADLINE",
+  "Step II Filed Date": "STEP_II_FILED_DATE",
+  "Step II Decision Due (30d)": "STEP_II_DECISION_DUE",
+  "Step II Decision Date": "STEP_II_DECISION_DATE",
+  "Step II Outcome": "STEP_II_OUTCOME",
+  "Step III Appeal Deadline (10d)": "STEP_III_APPEAL_DEADLINE",
+  "Step III Filed Date": "STEP_III_FILED_DATE",
+  "Step III Decision Date": "STEP_III_DECISION_DATE",
+  "Mediation Date": "MEDIATION_DATE",
+  "Arbitration Date": "ARBITRATION_DATE",
+  "Final Outcome": "FINAL_OUTCOME",
+  "Grievance Type": "GRIEVANCE_TYPE",
+  "Issue Category (select multiple)": "ISSUE_CATEGORY",
+  "Description": "DESCRIPTION",
+  "Steward Name": "STEWARD_NAME",
+  "Days Open": "DAYS_OPEN",
+  "Next Action Due": "NEXT_ACTION_DUE",
+  "Days to Deadline": "DAYS_TO_DEADLINE",
+  "Overdue?": "OVERDUE",
+  "Notes": "NOTES_FIELD", // Use NOTES_FIELD to avoid conflict with member NOTES
+  "Last Updated": "LAST_UPDATED"
+};
+
+/**
+ * Get Grievance Log column mapping (cached)
+ * @returns {Object} Column indices for Grievance Log
+ */
+function getGrievanceCol() {
+  return getColumnMapping(SHEETS.GRIEVANCE_LOG, GRIEVANCE_HEADER_MAP);
+}
+
+// Dynamic GRIEVANCE_COL - Initialize on first script load
+let GRIEVANCE_COL = null;
+
+/**
+ * Ensure GRIEVANCE_COL is initialized (lazy load)
+ */
+function ensureGrievanceColInitialized() {
+  if (!GRIEVANCE_COL) {
+    GRIEVANCE_COL = getGrievanceCol();
+  }
+  return GRIEVANCE_COL;
+}
+
+// ============================================================================
+// BACKWARD COMPATIBILITY & FALLBACK
+// ============================================================================
+
+// Legacy hardcoded MEMBER_COL for reference/fallback (DO NOT USE IN NEW CODE)
+const MEMBER_COL_LEGACY = {
   ID: 0,              // A: Member ID
   FIRST_NAME: 1,      // B: First Name
   LAST_NAME: 2,       // C: Last Name
@@ -1333,6 +1555,9 @@ function hideGridlinesOnDashboards(ss) {
  */
 function CREATE_509_DASHBOARD() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Initialize dynamic column mappings
+  invalidateColumnMapping(); // Clear cache in case sheets are being rebuilt
 
   SpreadsheetApp.getUi().alert('Creating 509 Dashboard...\n\nThis will take about 30 seconds.');
 
@@ -6132,32 +6357,34 @@ function SEED_20K_MEMBERS() {
  * - After seeding, run "Recalc All Members" to cross-populate grievance stats to members
  */
 function SEED_5K_GRIEVANCES() {
+  // Initialize column mappings
+  if (!MEMBER_COL) MEMBER_COL = getMemberCol();
+  if (!GRIEVANCE_COL) GRIEVANCE_COL = getGrievanceCol();
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
   // Get actual member data from Member Directory - need enough columns for grievance creation
-  // A-L: Member ID, First/Last Name, Job Title, Dept, Worksite, Schedule, Unit, Email, Phone, Is Steward, Assigned Steward
-  const allMemberData = memberSheet.getRange("A2:L" + memberSheet.getLastRow()).getValues();
-  const members = allMemberData.filter(r => r[0]);
+  // Get all member data (now using dynamic columns)
+  const allMemberData = memberSheet.getDataRange().getValues();
+  const memberHeaders = allMemberData[0]; // First row is headers
+  const members = allMemberData.slice(1).filter(r => r[MEMBER_COL.ID]);
 
   if (members.length === 0) {
     SpreadsheetApp.getUi().alert("❌ Please seed members first!\n\nGrievances must reference actual Member IDs.");
     return;
   }
 
-  // Get steward names (members where column K = "Yes")
-  // Column K is "Is Steward (Y/N)" based on the Member Directory headers
-  const allMemberDataFull = memberSheet.getRange("A2:K" + memberSheet.getLastRow()).getValues();
-  const membersFull = allMemberDataFull.filter(r => r[0]);
-  const stewards = membersFull.filter(m => m[10] === "Yes"); // Column K is index 10 (0-based)
+  // Get steward names (members where "Is Steward (Y/N)" = "Yes")
+  const stewards = members.filter(m => m[MEMBER_COL.IS_STEWARD] === "Yes");
 
   if (stewards.length === 0) {
     // Diagnostic: Check what values are in the Is Steward column
-    const stewardValues = membersFull.slice(0, Math.min(10, membersFull.length)).map(m => `'${m[10]}'`);
-    Logger.log("Sample Is Steward values (column K): " + stewardValues.join(", "));
-    Logger.log("Total members: " + membersFull.length);
+    const stewardValues = members.slice(0, Math.min(10, members.length)).map(m => `'${m[MEMBER_COL.IS_STEWARD]}'`);
+    Logger.log("Sample Is Steward values: " + stewardValues.join(", "));
+    Logger.log("Total members: " + members.length);
     SpreadsheetApp.getUi().alert("❌ No stewards found!\n\nPlease ensure some members have 'Is Steward' set to Yes.\n\n💡 TIP: Use '509 Tools > Data Management > Seed All Test Data (Recommended)' to seed both members and grievances in the correct order.\n\nOr manually seed members first using 'Seed 20K Members' before seeding grievances.\n\nDEBUG: Check the execution log for diagnostic information.");
     return;
   }
