@@ -10,6 +10,7 @@ Complete union member database and grievance tracking system for Local 509.
 - [Architecture](#architecture)
 - [Detailed Features](#detailed-features)
 - [Usage Examples](#usage-examples)
+- [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
 
 ## 🎯 Overview
@@ -440,6 +441,49 @@ Access via: **📊 509 Dashboard > Admin > Seed Data**
 4. **Monitor Dashboard**: Real-time metrics update automatically
 5. **Maintain Config**: Add new locations, stewards, etc. in Config tab
 6. **Main Function**: Run `CREATE_509_DASHBOARD()` to set up all sheets
+
+## 🧪 Testing
+
+The 509 Dashboard includes a comprehensive test suite with 51+ tests covering critical functionality.
+
+### Running Tests
+
+**Via Menu:**
+1. Open your Google Sheet
+2. Click **📊 509 Dashboard > 🧪 Tests > Run All Tests**
+3. Wait 2-3 minutes for completion
+4. View detailed results in "Test Results" sheet
+
+### Test Coverage
+
+| Component | Tests | Priority | Coverage |
+|-----------|-------|----------|----------|
+| Formula calculations | 10+ tests | 🔴 Critical | 100% |
+| Data validations | 5+ tests | 🔴 Critical | 100% |
+| Seeding functions | 6+ tests | 🟡 High | 80% |
+| Grievance workflow | 11+ tests | 🟡 High | 70% |
+| Data clearing | 10+ tests | 🟡 High | 70% |
+| Integration tests | 9+ tests | 🟡 High | 80% |
+
+**Key Tests:**
+- ✅ Filing deadline = Incident + 21 days
+- ✅ Step I decision = Filed + 30 days
+- ✅ Step II appeal = Decision + 10 days
+- ✅ Days open calculations
+- ✅ Member-grievance linking
+- ✅ Dashboard metrics updates
+- ✅ Data validation rules
+- ✅ Complete grievance lifecycle
+
+### Test Files
+
+- `TestFramework.gs` - Custom GAS testing framework
+- `Code.test.gs` - Core formula and validation tests
+- `GrievanceWorkflow.test.gs` - Workflow tests
+- `SeedNuke.test.gs` - Data clearing tests
+- `Integration.test.gs` - End-to-end tests
+
+**Documentation:** See [TESTING.md](TESTING.md) for complete testing guide.
 
 ## 💡 Usage Examples
 

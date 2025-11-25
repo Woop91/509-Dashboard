@@ -1,0 +1,28 @@
+{
+  "name": "509-dashboard",
+  "version": "1.0.0",
+  "description": "Complete union member database and grievance tracking system for Local 509",
+  "main": "Code.gs",
+  "scripts": {
+    "test": "echo 'Tests run within Google Apps Script environment. Use menu: 🧪 Tests > Run All Tests'",
+    "push": "clasp push",
+    "pull": "clasp pull",
+    "deploy": "clasp deploy"
+  },
+  "keywords": [
+    "google-apps-script",
+    "union",
+    "grievance-tracking",
+    "dashboard"
+  ],
+  "author": "Local 509",
+  "license": "MIT",
+  "devDependencies": {
+    "@google/clasp": "^2.4.2",
+    "@types/google-apps-script": "^1.0.83"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Woop91/509-dashboard"
+  }
+}

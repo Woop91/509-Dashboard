@@ -665,9 +665,28 @@ function onOpen() {
       .addItem("Seed 5k Grievances", "SEED_5K_GRIEVANCES")
       .addItem("Clear All Data", "clearAllData"))
     .addSeparator()
+    .addSubMenu(ui.createMenu("🧪 Tests")
+      .addItem("Run All Tests", "runAllTests")
+      .addItem("View Test Results", "viewTestResults"))
+    .addSeparator()
     .addItem("📊 Dashboard", "goToDashboard")
     .addItem("❓ Help", "showHelp")
     .addToUi();
+}
+
+function viewTestResults() {
+  const ss = SpreadsheetApp.getActive();
+  const testResults = ss.getSheetByName('Test Results');
+
+  if (testResults) {
+    testResults.activate();
+  } else {
+    SpreadsheetApp.getUi().alert(
+      '📊 No Test Results',
+      'No test results found. Run tests first using:\n🧪 Tests > Run All Tests',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
 }
 
 function refreshCalculations() {

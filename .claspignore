@@ -1,0 +1,20 @@
+# Ignore markdown and documentation
+*.md
+*.txt
+
+# Ignore git files
+.git
+.gitignore
+
+# Ignore node modules
+node_modules/
+package.json
+package-lock.json
+
+# Ignore config files
+.claspignore
+clasp.json
+
+# Ignore backup files
+*.backup
+*~
