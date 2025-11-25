@@ -1,1157 +1,713 @@
-# 509 Dashboard - Member Directory & Grievance Tracking System
+# 509 Dashboard - Google Apps Script
 
-**Professional grievance tracking and member management system for SEIU Local 509 (Units 8 & 10)**
-
-Built for Massachusetts State Employees | CBA-Compliant | Real-Time Analytics
-
----
+Complete union member database and grievance tracking system for Local 509.
 
 ## 📋 Table of Contents
-
 - [Overview](#overview)
-- [Key Features](#key-features)
-- [Quick Start Guide](#quick-start-guide)
-- [Sheet Descriptions](#sheet-descriptions)
-- [Visual Analytics](#visual-analytics)
-- [Using the Dashboard](#using-the-dashboard)
-- [Data Entry](#data-entry)
-- [CBA Compliance](#cba-compliance)
-- [For Stewards](#for-stewards)
+- [How It Works](#how-it-works)
+- [Features](#features)
+- [Setup Instructions](#setup-instructions)
+- [Architecture](#architecture)
+- [Detailed Features](#detailed-features)
+- [Usage Examples](#usage-examples)
 - [Troubleshooting](#troubleshooting)
-- [Support](#support)
-
----
 
 ## 🎯 Overview
 
-The **509 Dashboard** is a comprehensive Google Sheets-based system designed specifically for SEIU Local 509 union representatives to:
-
-- ✅ Track member information and engagement
-- ✅ Manage grievances through all CBA steps
-- ✅ Monitor critical deadlines automatically
-- ✅ Analyze trends with interactive charts
-- ✅ Balance steward workload
-- ✅ Ensure CBA compliance (Article 23A deadlines)
-
-**No formulas in data rows** - all calculations are automated through Google Apps Script, making the system fast, reliable, and easy to use.
-
----
-
-## ⭐ Key Features
-
-### 🚀 Grievance Workflow (NEW!)
-- **Start grievances from Member Directory** - Click a member to begin
-- **Pre-filled Google Forms** - Member and steward info automatically populated
-- **Automatic log entry** - Form submissions added to Grievance Log
-- **PDF generation** - Professional grievance forms as PDFs
-- **Email or download** - Send to multiple addresses or download directly
-- **Steward-only access** - Only stewards can start grievances
-- **See full guide:** [GRIEVANCE_WORKFLOW_GUIDE.md](GRIEVANCE_WORKFLOW_GUIDE.md)
-
-### 🚨 Seed Nuke - Exit Demo Mode (NEW!)
-- **Remove all test data** - One-click removal of seeded members and grievances
-- **Preserve structure** - All headers, formulas, and layouts remain intact
-- **Production ready** - Transition from demo to live use
-- **Hide seed menus** - Clean up menu after nuking
-- **Getting started guide** - Post-nuke setup instructions
-- **See full guide:** [SEED_NUKE_GUIDE.md](SEED_NUKE_GUIDE.md)
-
-### 🎯 Interactive Dashboard
-- **User-selectable metrics** - Choose from 20+ metrics to display
-- **Dynamic chart types** - Pie, Donut, Bar, Line, Column, Area, or Table
-- **Side-by-side comparison** - Compare any two metrics simultaneously
-- **6 professional themes** - Union Blue, Solidarity Red, Success Green, and more
-- **Real-time updates** - Charts refresh instantly with your data
-- **Card-based layout** - Modern design with large KPI cards
-- **Warehouse-style views** - Location analytics with horizontal bar charts
-- **✨ Welcoming Experience** - Data feels alive with encouraging messages
-- **🎉 Victory Celebrations** - Automatic recognition of achievements and milestones
-- **💪 Gentle Guidance** - Supportive messages guide you through the dashboard
-- **🏆 Smart Encouragement** - Context-aware celebrations based on your metrics
-  - Win rate celebrations ("🏆 INCREDIBLE! Nearly perfect!")
-  - Perfect attendance recognition ("🎊 PERFECT! Nothing overdue!")
-  - Membership growth celebrations ("💪 Growing stronger every day!")
-  - Dynamic card messages that change with your success
-- **See full guide:** [INTERACTIVE_DASHBOARD_GUIDE.md](INTERACTIVE_DASHBOARD_GUIDE.md)
-
-### 🧠 ADHD-Friendly Features (NEW!)
-- **Soft, calming colors** - Gentle pastels instead of harsh brights
-- **No gridlines** - Clean, minimal visual clutter
-- **Emoji icons** - Every tab has a visual icon for quick scanning
-- **Big numbers** - 48pt font for key metrics (glanceable data)
-- **User customization** - Each person can set their own preferences
-- **Visual guides** - Icon-based instructions, minimal text
-- **Logical organization** - Important tabs first, admin tabs last
-- **Quick setup** - One-click ADHD optimization (509 Tools > ADHD Tools)
-- **See full guide:** [ADHD_FRIENDLY_GUIDE.md](ADHD_FRIENDLY_GUIDE.md)
-
-### 📊 Advanced Dashboard
-- **Real-time KPI metrics** - Member counts, grievance statistics, win rates
-- **6 interactive visual charts** - Donut charts, bar charts, and column charts
-- **Color-coded alerts** - Red (overdue), Yellow (due soon), Green (on track)
-- **Top 10 overdue list** - Prioritized by severity with gradient color coding
-
-### 👥 Member Directory
-- **Auto-calculated grievance metrics** per member
-- Track total, active, resolved, won, and lost grievances
-- Monitor engagement levels and committee participation
-- Emergency contact information and notes
-- **35 data fields** including auto-calculated derived fields
-
-### ⚖️ Grievance Log
-- **CBA-compliant deadline tracking** (21-day filing, 30-day decisions, 10-day appeals)
-- Automatic calculation of all deadlines
-- Priority sorting (Step III → II → I, then by due date)
-- **32 data fields** with automated deadline management
-- Status tracking from filing through resolution
-
-### 👨‍⚖️ Steward Workload Tracking
-- Automatic calculation of cases per steward
-- Active case breakdown by step (I, II, III)
-- Overdue cases highlighted in red
-- Win rates and average resolution times
-- Workload balancing insights
-
-### 📈 Visual Analytics
-Six professionally designed charts that update automatically:
-1. **Grievances by Status** - Donut chart showing Filed, Resolved, In Mediation, etc.
-2. **Top 10 Grievance Types** - Bar chart of most common issues
-3. **Grievances by Step** - Column chart tracking current case steps
-4. **Members by Unit** - Donut chart showing Unit 8 vs Unit 10 distribution
-5. **Top 10 Member Locations** - Bar chart of member workplace distribution
-6. **Resolved Outcomes** - Donut chart showing Won/Lost/Settled/Withdrawn
-
-### 📊 NEW: Advanced Analytics Tabs
-Four dedicated analytical tabs with comprehensive insights:
-
-**1. Trends & Timeline**
-- Monthly filing trends with historical data
-- Average filings per month calculations
-- Peak month identification
-- Resolution time analysis (average, fastest, slowest)
-- Last 12 months filing trends visualization
-
-**2. Performance Metrics**
-- Resolution performance (total resolved, win rate, settlement rate, withdrawal rate)
-- Efficiency metrics (active grievances, overdue rate, on-time rate)
-- Outcome analysis by step with win rates
-- Step progression analysis
-
-**3. Location Analytics**
-- Top 15 locations by grievance volume
-- Members and grievances by location
-- Active vs resolved cases by location
-- Win rate comparison across locations
-
-**4. Type Analysis**
-- Comprehensive breakdown by grievance type
-- Total, active, and resolved counts per type
-- Win rate and settlement rate by type
-- Identify high-volume grievance categories
-
-### 🎨 Professional Design
-- Color-coded sections with clear headers
-- Number formatting with thousands separators
-- Conditional formatting for visual prioritization
-- Easy-to-read metrics with right-aligned numbers
-- Mobile-friendly Google Sheets interface
-
----
-
-## 🚀 Quick Start Guide
-
-### Step 1: Initial Setup
-
-1. **Open the Google Sheet** containing this script
-2. Click on **Extensions** → **Apps Script**
-3. Paste the `Code.gs` file contents
-4. Save the script (Ctrl+S or Cmd+S)
-5. Close the Apps Script editor
-6. **Refresh the Google Sheet**
-
-### Step 2: Create the Dashboard
-
-1. You'll see a new menu: **509 Tools**
-2. Click **509 Tools** → **🔧 Create Dashboard**
-3. Wait 30 seconds while the system creates all sheets
-4. Click **OK** when complete
-
-### Step 3: Add Data
-
-**Option A - Test with Sample Data (RECOMMENDED):**
-- **509 Tools** → **Data Management** → **Seed All Test Data (Recommended)**
-  - This unified function automatically:
-    1. Seeds 20,000 members
-    2. Seeds 5,000 grievances
-    3. Recalculates all member metrics
-    4. Rebuilds all dashboards
-  - Takes 5-7 minutes total
-  - Provides step-by-step progress alerts
-
-**Option B - Manual Test Data:**
-- **509 Tools** → **Data Management** → **Seed 20K Members**
-- **509 Tools** → **Data Management** → **Seed 5K Grievances**
-- **509 Tools** → **Data Management** → **Recalc All Members**
-- **509 Tools** → **Data Management** → **Rebuild Dashboard**
-
-**Option C - Add Real Data:**
-- Manually enter members in the **Member Directory** sheet
-- Manually enter grievances in the **Grievance Log** sheet
-- System automatically calculates deadlines and metrics
-
-### Step 4: View the Dashboard
-
-Click on the **Dashboard** tab to see:
-- Real-time metrics
-- Interactive charts
-- Top 10 overdue grievances
-- Color-coded status indicators
-
----
-
-## 📑 Sheet Descriptions
-
-### 1. **Future Features** Sheet 🆕
-
-**Professional listing of available security and advanced features:**
-
-Lists all 94+ features available for implementation, including:
-- **Security & Audit Features (79-86):**
-  - Audit logging with user tracking
-  - Role-based access control (Admin/Steward/Viewer)
-  - Data encryption and decryption
-  - Input sanitization
-  - Audit reporting
-  - Data retention policies
-  - Suspicious activity detection
-
-- **Advanced Features (87-94):**
-  - Quick Actions sidebar
-  - Advanced search and filtering
-  - Automated backups
-  - Performance monitoring
-  - Keyboard shortcuts
-  - Export wizard
-  - Data import capabilities
-
-**Each feature includes:**
-- Feature number and name
-- Detailed description
-- Function name for implementation
-- Status and priority
-- Implementation notes
-- Dependencies
-
-*See this sheet for complete documentation on enabling advanced features*
-
----
-
-### 2. **Pending Features** Sheet 🆕
-
-**Production deployment checklist with step-by-step instructions:**
-
-Organized into five sections:
-1. **Test Key Features:** Validate integrity checks, sidebar, calculations, CBA compliance
-2. **Configure Script Properties:** Set up admin/steward roles, encryption keys, backup folders
-3. **Set Up Automated Triggers:** Schedule reports, updates, backups, alerts
-4. **Update Main Menu:** Enable enhancement menus and verify accessibility
-5. **Final Verification:** System-wide checks before going live
-
-**Includes:**
-- Detailed task descriptions
-- Function names to run
-- Expected results
-- Priority levels (Critical/High/Medium/Low)
-- Step-by-step implementation guide
-
-*Use this sheet as your go-live checklist*
-
----
-
-### 3. **Config** Sheet
-Contains all dropdown options used throughout the system:
-- Job titles (from CBA Appendix C)
-- Work locations across Massachusetts
-- Grievance types and outcomes
-- Membership status options
-
-*This sheet powers all data validation dropdowns.*
-
----
-
-### 4. **Member Directory** Sheet
-
-**37 columns** tracking comprehensive member information:
-
-**Basic Information (A-H):**
-- Member ID (auto-generated: MEM000001)
-- First Name, Last Name
-- Job Title, Department/Unit, Worksite/Office Location
-- Work Schedule/Office Days, Unit (8 or 10)
-
-**Contact & Role (I-P):**
-- Email Address, Phone Number
-- Is Steward (Yes/No)
-- **Assigned Steward** - Primary steward assigned to this member
-- **Share Phone in Directory? (Steward Only)** - Steward consent to share phone number
-- Membership Status
-- Immediate Supervisor, Manager/Program Director
-
-**Grievance Metrics (P-U) - AUTO CALCULATED:**
-- Total Grievances Filed
-- Active Grievances
-- Resolved Grievances
-- Grievances Won
-- Grievances Lost
-- Last Grievance Date
-
-**Grievance Snapshot (V-Y) - AUTO CALCULATED:**
-- Has Open Grievance?
-- # Open Grievances
-- Last Grievance Status
-- Next Deadline (Soonest)
-
-**Participation & Admin (Z-AK):**
-- Engagement Level
-- Events Attended, Training Sessions
-- Committee Membership
-- Emergency Contacts
-- Date of Birth, Hire Date
-- Last Updated, Updated By
-
-*Teal-highlighted columns = auto-calculated (don't edit manually)*
-
----
-
-### 5. **Grievance Log** Sheet
-
-**32 columns** with CBA-compliant deadline tracking:
-
-**Basic Information (A-F):**
-- Grievance ID (auto-generated: GRV000001)
-- Member ID, First Name, Last Name
-- Status, Current Step
-
-**Incident & Filing (G-J):**
-- Incident Date
-- **Filing Deadline** (auto: Incident + 21 days)
-- Date Filed
-- **Step I Decision Due** (auto: Filed + 30 days)
-
-**Step I Process (K-N):**
-- Step I Decision Date
-- Step I Outcome
-- **Step II Appeal Deadline** (auto: Step I Decision + 10 days)
-- Step II Filed Date
-
-**Step II Process (O-R):**
-- **Step II Decision Due** (auto: Step II Filed + 30 days)
-- Step II Decision Date
-- Step II Outcome
-- **Step III Appeal Deadline** (auto: Step II Decision + 10 days)
-
-**Step III & Beyond (S-V):**
-- Step III Filed Date
-- Step III Decision Date
-- Mediation Date
-- Arbitration Date
-
-**Details & Outcomes (W-Z):**
-- Final Outcome
-- Grievance Type
+The 509 Dashboard is a comprehensive Google Sheets-based system for managing union member data and tracking grievances. Built with Google Apps Script, it provides automated deadline calculations, real-time analytics, and centralized data management—all without requiring external databases or complex infrastructure.
+
+**Built for**: Local 509 union organizers, stewards, and administrators
+**Platform**: Google Sheets + Google Apps Script
+**Data Capacity**: Tested with 20,000 members and 5,000 grievances
+**Key Principle**: All metrics derived from real data—no simulated or fake statistics
+
+## 🔧 How It Works
+
+### Core Components
+
+1. **Google Apps Script Engine**: JavaScript-based automation that runs within Google Sheets
+2. **Sheet-Based Database**: Uses Google Sheets as a structured database with data validation
+3. **Formula-Driven Calculations**: Auto-calculates deadlines, metrics, and status updates
+4. **Config-Driven Dropdowns**: Centralized lists ensure data consistency across all sheets
+
+### Data Flow
+
+```
+Config Tab (Master Lists)
+    ↓
+    ├→ Member Directory (31 columns of member data)
+    │   ↓
+    │   └→ Grievance snapshot fields auto-populate from Grievance Log
+    │
+    └→ Grievance Log (28 columns of grievance tracking)
+        ↓
+        ├→ Auto-calculates deadlines based on contract rules
+        ├→ Tracks days open and days to deadline
+        └→ Feeds data back to Member Directory
+        ↓
+Dashboard (Real-time metrics and visualizations)
+```
+
+### Automation Features
+
+- **On-Open Trigger**: Menu loads automatically when sheet opens
+- **Formula-Based Updates**: Calculations refresh automatically when data changes
+- **Data Validation**: Dropdowns enforce consistent values from Config tab
+- **Batch Processing**: Seeding functions use optimized batch writes for performance
+
+## ✨ Features
+
+✅ **Correct Member Directory** - All 31 required columns exactly as specified
+✅ **Complete Grievance Log** - All 28 required columns with auto-calculated deadlines
+✅ **Real Data Only** - No fake CPU/memory metrics, all analytics from actual data
+✅ **Config Tab** - Centralized dropdown management for consistency
+✅ **Auto-Calculations** - Deadline tracking, days open, status snapshots
+✅ **Data Seeding** - Generate 20k members + 5k grievances for testing/training
+✅ **Custom Menu** - Easy access to all admin functions
+✅ **Member Satisfaction Tracking** - Survey data with calculated averages
+✅ **Feedback System** - Track system improvements and feature requests
+
+## Setup Instructions
+
+1. Create a new Google Sheet
+2. Go to **Extensions > Apps Script**
+3. Delete any existing code
+4. Copy and paste the entire contents of `Code.gs`
+5. Save the project
+6. Refresh your Google Sheet
+7. A new menu **"📊 509 Dashboard"** will appear
+8. Click **Admin > Seed 20k Members** and **Seed 5k Grievances**
+
+## 🏗️ Architecture
+
+### File Structure
+
+```
+Code.gs
+├── Configuration Constants (SHEETS object)
+├── Main Setup Function (CREATE_509_DASHBOARD)
+├── Sheet Creation Functions
+│   ├── createConfigTab()
+│   ├── createMemberDirectory()
+│   ├── createGrievanceLog()
+│   ├── createMainDashboard()
+│   ├── createAnalyticsDataSheet()
+│   ├── createMemberSatisfactionSheet()
+│   └── createFeedbackSheet()
+├── Data Management
+│   ├── setupDataValidations()
+│   ├── setupFormulasAndCalculations()
+│   ├── SEED_20K_MEMBERS()
+│   └── SEED_5K_GRIEVANCES()
+└── User Interface
+    ├── onOpen() - Menu creation
+    ├── refreshCalculations()
+    ├── goToDashboard()
+    └── showHelp()
+```
+
+### Technical Details
+
+**Language**: Google Apps Script (JavaScript ES6)
+**Runtime**: Google Apps Script V8 Runtime
+**Permissions Required**:
+- Google Sheets API access
+- Ability to create/modify sheets
+- Ability to add custom menus
+
+**Performance Optimizations**:
+- Batch writing (1000 rows at a time for seeding)
+- SpreadsheetApp.flush() for immediate updates
+- Hidden analytics sheet to reduce visual clutter
+- Formula-based calculations instead of script calculations where possible
+
+### Database Design
+
+The system uses a **normalized sheet structure**:
+
+1. **Config** = Master reference tables
+2. **Member Directory** = Member entity (1 row = 1 member)
+3. **Grievance Log** = Grievance entity (1 row = 1 grievance)
+4. **Relationships**: Member Directory ← Member ID → Grievance Log
+
+This prevents data duplication and ensures consistency.
+
+## 📊 Detailed Features
+
+### 1. Config Tab - Centralized Control
+
+**Purpose**: Single source of truth for all dropdown values
+
+**How it works**:
+- Each column contains a master list (Job Titles, Locations, Units, etc.)
+- Data validation rules reference these ranges
+- Changes to Config automatically update all dropdowns
+- Prevents typos and inconsistent data entry
+
+**Columns**:
+- Job Titles (Coordinator, Analyst, Case Manager, etc.)
+- Office Locations (Boston HQ, Worcester Office, etc.)
+- Units (Unit A-E with descriptive names)
+- Office Days (Monday-Sunday)
+- Yes/No (Standard boolean values)
+- Supervisors (Master list of supervisor names)
+- Managers (Master list of manager names)
+- Stewards (Master list of steward/organizer names)
+- Grievance Status (Open, Pending Info, Settled, Withdrawn, Closed, Appealed)
+- Grievance Step (Informal, Step I, Step II, Step III, Mediation, Arbitration)
+- Issue Category (Discipline, Workload, Scheduling, Pay, Discrimination, Safety, Benefits, etc.)
+- Articles Violated (Contract articles: Art. 1-30)
+- Communication Methods (Email, Phone, Text, In Person)
+
+**Best Practices**:
+- Keep lists continuous (no blank rows in middle)
+- Add new values at the bottom
+- Use Find & Replace if changing existing values
+- Don't delete values that are in use
+
+### 2. Member Directory - Complete Member Profiles
+
+**Purpose**: Track all member information and engagement
+
+**31 Columns Explained**:
+
+| Column | Type | Purpose | Auto-Populated? |
+|--------|------|---------|----------------|
+| Member ID | Text | Unique identifier (e.g., M000001) | Manual |
+| First Name | Text | Member's first name | Manual |
+| Last Name | Text | Member's last name | Manual |
+| Job Title | Dropdown | Current position | Manual (from Config) |
+| Work Location (Site) | Dropdown | Primary work location | Manual (from Config) |
+| Unit | Dropdown | Bargaining unit | Manual (from Config) |
+| Office Days | Text | Days in office (Mon, Tue, etc.) | Manual |
+| Email Address | Email | Primary contact email | Manual |
+| Phone Number | Phone | Contact number | Manual |
+| Is Steward (Y/N) | Dropdown | Whether member is a steward | Manual (from Config) |
+| Supervisor (Name) | Dropdown | Direct supervisor | Manual (from Config) |
+| Manager (Name) | Dropdown | Manager | Manual (from Config) |
+| Assigned Steward (Name) | Dropdown | Primary steward for this member | Manual (from Config) |
+| Last Virtual Mtg (Date) | Date | Most recent virtual meeting attendance | Manual |
+| Last In-Person Mtg (Date) | Date | Most recent in-person meeting | Manual |
+| Last Survey (Date) | Date | Most recent survey completion | Manual |
+| Last Email Open (Date) | Date | Most recent email engagement | Manual |
+| Open Rate (%) | Number | Email open rate percentage | Manual |
+| Volunteer Hours (YTD) | Number | Hours volunteered year-to-date | Manual |
+| Interest: Local Actions | Dropdown (Y/N) | Interested in local organizing | Manual |
+| Interest: Chapter Actions | Dropdown (Y/N) | Interested in chapter activities | Manual |
+| Interest: Allied Chapter Actions | Dropdown (Y/N) | Interested in allied chapter work | Manual |
+| Timestamp | Date/Time | Record creation/update time | Manual |
+| Preferred Communication Methods | Dropdown | How they prefer contact | Manual (from Config) |
+| Best Time(s) to Reach Member | Text | Preferred contact times | Manual |
+| **Has Open Grievance?** | **Formula** | **Yes if member has open grievance** | **AUTO** |
+| **Grievance Status Snapshot** | **Formula** | **Status of member's grievance** | **AUTO** |
+| **Next Grievance Deadline** | **Formula** | **Upcoming deadline for grievance** | **AUTO** |
+| Most Recent Steward Contact Date | Date | Last contact from steward | Manual |
+| Steward Who Contacted Member | Text | Name of contacting steward | Manual |
+| Notes from Steward Contact | Text | Notes from conversation | Manual |
+
+**Key Features**:
+- Grievance snapshot fields (columns 26-28) automatically populate from Grievance Log
+- Data validation prevents invalid entries
+- All engagement metrics in one place for easy analysis
+
+### 3. Grievance Log - Complete Grievance Tracking
+
+**Purpose**: Track every grievance through its lifecycle with automatic deadline calculations
+
+**28 Columns Explained**:
+
+| Column | Type | Purpose | Auto-Calculated? |
+|--------|------|---------|------------------|
+| Grievance ID | Text | Unique ID (e.g., G-000001) | Manual |
+| Member ID | Text | Links to Member Directory | Manual |
+| First Name | Text | Member's first name | Manual |
+| Last Name | Text | Member's last name | Manual |
+| Status | Dropdown | Current status (Open, Pending, Settled, etc.) | Manual (from Config) |
+| Current Step | Dropdown | Grievance step (Informal, Step I-III, etc.) | Manual (from Config) |
+| Incident Date | Date | When incident occurred | Manual |
+| **Filing Deadline (21d)** | **Formula** | **Incident Date + 21 days** | **AUTO** |
+| Date Filed (Step I) | Date | When grievance was filed | Manual |
+| **Step I Decision Due (30d)** | **Formula** | **Date Filed + 30 days** | **AUTO** |
+| Step I Decision Rcvd | Date | When Step I decision received | Manual |
+| **Step II Appeal Due (10d)** | **Formula** | **Step I Decision + 10 days** | **AUTO** |
+| Step II Appeal Filed | Date | When appealed to Step II | Manual |
+| **Step II Decision Due (30d)** | **Formula** | **Step II Appeal + 30 days** | **AUTO** |
+| Step II Decision Rcvd | Date | When Step II decision received | Manual |
+| **Step III Appeal Due (30d)** | **Formula** | **Step II Decision + 30 days** | **AUTO** |
+| Step III Appeal Filed | Date | When appealed to Step III | Manual |
+| Date Closed | Date | When grievance closed/resolved | Manual |
+| **Days Open** | **Formula** | **Today - Date Filed (or Date Closed - Date Filed)** | **AUTO** |
+| **Next Action Due** | **Formula** | **Next upcoming deadline based on current step** | **AUTO** |
+| **Days to Deadline** | **Formula** | **Next Action Due - Today** | **AUTO** |
+| Articles Violated | Dropdown | Contract articles violated | Manual (from Config) |
+| Issue Category | Dropdown | Type of grievance | Manual (from Config) |
+| Member Email | Email | Member's email (for reference) | Manual |
+| Unit | Dropdown | Member's unit | Manual (from Config) |
+| Work Location (Site) | Dropdown | Member's work location | Manual (from Config) |
+| Assigned Steward (Name) | Dropdown | Steward handling case | Manual (from Config) |
+| Resolution Summary | Text | How grievance was resolved | Manual |
+
+**Deadline Calculation Rules** (Based on standard union contract):
+- **Filing Deadline**: Incident Date + 21 days
+- **Step I Decision**: Date Filed + 30 days
+- **Step II Appeal**: Step I Decision + 10 days
+- **Step II Decision**: Step II Appeal + 30 days
+- **Step III Appeal**: Step II Decision + 30 days
+
+**Key Features**:
+- All deadlines auto-calculate based on contract rules
+- "Next Action Due" intelligently selects the relevant deadline based on current step
+- "Days to Deadline" shows urgency (negative numbers = overdue)
+- Conditional formatting highlights approaching/overdue deadlines
+
+### 4. Dashboard - Real-Time Analytics
+
+**Purpose**: At-a-glance view of key metrics, all derived from real data
+
+**Metrics Displayed**:
+
+**Member Metrics**:
+- Total Members: `=COUNTA('Member Directory'!A:A)-1`
+- Active Stewards: `=COUNTIF('Member Directory'!J:J,"Yes")`
+- Average Open Rate: `=AVERAGE('Member Directory'!R:R)`
+- YTD Volunteer Hours: `=SUM('Member Directory'!S:S)`
+
+**Grievance Metrics**:
+- Open Grievances: `=COUNTIF('Grievance Log'!E:E,"Open")`
+- Pending Info: `=COUNTIF('Grievance Log'!E:E,"Pending Info")`
+- Settled This Month: Count of settled grievances with Date Closed in current month
+- Average Days Open: `=AVERAGE(FILTER('Grievance Log'!S:S, 'Grievance Log'!E:E="Open"))`
+
+**Engagement Metrics** (Last 30 Days):
+- Virtual Meetings Attended
+- In-Person Meetings Attended
+- Members Interested in Local Actions
+- Members Interested in Chapter Actions
+
+**Upcoming Deadlines**:
+- Table showing next 10 grievances with approaching deadlines
+- Auto-sorted by date
+
+**Key Features**:
+- All formulas reference actual data (no hardcoded values)
+- Updates automatically when data changes
+- Timestamp shows last calculation refresh
+
+### 5. Data Seeding Functions
+
+**Purpose**: Generate realistic test data for training and testing
+
+**SEED_20K_MEMBERS()** - Generates 20,000 member records
+- Realistic names from common first/last name lists
+- Random but realistic job titles, locations, units
+- Varied engagement history (meetings, surveys, volunteer hours)
+- Random interest levels in organizing activities
+- Valid email addresses (formatted: firstname.lastname###@union.org)
+- Phone numbers in (555) format
+- Batch writes 1000 rows at a time for performance
+- Progress toasts show completion status
+
+**SEED_5K_GRIEVANCES()** - Generates 5,000 grievance records
+- Links to existing members via Member ID
+- Realistic timeline (incidents 0-365 days ago)
+- Various statuses (Open, Pending, Settled, Closed, Withdrawn)
+- Different steps (Informal through Arbitration)
+- Random but appropriate issue categories and articles
+- Closed grievances include resolution summaries
+- Batch writes 500 rows at a time
+- Auto-calculates all deadline fields after insertion
+
+**Performance**:
+- 20k members: ~2-3 minutes
+- 5k grievances: ~1-2 minutes
+
+### 6. Member Satisfaction Tracking
+
+**Purpose**: Track and analyze member satisfaction surveys
+
+**Columns**:
+- Survey ID
+- Member ID (links to Member Directory)
+- Member Name
+- Date Sent
+- Date Completed
+- Overall Satisfaction (1-5 scale)
+- Steward Support (1-5 scale)
+- Communication (1-5 scale)
+- Would Recommend Union (Y/N)
+- Comments (free text)
+
+**Calculated Metrics**:
+- Average Overall Satisfaction
+- Average Steward Support
+- Average Communication
+- % Would Recommend (percentage of Yes responses)
+
+### 7. Feedback & Development
+
+**Purpose**: Track system improvements and feature requests
+
+**Columns**:
+- Timestamp
+- Submitted By
+- Category
+- Type (Bug, Feature Request, Improvement)
+- Priority (Low, Medium, High, Critical)
+- Title
 - Description
-- Representative (Steward name)
-
-**Derived Fields (AA-AF) - AUTO CALCULATED:**
-- Days Open
-- Days to Next Deadline
-- Is Overdue? (YES/NO)
-- Priority Score (1-6, Step III = highest)
-- Assigned Steward
-- Steward Contact
-
-**Admin (AG-AH):**
+- Status (New, In Progress, Resolved, Won't Fix)
+- Assigned To
+- Resolution
 - Notes
-- Last Updated
 
-*Orange-highlighted columns = auto-calculated deadlines*
-*Green-highlighted columns = auto-calculated derived fields*
-
----
-
-### 6. **Dashboard** Sheet
-
-**Your command center** with four main sections:
-
-**Member Metrics (Rows 4-9):**
-- Total Members: Count of all members
-- Active Members: Currently active status
-- Total Stewards: Available union representatives
-- Unit 8 Members: Unit 8 count
-- Unit 10 Members: Unit 10 count
-
-**Grievance Metrics (Rows 12-19):**
-- Total Grievances
-- Active Grievances (currently filed)
-- Resolved Grievances
-- **Grievances Won** (green background)
-- **Grievances Lost** (red background)
-- **Win Rate** (highlighted percentage)
-- In Mediation, In Arbitration
-
-**Deadline Tracking (Rows 22-24):**
-- **Overdue Grievances** (red if >0, green if 0)
-- **Due This Week** (yellow if >0, green if 0)
-- Due Next Week
-
-**Top 10 Overdue Grievances (Rows 4-14, Columns E-H):**
-Priority-sorted list with color coding:
-- 🔴 Dark Red (30+ days overdue)
-- 🟠 Red (14-30 days overdue)
-- 🟡 Light Red (<14 days overdue)
-
-**Visual Analytics (Row 27+):**
-Six interactive charts (see Visual Analytics section)
-
----
-
-### 7. **Steward Workload** Sheet
-
-Automatically populated with steward performance metrics:
-
-**Columns:**
-- Steward Name, Member ID, Work Location
-- Total Cases, Active Cases
-- Step I, II, III case counts
-- **Overdue Cases** (highlighted red if >0)
-- Due This Week
-- Win Rate %, Avg Days to Resolution
-- Members Assigned
-- Last Case Date, Status
-
-*Updates automatically when you run "Rebuild Dashboard"*
-
----
-
-### 8. **Analytics Data** Sheet
-
-Historical snapshot tracking for trend analysis:
-- Snapshot Date
-- Member counts and activity
-- Grievance statistics
-- Win rates over time
-- Average resolution times
-
-*Manually add rows to track monthly/quarterly trends*
-
----
-
-### 9. **Trends & Timeline** Sheet 🆕
-
-**Automatic time-based analysis of your grievance data:**
-
-**Monthly Trends Section:**
-- Total months with data
-- Average filings per month
-- Peak month identification
-
-**Resolution Time Analysis:**
-- Average resolution time across all cases
-- Fastest resolution time
-- Slowest resolution time
-
-**Filing Trends:**
-- Last 12 months breakdown
-- Monthly filing counts
-- Trend visualization data
-
-*Auto-populated when you run "Rebuild Dashboard" or "Rebuild Analytics" menu*
-
----
-
-### 10. **Performance Metrics** Sheet 🆕
-
-**Comprehensive KPI analysis for performance tracking:**
-
-**Resolution Performance:**
-- Total resolved grievances
-- Win rate percentage (highlighted)
-- Settlement rate percentage
-- Withdrawal rate percentage
-
-**Efficiency Metrics:**
-- Active grievances count
-- Overdue rate (color-coded: red if overdue)
-- On-time rate
-
-**Outcome Analysis by Step:**
-- Step I, II, III breakdown
-- Total cases and win rates per step
-- Performance comparison across steps
-
-*Ideal for monthly reporting and performance reviews*
-
----
-
-### 11. **Location Analytics** Sheet 🆕
-
-**Geographic breakdown of grievances and member activity:**
-
-**Top 15 Locations Table:**
-- Location name
-- Member count
-- Total grievances filed
-- Active grievances
-- Resolved grievances
-- Win rate percentage
-
-*Helps identify problem locations and resource allocation needs*
-
----
-
-### 12. **Type Analysis** Sheet 🆕
-
-**Deep dive into grievance categories and outcomes:**
-
-**Type Breakdown Table:**
-- All grievance types
-- Total count per type
-- Active cases per type
-- Resolved cases per type
-
-**Success Rate Analysis:**
-- Win rate by grievance type
-- Settlement rate by grievance type
-- Identify which types are most successful
-
-*Use this to focus on high-volume or low-success grievance types*
-
----
-
-### 13. **Archive** Sheet
-
-Storage for resolved grievances older than 90 days.
-*Future feature - manual archiving currently*
-
----
-
-### 14. **Diagnostics** Sheet
-
-System health checks:
-- Data validation status
-- Trigger configuration
-- Record counts
-- Orphaned record detection
-
----
-
-## 📊 Visual Analytics
-
-### Chart 1: Grievances by Status
-**Type:** Donut Chart
-**Shows:** Distribution of all grievances by current status
-**Categories:** Filed - Step I/II/III, In Mediation, In Arbitration, Resolved
-**Use:** Quick overview of case pipeline
-
-### Chart 2: Top 10 Grievance Types
-**Type:** Horizontal Bar Chart
-**Shows:** Most common grievance categories
-**Use:** Identify systemic issues and patterns
-
-### Chart 3: Grievances by Current Step
-**Type:** Column Chart
-**Shows:** Number of cases at each grievance step
-**Use:** Understand where cases are in the process
-
-### Chart 4: Members by Unit
-**Type:** Donut Chart
-**Shows:** Unit 8 vs Unit 10 member distribution
-**Use:** Compare unit sizes and representation
-
-### Chart 5: Top 10 Member Locations
-**Type:** Horizontal Bar Chart
-**Shows:** Offices with most members
-**Use:** Understand geographic distribution
-
-### Chart 6: Resolved Grievance Outcomes
-**Type:** Donut Chart
-**Shows:** Won, Lost, Settled, Withdrawn breakdown
-**Use:** Track overall success rate
-
----
-
-## 💼 Using the Dashboard
-
-### 🎯 Using the Interactive Dashboard (NEW!)
-
-**Quick Start:**
-1. Click **509 Tools** → **Interactive Dashboard** → **View Interactive Dashboard**
-2. First time: Click **Setup Controls** to enable dropdowns
-3. Use Row 7 dropdowns to select:
-   - Your primary metric (e.g., "Total Members")
-   - Chart type (e.g., "Donut Chart")
-   - Comparison metric (e.g., "Active Grievances")
-   - Comparison chart type (e.g., "Bar Chart")
-   - Theme (e.g., "Union Blue")
-   - Enable/disable comparison mode
-4. Click **Refresh Charts** to update visualizations
-
-**Benefits:**
-- Customize what you see
-- Compare metrics side-by-side
-- Export presentation-ready charts
-- Switch themes for different audiences
-- 20+ metrics × 7 chart types = 140+ combinations
-
-**Full Instructions:** See [INTERACTIVE_DASHBOARD_GUIDE.md](INTERACTIVE_DASHBOARD_GUIDE.md)
-
-### Daily Tasks
-
-**1. Check Overdue Items:**
-- Look at "Overdue Grievances" metric (Row 22)
-- Review "Top 10 Overdue Grievances" table
-- Prioritize cases with dark red highlighting (30+ days)
-
-**2. Monitor This Week's Deadlines:**
-- Check "Due This Week" metric (Row 23)
-- Filter Grievance Log by deadline columns
-- Contact stewards with upcoming deadlines
-
-**3. Review New Grievances:**
-- Check Grievance Log for recently filed cases
-- Verify all deadlines calculated correctly
-- Assign to appropriate steward
-
-### Weekly Tasks
-
-**1. Update Case Statuses:**
-- Enter new decisions and outcomes
-- Update Step progression
-- System automatically recalculates deadlines
-
-**2. Run Dashboard Rebuild:**
-- **509 Tools** → **Data Management** → **Rebuild Dashboard**
-- Ensures all charts and metrics are current
-
-**3. Review Steward Workload:**
-- Check Steward Workload sheet
-- Balance case assignments
-- Address overdue cases (red highlighted)
-
-### Monthly Tasks
-
-**1. Take Analytics Snapshot:**
-- Manually add row to Analytics Data sheet
-- Record current metrics for trend tracking
-
-**2. Review Win Rates:**
-- Check Dashboard win rate metric
-- Analyze by grievance type
-- Identify areas for improvement
-
-**3. Member Engagement:**
-- Review member engagement levels
-- Follow up with inactive members
-- Update committee participation
-
----
-
-## ✍️ Data Entry
-
-### Adding a New Member
+## Sheet Structure
+
+### Config Tab
+Master lists for all dropdowns:
+- Job Titles
+- Office Locations
+- Units
+- Supervisors, Managers, Stewards
+- Grievance Status & Steps
+- Issue Categories
+- Articles Violated
+
+### Member Directory
+31 columns tracking:
+- Basic info (ID, name, contact)
+- Work details (job, location, unit, supervisor, manager)
+- Steward assignments
+- Engagement metrics (meetings, surveys, volunteer hours)
+- Interests (local, chapter, allied actions)
+- Grievance snapshot (auto-populated)
+- Communication preferences
+
+### Grievance Log
+28 columns tracking:
+- Grievance identification
+- Member linkage
+- Status and step tracking
+- All deadlines (auto-calculated):
+  - Filing deadline (incident + 21d)
+  - Step I decision (filed + 30d)
+  - Step II appeal (decision + 10d)
+  - Step II decision (appeal + 30d)
+  - Step III appeal (decision + 30d)
+- Days open (auto-calculated)
+- Days to deadline (auto-calculated)
+- Resolution tracking
+
+### Dashboard
+Real-time metrics from actual data:
+- Total members, active stewards, engagement rates
+- Open grievances by status
+- Upcoming deadlines
+- Member satisfaction scores
+- All metrics linked to actual Member Directory and Grievance Log data
+
+### Member Satisfaction
+Survey tracking with calculated averages:
+- Overall satisfaction
+- Steward support ratings
+- Communication ratings
+- Recommendation percentage
+
+### Feedback & Development
+System improvement tracking
+
+## Data Seeding
+
+Generate realistic test data:
+- **20,000 Members**: Diverse names, locations, job titles, engagement history
+- **5,000 Grievances**: Linked to members, various statuses, realistic timelines
+
+Access via: **📊 509 Dashboard > Admin > Seed Data**
+
+## Key Improvements
+
+✅ **All columns match specifications exactly**
+✅ **No fake metrics** (removed CPU usage, memory, innovation index, etc.)
+✅ **Real analytics** based on actual Member Directory and Grievance Log data
+✅ **Auto-calculated deadlines** follow contract timelines
+✅ **Linked data** between Member Directory and Grievance Log
+✅ **Data validation** from Config tab prevents inconsistent entries
+
+## Usage
+
+1. **Add Members**: Manually or use seed function
+2. **Log Grievances**: Enter incident date, filing date, status, step
+3. **Track Progress**: Deadlines calculate automatically
+4. **Monitor Dashboard**: Real-time metrics update automatically
+5. **Maintain Config**: Add new locations, stewards, etc. in Config tab
+6. **Main Function**: Run `CREATE_509_DASHBOARD()` to set up all sheets
+
+## 💡 Usage Examples
+
+### Example 1: Adding a New Member
 
 1. Go to **Member Directory** sheet
-2. Add new row (Row 2 for most recent)
-3. **Enter manually:**
-   - First Name, Last Name
-   - Job Title (use dropdown)
-   - Work Location (use dropdown)
-   - Unit (use dropdown)
-   - Email, Phone
-   - Is Steward (use dropdown)
-   - Date Joined Union
-   - Membership Status (use dropdown)
+2. Click on the first empty row
+3. Enter Member ID (e.g., M000123)
+4. Fill in name, contact info
+5. Use dropdowns for:
+   - Job Title (from Config)
+   - Work Location (from Config)
+   - Unit (from Config)
+   - Supervisor, Manager, Assigned Steward (from Config)
+6. Fill in engagement data as available
+7. Grievance columns (26-28) will auto-populate if the member has grievances
 
-4. **Leave blank (auto-calculated):**
-   - Member ID (or use format: MEM000123)
-   - All columns N-X (grievance metrics)
-   - Last Updated
-
-5. **Optional:**
-   - Office Days, Engagement Level
-   - Committee Member, Preferred Contact
-   - Emergency Contacts, Notes
-
-### Adding a New Grievance
+### Example 2: Logging a New Grievance
 
 1. Go to **Grievance Log** sheet
-2. Add new row (Row 2 for most recent)
-3. **Enter manually:**
-   - Member ID (from Member Directory)
-   - First Name, Last Name (from Member Directory)
-   - Status (use dropdown)
-   - Current Step (use dropdown)
-   - **Incident Date** (triggers all deadline calculations)
-   - Date Filed (when you actually filed)
-   - Grievance Type (use dropdown)
-   - Description
-   - Representative (Steward name)
+2. Click on the first empty row
+3. Enter:
+   - Grievance ID (e.g., G-000456)
+   - Member ID (must match Member Directory)
+   - Member name
+   - **Incident Date** (when it happened)
+   - **Date Filed** (when you filed it)
+4. Select from dropdowns:
+   - Status (usually "Open")
+   - Current Step (usually "Informal" or "Step I")
+   - Issue Category
+   - Articles Violated
+   - Assigned Steward
+5. Watch as the system automatically calculates:
+   - Filing Deadline (Incident + 21d)
+   - Step I Decision Due (Filed + 30d)
+   - Days Open
+   - Next Action Due
+   - Days to Deadline
 
-4. **Leave blank (auto-calculated):**
-   - Grievance ID (or use format: GRV000456)
-   - All deadline columns (H, J, M, O, R)
-   - All derived fields (AA-AF)
+### Example 3: Tracking a Grievance Through Steps
 
-5. **Enter as case progresses:**
-   - Step I Decision Date, Outcome
-   - Step II Filed Date, Decision Date, Outcome
-   - Step III dates
-   - Final Outcome
+**Scenario**: Grievance filed, Step I decision received, now appealing to Step II
 
-6. **System automatically:**
-   - Calculates all CBA deadlines
-   - Determines if case is overdue
-   - Updates priority score
-   - Updates member's grievance statistics
+1. Find the grievance row in **Grievance Log**
+2. Enter **Step I Decision Rcvd** date (column K)
+3. System automatically calculates **Step II Appeal Due** (Decision + 10d)
+4. When you file Step II appeal:
+   - Enter **Step II Appeal Filed** date (column M)
+   - Update **Current Step** to "Step II"
+   - System calculates **Step II Decision Due** (Appeal + 30d)
+5. **Next Action Due** automatically updates to show Step II decision deadline
+6. Member Directory grievance snapshot updates automatically
 
-### Updating a Grievance
+### Example 4: Closing a Grievance
 
-When you receive a decision or file an appeal:
+1. Go to the grievance row in **Grievance Log**
+2. Update **Status** to "Settled" (or "Withdrawn", "Closed")
+3. Enter **Date Closed**
+4. Fill in **Resolution Summary** (brief description of outcome)
+5. System automatically:
+   - Calculates total **Days Open** (Date Closed - Date Filed)
+   - Clears **Next Action Due** (no more deadlines)
+   - Updates **Member Directory** grievance snapshot
+6. Dashboard "Open Grievances" count decreases automatically
 
-1. Find the grievance row
-2. Enter the date in the appropriate column
-3. **System automatically recalculates:**
-   - Next deadline
-   - Days to deadline
-   - Overdue status
-   - Member statistics
+### Example 5: Adding a New Location to Config
 
-**Example:** When you enter "Step I Decision Date":
-- System calculates "Step II Appeal Deadline" (10 days later)
-- Updates "Days to Next Deadline"
-- Changes color coding if overdue
+**Scenario**: Local 509 opens a new office in "Framingham"
 
----
+1. Go to **Config** tab
+2. Find the "Office Locations" column (Column B)
+3. Scroll to the first empty cell in that column
+4. Type "Framingham Office"
+5. Immediately, all dropdowns in:
+   - Member Directory → Work Location
+   - Grievance Log → Work Location
+   ...now include "Framingham Office" as an option
 
-## ⚖️ CBA Compliance
+### Example 6: Generating Test Data
 
-This system enforces **Article 23A** grievance procedure deadlines:
+**For Training or Testing**:
 
-### Filing Deadlines
+1. Click **📊 509 Dashboard** menu
+2. Select **Admin > Seed 20k Members**
+3. Confirm the dialog
+4. Wait 2-3 minutes while it generates realistic member data
+5. Select **Admin > Seed 5k Grievances**
+6. Confirm and wait 1-2 minutes
+7. Go to **Dashboard** to see populated metrics
+8. Use **Admin > Clear All Data** when done testing
 
-| Event | Deadline | Auto-Calculated Column |
-|-------|----------|----------------------|
-| Incident occurs | File within 21 days | H: Filing Deadline |
-| Grievance filed | Step I decision in 30 days | J: Step I Decision Due |
-| Step I decision received | Appeal within 10 days | M: Step II Appeal Deadline |
-| Step II filed | Step II decision in 30 days | O: Step II Decision Due |
-| Step II decision received | Appeal within 10 days | R: Step III Appeal Deadline |
+### Example 7: Monthly Report Generation
 
-### How It Works
+**Scenario**: You need member engagement stats for the monthly chapter meeting
 
-1. **You enter:** Incident Date (Column G)
-2. **System calculates:** Filing Deadline = Incident Date + 21 days (Column H)
-3. **You enter:** Date Filed (Column I)
-4. **System calculates:** Step I Due = Date Filed + 30 days (Column J)
-5. **Continues automatically** through all steps
+1. Go to **Dashboard**
+2. Note the metrics:
+   - Total Members
+   - Active Stewards
+   - Open Grievances count
+   - Engagement metrics (last 30 days)
+3. Check **Upcoming Deadlines** table for grievances needing attention
+4. Go to **Member Directory** and filter:
+   - Interest: Local Actions = "Yes"
+   - Last Virtual Mtg >= (30 days ago)
+5. Export this filtered list for targeted outreach
+6. Go to **Grievance Log** and filter by Status = "Open" to review active cases
 
-### Color Coding
+### Example 8: Tracking Steward Workload
 
-- 🟢 **Green:** More than 7 days until deadline
-- 🟡 **Yellow:** 0-7 days until deadline (due soon!)
-- 🔴 **Red:** Past deadline (overdue!)
-- 🔴 **Dark Red:** 30+ days overdue (urgent!)
+**Scenario**: Want to see how many open grievances each steward is handling
 
----
+1. Go to **Grievance Log**
+2. Click Data → Create a filter
+3. Filter **Status** = "Open"
+4. Filter **Assigned Steward** = specific steward name
+5. Count visible rows to see their caseload
+6. OR use **Analytics Data** sheet (if unhidden) which has pre-calculated steward workloads
 
-## 🌟 For Stewards
+## 🐛 Troubleshooting
 
-### Excellence Guide for Stewards
+### Issue: Menu "📊 509 Dashboard" doesn't appear
 
-**Are you a steward?** We've created a special guide just for you!
+**Solution**:
+- Close and reopen the Google Sheet
+- Check that the script is saved: Extensions > Apps Script
+- Run `onOpen()` manually from script editor
+- Check permissions: Apps Script may need authorization on first run
 
-The **[Steward Excellence Guide](STEWARD_GUIDE.md)** uses positive reinforcement and celebrates your essential work maintaining member data and engaging with less-active members.
+### Issue: Formulas showing #REF! errors
 
-**This guide includes:**
-- 🏆 Achievement system to track your progress
-- 💪 Special missions for re-engaging less-active members
-- 🎯 Weekly rituals to build data maintenance habits
-- 🎉 Celebration strategies for every win (big and small!)
-- 💡 Pro tips from legendary stewards
-- 🌈 Motivational affirmations and mindset coaching
+**Cause**: Sheet names don't match expected names
 
-**Your work matters!** Every field you complete strengthens our union. Every less-active member you reach out to is a potential future leader.
+**Solution**:
+- Ensure sheets are named exactly:
+  - "Member Directory" (not "Member-Directory" or "Members")
+  - "Grievance Log" (not "Grievances")
+  - "Config" (not "Configuration")
+- Re-run `CREATE_509_DASHBOARD()` to recreate sheets with correct names
 
-👉 **[Read the Steward Excellence Guide](STEWARD_GUIDE.md)** to discover how your data work creates powerful solidarity!
+### Issue: Dropdowns not showing values from Config
 
----
+**Cause**: Data validation not set up or Config tab modified
 
-## 🔧 Troubleshooting
+**Solution**:
+1. Check **Config** tab has values in the right columns
+2. Go to Apps Script editor
+3. Run `setupDataValidations()` function manually
+4. Or re-run full `CREATE_509_DASHBOARD()` setup
 
-### Charts Not Showing
+### Issue: Seeding functions timeout or fail
 
-**Problem:** Dashboard shows "No data available yet"
-**Solution:**
-1. Add at least one member to Member Directory
-2. Add at least one grievance to Grievance Log
-3. Run: **509 Tools** → **Data Management** → **Rebuild Dashboard**
+**Cause**: Google Apps Script execution time limit (6 minutes)
 
----
+**Solution**:
+- Reduce batch size in code (change BATCH_SIZE constant)
+- Run in smaller chunks (modify functions to seed 5k at a time instead of 20k)
+- For very large datasets, consider importing CSV data instead
 
-### Deadlines Not Calculating
+### Issue: Deadline calculations not working
 
-**Problem:** Orange columns (H, J, M, O, R) are blank
-**Solution:**
-1. Ensure you entered the **Incident Date** (Column G)
-2. Ensure you entered the **Date Filed** (Column I)
-3. Run: **509 Tools** → **Data Management** → **Recalc All Grievances**
+**Cause**: Formulas not set up in Grievance Log
 
----
+**Solution**:
+1. Go to Apps Script editor
+2. Run `setupFormulasAndCalculations()` manually
+3. Check that date columns have actual dates (not text)
+4. Verify formulas exist in columns H, J, L, N, P, S, T, U
 
-### Member Metrics Not Updating
+### Issue: Member Directory grievance snapshot not updating
 
-**Problem:** Columns N-X in Member Directory are blank
-**Solution:**
-1. Ensure Member ID matches between Member Directory and Grievance Log
-2. Run: **509 Tools** → **Data Management** → **Recalc All Members**
+**Cause**: Formulas in columns Z, AA, AB not present or broken
 
----
+**Solution**:
+1. Check row 2 of Member Directory, columns Z-AB
+2. Should have formulas like:
+   - Column Z: `=IF(COUNTIFS('Grievance Log'!B:B,A2,'Grievance Log'!E:E,"Open")>0,"Yes","No")`
+3. If missing, run `setupFormulasAndCalculations()` from script editor
+4. Or copy formula from row 2 down to all member rows
 
-### Dropdowns Not Working
+### Issue: Dashboard showing #DIV/0! or #N/A errors
 
-**Problem:** Cannot select from dropdown menus
-**Solution:**
-1. Check that **Config** sheet exists and has data
-2. Run: **509 Tools** → **🔧 Create Dashboard** to rebuild
-3. May need to re-apply: **509 Tools** → **Utilities** → **Setup Triggers**
+**Cause**: No data in Member Directory or Grievance Log yet
 
----
+**Solution**:
+- Errors are normal when sheets are empty
+- Add at least one member and one grievance, or
+- Run seed functions to populate with test data
+- Formulas will calculate correctly once data exists
 
-### Steward Workload Empty
+### Issue: "Cannot read property of null" script error
 
-**Problem:** Steward Workload sheet has no data
-**Solution:**
-1. Ensure members have "Is Steward" = "Yes" in Member Directory
-2. Ensure grievances have Representative names that match steward names
-3. Run: **509 Tools** → **Data Management** → **Rebuild Dashboard**
+**Cause**: Sheet doesn't exist
 
----
+**Solution**:
+- Run `CREATE_509_DASHBOARD()` to create all required sheets
+- Check that you haven't renamed or deleted any sheets
+- Sheet names are case-sensitive
 
-### Permission Errors
+### Issue: Data validation allows invalid values
 
-**Problem:** "You need permission to run this script"
-**Solution:**
-1. **Extensions** → **Apps Script**
-2. Click ▶️ **Run** → Select any function
-3. Click **Review Permissions**
-4. Choose your Google account
-5. Click **Advanced** → **Go to [Project Name]**
-6. Click **Allow**
+**Cause**: User typed instead of using dropdown, or validation rule removed
 
----
+**Solution**:
+1. Re-run `setupDataValidations()` from Apps Script
+2. Educate users to always use dropdowns, not typing
+3. Regularly audit data with filters to find inconsistent values
+
+### Issue: Performance is slow with large datasets
+
+**Optimization tips**:
+- Avoid opening all sheets at once
+- Use filters instead of scrolling through thousands of rows
+- Hide unused sheets
+- Clear formatting from unused cells
+- Consider archiving old closed grievances to a separate sheet
+
+### Issue: Want to customize deadline timelines (not 21/30/10 days)
+
+**Solution**:
+1. Go to Apps Script editor
+2. Find `setupFormulasAndCalculations()` function
+3. Modify the formulas:
+   - Line with `G${row}+21` → change 21 to your filing deadline days
+   - Line with `I${row}+30` → change 30 to your Step I decision days
+   - Line with `K${row}+10` → change 10 to your Step II appeal days
+   - etc.
+4. Save and run the function to update all formulas
+
+## 📌 Best Practices
+
+1. **Always use dropdowns** - Don't type values that should come from Config
+2. **Keep Config clean** - Remove unused values, fix typos in Config (not in data sheets)
+3. **Use consistent Member IDs** - Stick to a format (e.g., M000001, M000002)
+4. **Enter dates promptly** - Grievance calculations depend on accurate dates
+5. **Review deadlines weekly** - Check Dashboard "Upcoming Deadlines" regularly
+6. **Archive old data** - Move closed grievances older than 2 years to archive sheet
+7. **Back up regularly** - File > Make a copy periodically
+8. **Train users** - Ensure all stewards understand the system before using
+9. **Test before production** - Use seed functions to test, then clear before real use
+10. **Document customizations** - If you modify Config lists or formulas, document changes
+
+## 🔒 Data Privacy & Security
+
+- **Access Control**: Use Google Sheets sharing settings to control who can view/edit
+- **Member Data**: Contains PII (names, emails, phone numbers) - restrict access appropriately
+- **Grievance Confidentiality**: Limit access to union staff and authorized stewards only
+- **Backup Strategy**: Regular backups recommended (Google Sheets has version history)
+- **Export Restrictions**: Be cautious about exporting member lists to CSV/Excel
+
+## 📝 Notes
+
+- Dashboard metrics refresh automatically when data changes
+- Grievance deadlines calculated based on contract rules (21/30/10 day timelines)
+- Member grievance status auto-populates from Grievance Log
+- All dropdowns controlled centrally via Config tab
+- No fake data - everything traces back to actual records
+- System supports up to ~100,000 rows per sheet (Google Sheets limit: 10M cells total)
 
 ## 📞 Support
 
-### Quick Reference Card
+For issues with the 509 Dashboard:
+1. Check this README's Troubleshooting section
+2. Review formulas in Apps Script code
+3. Test with fresh setup using `CREATE_509_DASHBOARD()`
+4. Document bugs in the Feedback & Development sheet
 
-**Add Member:** Member Directory → New Row → Fill basic info
-**Add Grievance:** Grievance Log → New Row → Enter Incident Date
-**View Dashboard:** Click Dashboard tab
-**Refresh Data:** 509 Tools → Data Management → Rebuild Dashboard
-**Check Deadlines:** Dashboard → Top 10 Overdue list
-**Balance Stewards:** Steward Workload sheet → Review Active Cases
+## 📄 License
 
-### Menu Guide
-
-**509 Tools Menu:**
-```
-🔧 Create Dashboard
-   └─ Initial setup (run once)
-
-🎯 Interactive Dashboard (NEW!)
-   ├─ Setup Controls (first time setup)
-   ├─ Refresh Charts (update visualizations)
-   └─ View Interactive Dashboard (open and get instructions)
-
-🧠 ADHD-Friendly Tools (NEW!)
-   ├─ ⚡ Quick Setup (Do This First!) - One-click optimization
-   ├─ (separator)
-   ├─ 📑 Reorder Sheets Logically - Put important tabs first
-   ├─ 👁️ Hide Gridlines (Cleaner View) - Remove visual clutter
-   ├─ 👁️‍🗨️ Show Gridlines (If Needed) - Bring them back
-   ├─ (separator)
-   ├─ ⚙️ Create My Settings Page - Personal customization
-   ├─ ✅ Apply My Settings - Apply your preferences
-   ├─ (separator)
-   └─ 📋 Add Visual Guide to Steward Workload - Icon-based instructions
-
-📊 Data Management
-   ├─ Seed All Test Data (RECOMMENDED - unified function) 🆕
-   ├─ (separator)
-   ├─ Seed 20K Members (test data)
-   ├─ Seed 5K Grievances (test data)
-   ├─ (separator)
-   ├─ Recalc All Grievances (fix calculations)
-   ├─ Recalc All Members (update metrics)
-   └─ Rebuild Dashboard (refresh charts)
-
-📈 Rebuild Analytics
-   ├─ Rebuild All Tabs (refresh all analytics)
-   ├─ (separator)
-   ├─ Rebuild Trends & Timeline
-   ├─ Rebuild Performance Metrics
-   ├─ Rebuild Location Analytics
-   └─ Rebuild Type Analysis
-
-📤 Export Data
-   ├─ Export Dashboard to PDF
-   ├─ Export Member Directory to CSV
-   ├─ Export Grievances to CSV
-   └─ Export Steward Workload to CSV
-
-🎨 Theme Options
-   ├─ Light Theme
-   ├─ Dark Theme
-   └─ High Contrast Theme
-
-⚙️ Utilities
-   ├─ Sort by Priority (organize grievance list)
-   ├─ Toggle Mobile Mode
-   └─ Setup Triggers (reset automation)
-```
-
-**Advanced Enhancement Menus:** 🆕
-```
-🔍 Data Validation
-   ├─ Run Integrity Check
-   ├─ Auto-Correct Errors
-   ├─ Find Orphaned Grievances
-   ├─ Generate Missing IDs
-   ├─ (separator)
-   └─ Validate CBA Compliance
-
-📧 Notifications
-   ├─ Send Overdue Alerts
-   ├─ Send Weekly Reminders
-   ├─ Send Daily Digest
-   └─ Configure Preferences
-
-📊 Advanced Reports
-   ├─ Executive Summary
-   ├─ Trend Analysis
-   ├─ Location Analysis
-   ├─ Steward Performance
-   ├─ (separator)
-   ├─ Export to PDF
-   ├─ Export to CSV
-   └─ Export to Excel
-
-👥 Member Engagement
-   ├─ Update Engagement Levels
-   ├─ Find Inactive Members
-   ├─ Identify Steward Candidates
-   └─ Send Re-engagement Emails
-
-🛠️ Advanced Tools
-   ├─ Quick Actions Sidebar
-   ├─ Search Grievances
-   ├─ Filter Data
-   ├─ Export Wizard
-   ├─ (separator)
-   ├─ Keyboard Shortcuts
-   └─ Performance Monitor
-```
-
-*All enhancement menus are automatically enabled via addEnhancementMenus() in onOpen()*
-
-### Common Workflows
-
-**New Grievance Workflow:**
-1. Member reports issue → Record Incident Date
-2. File grievance → Enter Date Filed
-3. System calculates → Filing and Step I deadlines
-4. Receive Step I decision → Enter decision date
-5. System calculates → Step II appeal deadline
-6. Continue through process → System tracks everything
-
-**Weekly Review Workflow:**
-1. Open Dashboard
-2. Check "Overdue Grievances" count
-3. Review "Top 10 Overdue" table
-4. Check "Due This Week" count
-5. Filter Grievance Log for this week's items
-6. Contact assigned stewards
-7. Update case statuses
-8. Rebuild Dashboard
-
----
-
-## 📄 Technical Details
-
-**Platform:** Google Sheets + Google Apps Script
-**Programming Language:** JavaScript (Apps Script)
-**Calculation Method:** Code-based (no formulas in data rows)
-**Update Frequency:** Real-time on edit, manual rebuild for charts
-**Data Capacity:** 20,000+ members, 5,000+ grievances tested
-**Mobile Friendly:** Yes (Google Sheets mobile app)
-
-### System Architecture
-
-- **Config Sheet:** Central data validation source
-- **Member Directory:** Member records with calculated metrics
-- **Grievance Log:** Case tracking with CBA deadline automation
-- **Dashboard:** Executive summary with KPIs and charts
-- **Steward Workload:** Performance and capacity tracking
-- **Analytics Data:** Historical trend storage
-- **_ChartData:** Hidden sheet for chart data processing
-
-### Automated Triggers
-
-- **onEdit:** Recalculates row when edited
-- **onFormSubmit:** Processes form submissions (if connected)
-- **Manual:** Rebuild Dashboard, Recalc All functions
-
----
-
-## 🚀 Production Readiness
-
-### Pre-Launch Checklist
-
-Before deploying to production, complete the following:
-
-**✅ 1. Review Production Setup Sheets**
-- Open the **Pending Features** sheet
-- Follow the step-by-step checklist
-- Verify all critical and high-priority items
-
-**✅ 2. Test Key Features**
-```
-Run these functions from the menu to verify:
-- 509 Tools → 🛠️ Advanced Tools → Quick Actions Sidebar
-- 🔍 Data Validation → Run Integrity Check
-- 509 Tools → 📊 Data Management → Seed All Test Data (in test environment)
-```
-
-**✅ 3. Configure Script Properties**
-Access: Extensions → Apps Script → Project Settings → Script Properties
-
-Required properties for security features:
-- `ADMINS` - Comma-separated admin emails
-- `STEWARDS` - Comma-separated steward emails
-- `ENCRYPTION_KEY` - 16+ character secure key
-- `BACKUP_FOLDER_ID` - Google Drive folder ID for backups
-
-**✅ 4. Set Up Automated Triggers**
-```
-From Apps Script editor, run these once:
-- scheduleReports() - Weekly/monthly report automation
-- scheduleAutomaticUpdates() - Hourly dashboard refresh
-```
-
-**✅ 5. Enable Security Features**
-All security features are available in the **Future Features** sheet:
-- Audit logging (Feature 79)
-- Role-based access control (Feature 80)
-- Input sanitization (Feature 83)
-- See the sheet for full documentation
-
-**✅ 6. Final Verification**
-- Test with real data in a copy first
-- Verify all calculations are accurate
-- Ensure all menu items work
-- Train end users on workflows
-- Set up backup schedule
-
-**✅ 7. Go Live!**
-- Import or enter real member data
-- Import or enter real grievance data
-- Run: 509 Tools → Data Management → Rebuild Dashboard
-- Monitor closely for first week
-
-### System Capacity
-
-**Tested Performance:**
-- 20,000+ members ✅
-- 5,000+ grievances ✅
-- < 5 seconds for most operations ✅
-- Real-time calculations ✅
-
-### Security & Compliance
-
-**Data Protection:**
-- Role-based access control available (configure script properties)
-- Audit logging available (Feature 79)
-- Data encryption available (Features 81-82)
-- Input sanitization enabled (Feature 83)
-
-**CBA Compliance:**
-- Article 23A deadlines automatically calculated ✅
-- 21-day filing window ✅
-- 30-day decision timelines ✅
-- 10-day appeal deadlines ✅
-
-**Backup & Recovery:**
-- Automated backup function available (Feature 90)
-- Manual export to CSV/PDF ✅
-- Google Sheets version history ✅
-
-### Support & Maintenance
-
-**Weekly Tasks:**
-- Review **Dashboard** for overdue grievances
-- Run **Rebuild Dashboard** if needed
-- Check **Steward Workload** for balance
-
-**Monthly Tasks:**
-- Run **🔍 Data Validation → Run Integrity Check**
-- Review audit logs (if enabled)
-- Verify backup creation (if automated)
-
-**Quarterly Tasks:**
-- Review **Future Features** for new capabilities
-- Update member engagement levels
-- Archive old resolved cases
-
-### Getting Help
-
-- Review **Pending Features** sheet for setup guidance
-- Review **Future Features** sheet for available capabilities
-- Check **Diagnostics** sheet for system health
-- All functions are documented with comments in Code.gs
-
----
-
-## 📜 License
-
-Created for SEIU Local 509 (Units 8 & 10)
-Based on Massachusetts State Employee CBA 2024-2026
-
----
-
-## ✨ Best Practices
-
-### Data Entry
-- ✅ Always enter Incident Date first (triggers all calculations)
-- ✅ Use consistent steward names (for workload tracking)
-- ✅ Keep Member IDs consistent across sheets
-- ✅ Use dropdowns (prevents typos and errors)
-- ❌ Don't edit green or orange highlighted columns (auto-calculated)
-
-### Maintenance
-- 🔄 Run "Rebuild Dashboard" weekly
-- 🔄 Run "Recalc All Members" after bulk grievance entry
-- 🔄 Run "Recalc All Grievances" if deadlines look wrong
-- 📊 Take monthly analytics snapshots
-- 🗂️ Archive resolved cases quarterly
-
-### Performance
-- Keep most recent items at top of sheets (Row 2)
-- Sort Grievance Log by priority monthly
-- Archive old resolved cases to Archive sheet
-- Clear Diagnostics sheet periodically
-
----
-
-**Built with ❤️ for union representatives fighting for worker rights**
-
-*For questions, issues, or feature requests, contact your system administrator.*
+Created for Local 509. Modify as needed for your union's requirements.
