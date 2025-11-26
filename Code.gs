@@ -702,6 +702,7 @@ function onOpen() {
 
   ui.createMenu("📊 509 Dashboard")
     .addItem("🔄 Refresh All", "refreshCalculations")
+    .addItem("🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor")
     .addSeparator()
     .addSubMenu(ui.createMenu("⚙️ Admin")
       .addItem("Seed 20k Members", "SEED_20K_MEMBERS")
