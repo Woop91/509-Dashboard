@@ -123,7 +123,11 @@ function DIAGNOSE_SETUP() {
     "Dashboard",
     "Analytics Data",
     "Member Satisfaction",
-    "Feedback & Development"
+    "Feedback & Development",
+    "🎯 Interactive (Your Custom View)",
+    "📚 Getting Started",
+    "❓ FAQ",
+    "⚙️ User Settings"
   ];
 
   let missingSheets = [];
@@ -174,24 +178,38 @@ function CREATE_509_DASHBOARD() {
 
   try {
     createConfigTab();
-    SpreadsheetApp.getActive().toast("✅ Config created", "15%", 2);
+    SpreadsheetApp.getActive().toast("✅ Config created", "10%", 2);
 
     createMemberDirectory();
-    SpreadsheetApp.getActive().toast("✅ Member Directory created", "30%", 2);
+    SpreadsheetApp.getActive().toast("✅ Member Directory created", "20%", 2);
 
     createGrievanceLog();
-    SpreadsheetApp.getActive().toast("✅ Grievance Log created", "45%", 2);
+    SpreadsheetApp.getActive().toast("✅ Grievance Log created", "30%", 2);
 
     createMainDashboard();
-    SpreadsheetApp.getActive().toast("✅ Dashboard created", "60%", 2);
+    SpreadsheetApp.getActive().toast("✅ Main Dashboard created", "40%", 2);
 
     createAnalyticsDataSheet();
     createMemberSatisfactionSheet();
     createFeedbackSheet();
-    SpreadsheetApp.getActive().toast("✅ All sheets created", "75%", 2);
+    SpreadsheetApp.getActive().toast("✅ Data sheets created", "50%", 2);
+
+    // Create Interactive Dashboard
+    createInteractiveDashboardSheet(ss);
+    SpreadsheetApp.getActive().toast("✅ Interactive Dashboard created", "60%", 2);
+
+    // Create Getting Started and FAQ sheets
+    createGettingStartedSheet(ss);
+    createFAQSheet(ss);
+    SpreadsheetApp.getActive().toast("✅ Help sheets created", "70%", 2);
+
+    // Create User Settings sheet
+    createUserSettingsSheet();
+    SpreadsheetApp.getActive().toast("✅ Settings sheet created", "80%", 2);
 
     setupDataValidations();
     setupFormulasAndCalculations();
+    setupInteractiveDashboardControls();
     SpreadsheetApp.getActive().toast("✅ Validations & formulas ready", "90%", 2);
 
     onOpen();
@@ -816,7 +834,15 @@ function onOpen() {
 
   ui.createMenu("📊 509 Dashboard")
     .addItem("🔄 Refresh All", "refreshCalculations")
-    .addItem("🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor")
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📊 Dashboards")
+      .addItem("🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor")
+      .addItem("📊 Main Dashboard", "goToDashboard")
+      .addItem("✨ Interactive Dashboard", "openInteractiveDashboard")
+      .addItem("🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📋 Grievance Tools")
+      .addItem("➕ Start New Grievance", "showStartGrievanceDialog"))
     .addSeparator()
     .addSubMenu(ui.createMenu("⚙️ Admin")
       .addItem("Seed 20k Members", "SEED_20K_MEMBERS")
@@ -833,8 +859,10 @@ function onOpen() {
       .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
       .addItem("Show All Member Columns", "showAllMemberColumns"))
     .addSeparator()
-    .addItem("📊 Dashboard", "goToDashboard")
-    .addItem("❓ Help", "showHelp")
+    .addSubMenu(ui.createMenu("❓ Help & Support")
+      .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
+      .addItem("❓ Help", "showHelp")
+      .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP"))
     .addToUi();
 }
 
