@@ -14,15 +14,13 @@ const SHEETS = {
   MEMBER_SATISFACTION: "Member Satisfaction",
   INTERACTIVE_DASHBOARD: "🎯 Interactive (Your Custom View)",
   STEWARD_WORKLOAD: "👨‍⚖️ Steward Workload",
-  TRENDS: "📈 Test 1: Trends & Timeline",
-  PERFORMANCE: "⚡ Test 2: Performance Metrics",
-  LOCATION: "🗺️ Test 3: Location Analytics",
-  TYPE_ANALYSIS: "📊 Test 4: Type Analysis",
-  EXECUTIVE: "💼 Test 5: Executive Summary",
-  KPI_BOARD: "🎯 Test 6: KPI Board",
-  MEMBER_ENGAGEMENT: "👥 Test 7: Member Engagement",
-  COST_IMPACT: "💰 Test 8: Cost Impact",
-  QUICK_STATS: "⚡ Test 9: Quick Stats",
+  TRENDS: "📈 Trends & Timeline",
+  LOCATION: "🗺️ Location Analytics",
+  TYPE_ANALYSIS: "📊 Type Analysis",
+  EXECUTIVE_DASHBOARD: "💼 Executive Dashboard",
+  KPI_PERFORMANCE: "📊 KPI Performance Dashboard",
+  MEMBER_ENGAGEMENT: "👥 Member Engagement",
+  COST_IMPACT: "💰 Cost Impact",
   ARCHIVE: "📦 Archive",
   DIAGNOSTICS: "🔧 Diagnostics"
 };
@@ -95,16 +93,14 @@ function CREATE_509_DASHBOARD() {
     // Create all analytics and test sheets
     createStewardWorkloadSheet();
     createTrendsSheet();
-    createPerformanceSheet();
     createLocationSheet();
     createTypeAnalysisSheet();
     SpreadsheetApp.getActive().toast("✅ Analytics sheets created", "75%", 2);
 
-    createExecutiveSheet();
-    createKPIBoardSheet();
+    createExecutiveDashboard();
+    createKPIPerformanceDashboard();
     createMemberEngagementSheet();
     createCostImpactSheet();
-    createQuickStatsSheet();
     SpreadsheetApp.getActive().toast("✅ Executive sheets created", "80%", 2);
 
     // Create utility sheets
@@ -621,17 +617,6 @@ function createTrendsSheet() {
   sheet.setTabColor(COLORS.UNION_GREEN);
 }
 
-function createPerformanceSheet() {
-  const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.PERFORMANCE);
-  if (!sheet) sheet = ss.insertSheet(SHEETS.PERFORMANCE);
-  sheet.clear();
-  sheet.getRange("A1:J1").merge().setValue("⚡ PERFORMANCE METRICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_ORANGE).setFontColor("white");
-  const headers = ["Metric", "Current", "Target", "Variance", "Status", "Last Month", "% Change", "YTD Average", "Best", "Worst"];
-  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
-  sheet.setFrozenRows(3);
-  sheet.setTabColor(COLORS.ACCENT_ORANGE);
-}
 
 function createLocationSheet() {
   const ss = SpreadsheetApp.getActive();
@@ -657,29 +642,165 @@ function createTypeAnalysisSheet() {
   sheet.setTabColor(COLORS.PRIMARY_BLUE);
 }
 
-function createExecutiveSheet() {
+/* ===================== EXECUTIVE DASHBOARD (Merged Summary + Quick Stats) ===================== */
+function createExecutiveDashboard() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.EXECUTIVE);
-  if (!sheet) sheet = ss.insertSheet(SHEETS.EXECUTIVE);
+  let sheet = ss.getSheetByName("💼 Executive Dashboard");
+
+  if (!sheet) {
+    sheet = ss.insertSheet("💼 Executive Dashboard");
+  }
   sheet.clear();
-  sheet.getRange("A1:F1").merge().setValue("💼 EXECUTIVE SUMMARY").setFontSize(18).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_PURPLE).setFontColor("white");
-  sheet.getRange("A3").setValue("📊 Key Performance Indicators").setFontWeight("bold").setFontSize(14);
-  const kpis = [["Total Active Members", "=COUNTA('Member Directory'!A2:A)", ""], ["Total Active Grievances", "=COUNTIF('Grievance Log'!E:E,\"Open\")", ""], ["Overall Win Rate", "=IFERROR(COUNTIFS('Grievance Log'!E:E,\"Resolved*\",'Grievance Log'!AB:AB,\"*Won*\")/COUNTIF('Grievance Log'!E:E,\"Resolved*\"),0)", ""], ["Avg Resolution Time (Days)", "=AVERAGE('Grievance Log'!S:S)", ""], ["Cases Overdue", "=COUNTIF('Grievance Log'!U:U,\"<0\")", ""], ["Member Satisfaction", "=AVERAGE('Member Satisfaction'!C:C)", ""]];
-  sheet.getRange(6, 1, kpis.length, 3).setValues(kpis);
+
+  // Header
+  sheet.getRange("A1:F1").merge()
+    .setValue("💼 EXECUTIVE DASHBOARD")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.PRIMARY_PURPLE)
+    .setFontColor("white");
+
+  sheet.getRange("A2:F2").merge()
+    .setValue("⚡ At-a-Glance Metrics & Key Performance Indicators")
+    .setFontSize(10)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  // Section 1: Quick Stats
+  sheet.getRange("A4:D4").merge()
+    .setValue("⚡ QUICK STATS")
+    .setFontWeight("bold")
+    .setFontSize(14)
+    .setBackground(COLORS.ACCENT_ORANGE)
+    .setFontColor("white")
+    .setHorizontalAlignment("center");
+
+  const quickHeaders = ["Metric", "Value", "Comparison", "Trend"];
+  sheet.getRange(5, 1, 1, quickHeaders.length).setValues([quickHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY);
+
+  const quickStats = [
+    ["Active Members", "=COUNTA('Member Directory'!A2:A)", "", ""],
+    ["Active Grievances", "=COUNTIF('Grievance Log'!E:E,\"Open\")", "", ""],
+    ["Win Rate", "=TEXT(IFERROR(COUNTIFS('Grievance Log'!E:E,\"Resolved*\",'Grievance Log'!AB:AB,\"*Won*\")/COUNTIF('Grievance Log'!E:E,\"Resolved*\"),0),\"0%\")", "", ""],
+    ["Avg Resolution (Days)", "=ROUND(AVERAGE('Grievance Log'!S:S),1)", "", ""],
+    ["Overdue Cases", "=COUNTIF('Grievance Log'!U:U,\"<0\")", "", ""],
+    ["Active Stewards", "=COUNTIF('Member Directory'!J:J,\"Yes\")", "", ""]
+  ];
+
+  sheet.getRange(6, 1, quickStats.length, 4).setValues(quickStats);
+
+  // Section 2: Detailed KPIs
+  sheet.getRange("A13:C13").merge()
+    .setValue("📊 DETAILED KEY PERFORMANCE INDICATORS")
+    .setFontWeight("bold")
+    .setFontSize(14)
+    .setBackground(COLORS.PRIMARY_PURPLE)
+    .setFontColor("white")
+    .setHorizontalAlignment("center");
+
+  const kpiHeaders = ["Metric", "Value", "Status"];
+  sheet.getRange(14, 1, 1, kpiHeaders.length).setValues([kpiHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY);
+
+  const detailedKpis = [
+    ["Total Active Members", "=COUNTA('Member Directory'!A2:A)", ""],
+    ["Total Active Grievances", "=COUNTIF('Grievance Log'!E:E,\"Open\")", ""],
+    ["Overall Win Rate", "=TEXT(IFERROR(COUNTIFS('Grievance Log'!E:E,\"Resolved*\",'Grievance Log'!AB:AB,\"*Won*\")/COUNTIF('Grievance Log'!E:E,\"Resolved*\"),0),\"0.0%\")", ""],
+    ["Avg Resolution Time (Days)", "=ROUND(AVERAGE('Grievance Log'!S:S),1)", ""],
+    ["Cases Overdue", "=COUNTIF('Grievance Log'!U:U,\"<0\")", ""],
+    ["Member Satisfaction Score", "=TEXT(AVERAGE('Member Satisfaction'!C:C),\"0.0\")", ""],
+    ["Total Grievances Filed YTD", "=COUNTA('Grievance Log'!A2:A)", ""],
+    ["Resolved Grievances", "=COUNTIF('Grievance Log'!E:E,\"Resolved\")", ""]
+  ];
+
+  sheet.getRange(15, 1, detailedKpis.length, 3).setValues(detailedKpis);
+
   sheet.setFrozenRows(4);
   sheet.setTabColor(COLORS.PRIMARY_PURPLE);
+
+  // Set column widths
+  sheet.setColumnWidth(1, 250);
+  sheet.setColumnWidth(2, 150);
+  sheet.setColumnWidth(3, 100);
+  sheet.setColumnWidth(4, 100);
 }
 
-function createKPIBoardSheet() {
+/* ===================== KPI PERFORMANCE DASHBOARD (Merged Performance + KPI Board) ===================== */
+function createKPIPerformanceDashboard() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.KPI_BOARD);
-  if (!sheet) sheet = ss.insertSheet(SHEETS.KPI_BOARD);
+  let sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
+
+  if (!sheet) {
+    sheet = ss.insertSheet("📊 KPI Performance Dashboard");
+  }
   sheet.clear();
-  sheet.getRange("A1:H1").merge().setValue("🎯 KPI BOARD").setFontSize(18).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.UNION_GREEN).setFontColor("white");
-  const headers = ["KPI Name", "Current Value", "Target", "Previous Period", "% Change", "Status", "Owner", "Last Updated"];
-  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+
+  // Header
+  sheet.getRange("A1:L1").merge()
+    .setValue("📊 KPI PERFORMANCE DASHBOARD")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.UNION_GREEN)
+    .setFontColor("white");
+
+  sheet.getRange("A2:L2").merge()
+    .setValue("🎯 Track KPIs against targets with variance analysis and performance trends")
+    .setFontSize(10)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  const headers = [
+    "KPI Name",
+    "Current Value",
+    "Target",
+    "Variance",
+    "% Change",
+    "Status",
+    "Last Month",
+    "YTD Average",
+    "Best",
+    "Worst",
+    "Owner",
+    "Last Updated"
+  ];
+
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_DARK);
+
+  // Add data validation for Status
+  const statusRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['On Track', 'At Risk', 'Off Track', 'Exceeding'], true)
+    .setAllowInvalid(false)
+    .build();
+  sheet.getRange("F4:F1000").setDataValidation(statusRule);
+
   sheet.setFrozenRows(3);
   sheet.setTabColor(COLORS.UNION_GREEN);
+
+  // Set column widths
+  sheet.setColumnWidth(1, 200);  // KPI Name
+  sheet.setColumnWidth(2, 120);  // Current Value
+  sheet.setColumnWidth(3, 100);  // Target
+  sheet.setColumnWidth(4, 100);  // Variance
+  sheet.setColumnWidth(5, 100);  // % Change
+  sheet.setColumnWidth(6, 100);  // Status
+  sheet.setColumnWidth(7, 100);  // Last Month
+  sheet.setColumnWidth(8, 110);  // YTD Average
+  sheet.setColumnWidth(9, 80);   // Best
+  sheet.setColumnWidth(10, 80);  // Worst
+  sheet.setColumnWidth(11, 120); // Owner
+  sheet.setColumnWidth(12, 110); // Last Updated
 }
 
 function createMemberEngagementSheet() {
@@ -706,17 +827,6 @@ function createCostImpactSheet() {
   sheet.setTabColor(COLORS.SOLIDARITY_RED);
 }
 
-function createQuickStatsSheet() {
-  const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.QUICK_STATS);
-  if (!sheet) sheet = ss.insertSheet(SHEETS.QUICK_STATS);
-  sheet.clear();
-  sheet.getRange("A1:D1").merge().setValue("⚡ QUICK STATS").setFontSize(18).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_ORANGE).setFontColor("white");
-  const stats = [["Active Members", "=COUNTA('Member Directory'!A2:A)", "", ""], ["Active Grievances", "=COUNTIF('Grievance Log'!E:E,\"Open\")", "", ""], ["Win Rate", "=TEXT(IFERROR(COUNTIFS('Grievance Log'!E:E,\"Resolved*\",'Grievance Log'!AB:AB,\"*Won*\")/COUNTIF('Grievance Log'!E:E,\"Resolved*\"),0),\"0%\")", "", ""], ["Avg Resolution (Days)", "=AVERAGE('Grievance Log'!S:S)", "", ""], ["Overdue Cases", "=COUNTIF('Grievance Log'!U:U,\"<0\")", "", ""], ["Active Stewards", "=COUNTIF('Member Directory'!J:J,\"Yes\")", "", ""]];
-  sheet.getRange(4, 1, stats.length, 4).setValues(stats);
-  sheet.setFrozenRows(3);
-  sheet.setTabColor(COLORS.ACCENT_ORANGE);
-}
 
 function createArchiveSheet() {
   const ss = SpreadsheetApp.getActive();
