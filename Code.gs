@@ -949,11 +949,32 @@ function SEED_5K_GRIEVANCES() {
     const dateClosed = isClosed ? new Date(dateFiled.getTime() + Math.random() * 90 * 24 * 60 * 60 * 1000) : "";
     const resolution = isClosed ? ["Resolved favorably", "Withdrawn by member", "Settled with compromise", "No violation found"][Math.floor(Math.random() * 4)] : "";
 
+    // Calculate all deadline columns based on contract rules
+    const filingDeadline = new Date(incidentDate.getTime() + 21 * 24 * 60 * 60 * 1000);
+    const step1DecisionDue = new Date(dateFiled.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const step1DecisionRcvd = (step !== "Informal" && Math.random() > 0.3) ? new Date(dateFiled.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
+    const step2AppealDue = step1DecisionRcvd ? new Date(step1DecisionRcvd.getTime() + 10 * 24 * 60 * 60 * 1000) : "";
+    const step2AppealFiled = (step === "Step II" || step === "Step III" || step === "Arbitration") && step2AppealDue ? new Date(step1DecisionRcvd.getTime() + Math.random() * 10 * 24 * 60 * 60 * 1000) : "";
+    const step2DecisionDue = step2AppealFiled ? new Date(step2AppealFiled.getTime() + 30 * 24 * 60 * 60 * 1000) : "";
+    const step2DecisionRcvd = (step === "Step III" || step === "Arbitration") && step2DecisionDue ? new Date(step2AppealFiled.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
+    const step3AppealDue = step2DecisionRcvd ? new Date(step2DecisionRcvd.getTime() + 30 * 24 * 60 * 60 * 1000) : "";
+    const step3AppealFiled = (step === "Step III" || step === "Arbitration") && step3AppealDue ? new Date(step2DecisionRcvd.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
+    const daysOpen = isClosed && dateClosed ? Math.floor((dateClosed - dateFiled) / (1000 * 60 * 60 * 24)) : Math.floor((Date.now() - dateFiled.getTime()) / (1000 * 60 * 60 * 24));
+    let nextActionDue = "";
+    if (!isClosed) {
+      if (step === "Informal" || step === "Step I") nextActionDue = step1DecisionDue;
+      else if (step === "Step II") nextActionDue = step2DecisionDue || step2AppealDue;
+      else if (step === "Step III") nextActionDue = step3AppealDue;
+      else if (step === "Arbitration") nextActionDue = new Date(Date.now() + Math.random() * 60 * 24 * 60 * 60 * 1000);
+    }
+    const daysToDeadline = nextActionDue ? Math.floor((nextActionDue - Date.now()) / (1000 * 60 * 60 * 24)) : "";
+
     const row = [
       grievanceID, memberID, firstName, lastName, status, step,
-      incidentDate, "", dateFiled, "", "", "", "", "", "", "", "",
-      dateClosed, "", "", "", article, category, email, unit, location,
-      assignedSteward, resolution
+      incidentDate, filingDeadline, dateFiled, step1DecisionDue, step1DecisionRcvd,
+      step2AppealDue, step2AppealFiled, step2DecisionDue, step2DecisionRcvd,
+      step3AppealDue, step3AppealFiled, dateClosed, daysOpen, nextActionDue, daysToDeadline,
+      article, category, email, unit, location, assignedSteward, resolution
     ];
 
     data.push(row);
@@ -991,7 +1012,51 @@ function SEED_5K_GRIEVANCES() {
     }
   }
 
-  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added!`, "Complete", 5);
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added! Updating member snapshots...`, "Processing", 2);
+  updateMemberDirectorySnapshots();
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added and member snapshots updated!`, "Complete", 5);
+}
+
+function updateMemberDirectorySnapshots() {
+  const ss = SpreadsheetApp.getActive();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!memberDir || !grievanceLog) return;
+  const memberLastRow = memberDir.getLastRow();
+  const grievanceLastRow = grievanceLog.getLastRow();
+  if (memberLastRow < 2 || grievanceLastRow < 2) return;
+  const memberIDs = memberDir.getRange(2, 1, memberLastRow - 1, 1).getValues().flat();
+  const grievanceData = grievanceLog.getRange(2, 1, grievanceLastRow - 1, 28).getValues();
+  const memberSnapshots = {};
+  grievanceData.forEach(row => {
+    const memberID = row[1];
+    const status = row[4];
+    const nextActionDue = row[19];
+    const assignedSteward = row[26];
+    if (!memberID) return;
+    if (!memberSnapshots[memberID]) {
+      memberSnapshots[memberID] = {status, nextDeadline: nextActionDue, stewardWhoContacted: assignedSteward};
+    } else {
+      if (status && (status === "Open" || status.includes("Filed") || status === "Pending Info")) memberSnapshots[memberID].status = status;
+      if (nextActionDue && nextActionDue instanceof Date) {
+        if (!memberSnapshots[memberID].nextDeadline || (memberSnapshots[memberID].nextDeadline instanceof Date && nextActionDue < memberSnapshots[memberID].nextDeadline)) {
+          memberSnapshots[memberID].nextDeadline = nextActionDue;
+        }
+      }
+    }
+  });
+  const updateData = [];
+  for (let i = 0; i < memberIDs.length; i++) {
+    const snapshot = memberSnapshots[memberIDs[i]];
+    if (snapshot) {
+      const contactDate = new Date(Date.now() - Math.floor(Math.random() * 14) * 24 * 60 * 60 * 1000);
+      const contactNotes = ["Discussed case progress", "Member updated on next steps", "Reviewed timeline and deadlines", "Answered member questions", "Scheduled follow-up meeting"][Math.floor(Math.random() * 5)];
+      updateData.push([snapshot.status || "", snapshot.nextDeadline || "", contactDate, snapshot.stewardWhoContacted || "", contactNotes]);
+    } else {
+      updateData.push(["", "", "", "", ""]);
+    }
+  }
+  if (updateData.length > 0) memberDir.getRange(2, 25, updateData.length, 5).setValues(updateData);
 }
 
 function clearAllData() {
