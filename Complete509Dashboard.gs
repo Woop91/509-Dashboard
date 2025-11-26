@@ -134,7 +134,12 @@ function CREATE_509_DASHBOARD() {
     onOpen();
 
     SpreadsheetApp.getActive().toast("✅ Dashboard ready! Use menu to seed data.", "Complete!", 5);
-    ss.getSheetByName(SHEETS.DASHBOARD).activate();
+
+    // Safely activate dashboard sheet if it exists
+    const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+    if (dashboard) {
+      dashboard.activate();
+    }
 
   } catch (error) {
     SpreadsheetApp.getActive().toast("❌ Error: " + error.toString(), "Error", 10);
@@ -755,6 +760,16 @@ function onOpen() {
       .addItem("Seed 5k Grievances", "SEED_5K_GRIEVANCES")
       .addItem("Clear All Data", "clearAllData"))
     .addSeparator()
+    .addSubMenu(ui.createMenu("♿ ADHD Features")
+      .addItem("Hide Gridlines (Focus Mode)", "hideAllGridlines")
+      .addItem("Show Gridlines", "showAllGridlines")
+      .addItem("Reorder Sheets Logically", "reorderSheetsLogically")
+      .addItem("Setup ADHD Defaults", "setupADHDDefaults"))
+    .addSubMenu(ui.createMenu("👁️ Column Toggles")
+      .addItem("Toggle Advanced Grievance Columns", "toggleGrievanceColumns")
+      .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
+      .addItem("Show All Member Columns", "showAllMemberColumns"))
+    .addSeparator()
     .addItem("📊 Dashboard", "goToDashboard")
     .addItem("❓ Help", "showHelp")
     .addToUi();
@@ -772,7 +787,16 @@ function refreshCalculations() {
 
 function goToDashboard() {
   const ss = SpreadsheetApp.getActive();
-  ss.getSheetByName(SHEETS.DASHBOARD).activate();
+  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+  if (dashboard) {
+    dashboard.activate();
+  } else {
+    SpreadsheetApp.getUi().alert(
+      'Dashboard Not Found',
+      'The Dashboard sheet does not exist. Please run CREATE_509_DASHBOARD() from the Apps Script editor first.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
 }
 
 function showHelp() {
