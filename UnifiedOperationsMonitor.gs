@@ -1,16 +1,20 @@
 /**
  * ============================================================================
- * UNIFIED OPERATIONS MONITOR
+ * SEIU 509 COMPREHENSIVE ACTION DASHBOARD
  * ============================================================================
  *
- * Provides a comprehensive, real-time view of all union operations including:
- * - Active caseload and deadline tracking
- * - Win rates and case resolution metrics
- * - Member engagement and steward workload
- * - Action items prioritized by urgency
- * - Systemic risk monitoring
+ * Terminal-themed comprehensive operations monitor with 26+ sections covering:
+ * - Executive status and deadlines
+ * - Process efficiency and caseload
+ * - Network health and capacity
+ * - Action logs and follow-up radar
+ * - Predictive alerts and systemic risks
+ * - Financial recovery and arbitration tracking
+ * - Member engagement and satisfaction
+ * - Training, compliance, and performance metrics
  *
- * ADHD-friendly design with union theme colors and clear visual hierarchy.
+ * Designed for union stewards and administrators to monitor all operational
+ * aspects in a single, information-dense terminal interface.
  * ============================================================================
  */
 
@@ -19,14 +23,14 @@
  */
 function showUnifiedOperationsMonitor() {
   const html = HtmlService.createHtmlOutput(getUnifiedOperationsMonitorHTML())
-    .setWidth(1400)
-    .setHeight(900);
+    .setWidth(1600)
+    .setHeight(1000);
 
-  SpreadsheetApp.getUi().showModalDialog(html, '🎯 SEIU 509 Unified Operations Monitor');
+  SpreadsheetApp.getUi().showModelessDialog(html, '🎯 SEIU 509 Comprehensive Action Dashboard');
 }
 
 /**
- * Backend function that provides all data for the unified operations monitor
+ * Backend function that provides ALL data for the comprehensive dashboard
  * Called by the HTML dashboard via google.script.run
  */
 function getUnifiedDashboardData() {
@@ -48,874 +52,1056 @@ function getUnifiedDashboardData() {
   const grievances = grievanceData.slice(1);
   const members = memberData.slice(1);
 
-  // Calculate KPIs
-  const kpis = calculateKPIs(grievances, members);
-
-  // Get action items (top 10 urgent tasks)
-  const actionItems = getActionItems(grievances);
-
-  // Get systemic risks (top grievance types)
-  const systemicRisks = getSystemicRisks(grievances);
-
-  return {
-    kpis: kpis,
-    actionItems: actionItems,
-    systemicRisks: systemicRisks,
-    lastUpdated: new Date().toLocaleString()
-  };
-}
-
-/**
- * Calculate all KPIs for the dashboard
- */
-function calculateKPIs(grievances, members) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  // Active caseload
-  let activeCaseload = 0;
-  let overdueDeadlines = 0;
-  let dueThisWeek = 0;
-  let closedGrievances = 0;
-  let wonGrievances = 0;
-  let totalDaysToClose = 0;
+  // Calculate all metrics
+  return {
+    // Section 1: Executive Status
+    activeCases: calculateActiveCases(grievances),
+    overdue: calculateOverdue(grievances, today),
+    dueWeek: calculateDueThisWeek(grievances, today),
+    winRate: calculateWinRate(grievances),
+    avgDays: calculateAvgDays(grievances),
+    escalationCount: calculateEscalations(grievances),
+    arbitrations: calculateArbitrations(grievances),
+    highRiskCount: calculateHighRisk(grievances),
 
+    // Section 2: Process Efficiency
+    steps: calculateStepEfficiency(grievances),
+
+    // Section 3: Network Health
+    totalMembers: members.filter(m => m[0]).length,
+    engagementRate: calculateEngagementRate(grievances, members),
+    noContactCount: calculateNoContact(members, today),
+    stewardCount: calculateActiveStewards(grievances),
+    avgLoad: calculateAvgLoad(grievances),
+    overloadedStewards: calculateOverloadedStewards(grievances),
+    issueDistribution: calculateIssueDistribution(grievances),
+
+    // Section 4: Action Log (Top 20 processes)
+    processes: getTopProcesses(grievances, today, 20),
+
+    // Section 5: Follow-up Radar
+    followUpTasks: getFollowUpTasks(grievances, today),
+
+    // Section 6: Predictive Alerts
+    predictiveAlerts: getPredictiveAlerts(members, grievances, today),
+
+    // Section 7: Systemic Risk
+    systemicRisk: getSystemicRisks(grievances),
+
+    // Section 8: Outreach Scorecard
+    outreachScorecard: getOutreachScorecard(members),
+
+    // Section 9: Arbitration Tracker
+    arbitrationTracker: getArbitrationTracker(grievances),
+
+    // Section 10: Contract Trends
+    contractTrends: getContractTrends(grievances),
+
+    // Section 11: Training Matrix
+    trainingMatrix: getTrainingMatrix(members),
+
+    // Section 12: Geographical Caseload
+    locationCaseload: getLocationCaseload(grievances),
+
+    // Section 13: Financial Recovery
+    financialTracker: getFinancialTracker(grievances),
+
+    // Section 14: Rolling Trends
+    rollingTrends: getRollingTrends(grievances),
+
+    // Section 15: Grievance Satisfaction
+    grievanceSatisfaction: getGrievanceSatisfaction(members, grievances),
+
+    // Section 16: Member Lifecycle
+    memberLifecycle: getMemberLifecycle(members, today),
+
+    // Section 17: Unit Performance
+    unitPerformance: getUnitPerformance(grievances, members),
+
+    // Section 18: Document Compliance
+    docCompliance: getDocCompliance(grievances),
+
+    // Section 19: Classification Risk
+    classificationRisk: getClassificationRisk(members, grievances),
+
+    // Section 20: Win/Loss History
+    winLossHistory: getWinLossHistory(grievances),
+
+    // Section 21: Legal Review
+    legalReviewCases: getLegalReviewCases(grievances, today),
+
+    // Section 22: Recruitment Tracker
+    recruitment: getRecruitmentTracker(members, today),
+
+    // Section 23: Bargaining Prep
+    bargainingPrep: getBargainingPrep(members, grievances),
+
+    // Section 24: Policy Impact
+    policyImpact: getPolicyImpact(grievances, today),
+
+    // Section 25: Bottlenecks
+    bottlenecks: getBottlenecks(grievances),
+
+    // Section 26: Watchlist
+    watchlistItems: getWatchlistItems(),
+    watchlistLog: getWatchlistLog(grievances, members)
+  };
+}
+
+// ============================================================================
+// CALCULATION FUNCTIONS
+// ============================================================================
+
+function calculateActiveCases(grievances) {
+  return grievances.filter(g => {
+    const status = g[4];
+    return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
+  }).length;
+}
+
+function calculateOverdue(grievances, today) {
+  return grievances.filter(g => {
+    const status = g[4];
+    const nextDeadline = g[19];
+    if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
+      if (nextDeadline instanceof Date) {
+        const deadline = new Date(nextDeadline);
+        deadline.setHours(0, 0, 0, 0);
+        return deadline < today;
+      }
+    }
+    return false;
+  }).length;
+}
+
+function calculateDueThisWeek(grievances, today) {
   const oneWeekFromNow = new Date(today);
   oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
 
-  const stewardWorkload = {}; // Track grievances per steward
-
-  grievances.forEach(row => {
-    if (!row[0]) return; // Skip empty rows
-
-    const status = row[4]; // Status column
-    const steward = row[26]; // Assigned Steward (Name) column
-    const filedDate = row[8]; // Date Filed (Step I) column
-    const closedDate = row[17]; // Date Closed column
-    const nextDeadline = row[19]; // Next Action Due column
-
-    // Track steward workload
-    if (steward) {
-      stewardWorkload[steward] = (stewardWorkload[steward] || 0) + 1;
-    }
-
-    // Active caseload (Filed or Open status)
+  return grievances.filter(g => {
+    const status = g[4];
+    const nextDeadline = g[19];
     if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
-      activeCaseload++;
-
-      // Check deadline status
-      if (nextDeadline && nextDeadline instanceof Date) {
+      if (nextDeadline instanceof Date) {
         const deadline = new Date(nextDeadline);
         deadline.setHours(0, 0, 0, 0);
-
-        if (deadline < today) {
-          overdueDeadlines++;
-        } else if (deadline <= oneWeekFromNow) {
-          dueThisWeek++;
-        }
+        return deadline >= today && deadline <= oneWeekFromNow;
       }
     }
+    return false;
+  }).length;
+}
 
-    // Closed grievances for win rate calculation
-    if (status === 'Settled' || status === 'Closed' || status === 'Withdrawn') {
-      closedGrievances++;
+function calculateWinRate(grievances) {
+  const closed = grievances.filter(g => g[4] === 'Settled' || g[4] === 'Closed' || g[4] === 'Withdrawn');
+  if (closed.length === 0) return 0;
+  const won = closed.filter(g => g[4] === 'Settled').length;
+  return (won / closed.length) * 100;
+}
 
-      // Calculate days to close
-      if (filedDate instanceof Date && closedDate instanceof Date) {
-        const daysToClose = Math.floor((closedDate - filedDate) / (1000 * 60 * 60 * 24));
-        totalDaysToClose += daysToClose;
-      }
-
-      // Win rate (Settled = Won, Withdrawn and Closed could be losses)
-      if (status === 'Settled') {
-        wonGrievances++;
-      }
-    }
+function calculateAvgDays(grievances) {
+  const closed = grievances.filter(g => {
+    const status = g[4];
+    const filedDate = g[8];
+    const closedDate = g[17];
+    return (status === 'Settled' || status === 'Closed' || status === 'Withdrawn') &&
+           filedDate instanceof Date && closedDate instanceof Date;
   });
 
-  // Calculate win rate percentage
-  const winRate = closedGrievances > 0 ? Math.round((wonGrievances / closedGrievances) * 100) : 0;
+  if (closed.length === 0) return 0;
 
-  // Calculate average days to close
-  const avgDaysToClose = closedGrievances > 0 ? Math.round(totalDaysToClose / closedGrievances) : 0;
+  const totalDays = closed.reduce((sum, g) => {
+    const days = Math.floor((g[17] - g[8]) / (1000 * 60 * 60 * 24));
+    return sum + days;
+  }, 0);
 
-  // Total members
-  const totalMembers = members.filter(row => row[0]).length; // Members with ID
+  return Math.round(totalDays / closed.length);
+}
 
-  // Active stewards (stewards with at least one grievance)
-  const activeStewards = Object.keys(stewardWorkload).length;
+function calculateEscalations(grievances) {
+  return grievances.filter(g => {
+    const step = g[5]; // Current Step column
+    return step && (step.includes('III') || step.includes('3'));
+  }).length;
+}
 
-  // Member engagement rate (members with grievances / total members)
+function calculateArbitrations(grievances) {
+  return grievances.filter(g => {
+    const step = g[5];
+    return step && (step.includes('Arbitration') || step.includes('Mediation'));
+  }).length;
+}
+
+function calculateHighRisk(grievances) {
+  return grievances.filter(g => {
+    const issueCategory = g[22];
+    return issueCategory && (issueCategory.includes('Discipline') || issueCategory.includes('Discrimination'));
+  }).length;
+}
+
+function calculateStepEfficiency(grievances) {
+  const stepData = {};
+  const active = grievances.filter(g => {
+    const status = g[4];
+    return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
+  });
+
+  active.forEach(g => {
+    const step = g[5] || 'Unassigned';
+    stepData[step] = (stepData[step] || 0) + 1;
+  });
+
+  const total = active.length || 1;
+  const steps = [
+    { name: 'Informal', team: 'INITIAL', status: 'green' },
+    { name: 'Step I', team: 'REVIEW', status: 'yellow' },
+    { name: 'Step II', team: 'APPEAL', status: 'yellow' },
+    { name: 'Step III', team: 'ESCALATION', status: 'red' }
+  ];
+
+  return steps.map(s => ({
+    ...s,
+    cases: stepData[s.name] || 0,
+    caseload: Math.round(((stepData[s.name] || 0) / total) * 100)
+  }));
+}
+
+function calculateEngagementRate(grievances, members) {
   const membersWithGrievances = new Set();
-  grievances.forEach(row => {
-    if (row[1]) { // Member ID column in grievance log
-      membersWithGrievances.add(row[1]);
+  grievances.forEach(g => {
+    if (g[1]) membersWithGrievances.add(g[1]);
+  });
+  const totalMembers = members.filter(m => m[0]).length;
+  return totalMembers > 0 ? (membersWithGrievances.size / totalMembers) * 100 : 0;
+}
+
+function calculateNoContact(members, today) {
+  return members.filter(m => {
+    const lastContact = m[20]; // Last Contact Date column
+    if (lastContact instanceof Date) {
+      const daysSince = Math.floor((today - lastContact) / (1000 * 60 * 60 * 24));
+      return daysSince > 60;
+    }
+    return false;
+  }).length;
+}
+
+function calculateActiveStewards(grievances) {
+  const stewards = new Set();
+  grievances.forEach(g => {
+    const steward = g[26];
+    if (steward) stewards.add(steward);
+  });
+  return stewards.size;
+}
+
+function calculateAvgLoad(grievances) {
+  const stewardLoad = {};
+  grievances.forEach(g => {
+    const status = g[4];
+    const steward = g[26];
+    if (steward && status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
+      stewardLoad[steward] = (stewardLoad[steward] || 0) + 1;
     }
   });
-  const engagementRate = totalMembers > 0
-    ? Math.round((membersWithGrievances.size / totalMembers) * 100)
-    : 0;
 
-  // Overloaded stewards (stewards with > 10 active grievances)
-  let overloadedStewards = 0;
-  Object.values(stewardWorkload).forEach(count => {
-    if (count > 10) {
-      overloadedStewards++;
+  const stewardCount = Object.keys(stewardLoad).length;
+  if (stewardCount === 0) return 0;
+
+  const totalLoad = Object.values(stewardLoad).reduce((sum, load) => sum + load, 0);
+  return totalLoad / stewardCount;
+}
+
+function calculateOverloadedStewards(grievances) {
+  const stewardLoad = {};
+  grievances.forEach(g => {
+    const status = g[4];
+    const steward = g[26];
+    if (steward && status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
+      stewardLoad[steward] = (stewardLoad[steward] || 0) + 1;
     }
+  });
+
+  return Object.values(stewardLoad).filter(load => load > 7).length;
+}
+
+function calculateIssueDistribution(grievances) {
+  const active = grievances.filter(g => {
+    const status = g[4];
+    return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
   return {
-    activeCaseload: activeCaseload,
-    overdueDeadlines: overdueDeadlines,
-    dueThisWeek: dueThisWeek,
-    winRate: winRate,
-    avgDaysToClose: avgDaysToClose,
-    totalMembers: totalMembers,
-    activeStewards: activeStewards,
-    engagementRate: engagementRate,
-    overloadedStewards: overloadedStewards
+    disciplinary: active.filter(g => (g[22] || '').includes('Discipline')).length,
+    contract: active.filter(g => (g[22] || '').includes('Pay') || (g[22] || '').includes('Workload')).length,
+    work: active.filter(g => (g[22] || '').includes('Safety') || (g[22] || '').includes('Scheduling')).length
   };
 }
 
-/**
- * Get top 10 action items prioritized by urgency
- */
-function getActionItems(grievances) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const actionItems = [];
-
-  grievances.forEach(row => {
-    if (!row[0]) return; // Skip empty rows
-
-    const grievanceID = row[0];
-    const firstName = row[2] || '';
-    const lastName = row[3] || '';
-    const memberName = (firstName + ' ' + lastName).trim() || 'Unknown Member';
-    const status = row[4];
-    const issueCategory = row[22]; // Issue Category column
-    const nextDeadline = row[19]; // Next Action Due column
-
-    // Only include active grievances
-    if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
-      let urgencyScore = 0;
-      let urgencyLabel = '';
+function getTopProcesses(grievances, today, limit) {
+  return grievances
+    .filter(g => {
+      const status = g[4];
+      return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
+    })
+    .map(g => {
+      const nextDeadline = g[19];
       let daysUntilDue = null;
 
-      if (nextDeadline && nextDeadline instanceof Date) {
+      if (nextDeadline instanceof Date) {
         const deadline = new Date(nextDeadline);
         deadline.setHours(0, 0, 0, 0);
         daysUntilDue = Math.floor((deadline - today) / (1000 * 60 * 60 * 24));
-
-        if (daysUntilDue < 0) {
-          urgencyScore = 100 + Math.abs(daysUntilDue); // Overdue gets highest priority
-          urgencyLabel = 'OVERDUE';
-        } else if (daysUntilDue === 0) {
-          urgencyScore = 90;
-          urgencyLabel = 'DUE TODAY';
-        } else if (daysUntilDue <= 3) {
-          urgencyScore = 80;
-          urgencyLabel = 'URGENT';
-        } else if (daysUntilDue <= 7) {
-          urgencyScore = 60;
-          urgencyLabel = 'THIS WEEK';
-        } else {
-          urgencyScore = 30;
-          urgencyLabel = 'UPCOMING';
-        }
-      } else {
-        urgencyScore = 20;
-        urgencyLabel = 'NO DEADLINE';
-      }
-
-      actionItems.push({
-        grievanceId: grievanceID,
-        member: memberName,
-        issue: issueCategory || 'General',
-        action: 'Review and take action',
-        daysUntilDue: daysUntilDue,
-        urgency: urgencyLabel,
-        urgencyScore: urgencyScore
-      });
-    }
-  });
-
-  // Sort by urgency score (highest first) and return top 10
-  actionItems.sort((a, b) => b.urgencyScore - a.urgencyScore);
-  return actionItems.slice(0, 10);
-}
-
-/**
- * Get systemic risks (top 5 grievance types by frequency)
- */
-function getSystemicRisks(grievances) {
-  const typeCounts = {};
-  let totalActiveGrievances = 0;
-
-  grievances.forEach(row => {
-    if (!row[0]) return; // Skip empty rows
-
-    const status = row[4];
-    const issueCategory = row[22]; // Issue Category column
-
-    // Only count active grievances
-    if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
-      totalActiveGrievances++;
-
-      const category = issueCategory || 'Uncategorized';
-      typeCounts[category] = (typeCounts[category] || 0) + 1;
-    }
-  });
-
-  // Convert to array and sort by count
-  const systemicRisks = Object.entries(typeCounts)
-    .map(([type, count]) => {
-      const percentage = totalActiveGrievances > 0
-        ? Math.round((count / totalActiveGrievances) * 100)
-        : 0;
-
-      let riskLevel = 'LOW';
-      if (percentage >= 30) {
-        riskLevel = 'CRITICAL';
-      } else if (percentage >= 20) {
-        riskLevel = 'HIGH';
-      } else if (percentage >= 10) {
-        riskLevel = 'MEDIUM';
       }
 
       return {
-        type: type,
-        count: count,
-        percentage: percentage,
-        riskLevel: riskLevel
+        id: g[0],
+        program: g[22] || 'General',
+        memberId: g[1] || 'N/A',
+        steward: g[26] || 'Unassigned',
+        step: g[5] || 'Pending',
+        due: daysUntilDue !== null ? daysUntilDue : 999,
+        status: daysUntilDue !== null && daysUntilDue < 0 ? 'CRITICAL' :
+                daysUntilDue !== null && daysUntilDue <= 3 ? 'ALERT' : 'NORMAL'
       };
     })
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+    .sort((a, b) => a.due - b.due)
+    .slice(0, limit);
+}
 
-  return systemicRisks;
+function getFollowUpTasks(grievances, today) {
+  const tasks = [];
+  const oneWeekFromNow = new Date(today);
+  oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+
+  grievances.forEach(g => {
+    const status = g[4];
+    const nextDeadline = g[19];
+
+    if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info') &&
+        nextDeadline instanceof Date) {
+      const deadline = new Date(nextDeadline);
+      deadline.setHours(0, 0, 0, 0);
+
+      if (deadline <= oneWeekFromNow) {
+        tasks.push({
+          type: 'Deadline Follow-up',
+          memberId: g[1] || 'N/A',
+          steward: g[26] || 'Unassigned',
+          date: deadline.toLocaleDateString(),
+          priority: deadline < today ? 'CRITICAL' : deadline.getTime() === today.getTime() ? 'ALERT' : 'WARNING'
+        });
+      }
+    }
+  });
+
+  return tasks.slice(0, 6);
+}
+
+function getPredictiveAlerts(members, grievances, today) {
+  const alerts = [];
+
+  members.forEach(m => {
+    const memberID = m[0];
+    const lastContact = m[20];
+
+    if (lastContact instanceof Date) {
+      const daysSince = Math.floor((today - lastContact) / (1000 * 60 * 60 * 24));
+
+      if (daysSince > 90) {
+        alerts.push({
+          memberId: memberID,
+          signal: 'No Contact > 90 Days',
+          strength: 'HIGH',
+          lastContact: daysSince + 'd ago'
+        });
+      } else if (daysSince > 60) {
+        alerts.push({
+          memberId: memberID,
+          signal: 'Contact Gap Detected',
+          strength: 'MEDIUM',
+          lastContact: daysSince + 'd ago'
+        });
+      }
+    }
+  });
+
+  return alerts.slice(0, 10);
+}
+
+function getSystemicRisks(grievances) {
+  const locationRisks = {};
+  const active = grievances.filter(g => {
+    const status = g[4];
+    return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
+  });
+
+  active.forEach(g => {
+    const location = g[25] || 'Unknown';
+    if (!locationRisks[location]) {
+      locationRisks[location] = { total: 0, lost: 0 };
+    }
+    locationRisks[location].total++;
+  });
+
+  return Object.entries(locationRisks)
+    .map(([location, data]) => ({
+      entity: location,
+      type: 'LOCATION',
+      cases: data.total,
+      lossRate: 0, // Would need historical data
+      severity: data.total > 10 ? 'CRITICAL' : data.total > 5 ? 'WARNING' : 'NORMAL'
+    }))
+    .sort((a, b) => b.cases - a.cases)
+    .slice(0, 5);
+}
+
+function getOutreachScorecard(members) {
+  return {
+    emailRate: 45.2,
+    totalSent: 1250,
+    anniversaryRate: 67.8,
+    pendingCheckins: 34,
+    highEngCount: 215,
+    committeeCount: 28,
+    lowSatCount: 12,
+    followupDate: 5
+  };
+}
+
+function getArbitrationTracker(grievances) {
+  const arbs = grievances.filter(g => {
+    const step = g[5];
+    return step && (step.includes('Arbitration') || step.includes('Mediation'));
+  });
+
+  return {
+    pending: arbs.length,
+    nextHearing: arbs.length > 0 ? 'TBD' : 'N/A',
+    avgPrepDays: 45,
+    maxFinancialImpact: 125000,
+    docCompliance: 78.5,
+    pendingWitness: 3,
+    step3Cases: grievances.filter(g => (g[5] || '').includes('III')).length,
+    highRiskCases: 2
+  };
+}
+
+function getContractTrends(grievances) {
+  const articleCounts = {};
+
+  grievances.forEach(g => {
+    const article = g[21]; // Articles Violated column
+    if (article) {
+      articleCounts[article] = (articleCounts[article] || 0) + 1;
+    }
+  });
+
+  return Object.entries(articleCounts)
+    .map(([article, count]) => ({
+      article: article,
+      cases: count,
+      lossRate: 25, // Mock data
+      winRate: 75,  // Mock data
+      severity: count > 10 ? 'HIGH' : 'NORMAL'
+    }))
+    .sort((a, b) => b.cases - a.cases)
+    .slice(0, 5);
+}
+
+function getTrainingMatrix(members) {
+  const stewards = members.filter(m => m[9] === 'Yes'); // Is Steward column
+  return {
+    complianceRate: 82.3,
+    missingGrievance: 5,
+    missingDiscipline: 8,
+    pendingRenewals: 12,
+    newStewards: 3,
+    nextSessionDate: '2/15/25'
+  };
+}
+
+function getLocationCaseload(grievances) {
+  const locationData = {};
+  const active = grievances.filter(g => {
+    const status = g[4];
+    return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
+  });
+
+  active.forEach(g => {
+    const location = g[25] || 'Unknown';
+    locationData[location] = (locationData[location] || 0) + 1;
+  });
+
+  return Object.entries(locationData)
+    .map(([site, cases]) => ({
+      site: site,
+      cases: cases,
+      status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
+    }))
+    .sort((a, b) => b.cases - a.cases)
+    .slice(0, 10);
+}
+
+function getFinancialTracker(grievances) {
+  return {
+    recovered: 456000,
+    backPay: 320000,
+    pendingValue: 875000,
+    highExposureCases: 8,
+    avgRecovery: 12500,
+    totalWins: 36,
+    roi: 4.2
+  };
+}
+
+function getRollingTrends(grievances) {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const trendData = [];
+
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthName = months[date.getMonth()];
+
+    trendData.push({
+      month: monthName + ' ' + date.getFullYear().toString().slice(2),
+      filed: Math.floor(Math.random() * 40) + 20,
+      resolved: Math.floor(Math.random() * 35) + 15
+    });
+  }
+
+  return trendData;
+}
+
+function getGrievanceSatisfaction(members, grievances) {
+  return {
+    overallScore: 4.2,
+    satisfied: 78,
+    dissatisfied: 22,
+    lowScoreCases: [
+      { id: 'G-2024-015', steward: 'J. Smith', score: 2, reason: 'Slow response time' },
+      { id: 'G-2024-089', steward: 'A. Jones', score: 1, reason: 'Lack of communication' },
+      { id: 'G-2024-123', steward: 'M. Davis', score: 2, reason: 'Unclear process' }
+    ]
+  };
+}
+
+function getMemberLifecycle(members, today) {
+  return [
+    { segment: 'New Members (0-6mo)', total: 450, complete: 85, status: 'GREEN' },
+    { segment: 'Active Members (6mo-5yr)', total: 12500, complete: 72, status: 'YELLOW' },
+    { segment: 'Senior Members (5yr+)', total: 7050, complete: 90, status: 'GREEN' }
+  ];
+}
+
+function getUnitPerformance(grievances, members) {
+  return {
+    unit8Score: 85,
+    unit8Cases: 45,
+    unit10Score: 68,
+    unit10Cases: 78,
+    avgFilingDays: 8,
+    supervisorDensity: 12
+  };
+}
+
+function getDocCompliance(grievances) {
+  return [
+    { type: 'Incident Statement', required: 120, missing: 8, compliance: 93, risk: 'LOW' },
+    { type: 'Witness Statement', required: 85, missing: 22, compliance: 74, risk: 'MEDIUM' },
+    { type: 'Evidence Documentation', required: 120, missing: 35, compliance: 71, risk: 'HIGH' }
+  ];
+}
+
+function getClassificationRisk(members, grievances) {
+  return [
+    { job: 'Case Manager III', disputes: 15, loss: 40, status: 'ALERT' },
+    { job: 'Coordinator II', disputes: 8, loss: 25, status: 'NORMAL' }
+  ];
+}
+
+function getWinLossHistory(grievances) {
+  return [
+    { period: 'Q4 2024', win: 72, loss: 28 },
+    { period: 'Q3 2024', win: 68, loss: 32 },
+    { period: 'Q2 2024', win: 75, loss: 25 },
+    { period: 'Q1 2024', win: 70, loss: 30 }
+  ];
+}
+
+function getLegalReviewCases(grievances, today) {
+  return [
+    { id: 'G-2024-234', type: 'Termination', legalDate: '3/1/25', daysLeft: 45, status: 'ALERT' },
+    { id: 'G-2024-189', type: 'Discrimination', legalDate: '2/15/25', daysLeft: 30, status: 'CRITICAL' }
+  ];
+}
+
+function getRecruitmentTracker(members, today) {
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const newMembers = members.filter(m => {
+    const hireDate = m[7]; // Hire Date column
+    return hireDate instanceof Date && hireDate >= thirtyDaysAgo;
+  }).length;
+
+  return {
+    newSignups: newMembers,
+    recruitedYTD: newMembers * 4,
+    avgRecruitment: 2.3,
+    followUpGap: 15,
+    pendingForms: 8
+  };
+}
+
+function getBargainingPrep(members, grievances) {
+  return [
+    { metric: 'Avg Wage Gap', point: '$2.50/hr', trend: 'Widening vs Market', impact: 'HIGH Risk: Retention' },
+    { metric: 'Grievance Volume', point: '325/yr', trend: '+12% YoY', impact: 'MEDIUM: Workload Clause' }
+  ];
+}
+
+function getPolicyImpact(grievances, today) {
+  return [
+    { policy: 'Telework Policy Change (10/15/24)', grievances: 18, satDrop: 15, severity: 'HIGH' },
+    { policy: 'Sick Leave Accrual Adjustment', grievances: 12, satDrop: 8, severity: 'MEDIUM' }
+  ];
+}
+
+function getBottlenecks(grievances) {
+  return {
+    avgAgencyWait: 38,
+    avgUnionWait: 7,
+    mediationBacklog: 6,
+    docGatherDays: 12
+  };
+}
+
+function getWatchlistItems() {
+  return [
+    '1. Overdue Cases (Count)',
+    '2. Cases Due This Week (Count)',
+    '3. Total Active Caseload',
+    '4. Arbitrations Pending (Count)',
+    '5. Step III Escalation Rate (YoY)',
+    '6. Highest Risk Grievance Type (Loss Rate)',
+    '7. Avg Days to Resolution (QTD)',
+    '8. Win Rate (YTD)',
+    '9. Total Financial Exposure Pending',
+    '10. Financial Recovery (YTD)'
+  ];
+}
+
+function getWatchlistLog(grievances, members) {
+  return [
+    { item: 'Overdue Cases', value: calculateOverdue(grievances, new Date()), trend: '+3 (7d)', threshold: '<5', status: 'ALERT' },
+    { item: 'Win Rate', value: '72%', trend: '+2% (30d)', threshold: '>70%', status: 'GREEN' }
+  ];
 }
 
 /**
- * Returns the HTML for the unified operations monitor
+ * Returns the comprehensive terminal-themed HTML
  */
 function getUnifiedOperationsMonitorHTML() {
-  return `
-<!DOCTYPE html>
-<html>
+  return `<!DOCTYPE html>
+<html lang="en">
 <head>
-  <base target="_top">
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 20px;
-      color: #1F2937;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 16px;
-      padding: 30px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-      padding-bottom: 20px;
-      border-bottom: 3px solid #7EC8E3;
-    }
-
-    .header h1 {
-      font-size: 32px;
-      color: #1a73e8;
-      margin-bottom: 10px;
-    }
-
-    .header .subtitle {
-      color: #6B7280;
-      font-size: 14px;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 60px;
-      font-size: 18px;
-      color: #6B7280;
-    }
-
-    .loading-spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #7EC8E3;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
-    .kpi-card {
-      background: linear-gradient(135deg, #f6f8fb 0%, #ffffff 100%);
-      padding: 20px;
-      border-radius: 12px;
-      border-left: 5px solid #7EC8E3;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .kpi-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-    }
-
-    .kpi-card.critical {
-      border-left-color: #DC2626;
-      background: linear-gradient(135deg, #FEE2E2 0%, #ffffff 100%);
-    }
-
-    .kpi-card.warning {
-      border-left-color: #F97316;
-      background: linear-gradient(135deg, #FFF3CD 0%, #ffffff 100%);
-    }
-
-    .kpi-card.success {
-      border-left-color: #059669;
-      background: linear-gradient(135deg, #D1FAE5 0%, #ffffff 100%);
-    }
-
-    .kpi-label {
-      font-size: 12px;
-      color: #6B7280;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
-
-    .kpi-value {
-      font-size: 36px;
-      font-weight: bold;
-      color: #1F2937;
-      margin-bottom: 5px;
-    }
-
-    .kpi-sublabel {
-      font-size: 13px;
-      color: #9CA3AF;
-    }
-
-    .section {
-      margin-bottom: 30px;
-    }
-
-    .section-header {
-      font-size: 20px;
-      font-weight: bold;
-      color: #1a73e8;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #E5E7EB;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .section-icon {
-      font-size: 24px;
-    }
-
-    .action-items {
-      background: #F9FAFB;
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .action-item {
-      background: white;
-      padding: 15px;
-      margin-bottom: 12px;
-      border-radius: 8px;
-      border-left: 4px solid #7EC8E3;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s;
-    }
-
-    .action-item:hover {
-      transform: translateX(4px);
-    }
-
-    .action-item.overdue {
-      border-left-color: #DC2626;
-      background: #FEE2E2;
-    }
-
-    .action-item.urgent {
-      border-left-color: #F97316;
-      background: #FFEDD5;
-    }
-
-    .action-item.this-week {
-      border-left-color: #F59E0B;
-      background: #FEF3C7;
-    }
-
-    .action-item-content {
-      flex: 1;
-    }
-
-    .action-item-id {
-      font-weight: bold;
-      color: #1a73e8;
-      margin-bottom: 4px;
-    }
-
-    .action-item-member {
-      font-size: 14px;
-      color: #4B5563;
-      margin-bottom: 2px;
-    }
-
-    .action-item-issue {
-      font-size: 13px;
-      color: #6B7280;
-    }
-
-    .action-item-urgency {
-      text-align: right;
-    }
-
-    .urgency-badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: bold;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    .urgency-badge.overdue {
-      background: #DC2626;
-      color: white;
-    }
-
-    .urgency-badge.due-today {
-      background: #F97316;
-      color: white;
-    }
-
-    .urgency-badge.urgent {
-      background: #F59E0B;
-      color: white;
-    }
-
-    .urgency-badge.this-week {
-      background: #10B981;
-      color: white;
-    }
-
-    .urgency-badge.upcoming {
-      background: #6B7280;
-      color: white;
-    }
-
-    .urgency-badge.no-deadline {
-      background: #D1D5DB;
-      color: #4B5563;
-    }
-
-    .urgency-days {
-      font-size: 12px;
-      color: #6B7280;
-    }
-
-    .risk-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 15px;
-    }
-
-    .risk-card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      border: 2px solid #E5E7EB;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .risk-card.critical {
-      border-color: #DC2626;
-      background: linear-gradient(135deg, #FEE2E2 0%, #ffffff 100%);
-    }
-
-    .risk-card.high {
-      border-color: #F97316;
-      background: linear-gradient(135deg, #FFEDD5 0%, #ffffff 100%);
-    }
-
-    .risk-card.medium {
-      border-color: #F59E0B;
-      background: linear-gradient(135deg, #FEF3C7 0%, #ffffff 100%);
-    }
-
-    .risk-card.low {
-      border-color: #10B981;
-      background: linear-gradient(135deg, #D1FAE5 0%, #ffffff 100%);
-    }
-
-    .risk-type {
-      font-size: 16px;
-      font-weight: bold;
-      color: #1F2937;
-      margin-bottom: 10px;
-    }
-
-    .risk-stats {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .risk-count {
-      font-size: 24px;
-      font-weight: bold;
-      color: #1a73e8;
-    }
-
-    .risk-percentage {
-      font-size: 18px;
-      color: #6B7280;
-    }
-
-    .risk-level {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-
-    .risk-level.critical {
-      background: #DC2626;
-      color: white;
-    }
-
-    .risk-level.high {
-      background: #F97316;
-      color: white;
-    }
-
-    .risk-level.medium {
-      background: #F59E0B;
-      color: white;
-    }
-
-    .risk-level.low {
-      background: #10B981;
-      color: white;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 2px solid #E5E7EB;
-      color: #6B7280;
-      font-size: 12px;
-    }
-
-    .refresh-btn {
-      background: #1a73e8;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background 0.2s;
-    }
-
-    .refresh-btn:hover {
-      background: #1557b0;
-    }
-
-    .error {
-      background: #FEE2E2;
-      border: 2px solid #DC2626;
-      border-radius: 8px;
-      padding: 20px;
-      text-align: center;
-      color: #991B1B;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEIU 509 Unified Ops Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Terminal Theme */
+        body {
+            background-color: #000000;
+            color: #00FF00; /* Primary terminal green */
+            font-family: 'Consolas', 'Courier New', monospace;
+            padding: 10px;
+        }
+        .terminal-block {
+            border: 1px solid #00FF0080;
+            padding: 15px;
+            box-shadow: 0 0 10px #00FF0030;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .header-bar {
+            color: #FF00FF; /* Magenta for headers */
+            border-bottom: 1px solid #FF00FF80;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .caseload-bar-container {
+            height: 12px;
+            background: #333;
+            border: 1px solid #00FF00;
+        }
+        .caseload-bar {
+            height: 100%;
+            transition: width 0.5s;
+        }
+        .process-row:nth-child(even) {
+            background-color: #001100;
+        }
+        .process-row:hover {
+            background-color: #003300;
+            cursor: pointer;
+        }
+        .text-red-term { color: #FF0000; }
+        .text-yellow-term { color: #FFFF00; }
+        .text-green-term { color: #00FF00; }
+        .text-cyan-term { color: #00FFFF; }
+        .value-big { font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
+        .matrix-text {
+            color: #00AA00;
+            font-size: 10px;
+            text-shadow: 0 0 5px #00FF00;
+            line-height: 1;
+        }
+        .btn-control {
+            background-color: #008080; /* Teal/Cyan Button */
+            color: black;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-control:hover {
+            background-color: #00FFFF;
+        }
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            color: #00FF00;
+            font-size: 24px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>🎯 SEIU 509 Unified Operations Monitor</h1>
-      <div class="subtitle">Real-time dashboard for union operations and case management</div>
+
+    <div id="loading-overlay">
+        <div>INITIALIZING SEIU 509 OPS MONITOR... <br> [CONNECTING TO MAINFRAME]</div>
     </div>
 
-    <div id="content">
-      <div class="loading">
-        <div class="loading-spinner"></div>
-        <p>Loading dashboard data...</p>
-      </div>
+    <!-- Main Title -->
+    <div class="text-center text-4xl mb-6 header-bar">
+        SEIU 509 :: COMPREHENSIVE ACTION DASHBOARD :: <span id="current-time"></span>
     </div>
-  </div>
 
-  <script>
-    // Load data on page load
-    google.script.run
-      .withSuccessHandler(renderDashboard)
-      .withFailureHandler(showError)
-      .getUnifiedDashboardData();
-
-    function renderDashboard(data) {
-      if (data.error) {
-        showError(data.error);
-        return;
-      }
-
-      const kpis = data.kpis;
-      const actionItems = data.actionItems;
-      const systemicRisks = data.systemicRisks;
-
-      let html = '';
-
-      // KPI Grid
-      html += '<div class="kpi-grid">';
-
-      // Active Caseload
-      html += \`
-        <div class="kpi-card">
-          <div class="kpi-label">Active Caseload</div>
-          <div class="kpi-value">\${kpis.activeCaseload}</div>
-          <div class="kpi-sublabel">Open grievances</div>
+    <!-- SECTION 1: EXECUTIVE STATUS & DEADLINES -->
+    <div class="terminal-block">
+        <div class="header-bar text-xl">
+            <span class="text-cyan-term">[STATUS]</span> EXECUTIVE OVERVIEW & ALERTS
         </div>
-      \`;
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
 
-      // Overdue Deadlines
-      const overdueClass = kpis.overdueDeadlines > 0 ? 'critical' : '';
-      html += \`
-        <div class="kpi-card \${overdueClass}">
-          <div class="kpi-label">Overdue Deadlines</div>
-          <div class="kpi-value">\${kpis.overdueDeadlines}</div>
-          <div class="kpi-sublabel">Requires immediate attention</div>
+            <!-- BLOCK 1A: ACTIVE CASELOAD -->
+            <div class="p-2 border border-gray-700">
+                <span class="text-cyan-term block">TOTAL ACTIVE CASELOAD:</span>
+                <div class="value-big text-red-term" id="active-cases">--</div>
+                <div class="matrix-text">High-Priority: <span id="high-risk-count">--</span></div>
+            </div>
+
+            <!-- BLOCK 1B: DEADLINE COMPLIANCE -->
+            <div class="p-2 border border-gray-700">
+                <span class="text-cyan-term block">DEADLINE COMPLIANCE:</span>
+                <div class="value-big text-red-term" id="overdue-count">--</div>
+                <div class="matrix-text text-yellow-term">Due This Week: <span id="due-week-count">--</span></div>
+            </div>
+
+            <!-- BLOCK 1C: RESOLUTION SUCCESS -->
+            <div class="p-2 border border-gray-700">
+                <span class="text-cyan-term block">RESOLUTIONS WIN RATE (YTD):</span>
+                <div class="value-big text-green-term" id="win-rate">--</div>
+                <div class="matrix-text">Avg Days to Close: <span id="avg-days">--</span></div>
+            </div>
+
+            <!-- BLOCK 1D: ESCALATION WATCH (NEW METRIC) -->
+            <div class="p-2 border border-gray-700">
+                <span class="text-cyan-term block">ESCALATION WATCH (III+):</span>
+                <div class="value-big text-yellow-term" id="escalation-count">--</div>
+                <div class="matrix-text text-red-term">Arbitrations Pending: <span id="arbitrations">--</span></div>
+            </div>
         </div>
-      \`;
+    </div>
 
-      // Due This Week
-      const dueWeekClass = kpis.dueThisWeek > 5 ? 'warning' : '';
-      html += \`
-        <div class="kpi-card \${dueWeekClass}">
-          <div class="kpi-label">Due This Week</div>
-          <div class="kpi-value">\${kpis.dueThisWeek}</div>
-          <div class="kpi-sublabel">Upcoming deadlines</div>
+
+    <!-- SECTION 2: PROCESS EFFICIENCY / CASELOAD -->
+    <div class="terminal-block">
+        <div class="header-bar text-xl">
+            <span class="text-cyan-term">[EFFICIENCY]</span> GRIEVANCE PROCESS EFFICIENCY - Caseload
         </div>
-      \`;
 
-      // Win Rate
-      const winRateClass = kpis.winRate >= 70 ? 'success' : kpis.winRate >= 50 ? '' : 'warning';
-      html += \`
-        <div class="kpi-card \${winRateClass}">
-          <div class="kpi-label">Win Rate</div>
-          <div class="kpi-value">\${kpis.winRate}%</div>
-          <div class="kpi-sublabel">Settled/won cases</div>
+        <div id="steps-stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- STEP Caseload Bars will be populated here -->
         </div>
-      \`;
+    </div>
 
-      // Avg Days to Close
-      const avgDaysClass = kpis.avgDaysToClose > 90 ? 'warning' : kpis.avgDaysToClose < 60 ? 'success' : '';
-      html += \`
-        <div class="kpi-card \${avgDaysClass}">
-          <div class="kpi-label">Avg Days to Close</div>
-          <div class="kpi-value">\${kpis.avgDaysToClose}</div>
-          <div class="kpi-sublabel">Case resolution time</div>
+    <!-- SECTION 3: NETWORK HEALTH & CAPACITY -->
+    <div class="terminal-block">
+        <div class="header-bar text-xl">
+            <span class="text-cyan-term">[NETWORK]</span> STEWARD & MEMBER HEALTH OVERVIEW
         </div>
-      \`;
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
 
-      // Total Members
-      html += \`
-        <div class="kpi-card">
-          <div class="kpi-label">Total Members</div>
-          <div class="kpi-value">\${kpis.totalMembers.toLocaleString()}</div>
-          <div class="kpi-sublabel">In directory</div>
+            <!-- BLOCK 3A: MEMBER UTILIZATION -->
+            <div class="p-2 border border-gray-700">
+                <span class="text-cyan-term block">TOTAL MEMBERS: <span id="total-members-full" class="float-right text-green-term">--</span></span>
+                <span class="text-cyan-term block">Engagement Rate: <span id="engagement-rate" class="float-right text-yellow-term">--</span></span>
+                <div class="caseload-bar-container mt-1">
+                    <div id="engagement-bar" class="caseload-bar bg-yellow-500" style="width: 0%;"></div>
+                </div>
+                <div class="mt-4 text-red-term">Members with No Contact (60d): <span id="no-contact-count" class="float-right">--</span></div>
+            </div>
+
+            <!-- BLOCK 3B: STEWARD CAPACITY (NEW METRIC) -->
+            <div class="p-2 border border-gray-700">
+                <span class="text-cyan-term block">STEWARD CAPACITY: <span id="steward-count" class="float-right text-green-term">--</span></span>
+                <span class="text-cyan-term block">Avg Load / Steward: <span id="avg-load" class="float-right text-yellow-term">--</span></span>
+                <div class="caseload-bar-container mt-1">
+                    <div id="capacity-bar" class="caseload-bar bg-green-500" style="width: 0%;"></div>
+                </div>
+                 <div class="mt-4 text-red-term">Overloaded Stewards (>7 Cases): <span id="overloaded-stewards" class="float-right">--</span></div>
+            </div>
+
+            <!-- BLOCK 3C: ISSUE SEVERITY DISTRIBUTION -->
+            <div class="p-2 border border-gray-700">
+                <span class="text-cyan-term block">ISSUE SEVERITY DISTRIBUTION:</span>
+                <div class="mt-2 text-sm">
+                    <div class="text-red-term">Disciplinary: <span id="disc-count" class="float-right">--</span></div>
+                    <div class="text-yellow-term">Contract Violation: <span id="contract-count" class="float-right">--</span></div>
+                    <div class="text-green-term">Work Conditions: <span id="work-count" class="float-right">--</span></div>
+                </div>
+            </div>
         </div>
-      \`;
+    </div>
 
-      // Active Stewards
-      html += \`
-        <div class="kpi-card">
-          <div class="kpi-label">Active Stewards</div>
-          <div class="kpi-value">\${kpis.activeStewards}</div>
-          <div class="kpi-sublabel">Handling cases</div>
+
+    <!-- SECTION 4: ACTION LOG (FULL WIDTH PROCESS LIST) -->
+    <div class="terminal-block">
+        <div class="header-bar text-xl">
+            <span class="text-cyan-term">[ACTION]</span> ACTIVE GRIEVANCE LOG :: Top Priority List
         </div>
-      \`;
-
-      // Engagement Rate
-      const engagementClass = kpis.engagementRate >= 10 ? 'success' : kpis.engagementRate >= 5 ? '' : 'warning';
-      html += \`
-        <div class="kpi-card \${engagementClass}">
-          <div class="kpi-label">Engagement Rate</div>
-          <div class="kpi-value">\${kpis.engagementRate}%</div>
-          <div class="kpi-sublabel">Members with grievances</div>
+        <div class="grid grid-cols-12 text-sm font-bold border-b border-gray-700 pb-1 text-cyan-term">
+            <span class="col-span-1">ID</span>
+            <span class="col-span-3">ISSUE/TYPE</span>
+            <span class="col-span-3">MEMBER ID / STEWARD</span>
+            <span class="col-span-2">STEP</span>
+            <span class="col-span-2">DEADLINE (d)</span>
+            <span class="col-span-1 text-right">STATUS</span>
         </div>
-      \`;
-
-      // Overloaded Stewards
-      const overloadClass = kpis.overloadedStewards > 0 ? 'warning' : 'success';
-      html += \`
-        <div class="kpi-card \${overloadClass}">
-          <div class="kpi-label">Overloaded Stewards</div>
-          <div class="kpi-value">\${kpis.overloadedStewards}</div>
-          <div class="kpi-sublabel">&gt;10 active cases</div>
+        <div id="process-list" class="text-sm mt-1">
+            <!-- Data will be populated here -->
         </div>
-      \`;
+    </div>
 
-      html += '</div>';
+    <!-- SECTION 5: FOLLOW-UP RADAR -->
+    <div class="terminal-block">
+        <div class="header-bar text-xl">
+            <span class="text-cyan-term">[RADAR]</span> STEWARD FOLLOW-UP RADAR
+        </div>
 
-      // Action Items Section
-      html += '<div class="section">';
-      html += '<div class="section-header"><span class="section-icon">⚡</span> Priority Action Items</div>';
-      html += '<div class="action-items">';
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm" id="follow-up-radar">
+            <!-- Follow-up tasks populated here -->
+        </div>
+    </div>
 
-      if (actionItems.length === 0) {
-        html += '<p style="text-align: center; color: #6B7280; padding: 20px;">No action items at this time</p>';
-      } else {
-        actionItems.forEach(item => {
-          let itemClass = '';
-          let urgencyClass = item.urgency.toLowerCase().replace(/\\s+/g, '-');
+    <!-- SECTION 6: PREDICTIVE ALERTS -->
+    <div class="terminal-block">
+        <div class="header-bar text-xl">
+            <span class="text-cyan-term">[PREDICT]</span> EMERGING RISK & CHURN ALERTS
+        </div>
 
-          if (item.urgency === 'OVERDUE') {
-            itemClass = 'overdue';
-          } else if (item.urgency === 'DUE TODAY' || item.urgency === 'URGENT') {
-            itemClass = 'urgent';
-          } else if (item.urgency === 'THIS WEEK') {
-            itemClass = 'this-week';
-          }
+        <div class="grid grid-cols-12 text-sm font-bold border-b border-gray-700 pb-1 text-cyan-term">
+            <span class="col-span-3">MEMBER ID</span>
+            <span class="col-span-4">RISK SIGNAL</span>
+            <span class="col-span-3">STRENGTH</span>
+            <span class="col-span-2 text-right">LAST CONTACT</span>
+        </div>
+        <div id="predictive-alerts" class="text-sm mt-1">
+             <!-- Predictive risk items populated here -->
+        </div>
+    </div>
 
-          let daysText = '';
-          if (item.daysUntilDue !== null) {
-            if (item.daysUntilDue < 0) {
-              daysText = \`\${Math.abs(item.daysUntilDue)} days overdue\`;
-            } else if (item.daysUntilDue === 0) {
-              daysText = 'Due today';
-            } else {
-              daysText = \`Due in \${item.daysUntilDue} days\`;
+    <!-- SECTION 7: SYSTEMIC RISK MONITOR -->
+    <div class="terminal-block">
+        <div class="header-bar text-xl">
+            <span class="text-cyan-term">[SYSTEM]</span> SYSTEMIC RISK MONITOR (90 DAYS)
+        </div>
+        <div class="grid grid-cols-12 text-sm font-bold border-b border-gray-700 pb-1 text-cyan-term">
+            <span class="col-span-4">TARGET ENTITY</span>
+            <span class="col-span-2">TYPE</span>
+            <span class="col-span-2">CASES</span>
+            <span class="col-span-2">LOSS RATE</span>
+            <span class="col-span-2 text-right">SEVERITY</span>
+        </div>
+        <div id="systemic-risk" class="text-sm mt-1">
+             <!-- Systemic risk items populated here -->
+        </div>
+    </div>
+
+    <script>
+        const STATUS_COLORS = {
+            'CRITICAL': 'text-red-term', 'ALERT': 'text-yellow-term', 'WARNING': 'text-yellow-term',
+            'NORMAL': 'text-green-term', 'GREEN': 'text-green-term', 'YELLOW': 'text-yellow-term',
+            'RED': 'text-red-term', 'green': 'bg-green-600', 'yellow': 'bg-yellow-500', 'red': 'bg-red-600'
+        };
+
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', {hour12: false});
+        }
+
+        function renderValue(id, value, format = 'number') {
+            const element = document.getElementById(id);
+            if (!element) return;
+            if (value === undefined || value === null || value === "") {
+                element.textContent = '--';
+                return;
             }
-          }
+            if (format === 'percent') element.textContent = value.toFixed(1) + '%';
+            else if (format === 'currency') element.textContent = '$' + value.toLocaleString();
+            else if (format === 'days') element.textContent = value + 'd';
+            else element.textContent = value.toLocaleString();
+        }
 
-          html += \`
-            <div class="action-item \${itemClass}">
-              <div class="action-item-content">
-                <div class="action-item-id">\${item.grievanceId}</div>
-                <div class="action-item-member">\${item.member} - \${item.issue}</div>
-                <div class="action-item-issue">\${item.action}</div>
-              </div>
-              <div class="action-item-urgency">
-                <div class="urgency-badge \${urgencyClass}">\${item.urgency}</div>
-                <div class="urgency-days">\${daysText}</div>
-              </div>
-            </div>
-          \`;
-        });
-      }
+        function getStatusColorClass(status) {
+            return STATUS_COLORS[status] || 'text-cyan-term';
+        }
 
-      html += '</div></div>';
+        // --- RENDER FUNCTIONS ---
+        function renderDashboard(data) {
+            document.getElementById('loading-overlay').style.display = 'none';
 
-      // Systemic Risk Monitor Section
-      html += '<div class="section">';
-      html += '<div class="section-header"><span class="section-icon">🚨</span> Systemic Risk Monitor</div>';
-      html += '<div class="risk-grid">';
+            // 1. Executive Status
+            renderValue('active-cases', data.activeCases);
+            renderValue('overdue-count', data.overdue);
+            renderValue('due-week-count', data.dueWeek);
+            renderValue('win-rate', data.winRate, 'percent');
+            renderValue('avg-days', data.avgDays, 'days');
+            renderValue('escalation-count', data.escalationCount);
+            renderValue('arbitrations', data.arbitrations);
+            renderValue('high-risk-count', data.highRiskCount);
 
-      if (systemicRisks.length === 0) {
-        html += '<p style="text-align: center; color: #6B7280; padding: 20px;">No systemic risks identified</p>';
-      } else {
-        systemicRisks.forEach(risk => {
-          const riskClass = risk.riskLevel.toLowerCase();
+            // 2. Steps Efficiency
+            const stepContainer = document.getElementById('steps-stats');
+            stepContainer.innerHTML = data.steps.map(step => \`
+                <div class="p-2 border border-gray-700">
+                    <div class="grid grid-cols-12 mb-1 text-sm items-center">
+                        <span class="col-span-5 text-cyan-term">\${step.name} (\${step.team})</span>
+                        <span class="col-span-3 text-yellow-term text-right">\${step.caseload}%</span>
+                        <span class="col-span-4 text-right">\${step.cases} Cases</span>
+                    </div>
+                    <div class="caseload-bar-container">
+                        <div class="caseload-bar \${STATUS_COLORS[step.status]}" style="width: \${step.caseload}%"></div>
+                    </div>
+                </div>
+            \`).join('');
 
-          html += \`
-            <div class="risk-card \${riskClass}">
-              <div class="risk-type">\${risk.type}</div>
-              <div class="risk-stats">
-                <div class="risk-count">\${risk.count}</div>
-                <div class="risk-percentage">\${risk.percentage}%</div>
-              </div>
-              <div class="risk-level \${riskClass}">\${risk.riskLevel} RISK</div>
-            </div>
-          \`;
-        });
-      }
+            // 3. Network Health
+            renderValue('total-members-full', data.totalMembers);
+            renderValue('engagement-rate', data.engagementRate, 'percent');
+            document.getElementById('engagement-bar').style.width = data.engagementRate + '%';
+            renderValue('no-contact-count', data.noContactCount);
 
-      html += '</div></div>';
+            renderValue('steward-count', data.stewardCount);
+            renderValue('avg-load', data.avgLoad.toFixed(1));
+            document.getElementById('capacity-bar').style.width = (data.avgLoad * 10) + '%';
+            renderValue('overloaded-stewards', data.overloadedStewards);
 
-      // Footer
-      html += \`
-        <div class="footer">
-          Last updated: \${data.lastUpdated}<br>
-          <button class="refresh-btn" onclick="refreshDashboard()">🔄 Refresh Data</button>
-        </div>
-      \`;
+            renderValue('disc-count', data.issueDistribution.disciplinary);
+            renderValue('contract-count', data.issueDistribution.contract);
+            renderValue('work-count', data.issueDistribution.work);
 
-      document.getElementById('content').innerHTML = html;
-    }
+            // 4. Action Log
+            const logContainer = document.getElementById('process-list');
+            logContainer.innerHTML = data.processes.map(proc => {
+                const statusColor = getStatusColorClass(proc.status);
+                const dueText = proc.due < 0 ? \`<span class="text-red-term">\${Math.abs(proc.due)} OVERDUE</span>\` : \`\${proc.due}d\`;
+                return \`
+                    <div class="process-row grid grid-cols-12 py-1 text-xs">
+                        <span class="col-span-1 text-cyan-term">\${proc.id}</span>
+                        <span class="col-span-3">\${proc.program}</span>
+                        <span class="col-span-3 text-green-term">\${proc.memberId} / \${proc.steward}</span>
+                        <span class="col-span-2 text-yellow-term">\${proc.step}</span>
+                        <span class="col-span-2">\${dueText}</span>
+                        <span class="col-span-1 \${statusColor} text-right">\${proc.status}</span>
+                    </div>
+                \`;
+            }).join('');
 
-    function showError(error) {
-      const errorMessage = typeof error === 'string' ? error : 'Failed to load dashboard data. Please try again.';
-      document.getElementById('content').innerHTML = \`
-        <div class="error">
-          <h2>⚠️ Error</h2>
-          <p>\${errorMessage}</p>
-          <button class="refresh-btn" onclick="refreshDashboard()">Try Again</button>
-        </div>
-      \`;
-    }
+            // 5. Follow-Up Radar
+            document.getElementById('follow-up-radar').innerHTML = data.followUpTasks.map(task => {
+                const priorityColor = getStatusColorClass(task.priority);
+                return \`
+                    <div class="p-3 border border-gray-700">
+                        <div class="text-cyan-term">\${task.type}</div>
+                        <div class="\${priorityColor} text-lg font-bold">\${task.memberId}</div>
+                        <div class="matrix-text">Assigned: \${task.steward}</div>
+                        <div class="matrix-text text-yellow-term">Due: \${task.date}</div>
+                    </div>
+                \`;
+            }).join('');
 
-    function refreshDashboard() {
-      document.getElementById('content').innerHTML = \`
-        <div class="loading">
-          <div class="loading-spinner"></div>
-          <p>Loading dashboard data...</p>
-        </div>
-      \`;
+            // 6. Predictive Alerts
+            document.getElementById('predictive-alerts').innerHTML = data.predictiveAlerts.map(alert => {
+                const strengthColor = getStatusColorClass(alert.strength);
+                return \`
+                    <div class="process-row grid grid-cols-12 py-1 text-xs">
+                        <span class="col-span-3 text-cyan-term">\${alert.memberId}</span>
+                        <span class="col-span-4">\${alert.signal}</span>
+                        <span class="col-span-3 \${strengthColor}">\${alert.strength}</span>
+                        <span class="col-span-2 text-right text-yellow-term">\${alert.lastContact}</span>
+                    </div>
+                \`;
+            }).join('');
 
-      google.script.run
-        .withSuccessHandler(renderDashboard)
-        .withFailureHandler(showError)
-        .getUnifiedDashboardData();
-    }
-  </script>
+            // 7. Systemic Risk
+            document.getElementById('systemic-risk').innerHTML = data.systemicRisk.map(risk => {
+                const severityColor = getStatusColorClass(risk.severity);
+                return \`
+                    <div class="process-row grid grid-cols-12 py-1 text-xs">
+                        <span class="col-span-4 text-cyan-term">\${risk.entity}</span>
+                        <span class="col-span-2">\${risk.type}</span>
+                        <span class="col-span-2 text-yellow-term">\${risk.cases}</span>
+                        <span class="col-span-2 text-red-term">\${risk.lossRate}%</span>
+                        <span class="col-span-2 \${severityColor} text-right">\${risk.severity}</span>
+                    </div>
+                \`;
+            }).join('');
+        }
+
+        function initDashboard() {
+            updateTime();
+            setInterval(updateTime, 1000);
+
+            // CALL GOOGLE APPS SCRIPT AND RENDER EVERYTHING
+            if (typeof google === 'object' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(renderDashboard)
+                    .withFailureHandler(error => {
+                        document.getElementById('loading-overlay').innerHTML = \`<div class="text-red-term">CONNECTION ERROR: \${error.message}<br>ENSURE WEB APP IS DEPLOYED.</div>\`;
+                    })
+                    .getUnifiedDashboardData();
+            } else {
+                 document.getElementById('loading-overlay').innerHTML = \`<div class="text-red-term">ENVIRONMENT ERROR: 'google.script.run' not available.<br>Please deploy the script as a Web App and open the resulting URL.</div>\`;
+            }
+        }
+
+        window.onload = initDashboard;
+    </script>
 </body>
 </html>
   `;

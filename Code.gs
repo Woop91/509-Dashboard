@@ -733,6 +733,14 @@ function showHelp() {
   const helpText = `
 📊 509 DASHBOARD
 
+DASHBOARDS:
+• 🎯 Unified Operations Monitor - Comprehensive terminal-style dashboard
+  - Executive status & deadline tracking
+  - Process efficiency & caseload analysis
+  - Network health & steward capacity
+  - Action logs & predictive alerts
+  - Systemic risk monitoring
+
 SHEETS:
 • Config - Master dropdown lists
 • Member Directory - All member data
