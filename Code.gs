@@ -23,8 +23,6 @@ const SHEETS = {
   MEMBER_ENGAGEMENT: "👥 Test 7: Member Engagement",
   COST_IMPACT: "💰 Test 8: Cost Impact",
   QUICK_STATS: "⚡ Test 9: Quick Stats",
-  FUTURE_FEATURES: "🔮 Future Features",
-  PENDING_FEATURES: "⏳ Pending Features",
   ARCHIVE: "📦 Archive",
   DIAGNOSTICS: "🔧 Diagnostics"
 };
@@ -110,8 +108,6 @@ function CREATE_509_DASHBOARD() {
     SpreadsheetApp.getActive().toast("✅ Executive sheets created", "80%", 2);
 
     // Create utility sheets
-    createFutureFeaturesSheet();
-    createPendingFeaturesSheet();
     createArchiveSheet();
     createDiagnosticsSheet();
     SpreadsheetApp.getActive().toast("✅ Utility sheets created", "85%", 2);
@@ -581,40 +577,23 @@ function createMemberSatisfactionSheet() {
 function createFeedbackSheet() {
   const ss = SpreadsheetApp.getActive();
   let feedback = ss.getSheetByName(SHEETS.FEEDBACK);
-
-  if (!feedback) {
-    feedback = ss.insertSheet(SHEETS.FEEDBACK);
-  }
+  if (!feedback) feedback = ss.insertSheet(SHEETS.FEEDBACK);
   feedback.clear();
-
-  feedback.getRange("A1:K1").merge()
-    .setValue("💡 FEEDBACK & DEVELOPMENT")
-    .setFontSize(14)
-    .setFontWeight("bold")
-    .setHorizontalAlignment("center")
-    .setBackground("#F59E0B")
-    .setFontColor("#FFFFFF");
-
-  const headers = [
-    "Timestamp",
-    "Submitted By",
-    "Category",
-    "Type",
-    "Priority",
-    "Title",
-    "Description",
-    "Status",
-    "Assigned To",
-    "Resolution",
-    "Notes"
-  ];
-
-  feedback.getRange(3, 1, 1, headers.length).setValues([headers])
-    .setFontWeight("bold")
-    .setBackground("#F3F4F6");
-
+  feedback.getRange("A1:N1").merge().setValue("💡 FEEDBACK, FEATURES & DEVELOPMENT ROADMAP").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
+  feedback.getRange("A2:N2").merge().setValue("🎯 Track bugs, feedback, future features, and work in progress - all in one place").setFontSize(10).setFontStyle("italic").setHorizontalAlignment("center").setBackground(COLORS.LIGHT_GRAY).setFontColor(COLORS.TEXT_GRAY);
+  const headers = ["Type", "Submitted/Started", "Submitted By", "Priority", "Title", "Description", "Status", "Progress %", "Complexity", "Target Completion", "Assigned To", "Blockers", "Resolution/Notes", "Last Updated"];
+  feedback.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY).setFontColor(COLORS.TEXT_DARK);
+  const typeRule = SpreadsheetApp.newDataValidation().requireValueInList(['Bug Report', 'Feedback', 'Future Feature', 'In Progress', 'Completed', 'Archived'], true).setAllowInvalid(false).build();
+  feedback.getRange("A4:A1000").setDataValidation(typeRule);
+  const priorityRule = SpreadsheetApp.newDataValidation().requireValueInList(['Critical', 'High', 'Medium', 'Low'], true).setAllowInvalid(false).build();
+  feedback.getRange("D4:D1000").setDataValidation(priorityRule);
+  const statusRule = SpreadsheetApp.newDataValidation().requireValueInList(['New', 'Under Review', 'Planned', 'In Progress', 'Testing', 'Completed', 'Deferred', 'Cancelled'], true).setAllowInvalid(false).build();
+  feedback.getRange("G4:G1000").setDataValidation(statusRule);
+  const complexityRule = SpreadsheetApp.newDataValidation().requireValueInList(['Simple', 'Moderate', 'Complex', 'Very Complex'], true).setAllowInvalid(false).build();
+  feedback.getRange("I4:I1000").setDataValidation(complexityRule);
   feedback.setFrozenRows(3);
-  feedback.setTabColor("#F59E0B");
+  feedback.setTabColor(COLORS.ACCENT_PURPLE);
+  feedback.setColumnWidth(1, 120); feedback.setColumnWidth(2, 110); feedback.setColumnWidth(3, 120); feedback.setColumnWidth(4, 80); feedback.setColumnWidth(5, 200); feedback.setColumnWidth(6, 300); feedback.setColumnWidth(7, 100); feedback.setColumnWidth(8, 90); feedback.setColumnWidth(9, 100); feedback.setColumnWidth(10, 110); feedback.setColumnWidth(11, 120); feedback.setColumnWidth(12, 200); feedback.setColumnWidth(13, 250); feedback.setColumnWidth(14, 110);
 }
 
 /* ===================== STEWARD WORKLOAD ===================== */
@@ -737,30 +716,6 @@ function createQuickStatsSheet() {
   sheet.getRange(4, 1, stats.length, 4).setValues(stats);
   sheet.setFrozenRows(3);
   sheet.setTabColor(COLORS.ACCENT_ORANGE);
-}
-
-function createFutureFeaturesSheet() {
-  const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.FUTURE_FEATURES);
-  if (!sheet) sheet = ss.insertSheet(SHEETS.FUTURE_FEATURES);
-  sheet.clear();
-  sheet.getRange("A1:G1").merge().setValue("🔮 FUTURE FEATURES").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
-  const headers = ["Feature", "Description", "Priority", "Complexity", "Estimated Timeline", "Requested By", "Status"];
-  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
-  sheet.setFrozenRows(3);
-  sheet.setTabColor(COLORS.ACCENT_PURPLE);
-}
-
-function createPendingFeaturesSheet() {
-  const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.PENDING_FEATURES);
-  if (!sheet) sheet = ss.insertSheet(SHEETS.PENDING_FEATURES);
-  sheet.clear();
-  sheet.getRange("A1:H1").merge().setValue("⏳ PENDING FEATURES").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_YELLOW).setFontColor(COLORS.TEXT_DARK);
-  const headers = ["Feature", "Description", "Start Date", "Expected Completion", "Progress %", "Blockers", "Assigned To", "Notes"];
-  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
-  sheet.setFrozenRows(3);
-  sheet.setTabColor(COLORS.ACCENT_YELLOW);
 }
 
 function createArchiveSheet() {
