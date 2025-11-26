@@ -92,12 +92,34 @@ function CREATE_509_DASHBOARD() {
 
     // Create User Settings sheet
     createUserSettingsSheet();
-    SpreadsheetApp.getActive().toast("✅ Settings sheet created", "80%", 2);
+    SpreadsheetApp.getActive().toast("✅ Settings sheet created", "70%", 2);
+
+    // Create all analytics and test sheets
+    createStewardWorkloadSheet();
+    createTrendsSheet();
+    createPerformanceSheet();
+    createLocationSheet();
+    createTypeAnalysisSheet();
+    SpreadsheetApp.getActive().toast("✅ Analytics sheets created", "75%", 2);
+
+    createExecutiveSheet();
+    createKPIBoardSheet();
+    createMemberEngagementSheet();
+    createCostImpactSheet();
+    createQuickStatsSheet();
+    SpreadsheetApp.getActive().toast("✅ Executive sheets created", "80%", 2);
+
+    // Create utility sheets
+    createFutureFeaturesSheet();
+    createPendingFeaturesSheet();
+    createArchiveSheet();
+    createDiagnosticsSheet();
+    SpreadsheetApp.getActive().toast("✅ Utility sheets created", "85%", 2);
 
     setupDataValidations();
     setupFormulasAndCalculations();
     setupInteractiveDashboardControls();
-    SpreadsheetApp.getActive().toast("✅ Validations & formulas ready", "90%", 2);
+    SpreadsheetApp.getActive().toast("✅ Validations & formulas ready", "95%", 2);
 
     onOpen();
 
@@ -593,6 +615,176 @@ function createFeedbackSheet() {
 
   feedback.setFrozenRows(3);
   feedback.setTabColor("#F59E0B");
+}
+
+/* ===================== STEWARD WORKLOAD ===================== */
+function createStewardWorkloadSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.STEWARD_WORKLOAD);
+  sheet.clear();
+  sheet.getRange("A1:K1").merge().setValue("👨‍⚖️ STEWARD WORKLOAD ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_PURPLE).setFontColor("white");
+  const headers = ["Steward Name", "Total Cases", "Active Cases", "Resolved Cases", "Win Rate %", "Avg Days to Resolution", "Overdue Cases", "Due This Week", "Capacity Status", "Email", "Phone"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.PRIMARY_PURPLE);
+}
+
+function createTrendsSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.TRENDS);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.TRENDS);
+  sheet.clear();
+  sheet.getRange("A1:L1").merge().setValue("📈 TRENDS & TIMELINE ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.UNION_GREEN).setFontColor("white");
+  const headers = ["Month", "New Grievances", "Resolved", "Win Rate %", "Avg Resolution Days", "Active at Month End", "Overdue", "New Members", "Active Members", "Stewards Active", "Satisfaction Score", "Trend"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.UNION_GREEN);
+}
+
+function createPerformanceSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.PERFORMANCE);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.PERFORMANCE);
+  sheet.clear();
+  sheet.getRange("A1:J1").merge().setValue("⚡ PERFORMANCE METRICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_ORANGE).setFontColor("white");
+  const headers = ["Metric", "Current", "Target", "Variance", "Status", "Last Month", "% Change", "YTD Average", "Best", "Worst"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.ACCENT_ORANGE);
+}
+
+function createLocationSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.LOCATION);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.LOCATION);
+  sheet.clear();
+  sheet.getRange("A1:K1").merge().setValue("🗺️ LOCATION ANALYTICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
+  const headers = ["Location", "Total Members", "Active Members", "Total Grievances", "Active Grievances", "Win Rate %", "Avg Resolution Days", "Member Satisfaction", "Stewards Assigned", "Risk Score", "Priority"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.ACCENT_TEAL);
+}
+
+function createTypeAnalysisSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.TYPE_ANALYSIS);
+  sheet.clear();
+  sheet.getRange("A1:K1").merge().setValue("📊 GRIEVANCE TYPE ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_BLUE).setFontColor("white");
+  const headers = ["Issue Type", "Total Cases", "Active", "Resolved", "Win Rate %", "Avg Days to Resolve", "Most Common Location", "Top Article Violated", "Trend", "Priority Level", "Notes"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.PRIMARY_BLUE);
+}
+
+function createExecutiveSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.EXECUTIVE);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.EXECUTIVE);
+  sheet.clear();
+  sheet.getRange("A1:F1").merge().setValue("💼 EXECUTIVE SUMMARY").setFontSize(18).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_PURPLE).setFontColor("white");
+  sheet.getRange("A3").setValue("📊 Key Performance Indicators").setFontWeight("bold").setFontSize(14);
+  const kpis = [["Total Active Members", "=COUNTA('Member Directory'!A2:A)", ""], ["Total Active Grievances", "=COUNTIF('Grievance Log'!E:E,\"Open\")", ""], ["Overall Win Rate", "=IFERROR(COUNTIFS('Grievance Log'!E:E,\"Resolved*\",'Grievance Log'!AB:AB,\"*Won*\")/COUNTIF('Grievance Log'!E:E,\"Resolved*\"),0)", ""], ["Avg Resolution Time (Days)", "=AVERAGE('Grievance Log'!S:S)", ""], ["Cases Overdue", "=COUNTIF('Grievance Log'!U:U,\"<0\")", ""], ["Member Satisfaction", "=AVERAGE('Member Satisfaction'!C:C)", ""]];
+  sheet.getRange(6, 1, kpis.length, 3).setValues(kpis);
+  sheet.setFrozenRows(4);
+  sheet.setTabColor(COLORS.PRIMARY_PURPLE);
+}
+
+function createKPIBoardSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.KPI_BOARD);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.KPI_BOARD);
+  sheet.clear();
+  sheet.getRange("A1:H1").merge().setValue("🎯 KPI BOARD").setFontSize(18).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.UNION_GREEN).setFontColor("white");
+  const headers = ["KPI Name", "Current Value", "Target", "Previous Period", "% Change", "Status", "Owner", "Last Updated"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.UNION_GREEN);
+}
+
+function createMemberEngagementSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.MEMBER_ENGAGEMENT);
+  sheet.clear();
+  sheet.getRange("A1:L1").merge().setValue("👥 MEMBER ENGAGEMENT").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
+  const headers = ["Member ID", "Name", "Engagement Score", "Last Contact", "Meetings Attended", "Surveys Completed", "Volunteer Hours", "Committee Participation", "Event Attendance", "Email Open Rate", "Status", "Notes"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.ACCENT_PURPLE);
+}
+
+function createCostImpactSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.COST_IMPACT);
+  sheet.clear();
+  sheet.getRange("A1:J1").merge().setValue("💰 COST IMPACT ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.SOLIDARITY_RED).setFontColor("white");
+  const headers = ["Category", "Estimated Cost", "Actual Cost", "Variance", "ROI", "Cases Affected", "Members Benefited", "Status", "Quarter", "Notes"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.SOLIDARITY_RED);
+}
+
+function createQuickStatsSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.QUICK_STATS);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.QUICK_STATS);
+  sheet.clear();
+  sheet.getRange("A1:D1").merge().setValue("⚡ QUICK STATS").setFontSize(18).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_ORANGE).setFontColor("white");
+  const stats = [["Active Members", "=COUNTA('Member Directory'!A2:A)", "", ""], ["Active Grievances", "=COUNTIF('Grievance Log'!E:E,\"Open\")", "", ""], ["Win Rate", "=TEXT(IFERROR(COUNTIFS('Grievance Log'!E:E,\"Resolved*\",'Grievance Log'!AB:AB,\"*Won*\")/COUNTIF('Grievance Log'!E:E,\"Resolved*\"),0),\"0%\")", "", ""], ["Avg Resolution (Days)", "=AVERAGE('Grievance Log'!S:S)", "", ""], ["Overdue Cases", "=COUNTIF('Grievance Log'!U:U,\"<0\")", "", ""], ["Active Stewards", "=COUNTIF('Member Directory'!J:J,\"Yes\")", "", ""]];
+  sheet.getRange(4, 1, stats.length, 4).setValues(stats);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.ACCENT_ORANGE);
+}
+
+function createFutureFeaturesSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.FUTURE_FEATURES);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.FUTURE_FEATURES);
+  sheet.clear();
+  sheet.getRange("A1:G1").merge().setValue("🔮 FUTURE FEATURES").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
+  const headers = ["Feature", "Description", "Priority", "Complexity", "Estimated Timeline", "Requested By", "Status"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.ACCENT_PURPLE);
+}
+
+function createPendingFeaturesSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.PENDING_FEATURES);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.PENDING_FEATURES);
+  sheet.clear();
+  sheet.getRange("A1:H1").merge().setValue("⏳ PENDING FEATURES").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_YELLOW).setFontColor(COLORS.TEXT_DARK);
+  const headers = ["Feature", "Description", "Start Date", "Expected Completion", "Progress %", "Blockers", "Assigned To", "Notes"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.ACCENT_YELLOW);
+}
+
+function createArchiveSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.ARCHIVE);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.ARCHIVE);
+  sheet.clear();
+  sheet.getRange("A1:F1").merge().setValue("📦 ARCHIVE").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.TEXT_GRAY).setFontColor("white");
+  const headers = ["Item Type", "Item ID", "Archive Date", "Archived By", "Reason", "Original Data"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.TEXT_GRAY);
+}
+
+function createDiagnosticsSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.DIAGNOSTICS);
+  sheet.clear();
+  sheet.getRange("A1:G1").merge().setValue("🔧 DIAGNOSTICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.SOLIDARITY_RED).setFontColor("white");
+  const headers = ["Timestamp", "Check Type", "Component", "Status", "Details", "Severity", "Action Needed"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.SOLIDARITY_RED);
 }
 
 /* ===================== DATA VALIDATIONS ===================== */
