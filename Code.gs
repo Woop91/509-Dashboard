@@ -11,7 +11,50 @@ const SHEETS = {
   DASHBOARD: "Dashboard",
   ANALYTICS: "Analytics Data",
   FEEDBACK: "Feedback & Development",
-  MEMBER_SATISFACTION: "Member Satisfaction"
+  MEMBER_SATISFACTION: "Member Satisfaction",
+  INTERACTIVE_DASHBOARD: "🎯 Interactive (Your Custom View)",
+  STEWARD_WORKLOAD: "👨‍⚖️ Steward Workload",
+  TRENDS: "📈 Test 1: Trends & Timeline",
+  PERFORMANCE: "⚡ Test 2: Performance Metrics",
+  LOCATION: "🗺️ Test 3: Location Analytics",
+  TYPE_ANALYSIS: "📊 Test 4: Type Analysis",
+  EXECUTIVE: "💼 Test 5: Executive Summary",
+  KPI_BOARD: "🎯 Test 6: KPI Board",
+  MEMBER_ENGAGEMENT: "👥 Test 7: Member Engagement",
+  COST_IMPACT: "💰 Test 8: Cost Impact",
+  QUICK_STATS: "⚡ Test 9: Quick Stats",
+  FUTURE_FEATURES: "🔮 Future Features",
+  PENDING_FEATURES: "⏳ Pending Features",
+  ARCHIVE: "📦 Archive",
+  DIAGNOSTICS: "🔧 Diagnostics"
+};
+
+const COLORS = {
+  // Primary brand colors
+  PRIMARY_BLUE: "#7EC8E3",
+  PRIMARY_PURPLE: "#7C3AED",
+  UNION_GREEN: "#059669",
+  SOLIDARITY_RED: "#DC2626",
+
+  // Accent colors
+  ACCENT_TEAL: "#14B8A6",
+  ACCENT_PURPLE: "#7C3AED",
+  ACCENT_ORANGE: "#F97316",
+  ACCENT_YELLOW: "#FCD34D",
+
+  // Neutral colors
+  WHITE: "#FFFFFF",
+  LIGHT_GRAY: "#F3F4F6",
+  BORDER_GRAY: "#D1D5DB",
+  TEXT_GRAY: "#6B7280",
+  TEXT_DARK: "#1F2937",
+
+  // Specialty colors
+  CARD_BG: "#FAFAFA",
+  INFO_LIGHT: "#E0E7FF",
+  SUCCESS_LIGHT: "#D1FAE5",
+  HEADER_BLUE: "#3B82F6",
+  HEADER_GREEN: "#10B981"
 };
 
 /* ===================== ONE-CLICK SETUP ===================== */
@@ -49,7 +92,7 @@ function CREATE_509_DASHBOARD() {
 
   } catch (error) {
     SpreadsheetApp.getActive().toast("❌ Error: " + error.toString(), "Error", 10);
-    console.error(error);
+    Logger.log("Error in CREATE_509_DASHBOARD: " + error.toString());
   }
 }
 
