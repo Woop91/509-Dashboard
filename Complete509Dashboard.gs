@@ -1082,11 +1082,82 @@ function SEED_5K_GRIEVANCES() {
     const dateClosed = isClosed ? new Date(dateFiled.getTime() + Math.random() * 90 * 24 * 60 * 60 * 1000) : "";
     const resolution = isClosed ? ["Resolved favorably", "Withdrawn by member", "Settled with compromise", "No violation found"][Math.floor(Math.random() * 4)] : "";
 
+    // Calculate all deadline columns based on contract rules
+    const filingDeadline = new Date(incidentDate.getTime() + 21 * 24 * 60 * 60 * 1000); // 21 days after incident
+
+    // Step I deadlines
+    const step1DecisionDue = new Date(dateFiled.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days after filing
+    const step1DecisionRcvd = (step !== "Informal" && Math.random() > 0.3) ?
+      new Date(dateFiled.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
+
+    // Step II deadlines
+    const step2AppealDue = step1DecisionRcvd ?
+      new Date(step1DecisionRcvd.getTime() + 10 * 24 * 60 * 60 * 1000) : ""; // 10 days after Step I decision
+    const step2AppealFiled = (step === "Step II" || step === "Step III" || step === "Arbitration") && step2AppealDue ?
+      new Date(step1DecisionRcvd.getTime() + Math.random() * 10 * 24 * 60 * 60 * 1000) : "";
+    const step2DecisionDue = step2AppealFiled ?
+      new Date(step2AppealFiled.getTime() + 30 * 24 * 60 * 60 * 1000) : ""; // 30 days after Step II appeal
+    const step2DecisionRcvd = (step === "Step III" || step === "Arbitration") && step2DecisionDue ?
+      new Date(step2AppealFiled.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
+
+    // Step III deadlines
+    const step3AppealDue = step2DecisionRcvd ?
+      new Date(step2DecisionRcvd.getTime() + 30 * 24 * 60 * 60 * 1000) : ""; // 30 days after Step II decision
+    const step3AppealFiled = (step === "Step III" || step === "Arbitration") && step3AppealDue ?
+      new Date(step2DecisionRcvd.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
+
+    // Days Open calculation
+    const daysOpen = isClosed && dateClosed ?
+      Math.floor((dateClosed - dateFiled) / (1000 * 60 * 60 * 24)) :
+      Math.floor((Date.now() - dateFiled.getTime()) / (1000 * 60 * 60 * 1000));
+
+    // Next Action Due - determine based on current step
+    let nextActionDue = "";
+    if (!isClosed) {
+      if (step === "Informal" || step === "Step I") {
+        nextActionDue = step1DecisionDue;
+      } else if (step === "Step II") {
+        nextActionDue = step2DecisionDue || step2AppealDue;
+      } else if (step === "Step III") {
+        nextActionDue = step3AppealDue;
+      } else if (step === "Arbitration") {
+        nextActionDue = new Date(Date.now() + Math.random() * 60 * 24 * 60 * 60 * 1000); // Random future date
+      }
+    }
+
+    // Days to Deadline
+    const daysToDeadline = nextActionDue ?
+      Math.floor((nextActionDue - Date.now()) / (1000 * 60 * 60 * 24)) : "";
+
     const row = [
-      grievanceID, memberID, firstName, lastName, status, step,
-      incidentDate, "", dateFiled, "", "", "", "", "", "", "", "",
-      dateClosed, "", "", "", article, category, email, unit, location,
-      assignedSteward, resolution
+      grievanceID,          // 0: Grievance ID
+      memberID,             // 1: Member ID
+      firstName,            // 2: First Name
+      lastName,             // 3: Last Name
+      status,               // 4: Status
+      step,                 // 5: Current Step
+      incidentDate,         // 6: Incident Date
+      filingDeadline,       // 7: Filing Deadline (21d)
+      dateFiled,            // 8: Date Filed (Step I)
+      step1DecisionDue,     // 9: Step I Decision Due (30d)
+      step1DecisionRcvd,    // 10: Step I Decision Rcvd
+      step2AppealDue,       // 11: Step II Appeal Due (10d)
+      step2AppealFiled,     // 12: Step II Appeal Filed
+      step2DecisionDue,     // 13: Step II Decision Due (30d)
+      step2DecisionRcvd,    // 14: Step II Decision Rcvd
+      step3AppealDue,       // 15: Step III Appeal Due (30d)
+      step3AppealFiled,     // 16: Step III Appeal Filed
+      dateClosed,           // 17: Date Closed
+      daysOpen,             // 18: Days Open
+      nextActionDue,        // 19: Next Action Due
+      daysToDeadline,       // 20: Days to Deadline
+      article,              // 21: Articles Violated
+      category,             // 22: Issue Category
+      email,                // 23: Member Email
+      unit,                 // 24: Unit
+      location,             // 25: Work Location
+      assignedSteward,      // 26: Assigned Steward
+      resolution            // 27: Resolution Summary
     ];
 
     data.push(row);
@@ -1124,7 +1195,108 @@ function SEED_5K_GRIEVANCES() {
     }
   }
 
-  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added!`, "Complete", 5);
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added! Updating member snapshots...`, "Processing", 2);
+
+  // Update Member Directory snapshot columns
+  updateMemberDirectorySnapshots();
+
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added and member snapshots updated!`, "Complete", 5);
+}
+
+/**
+ * Updates the Member Directory snapshot columns based on Grievance Log data
+ * Columns: Grievance Status Snapshot, Next Grievance Deadline, Most Recent Steward Contact Date,
+ *          Steward Who Contacted Member, Notes from Steward Contact
+ */
+function updateMemberDirectorySnapshots() {
+  const ss = SpreadsheetApp.getActive();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!memberDir || !grievanceLog) return;
+
+  const memberLastRow = memberDir.getLastRow();
+  const grievanceLastRow = grievanceLog.getLastRow();
+
+  if (memberLastRow < 2 || grievanceLastRow < 2) return;
+
+  // Get all member IDs
+  const memberIDs = memberDir.getRange(2, 1, memberLastRow - 1, 1).getValues().flat();
+
+  // Get all grievance data
+  const grievanceData = grievanceLog.getRange(2, 1, grievanceLastRow - 1, 28).getValues();
+
+  // Build member snapshot data
+  const memberSnapshots = {};
+
+  grievanceData.forEach(row => {
+    const memberID = row[1]; // Column B: Member ID
+    const status = row[4]; // Column E: Status
+    const nextActionDue = row[19]; // Column T: Next Action Due
+    const assignedSteward = row[26]; // Column AA: Assigned Steward
+
+    if (!memberID) return;
+
+    if (!memberSnapshots[memberID]) {
+      memberSnapshots[memberID] = {
+        status: status,
+        nextDeadline: nextActionDue,
+        stewardContactDate: null,
+        stewardWhoContacted: assignedSteward,
+        stewardNotes: ""
+      };
+    } else {
+      // Keep the most recent/urgent data
+      if (status && (status === "Open" || status.includes("Filed") || status === "Pending Info")) {
+        memberSnapshots[memberID].status = status;
+      }
+
+      // Keep earliest deadline
+      if (nextActionDue && nextActionDue instanceof Date) {
+        if (!memberSnapshots[memberID].nextDeadline ||
+            (memberSnapshots[memberID].nextDeadline instanceof Date &&
+             nextActionDue < memberSnapshots[memberID].nextDeadline)) {
+          memberSnapshots[memberID].nextDeadline = nextActionDue;
+        }
+      }
+    }
+  });
+
+  // Update Member Directory with snapshot data
+  const updateData = [];
+  for (let i = 0; i < memberIDs.length; i++) {
+    const memberID = memberIDs[i];
+    const snapshot = memberSnapshots[memberID];
+
+    if (snapshot) {
+      // Generate realistic steward contact data
+      const daysAgo = Math.floor(Math.random() * 14); // Within last 2 weeks
+      const contactDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+      const contactNotes = [
+        "Discussed case progress",
+        "Member updated on next steps",
+        "Reviewed timeline and deadlines",
+        "Answered member questions",
+        "Scheduled follow-up meeting"
+      ][Math.floor(Math.random() * 5)];
+
+      updateData.push([
+        snapshot.status || "",                    // Column 25: Grievance Status Snapshot
+        snapshot.nextDeadline || "",              // Column 26: Next Grievance Deadline
+        contactDate,                              // Column 27: Most Recent Steward Contact Date
+        snapshot.stewardWhoContacted || "",       // Column 28: Steward Who Contacted Member
+        contactNotes                              // Column 29: Notes from Steward Contact
+      ]);
+    } else {
+      // No grievances for this member
+      updateData.push(["", "", "", "", ""]);
+    }
+  }
+
+  // Write to Member Directory columns 25-29 (Y-AC)
+  if (updateData.length > 0) {
+    memberDir.getRange(2, 25, updateData.length, 5).setValues(updateData);
+  }
 }
 
 function clearAllData() {
