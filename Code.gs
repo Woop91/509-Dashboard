@@ -781,6 +781,13 @@ function SEED_20K_MEMBERS() {
   const commMethods = ["Email", "Phone", "Text", "In Person"];
   const times = ["Mornings", "Afternoons", "Evenings", "Weekends", "Flexible"];
 
+  // Validate config data
+  if (jobTitles.length === 0 || locations.length === 0 || units.length === 0 ||
+      supervisors.length === 0 || managers.length === 0 || stewards.length === 0) {
+    ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.', ui.ButtonSet.OK);
+    return;
+  }
+
   const BATCH_SIZE = 1000;
   let data = [];
 
@@ -825,15 +832,35 @@ function SEED_20K_MEMBERS() {
     data.push(row);
 
     if (data.length === BATCH_SIZE) {
-      memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-      SpreadsheetApp.getActive().toast(`Added ${i} of 20,000 members...`, "Progress", 1);
-      data = [];
-      SpreadsheetApp.flush();
+      try {
+        memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, row.length).setValues(data);
+        SpreadsheetApp.getActive().toast(`Added ${i} of 20,000 members...`, "Progress", 1);
+        data = [];
+        SpreadsheetApp.flush();
+      } catch (e) {
+        Logger.log(`Error writing member batch at ${i}: ${e.message}`);
+        SpreadsheetApp.getActive().toast(`⚠️ Error at ${i}. Retrying...`, "Warning", 2);
+        // Retry once
+        Utilities.sleep(1000);
+        try {
+          memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, row.length).setValues(data);
+          data = [];
+        } catch (e2) {
+          Logger.log(`Retry failed: ${e2.message}`);
+          throw new Error(`Failed to write members: ${e2.message}`);
+        }
+      }
     }
   }
 
+  // Write remaining data
   if (data.length > 0) {
-    memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+    try {
+      memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+    } catch (e) {
+      Logger.log(`Error writing final member batch: ${e.message}`);
+      throw new Error(`Failed to write final members: ${e.message}`);
+    }
   }
 
   SpreadsheetApp.getActive().toast("✅ 20,000 members added!", "Complete", 5);
@@ -857,22 +884,40 @@ function SEED_5K_GRIEVANCES() {
 
   SpreadsheetApp.getActive().toast("🚀 Seeding 5,000 grievances...", "Processing", -1);
 
-  const memberIDs = memberDir.getRange("A2:A").getValues().flat().filter(String);
+  // Get member data ONCE before the loop (CRITICAL FIX)
+  const memberLastRow = memberDir.getLastRow();
+  if (memberLastRow < 2) {
+    ui.alert('Error', 'No members found. Please seed members first.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
+  const memberIDs = allMemberData.map(row => row[0]).filter(String);
+
   const statuses = config.getRange("I2:I8").getValues().flat().filter(String);
   const steps = config.getRange("J2:J7").getValues().flat().filter(String);
   const articles = config.getRange("L2:L14").getValues().flat().filter(String);
   const categories = config.getRange("K2:K12").getValues().flat().filter(String);
   const stewards = config.getRange("H2:H14").getValues().flat().filter(String);
 
+  // Validate config data
+  if (statuses.length === 0 || steps.length === 0 || articles.length === 0 ||
+      categories.length === 0 || stewards.length === 0) {
+    ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.', ui.ButtonSet.OK);
+    return;
+  }
+
   const BATCH_SIZE = 500;
   let data = [];
+  let successCount = 0;
 
   for (let i = 1; i <= 5000; i++) {
-    const memberID = memberIDs[Math.floor(Math.random() * Math.min(memberIDs.length, 20000))];
-    const memberData = memberDir.getRange(`A2:Z${memberDir.getLastRow()}`).getValues()
-      .find(row => row[0] === memberID);
+    // Get random member
+    const memberIndex = Math.floor(Math.random() * memberIDs.length);
+    const memberID = memberIDs[memberIndex];
+    const memberData = allMemberData[memberIndex];
 
-    if (!memberData) continue;
+    if (!memberData || !memberID) continue;
 
     const grievanceID = "G-" + String(i).padStart(6, '0');
     const firstName = memberData[1];
@@ -903,20 +948,41 @@ function SEED_5K_GRIEVANCES() {
     ];
 
     data.push(row);
+    successCount++;
 
     if (data.length === BATCH_SIZE) {
-      grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-      SpreadsheetApp.getActive().toast(`Added ${i} of 5,000 grievances...`, "Progress", 1);
-      data = [];
-      SpreadsheetApp.flush();
+      try {
+        grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, row.length).setValues(data);
+        SpreadsheetApp.getActive().toast(`Added ${successCount} of 5,000 grievances...`, "Progress", 1);
+        data = [];
+        SpreadsheetApp.flush();
+      } catch (e) {
+        Logger.log(`Error writing batch at count ${successCount}: ${e.message}`);
+        SpreadsheetApp.getActive().toast(`⚠️ Error at ${successCount}. Retrying...`, "Warning", 2);
+        // Retry once
+        Utilities.sleep(1000);
+        try {
+          grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, row.length).setValues(data);
+          data = [];
+        } catch (e2) {
+          Logger.log(`Retry failed: ${e2.message}`);
+          throw new Error(`Failed to write grievances: ${e2.message}`);
+        }
+      }
     }
   }
 
+  // Write remaining data
   if (data.length > 0) {
-    grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+    try {
+      grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+    } catch (e) {
+      Logger.log(`Error writing final batch: ${e.message}`);
+      throw new Error(`Failed to write final grievances: ${e.message}`);
+    }
   }
 
-  SpreadsheetApp.getActive().toast("✅ 5,000 grievances added!", "Complete", 5);
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added!`, "Complete", 5);
 }
 
 function clearAllData() {
