@@ -53,6 +53,51 @@ const COLORS = {
   HEADER_GREEN: "#10B981"
 };
 
+// Column positions for Grievance Log (1-indexed)
+const GRIEVANCE_COLS = {
+  GRIEVANCE_ID: 1,      // A
+  MEMBER_ID: 2,         // B
+  FIRST_NAME: 3,        // C
+  LAST_NAME: 4,         // D
+  STATUS: 5,            // E
+  CURRENT_STEP: 6,      // F
+  INCIDENT_DATE: 7,     // G
+  FILING_DEADLINE: 8,   // H
+  DATE_FILED: 9,        // I
+  STEP1_DUE: 10,        // J
+  STEP1_RCVD: 11,       // K
+  STEP2_APPEAL_DUE: 12, // L
+  STEP2_APPEAL_FILED: 13, // M
+  STEP2_DUE: 14,        // N
+  STEP2_RCVD: 15,       // O
+  STEP3_APPEAL_DUE: 16, // P
+  STEP3_APPEAL_FILED: 17, // Q
+  DATE_CLOSED: 18,      // R
+  DAYS_OPEN: 19,        // S
+  NEXT_ACTION_DUE: 20,  // T
+  DAYS_TO_DEADLINE: 21, // U
+  ARTICLES: 22,         // V
+  ISSUE_CATEGORY: 23,   // W
+  MEMBER_EMAIL: 24,     // X
+  UNIT: 25,             // Y
+  LOCATION: 26,         // Z
+  STEWARD: 27,          // AA
+  RESOLUTION: 28        // AB
+};
+
+/**
+ * Converts a column number to letter notation (1=A, 27=AA, etc.)
+ */
+function getColumnLetter(columnNumber) {
+  let letter = '';
+  while (columnNumber > 0) {
+    const remainder = (columnNumber - 1) % 26;
+    letter = String.fromCharCode(65 + remainder) + letter;
+    columnNumber = Math.floor((columnNumber - 1) / 26);
+  }
+  return letter;
+}
+
 /* ===================== ONE-CLICK SETUP ===================== */
 function CREATE_509_DASHBOARD() {
   const ss = SpreadsheetApp.getActive();
@@ -496,11 +541,12 @@ function createAnalyticsDataSheet() {
   analytics.getRange("A5").setFormula('=UNIQUE(FILTER(\'Grievance Log\'!E:E, \'Grievance Log\'!E:E<>"", \'Grievance Log\'!E:E<>"Status"))');
   analytics.getRange("B5").setFormula('=ARRAYFORMULA(IF(A5:A<>"", COUNTIF(\'Grievance Log\'!E:E, A5:A), ""))');
 
-  // Grievances by Unit
+  // Grievances by Unit (dynamic column reference)
+  const unitCol = getColumnLetter(GRIEVANCE_COLS.UNIT);
   analytics.getRange("D3").setValue("Grievances by Unit");
   analytics.getRange("D4:E4").setValues([["Unit", "Count"]]).setFontWeight("bold");
-  analytics.getRange("D5").setFormula('=UNIQUE(FILTER(\'Grievance Log\'!Y:Y, \'Grievance Log\'!Y:Y<>"", \'Grievance Log\'!Y:Y<>"Unit"))');
-  analytics.getRange("E5").setFormula('=ARRAYFORMULA(IF(D5:D<>"", COUNTIF(\'Grievance Log\'!Y:Y, D5:D), ""))');
+  analytics.getRange("D5").setFormula(`=UNIQUE(FILTER('Grievance Log'!${unitCol}:${unitCol}, 'Grievance Log'!${unitCol}:${unitCol}<>"", 'Grievance Log'!${unitCol}:${unitCol}<>"Unit"))`);
+  analytics.getRange("E5").setFormula(`=ARRAYFORMULA(IF(D5:D<>"", COUNTIF('Grievance Log'!${unitCol}:${unitCol}, D5:D), ""))`);
 
   // Members by Location
   analytics.getRange("G3").setValue("Members by Location");
@@ -508,11 +554,13 @@ function createAnalyticsDataSheet() {
   analytics.getRange("G5").setFormula('=UNIQUE(FILTER(\'Member Directory\'!E:E, \'Member Directory\'!E:E<>"", \'Member Directory\'!E:E<>"Work Location (Site)"))');
   analytics.getRange("H5").setFormula('=ARRAYFORMULA(IF(G5:G<>"", COUNTIF(\'Member Directory\'!E:E, G5:G), ""))');
 
-  // Steward Workload
+  // Steward Workload (dynamic column references)
+  const stewardCol = getColumnLetter(GRIEVANCE_COLS.STEWARD);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   analytics.getRange("J3").setValue("Steward Workload");
   analytics.getRange("J4:K4").setValues([["Steward", "Open Cases"]]).setFontWeight("bold");
-  analytics.getRange("J5").setFormula('=UNIQUE(FILTER(\'Grievance Log\'!AA:AA, \'Grievance Log\'!AA:AA<>"", \'Grievance Log\'!AA:AA<>"Assigned Steward (Name)"))');
-  analytics.getRange("K5").setFormula('=ARRAYFORMULA(IF(J5:J<>"", COUNTIFS(\'Grievance Log\'!AA:AA, J5:J, \'Grievance Log\'!E:E, "Open"), ""))');
+  analytics.getRange("J5").setFormula(`=UNIQUE(FILTER('Grievance Log'!${stewardCol}:${stewardCol}, 'Grievance Log'!${stewardCol}:${stewardCol}<>"", 'Grievance Log'!${stewardCol}:${stewardCol}<>"Assigned Steward (Name)"))`);
+  analytics.getRange("K5").setFormula(`=ARRAYFORMULA(IF(J5:J<>"", COUNTIFS('Grievance Log'!${stewardCol}:${stewardCol}, J5:J, 'Grievance Log'!${statusCol}:${statusCol}, "Open"), ""))`);
 
   analytics.hideSheet();
 }
@@ -684,12 +732,18 @@ function createExecutiveDashboard() {
     .setFontWeight("bold")
     .setBackground(COLORS.LIGHT_GRAY);
 
+  // Dynamic column references for formulas
+  const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
+  const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+
   const quickStats = [
     ["Active Members", "=COUNTA('Member Directory'!A2:A)", "", ""],
-    ["Active Grievances", "=COUNTIF('Grievance Log'!E:E,\"Open\")", "", ""],
-    ["Win Rate", "=TEXT(IFERROR(COUNTIFS('Grievance Log'!E:E,\"Resolved*\",'Grievance Log'!AB:AB,\"*Won*\")/COUNTIF('Grievance Log'!E:E,\"Resolved*\"),0),\"0%\")", "", ""],
-    ["Avg Resolution (Days)", "=ROUND(AVERAGE('Grievance Log'!S:S),1)", "", ""],
-    ["Overdue Cases", "=COUNTIF('Grievance Log'!U:U,\"<0\")", "", ""],
+    ["Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, "", ""],
+    ["Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0%")`, "", ""],
+    ["Avg Resolution (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, "", ""],
+    ["Overdue Cases", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"<0")`, "", ""],
     ["Active Stewards", "=COUNTIF('Member Directory'!J:J,\"Yes\")", "", ""]
   ];
 
@@ -711,13 +765,13 @@ function createExecutiveDashboard() {
 
   const detailedKpis = [
     ["Total Active Members", "=COUNTA('Member Directory'!A2:A)", ""],
-    ["Total Active Grievances", "=COUNTIF('Grievance Log'!E:E,\"Open\")", ""],
-    ["Overall Win Rate", "=TEXT(IFERROR(COUNTIFS('Grievance Log'!E:E,\"Resolved*\",'Grievance Log'!AB:AB,\"*Won*\")/COUNTIF('Grievance Log'!E:E,\"Resolved*\"),0),\"0.0%\")", ""],
-    ["Avg Resolution Time (Days)", "=ROUND(AVERAGE('Grievance Log'!S:S),1)", ""],
-    ["Cases Overdue", "=COUNTIF('Grievance Log'!U:U,\"<0\")", ""],
+    ["Total Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, ""],
+    ["Overall Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0.0%")`, ""],
+    ["Avg Resolution Time (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, ""],
+    ["Cases Overdue", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"<0")`, ""],
     ["Member Satisfaction Score", "=TEXT(AVERAGE('Member Satisfaction'!C:C),\"0.0\")", ""],
     ["Total Grievances Filed YTD", "=COUNTA('Grievance Log'!A2:A)", ""],
-    ["Resolved Grievances", "=COUNTIF('Grievance Log'!E:E,\"Resolved\")", ""]
+    ["Resolved Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved")`, ""]
   ];
 
   sheet.getRange(15, 1, detailedKpis.length, 3).setValues(detailedKpis);
