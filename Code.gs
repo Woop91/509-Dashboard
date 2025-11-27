@@ -22,7 +22,9 @@ const SHEETS = {
   MEMBER_ENGAGEMENT: "👥 Member Engagement",
   COST_IMPACT: "💰 Cost Impact",
   ARCHIVE: "📦 Archive",
-  DIAGNOSTICS: "🔧 Diagnostics"
+  DIAGNOSTICS: "🔧 Diagnostics",
+  AUDIT_LOG: "Audit_Log",
+  PERFORMANCE_LOG: "Performance_Log"
 };
 
 const COLORS = {
@@ -1061,7 +1063,27 @@ function onOpen() {
       .addItem("🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard"))
     .addSeparator()
     .addSubMenu(ui.createMenu("📋 Grievance Tools")
-      .addItem("➕ Start New Grievance", "showStartGrievanceDialog"))
+      .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
+      .addSeparator()
+      .addItem("🔍 Advanced Search", "showSearchDialog")
+      .addItem("🎯 Advanced Filter", "showFilterDialog"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("⚡ Quick Actions")
+      .addItem("⚡ Show Quick Actions Sidebar", "showQuickActionsSidebar")
+      .addSeparator()
+      .addItem("📥 Export Wizard", "showExportWizard")
+      .addItem("📤 Import Wizard", "showImportWizard"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🔐 Security & Audit")
+      .addItem("📋 Generate Audit Report", "showAuditReportDialog")
+      .addSeparator()
+      .addItem("💾 Create Backup", "createAutomatedBackup")
+      .addItem("⏰ Setup Daily Backups", "setupDailyBackupTrigger")
+      .addSeparator()
+      .addItem("🔐 Configure RBAC", "setupRBACConfiguration")
+      .addItem("🗑️ Enforce Data Retention", "enforceDataRetention")
+      .addSeparator()
+      .addItem("🚀 Initialize Security Features", "initializeSecurityFeatures"))
     .addSeparator()
     .addSubMenu(ui.createMenu("⚙️ Admin")
       .addItem("Seed 20k Members", "SEED_20K_MEMBERS")
@@ -1083,6 +1105,7 @@ function onOpen() {
     .addSubMenu(ui.createMenu("❓ Help & Support")
       .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
       .addItem("❓ Help", "showHelp")
+      .addItem("⌨️ Keyboard Shortcuts", "setupKeyboardShortcuts")
       .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP"))
     .addToUi();
 }
