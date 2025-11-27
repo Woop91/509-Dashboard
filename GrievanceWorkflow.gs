@@ -617,19 +617,25 @@ function recalcMemberRow(row) {
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   if (!memberDir) return;
 
+  // Dynamic column references
+  const memberIdCol = getColumnLetter(MEMBER_COLS.MEMBER_ID);
+  const grievanceMemberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+
   // Has Open Grievance? (Column Z / 26)
-  memberDir.getRange(row, 26).setFormula(
-    `=IF(COUNTIFS('Grievance Log'!B:B,A${row},'Grievance Log'!E:E,"Open")>0,"Yes","No")`
+  memberDir.getRange(row, MEMBER_COLS.HAS_OPEN_GRIEVANCE).setFormula(
+    `=IF(COUNTIFS('Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},${memberIdCol}${row},'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No")`
   );
 
   // Grievance Status Snapshot (Column AA / 27)
-  memberDir.getRange(row, 27).setFormula(
-    `=IFERROR(INDEX('Grievance Log'!E:E,MATCH(A${row},'Grievance Log'!B:B,0)),"")`
+  memberDir.getRange(row, MEMBER_COLS.GRIEVANCE_STATUS).setFormula(
+    `=IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(${memberIdCol}${row},'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),"")`
   );
 
   // Next Grievance Deadline (Column AB / 28)
-  memberDir.getRange(row, 28).setFormula(
-    `=IFERROR(INDEX('Grievance Log'!T:T,MATCH(A${row},'Grievance Log'!B:B,0)),"")`
+  memberDir.getRange(row, MEMBER_COLS.NEXT_DEADLINE).setFormula(
+    `=IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(${memberIdCol}${row},'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),"")`
   );
 }
 

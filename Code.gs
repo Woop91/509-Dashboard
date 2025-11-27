@@ -797,6 +797,7 @@ function createExecutiveDashboard() {
   const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
   const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+  const grievanceIdCol = getColumnLetter(GRIEVANCE_COLS.GRIEVANCE_ID);
 
   const execMemberIdCol = getColumnLetter(MEMBER_COLS.MEMBER_ID);
   const execIsStewardCol = getColumnLetter(MEMBER_COLS.IS_STEWARD);
@@ -827,13 +828,13 @@ function createExecutiveDashboard() {
     .setBackground(COLORS.LIGHT_GRAY);
 
   const detailedKpis = [
-    ["Total Active Members", "=COUNTA('Member Directory'!A2:A)", ""],
+    ["Total Active Members", `=COUNTA('Member Directory'!${execMemberIdCol}2:${execMemberIdCol})`, ""],
     ["Total Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, ""],
     ["Overall Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0.0%")`, ""],
     ["Avg Resolution Time (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, ""],
     ["Cases Overdue", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"<0")`, ""],
     ["Member Satisfaction Score", "=TEXT(AVERAGE('Member Satisfaction'!C:C),\"0.0\")", ""],
-    ["Total Grievances Filed YTD", "=COUNTA('Grievance Log'!A2:A)", ""],
+    ["Total Grievances Filed YTD", `=COUNTA('Grievance Log'!${grievanceIdCol}2:${grievanceIdCol})`, ""],
     ["Resolved Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved")`, ""]
   ];
 
