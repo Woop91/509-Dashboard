@@ -1435,7 +1435,7 @@ const SHEETS = {
 
 **Major Changes:**
 - Consolidated 25 sheets → 21 sheets
-- Implemented dynamic column mapping system (GRIEVANCE_COLS)
+- ✅ COMPLETE dynamic column mapping system (GRIEVANCE_COLS)
 - Fixed critical Win Rate formula bug
 - Disabled legacy toggleGrievanceColumns() function
 - Fixed column group error (delete/recreate Member Directory)
@@ -1444,14 +1444,56 @@ const SHEETS = {
 - Merged Performance Metrics + KPI Board → KPI Performance Dashboard
 
 **Files Changed:**
-- Code.gs: Added GRIEVANCE_COLS, getColumnLetter(), dynamic formulas
-- Complete509Dashboard.gs: Same changes for consistency
+- Code.gs: Added GRIEVANCE_COLS, getColumnLetter(), ALL formulas now dynamic
+- Complete509Dashboard.gs: Same changes for consistency (100% parity)
 - ColumnToggles.gs: Disabled toggleGrievanceColumns()
 
 **Bug Fixes:**
 - Win Rate now shows correctly (resolution text includes "Won"/"Lost"/"Settled")
 - Column group error fixed (delete/recreate sheet)
-- All column references now dynamic (no more AB:AB hardcoding)
+- ✅ ALL column references now dynamic (COMPLETE - no hardcoded references remain)
+
+**Dynamic Column Implementation (COMPLETE):**
+
+Commit f1b28a9 completed the dynamic column conversion. ALL formulas now use dynamic references:
+
+**Main Dashboard:**
+- Grievance Metrics: STATUS (E), DATE_CLOSED (R), DAYS_OPEN (S)
+- QUERY formula: All column letters dynamic (A, C, T, U, E)
+- Range: A:U → dynamic first:last column
+
+**Analytics Data Sheet:**
+- Status section: STATUS (E) - fully dynamic
+- Unit section: UNIT (Y) - fully dynamic
+- Steward section: STEWARD (AA), STATUS (E) - fully dynamic
+
+**Member Directory:**
+- Has Open Grievance: MEMBER_ID (B), STATUS (E)
+- Grievance Status Snapshot: STATUS (E), MEMBER_ID (B)
+- Next Grievance Deadline: NEXT_ACTION_DUE (T), MEMBER_ID (B)
+
+**Executive Dashboard:**
+- Quick Stats: RESOLUTION (AB), STATUS (E), DAYS_OPEN (S), DAYS_TO_DEADLINE (U)
+
+**Columns Using Dynamic References:**
+- GRIEVANCE_ID (A)
+- MEMBER_ID (B)
+- FIRST_NAME (C)
+- STATUS (E)
+- DATE_CLOSED (R)
+- DAYS_OPEN (S)
+- NEXT_ACTION_DUE (T)
+- DAYS_TO_DEADLINE (U)
+- UNIT (Y)
+- STEWARD (AA)
+- RESOLUTION (AB)
+
+**Verification:** `grep "'Grievance Log'![A-Z]+:[A-Z]+"` returns ZERO hardcoded references.
+
+**How to Reorder Columns:**
+1. Update GRIEVANCE_COLS constant with new column positions
+2. All formulas automatically adjust - no manual updates needed
+3. This is the ONLY place column positions are defined
 
 ---
 
