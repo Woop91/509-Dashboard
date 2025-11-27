@@ -11,8 +11,92 @@ const SHEETS = {
   DASHBOARD: "Dashboard",
   ANALYTICS: "Analytics Data",
   FEEDBACK: "Feedback & Development",
-  MEMBER_SATISFACTION: "Member Satisfaction"
+  MEMBER_SATISFACTION: "Member Satisfaction",
+  INTERACTIVE_DASHBOARD: "🎯 Interactive (Your Custom View)",
+  STEWARD_WORKLOAD: "👨‍⚖️ Steward Workload",
+  TRENDS: "📈 Trends & Timeline",
+  LOCATION: "🗺️ Location Analytics",
+  TYPE_ANALYSIS: "📊 Type Analysis",
+  EXECUTIVE_DASHBOARD: "💼 Executive Dashboard",
+  KPI_PERFORMANCE: "📊 KPI Performance Dashboard",
+  MEMBER_ENGAGEMENT: "👥 Member Engagement",
+  COST_IMPACT: "💰 Cost Impact",
+  ARCHIVE: "📦 Archive",
+  DIAGNOSTICS: "🔧 Diagnostics"
 };
+
+const COLORS = {
+  // Primary brand colors
+  PRIMARY_BLUE: "#7EC8E3",
+  PRIMARY_PURPLE: "#7C3AED",
+  UNION_GREEN: "#059669",
+  SOLIDARITY_RED: "#DC2626",
+
+  // Accent colors
+  ACCENT_TEAL: "#14B8A6",
+  ACCENT_PURPLE: "#7C3AED",
+  ACCENT_ORANGE: "#F97316",
+  ACCENT_YELLOW: "#FCD34D",
+
+  // Neutral colors
+  WHITE: "#FFFFFF",
+  LIGHT_GRAY: "#F3F4F6",
+  BORDER_GRAY: "#D1D5DB",
+  TEXT_GRAY: "#6B7280",
+  TEXT_DARK: "#1F2937",
+
+  // Specialty colors
+  CARD_BG: "#FAFAFA",
+  INFO_LIGHT: "#E0E7FF",
+  SUCCESS_LIGHT: "#D1FAE5",
+  HEADER_BLUE: "#3B82F6",
+  HEADER_GREEN: "#10B981"
+};
+
+// Column positions for Grievance Log (1-indexed)
+const GRIEVANCE_COLS = {
+  GRIEVANCE_ID: 1,      // A
+  MEMBER_ID: 2,         // B
+  FIRST_NAME: 3,        // C
+  LAST_NAME: 4,         // D
+  STATUS: 5,            // E
+  CURRENT_STEP: 6,      // F
+  INCIDENT_DATE: 7,     // G
+  FILING_DEADLINE: 8,   // H
+  DATE_FILED: 9,        // I
+  STEP1_DUE: 10,        // J
+  STEP1_RCVD: 11,       // K
+  STEP2_APPEAL_DUE: 12, // L
+  STEP2_APPEAL_FILED: 13, // M
+  STEP2_DUE: 14,        // N
+  STEP2_RCVD: 15,       // O
+  STEP3_APPEAL_DUE: 16, // P
+  STEP3_APPEAL_FILED: 17, // Q
+  DATE_CLOSED: 18,      // R
+  DAYS_OPEN: 19,        // S
+  NEXT_ACTION_DUE: 20,  // T
+  DAYS_TO_DEADLINE: 21, // U
+  ARTICLES: 22,         // V
+  ISSUE_CATEGORY: 23,   // W
+  MEMBER_EMAIL: 24,     // X
+  UNIT: 25,             // Y
+  LOCATION: 26,         // Z
+  STEWARD: 27,          // AA
+  RESOLUTION: 28        // AB
+};
+
+/**
+ * Converts a column number to letter notation (1=A, 27=AA, etc.)
+ */
+function getColumnLetter(columnNumber) {
+  let letter = '';
+  while (columnNumber > 0) {
+    const remainder = (columnNumber - 1) % 26;
+    letter = String.fromCharCode(65 + remainder) + letter;
+    columnNumber = Math.floor((columnNumber - 1) / 26);
+  }
+  return letter;
+}
 
 /* ===================== ONE-CLICK SETUP ===================== */
 function CREATE_509_DASHBOARD() {
@@ -22,34 +106,71 @@ function CREATE_509_DASHBOARD() {
 
   try {
     createConfigTab();
-    SpreadsheetApp.getActive().toast("✅ Config created", "15%", 2);
+    SpreadsheetApp.getActive().toast("✅ Config created", "10%", 2);
 
     createMemberDirectory();
-    SpreadsheetApp.getActive().toast("✅ Member Directory created", "30%", 2);
+    SpreadsheetApp.getActive().toast("✅ Member Directory created", "20%", 2);
 
     createGrievanceLog();
-    SpreadsheetApp.getActive().toast("✅ Grievance Log created", "45%", 2);
+    SpreadsheetApp.getActive().toast("✅ Grievance Log created", "30%", 2);
 
     createMainDashboard();
-    SpreadsheetApp.getActive().toast("✅ Dashboard created", "60%", 2);
+    SpreadsheetApp.getActive().toast("✅ Main Dashboard created", "40%", 2);
 
     createAnalyticsDataSheet();
     createMemberSatisfactionSheet();
     createFeedbackSheet();
-    SpreadsheetApp.getActive().toast("✅ All sheets created", "75%", 2);
+    SpreadsheetApp.getActive().toast("✅ Data sheets created", "50%", 2);
+
+    // Create Interactive Dashboard
+    createInteractiveDashboardSheet(ss);
+    SpreadsheetApp.getActive().toast("✅ Interactive Dashboard created", "60%", 2);
+
+    // Create Getting Started and FAQ sheets
+    createGettingStartedSheet(ss);
+    createFAQSheet(ss);
+    SpreadsheetApp.getActive().toast("✅ Help sheets created", "70%", 2);
+
+    // Create User Settings sheet
+    createUserSettingsSheet();
+    SpreadsheetApp.getActive().toast("✅ Settings sheet created", "70%", 2);
+
+    // Create all analytics and test sheets
+    createStewardWorkloadSheet();
+    createTrendsSheet();
+    createLocationSheet();
+    createTypeAnalysisSheet();
+    SpreadsheetApp.getActive().toast("✅ Analytics sheets created", "75%", 2);
+
+    createExecutiveDashboard();
+    createKPIPerformanceDashboard();
+    createMemberEngagementSheet();
+    createCostImpactSheet();
+    SpreadsheetApp.getActive().toast("✅ Executive sheets created", "80%", 2);
+
+    // Create utility sheets
+    createArchiveSheet();
+    createDiagnosticsSheet();
+    SpreadsheetApp.getActive().toast("✅ Utility sheets created", "85%", 2);
 
     setupDataValidations();
     setupFormulasAndCalculations();
-    SpreadsheetApp.getActive().toast("✅ Validations & formulas ready", "90%", 2);
+    setupInteractiveDashboardControls();
+    SpreadsheetApp.getActive().toast("✅ Validations & formulas ready", "95%", 2);
 
     onOpen();
 
     SpreadsheetApp.getActive().toast("✅ Dashboard ready! Use menu to seed data.", "Complete!", 5);
-    ss.getSheetByName(SHEETS.DASHBOARD).activate();
+
+    // Safely activate dashboard sheet if it exists
+    const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+    if (dashboard) {
+      dashboard.activate();
+    }
 
   } catch (error) {
     SpreadsheetApp.getActive().toast("❌ Error: " + error.toString(), "Error", 10);
-    console.error(error);
+    Logger.log("Error in CREATE_509_DASHBOARD: " + error.toString());
   }
 }
 
@@ -141,10 +262,11 @@ function createMemberDirectory() {
   const ss = SpreadsheetApp.getActive();
   let memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-  if (!memberDir) {
-    memberDir = ss.insertSheet(SHEETS.MEMBER_DIR);
+  // Delete existing sheet to remove any column groups or formatting issues
+  if (memberDir) {
+    ss.deleteSheet(memberDir);
   }
-  memberDir.clear();
+  memberDir = ss.insertSheet(SHEETS.MEMBER_DIR);
 
   // EXACT columns as specified by user
   const headers = [
@@ -321,11 +443,16 @@ function createMainDashboard() {
     .setBackground("#FEE2E2")
     .setFontSize(12);
 
+  // Dynamic column references for Grievance Log
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const dateClosedCol = getColumnLetter(GRIEVANCE_COLS.DATE_CLOSED);
+  const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
+
   const grievanceMetrics = [
-    ["Open Grievances", "=COUNTIF('Grievance Log'!E:E,\"Open\")", "🔴"],
-    ["Pending Info", "=COUNTIF('Grievance Log'!E:E,\"Pending Info\")", "🟡"],
-    ["Settled (This Mo.)", "=COUNTIFS('Grievance Log'!E:E,\"Settled\",'Grievance Log'!R:R,\">=\"&DATE(YEAR(TODAY()),MONTH(TODAY()),1))", "🟢"],
-    ["Avg Days Open", "=ROUND(AVERAGE(FILTER('Grievance Log'!S:S,'Grievance Log'!E:E=\"Open\")),0)", "⏱️"]
+    ["Open Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, "🔴"],
+    ["Pending Info", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Pending Info")`, "🟡"],
+    ["Settled (This Mo.)", `=COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Settled",'Grievance Log'!${dateClosedCol}:${dateClosedCol},">="&DATE(YEAR(TODAY()),MONTH(TODAY()),1))`, "🟢"],
+    ["Avg Days Open", `=ROUND(AVERAGE(FILTER('Grievance Log'!${daysOpenCol}:${daysOpenCol},'Grievance Log'!${statusCol}:${statusCol}="Open")),0)`, "⏱️"]
   ];
 
   col = 1;
@@ -388,13 +515,20 @@ function createMainDashboard() {
     .setFontWeight("bold")
     .setBackground("#F3F4F6");
 
+  // Dynamic column references for QUERY formula
+  const grievanceIdCol = getColumnLetter(GRIEVANCE_COLS.GRIEVANCE_ID);
+  const firstNameCol = getColumnLetter(GRIEVANCE_COLS.FIRST_NAME);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+  const lastCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION); // AB - last column
+
   // Formula to populate upcoming deadlines (open grievances with deadlines in next 14 days)
   dashboard.getRange("A22").setFormula(
-    '=IFERROR(QUERY(\'Grievance Log\'!A:U, ' +
-    '"SELECT A, C, T, U, E ' +
-    'WHERE E = \'Open\' AND T IS NOT NULL AND T <= date \'"&TEXT(TODAY()+14,"yyyy-mm-dd")&"\' ' +
-    'ORDER BY T ASC ' +
-    'LIMIT 10", 0), "No upcoming deadlines")'
+    `=IFERROR(QUERY('Grievance Log'!${grievanceIdCol}:${lastCol}, ` +
+    `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${daysToDeadlineCol}, ${statusCol} ` +
+    `WHERE ${statusCol} = 'Open' AND ${nextActionCol} IS NOT NULL AND ${nextActionCol} <= date '"&TEXT(TODAY()+14,"yyyy-mm-dd")&"' ` +
+    `ORDER BY ${nextActionCol} ASC ` +
+    `LIMIT 10", 0), "No upcoming deadlines")`
   );
 
   dashboard.setTabColor("#7C3AED");
@@ -413,17 +547,21 @@ function createAnalyticsDataSheet() {
   analytics.getRange("A1").setValue("ANALYTICS DATA - Calculated from Member Directory & Grievance Log");
   analytics.getRange("A1").setFontWeight("bold").setBackground("#6366F1").setFontColor("#FFFFFF");
 
+  // Dynamic column references for Grievance Log
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+
   // Grievances by Status
   analytics.getRange("A3").setValue("Grievances by Status");
   analytics.getRange("A4:B4").setValues([["Status", "Count"]]).setFontWeight("bold");
-  analytics.getRange("A5").setFormula('=UNIQUE(FILTER(\'Grievance Log\'!E:E, \'Grievance Log\'!E:E<>"", \'Grievance Log\'!E:E<>"Status"))');
-  analytics.getRange("B5").setFormula('=ARRAYFORMULA(IF(A5:A<>"", COUNTIF(\'Grievance Log\'!E:E, A5:A), ""))');
+  analytics.getRange("A5").setFormula(`=UNIQUE(FILTER('Grievance Log'!${statusCol}:${statusCol}, 'Grievance Log'!${statusCol}:${statusCol}<>"", 'Grievance Log'!${statusCol}:${statusCol}<>"Status"))`);
+  analytics.getRange("B5").setFormula(`=ARRAYFORMULA(IF(A5:A<>"", COUNTIF('Grievance Log'!${statusCol}:${statusCol}, A5:A), ""))`);
 
-  // Grievances by Unit
+  // Grievances by Unit (dynamic column reference)
+  const unitCol = getColumnLetter(GRIEVANCE_COLS.UNIT);
   analytics.getRange("D3").setValue("Grievances by Unit");
   analytics.getRange("D4:E4").setValues([["Unit", "Count"]]).setFontWeight("bold");
-  analytics.getRange("D5").setFormula('=UNIQUE(FILTER(\'Grievance Log\'!Y:Y, \'Grievance Log\'!Y:Y<>"", \'Grievance Log\'!Y:Y<>"Unit"))');
-  analytics.getRange("E5").setFormula('=ARRAYFORMULA(IF(D5:D<>"", COUNTIF(\'Grievance Log\'!Y:Y, D5:D), ""))');
+  analytics.getRange("D5").setFormula(`=UNIQUE(FILTER('Grievance Log'!${unitCol}:${unitCol}, 'Grievance Log'!${unitCol}:${unitCol}<>"", 'Grievance Log'!${unitCol}:${unitCol}<>"Unit"))`);
+  analytics.getRange("E5").setFormula(`=ARRAYFORMULA(IF(D5:D<>"", COUNTIF('Grievance Log'!${unitCol}:${unitCol}, D5:D), ""))`);
 
   // Members by Location
   analytics.getRange("G3").setValue("Members by Location");
@@ -431,11 +569,13 @@ function createAnalyticsDataSheet() {
   analytics.getRange("G5").setFormula('=UNIQUE(FILTER(\'Member Directory\'!E:E, \'Member Directory\'!E:E<>"", \'Member Directory\'!E:E<>"Work Location (Site)"))');
   analytics.getRange("H5").setFormula('=ARRAYFORMULA(IF(G5:G<>"", COUNTIF(\'Member Directory\'!E:E, G5:G), ""))');
 
-  // Steward Workload
+  // Steward Workload (dynamic column references)
+  const stewardCol = getColumnLetter(GRIEVANCE_COLS.STEWARD);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   analytics.getRange("J3").setValue("Steward Workload");
   analytics.getRange("J4:K4").setValues([["Steward", "Open Cases"]]).setFontWeight("bold");
-  analytics.getRange("J5").setFormula('=UNIQUE(FILTER(\'Grievance Log\'!AA:AA, \'Grievance Log\'!AA:AA<>"", \'Grievance Log\'!AA:AA<>"Assigned Steward (Name)"))');
-  analytics.getRange("K5").setFormula('=ARRAYFORMULA(IF(J5:J<>"", COUNTIFS(\'Grievance Log\'!AA:AA, J5:J, \'Grievance Log\'!E:E, "Open"), ""))');
+  analytics.getRange("J5").setFormula(`=UNIQUE(FILTER('Grievance Log'!${stewardCol}:${stewardCol}, 'Grievance Log'!${stewardCol}:${stewardCol}<>"", 'Grievance Log'!${stewardCol}:${stewardCol}<>"Assigned Steward (Name)"))`);
+  analytics.getRange("K5").setFormula(`=ARRAYFORMULA(IF(J5:J<>"", COUNTIFS('Grievance Log'!${stewardCol}:${stewardCol}, J5:J, 'Grievance Log'!${statusCol}:${statusCol}, "Open"), ""))`);
 
   analytics.hideSheet();
 }
@@ -497,40 +637,289 @@ function createMemberSatisfactionSheet() {
 function createFeedbackSheet() {
   const ss = SpreadsheetApp.getActive();
   let feedback = ss.getSheetByName(SHEETS.FEEDBACK);
-
-  if (!feedback) {
-    feedback = ss.insertSheet(SHEETS.FEEDBACK);
-  }
+  if (!feedback) feedback = ss.insertSheet(SHEETS.FEEDBACK);
   feedback.clear();
+  feedback.getRange("A1:N1").merge().setValue("💡 FEEDBACK, FEATURES & DEVELOPMENT ROADMAP").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
+  feedback.getRange("A2:N2").merge().setValue("🎯 Track bugs, feedback, future features, and work in progress - all in one place").setFontSize(10).setFontStyle("italic").setHorizontalAlignment("center").setBackground(COLORS.LIGHT_GRAY).setFontColor(COLORS.TEXT_GRAY);
+  const headers = ["Type", "Submitted/Started", "Submitted By", "Priority", "Title", "Description", "Status", "Progress %", "Complexity", "Target Completion", "Assigned To", "Blockers", "Resolution/Notes", "Last Updated"];
+  feedback.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY).setFontColor(COLORS.TEXT_DARK);
+  const typeRule = SpreadsheetApp.newDataValidation().requireValueInList(['Bug Report', 'Feedback', 'Future Feature', 'In Progress', 'Completed', 'Archived'], true).setAllowInvalid(false).build();
+  feedback.getRange("A4:A1000").setDataValidation(typeRule);
+  const priorityRule = SpreadsheetApp.newDataValidation().requireValueInList(['Critical', 'High', 'Medium', 'Low'], true).setAllowInvalid(false).build();
+  feedback.getRange("D4:D1000").setDataValidation(priorityRule);
+  const statusRule = SpreadsheetApp.newDataValidation().requireValueInList(['New', 'Under Review', 'Planned', 'In Progress', 'Testing', 'Completed', 'Deferred', 'Cancelled'], true).setAllowInvalid(false).build();
+  feedback.getRange("G4:G1000").setDataValidation(statusRule);
+  const complexityRule = SpreadsheetApp.newDataValidation().requireValueInList(['Simple', 'Moderate', 'Complex', 'Very Complex'], true).setAllowInvalid(false).build();
+  feedback.getRange("I4:I1000").setDataValidation(complexityRule);
+  feedback.setFrozenRows(3);
+  feedback.setTabColor(COLORS.ACCENT_PURPLE);
+  feedback.setColumnWidth(1, 120); feedback.setColumnWidth(2, 110); feedback.setColumnWidth(3, 120); feedback.setColumnWidth(4, 80); feedback.setColumnWidth(5, 200); feedback.setColumnWidth(6, 300); feedback.setColumnWidth(7, 100); feedback.setColumnWidth(8, 90); feedback.setColumnWidth(9, 100); feedback.setColumnWidth(10, 110); feedback.setColumnWidth(11, 120); feedback.setColumnWidth(12, 200); feedback.setColumnWidth(13, 250); feedback.setColumnWidth(14, 110);
+}
 
-  feedback.getRange("A1:K1").merge()
-    .setValue("💡 FEEDBACK & DEVELOPMENT")
-    .setFontSize(14)
+/* ===================== STEWARD WORKLOAD ===================== */
+function createStewardWorkloadSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.STEWARD_WORKLOAD);
+  sheet.clear();
+  sheet.getRange("A1:K1").merge().setValue("👨‍⚖️ STEWARD WORKLOAD ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_PURPLE).setFontColor("white");
+  const headers = ["Steward Name", "Total Cases", "Active Cases", "Resolved Cases", "Win Rate %", "Avg Days to Resolution", "Overdue Cases", "Due This Week", "Capacity Status", "Email", "Phone"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.PRIMARY_PURPLE);
+}
+
+function createTrendsSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.TRENDS);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.TRENDS);
+  sheet.clear();
+  sheet.getRange("A1:L1").merge().setValue("📈 TRENDS & TIMELINE ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.UNION_GREEN).setFontColor("white");
+  const headers = ["Month", "New Grievances", "Resolved", "Win Rate %", "Avg Resolution Days", "Active at Month End", "Overdue", "New Members", "Active Members", "Stewards Active", "Satisfaction Score", "Trend"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.UNION_GREEN);
+}
+
+
+function createLocationSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.LOCATION);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.LOCATION);
+  sheet.clear();
+  sheet.getRange("A1:K1").merge().setValue("🗺️ LOCATION ANALYTICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
+  const headers = ["Location", "Total Members", "Active Members", "Total Grievances", "Active Grievances", "Win Rate %", "Avg Resolution Days", "Member Satisfaction", "Stewards Assigned", "Risk Score", "Priority"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.ACCENT_TEAL);
+}
+
+function createTypeAnalysisSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.TYPE_ANALYSIS);
+  sheet.clear();
+  sheet.getRange("A1:K1").merge().setValue("📊 GRIEVANCE TYPE ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_BLUE).setFontColor("white");
+  const headers = ["Issue Type", "Total Cases", "Active", "Resolved", "Win Rate %", "Avg Days to Resolve", "Most Common Location", "Top Article Violated", "Trend", "Priority Level", "Notes"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.PRIMARY_BLUE);
+}
+
+/* ===================== EXECUTIVE DASHBOARD (Merged Summary + Quick Stats) ===================== */
+function createExecutiveDashboard() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName("💼 Executive Dashboard");
+
+  if (!sheet) {
+    sheet = ss.insertSheet("💼 Executive Dashboard");
+  }
+  sheet.clear();
+
+  // Header
+  sheet.getRange("A1:F1").merge()
+    .setValue("💼 EXECUTIVE DASHBOARD")
+    .setFontSize(18)
     .setFontWeight("bold")
     .setHorizontalAlignment("center")
-    .setBackground("#F59E0B")
-    .setFontColor("#FFFFFF");
+    .setBackground(COLORS.PRIMARY_PURPLE)
+    .setFontColor("white");
 
-  const headers = [
-    "Timestamp",
-    "Submitted By",
-    "Category",
-    "Type",
-    "Priority",
-    "Title",
-    "Description",
-    "Status",
-    "Assigned To",
-    "Resolution",
-    "Notes"
+  sheet.getRange("A2:F2").merge()
+    .setValue("⚡ At-a-Glance Metrics & Key Performance Indicators")
+    .setFontSize(10)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  // Section 1: Quick Stats
+  sheet.getRange("A4:D4").merge()
+    .setValue("⚡ QUICK STATS")
+    .setFontWeight("bold")
+    .setFontSize(14)
+    .setBackground(COLORS.ACCENT_ORANGE)
+    .setFontColor("white")
+    .setHorizontalAlignment("center");
+
+  const quickHeaders = ["Metric", "Value", "Comparison", "Trend"];
+  sheet.getRange(5, 1, 1, quickHeaders.length).setValues([quickHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY);
+
+  // Dynamic column references for formulas
+  const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
+  const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+
+  const quickStats = [
+    ["Active Members", "=COUNTA('Member Directory'!A2:A)", "", ""],
+    ["Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, "", ""],
+    ["Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0%")`, "", ""],
+    ["Avg Resolution (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, "", ""],
+    ["Overdue Cases", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"<0")`, "", ""],
+    ["Active Stewards", "=COUNTIF('Member Directory'!J:J,\"Yes\")", "", ""]
   ];
 
-  feedback.getRange(3, 1, 1, headers.length).setValues([headers])
-    .setFontWeight("bold")
-    .setBackground("#F3F4F6");
+  sheet.getRange(6, 1, quickStats.length, 4).setValues(quickStats);
 
-  feedback.setFrozenRows(3);
-  feedback.setTabColor("#F59E0B");
+  // Section 2: Detailed KPIs
+  sheet.getRange("A13:C13").merge()
+    .setValue("📊 DETAILED KEY PERFORMANCE INDICATORS")
+    .setFontWeight("bold")
+    .setFontSize(14)
+    .setBackground(COLORS.PRIMARY_PURPLE)
+    .setFontColor("white")
+    .setHorizontalAlignment("center");
+
+  const kpiHeaders = ["Metric", "Value", "Status"];
+  sheet.getRange(14, 1, 1, kpiHeaders.length).setValues([kpiHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY);
+
+  const detailedKpis = [
+    ["Total Active Members", "=COUNTA('Member Directory'!A2:A)", ""],
+    ["Total Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, ""],
+    ["Overall Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0.0%")`, ""],
+    ["Avg Resolution Time (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, ""],
+    ["Cases Overdue", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"<0")`, ""],
+    ["Member Satisfaction Score", "=TEXT(AVERAGE('Member Satisfaction'!C:C),\"0.0\")", ""],
+    ["Total Grievances Filed YTD", "=COUNTA('Grievance Log'!A2:A)", ""],
+    ["Resolved Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved")`, ""]
+  ];
+
+  sheet.getRange(15, 1, detailedKpis.length, 3).setValues(detailedKpis);
+
+  sheet.setFrozenRows(4);
+  sheet.setTabColor(COLORS.PRIMARY_PURPLE);
+
+  // Set column widths
+  sheet.setColumnWidth(1, 250);
+  sheet.setColumnWidth(2, 150);
+  sheet.setColumnWidth(3, 100);
+  sheet.setColumnWidth(4, 100);
+}
+
+/* ===================== KPI PERFORMANCE DASHBOARD (Merged Performance + KPI Board) ===================== */
+function createKPIPerformanceDashboard() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
+
+  if (!sheet) {
+    sheet = ss.insertSheet("📊 KPI Performance Dashboard");
+  }
+  sheet.clear();
+
+  // Header
+  sheet.getRange("A1:L1").merge()
+    .setValue("📊 KPI PERFORMANCE DASHBOARD")
+    .setFontSize(18)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.UNION_GREEN)
+    .setFontColor("white");
+
+  sheet.getRange("A2:L2").merge()
+    .setValue("🎯 Track KPIs against targets with variance analysis and performance trends")
+    .setFontSize(10)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  const headers = [
+    "KPI Name",
+    "Current Value",
+    "Target",
+    "Variance",
+    "% Change",
+    "Status",
+    "Last Month",
+    "YTD Average",
+    "Best",
+    "Worst",
+    "Owner",
+    "Last Updated"
+  ];
+
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers])
+    .setFontWeight("bold")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_DARK);
+
+  // Add data validation for Status
+  const statusRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['On Track', 'At Risk', 'Off Track', 'Exceeding'], true)
+    .setAllowInvalid(false)
+    .build();
+  sheet.getRange("F4:F1000").setDataValidation(statusRule);
+
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.UNION_GREEN);
+
+  // Set column widths
+  sheet.setColumnWidth(1, 200);  // KPI Name
+  sheet.setColumnWidth(2, 120);  // Current Value
+  sheet.setColumnWidth(3, 100);  // Target
+  sheet.setColumnWidth(4, 100);  // Variance
+  sheet.setColumnWidth(5, 100);  // % Change
+  sheet.setColumnWidth(6, 100);  // Status
+  sheet.setColumnWidth(7, 100);  // Last Month
+  sheet.setColumnWidth(8, 110);  // YTD Average
+  sheet.setColumnWidth(9, 80);   // Best
+  sheet.setColumnWidth(10, 80);  // Worst
+  sheet.setColumnWidth(11, 120); // Owner
+  sheet.setColumnWidth(12, 110); // Last Updated
+}
+
+function createMemberEngagementSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.MEMBER_ENGAGEMENT);
+  sheet.clear();
+  sheet.getRange("A1:L1").merge().setValue("👥 MEMBER ENGAGEMENT").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
+  const headers = ["Member ID", "Name", "Engagement Score", "Last Contact", "Meetings Attended", "Surveys Completed", "Volunteer Hours", "Committee Participation", "Event Attendance", "Email Open Rate", "Status", "Notes"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.ACCENT_PURPLE);
+}
+
+function createCostImpactSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.COST_IMPACT);
+  sheet.clear();
+  sheet.getRange("A1:J1").merge().setValue("💰 COST IMPACT ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.SOLIDARITY_RED).setFontColor("white");
+  const headers = ["Category", "Estimated Cost", "Actual Cost", "Variance", "ROI", "Cases Affected", "Members Benefited", "Status", "Quarter", "Notes"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.SOLIDARITY_RED);
+}
+
+
+function createArchiveSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.ARCHIVE);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.ARCHIVE);
+  sheet.clear();
+  sheet.getRange("A1:F1").merge().setValue("📦 ARCHIVE").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.TEXT_GRAY).setFontColor("white");
+  const headers = ["Item Type", "Item ID", "Archive Date", "Archived By", "Reason", "Original Data"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.TEXT_GRAY);
+}
+
+function createDiagnosticsSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  if (!sheet) sheet = ss.insertSheet(SHEETS.DIAGNOSTICS);
+  sheet.clear();
+  sheet.getRange("A1:G1").merge().setValue("🔧 DIAGNOSTICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.SOLIDARITY_RED).setFontColor("white");
+  const headers = ["Timestamp", "Check Type", "Component", "Status", "Details", "Severity", "Action Needed"];
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.SOLIDARITY_RED);
 }
 
 /* ===================== DATA VALIDATIONS ===================== */
@@ -634,21 +1023,26 @@ function setupFormulasAndCalculations() {
     );
   }
 
+  // Dynamic column references for Member Directory formulas
+  const memberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+
   // Member Directory formulas
   for (let row = 2; row <= 100; row++) {
     // Has Open Grievance?
     memberDir.getRange(row, 26).setFormula(
-      `=IF(COUNTIFS('Grievance Log'!B:B,A${row},'Grievance Log'!E:E,"Open")>0,"Yes","No")`
+      `=IF(COUNTIFS('Grievance Log'!${memberIdCol}:${memberIdCol},A${row},'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No")`
     );
 
     // Grievance Status Snapshot
     memberDir.getRange(row, 27).setFormula(
-      `=IFERROR(INDEX('Grievance Log'!E:E,MATCH(A${row},'Grievance Log'!B:B,0)),"")`
+      `=IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
     );
 
     // Next Grievance Deadline
     memberDir.getRange(row, 28).setFormula(
-      `=IFERROR(INDEX('Grievance Log'!T:T,MATCH(A${row},'Grievance Log'!B:B,0)),"")`
+      `=IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
     );
   }
 }
@@ -660,13 +1054,36 @@ function onOpen() {
   ui.createMenu("📊 509 Dashboard")
     .addItem("🔄 Refresh All", "refreshCalculations")
     .addSeparator()
+    .addSubMenu(ui.createMenu("📊 Dashboards")
+      .addItem("🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor")
+      .addItem("📊 Main Dashboard", "goToDashboard")
+      .addItem("✨ Interactive Dashboard", "openInteractiveDashboard")
+      .addItem("🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📋 Grievance Tools")
+      .addItem("➕ Start New Grievance", "showStartGrievanceDialog"))
+    .addSeparator()
     .addSubMenu(ui.createMenu("⚙️ Admin")
       .addItem("Seed 20k Members", "SEED_20K_MEMBERS")
       .addItem("Seed 5k Grievances", "SEED_5K_GRIEVANCES")
-      .addItem("Clear All Data", "clearAllData"))
+      .addSeparator()
+      .addItem("Clear All Data", "clearAllData")
+      .addItem("🗑️ Nuke All Seed Data", "nukeSeedData"))
     .addSeparator()
-    .addItem("📊 Dashboard", "goToDashboard")
-    .addItem("❓ Help", "showHelp")
+    .addSubMenu(ui.createMenu("♿ ADHD Features")
+      .addItem("Hide Gridlines (Focus Mode)", "hideAllGridlines")
+      .addItem("Show Gridlines", "showAllGridlines")
+      .addItem("Reorder Sheets Logically", "reorderSheetsLogically")
+      .addItem("Setup ADHD Defaults", "setupADHDDefaults"))
+    .addSubMenu(ui.createMenu("👁️ Column Toggles")
+      .addItem("Toggle Advanced Grievance Columns", "toggleGrievanceColumns")
+      .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
+      .addItem("Show All Member Columns", "showAllMemberColumns"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("❓ Help & Support")
+      .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
+      .addItem("❓ Help", "showHelp")
+      .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP"))
     .addToUi();
 }
 
@@ -688,6 +1105,14 @@ function goToDashboard() {
 function showHelp() {
   const helpText = `
 📊 509 DASHBOARD
+
+DASHBOARDS:
+• 🎯 Unified Operations Monitor - Comprehensive terminal-style dashboard
+  - Executive status & deadline tracking
+  - Process efficiency & caseload analysis
+  - Network health & steward capacity
+  - Action logs & predictive alerts
+  - Systemic risk monitoring
 
 SHEETS:
 • Config - Master dropdown lists
@@ -738,6 +1163,13 @@ function SEED_20K_MEMBERS() {
   const commMethods = ["Email", "Phone", "Text", "In Person"];
   const times = ["Mornings", "Afternoons", "Evenings", "Weekends", "Flexible"];
 
+  // Validate config data
+  if (jobTitles.length === 0 || locations.length === 0 || units.length === 0 ||
+      supervisors.length === 0 || managers.length === 0 || stewards.length === 0) {
+    ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.', ui.ButtonSet.OK);
+    return;
+  }
+
   const BATCH_SIZE = 1000;
   let data = [];
 
@@ -782,15 +1214,35 @@ function SEED_20K_MEMBERS() {
     data.push(row);
 
     if (data.length === BATCH_SIZE) {
-      memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-      SpreadsheetApp.getActive().toast(`Added ${i} of 20,000 members...`, "Progress", 1);
-      data = [];
-      SpreadsheetApp.flush();
+      try {
+        memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, row.length).setValues(data);
+        SpreadsheetApp.getActive().toast(`Added ${i} of 20,000 members...`, "Progress", 1);
+        data = [];
+        SpreadsheetApp.flush();
+      } catch (e) {
+        Logger.log(`Error writing member batch at ${i}: ${e.message}`);
+        SpreadsheetApp.getActive().toast(`⚠️ Error at ${i}. Retrying...`, "Warning", 2);
+        // Retry once
+        Utilities.sleep(1000);
+        try {
+          memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, row.length).setValues(data);
+          data = [];
+        } catch (e2) {
+          Logger.log(`Retry failed: ${e2.message}`);
+          throw new Error(`Failed to write members: ${e2.message}`);
+        }
+      }
     }
   }
 
+  // Write remaining data
   if (data.length > 0) {
-    memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+    try {
+      memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+    } catch (e) {
+      Logger.log(`Error writing final member batch: ${e.message}`);
+      throw new Error(`Failed to write final members: ${e.message}`);
+    }
   }
 
   SpreadsheetApp.getActive().toast("✅ 20,000 members added!", "Complete", 5);
@@ -814,22 +1266,40 @@ function SEED_5K_GRIEVANCES() {
 
   SpreadsheetApp.getActive().toast("🚀 Seeding 5,000 grievances...", "Processing", -1);
 
-  const memberIDs = memberDir.getRange("A2:A").getValues().flat().filter(String);
+  // Get member data ONCE before the loop (CRITICAL FIX)
+  const memberLastRow = memberDir.getLastRow();
+  if (memberLastRow < 2) {
+    ui.alert('Error', 'No members found. Please seed members first.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
+  const memberIDs = allMemberData.map(row => row[0]).filter(String);
+
   const statuses = config.getRange("I2:I8").getValues().flat().filter(String);
   const steps = config.getRange("J2:J7").getValues().flat().filter(String);
   const articles = config.getRange("L2:L14").getValues().flat().filter(String);
   const categories = config.getRange("K2:K12").getValues().flat().filter(String);
   const stewards = config.getRange("H2:H14").getValues().flat().filter(String);
 
+  // Validate config data
+  if (statuses.length === 0 || steps.length === 0 || articles.length === 0 ||
+      categories.length === 0 || stewards.length === 0) {
+    ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.', ui.ButtonSet.OK);
+    return;
+  }
+
   const BATCH_SIZE = 500;
   let data = [];
+  let successCount = 0;
 
   for (let i = 1; i <= 5000; i++) {
-    const memberID = memberIDs[Math.floor(Math.random() * Math.min(memberIDs.length, 20000))];
-    const memberData = memberDir.getRange(`A2:Z${memberDir.getLastRow()}`).getValues()
-      .find(row => row[0] === memberID);
+    // Get random member
+    const memberIndex = Math.floor(Math.random() * memberIDs.length);
+    const memberID = memberIDs[memberIndex];
+    const memberData = allMemberData[memberIndex];
 
-    if (!memberData) continue;
+    if (!memberData || !memberID) continue;
 
     const grievanceID = "G-" + String(i).padStart(6, '0');
     const firstName = memberData[1];
@@ -850,30 +1320,116 @@ function SEED_5K_GRIEVANCES() {
 
     const isClosed = status === "Closed" || status === "Settled" || status === "Withdrawn";
     const dateClosed = isClosed ? new Date(dateFiled.getTime() + Math.random() * 90 * 24 * 60 * 60 * 1000) : "";
-    const resolution = isClosed ? ["Resolved favorably", "Withdrawn by member", "Settled with compromise", "No violation found"][Math.floor(Math.random() * 4)] : "";
+    const resolution = isClosed ? ["Won - Resolved favorably", "Won - Full remedy granted", "Lost - No violation found", "Lost - Withdrawn by member", "Settled - Partial remedy", "Settled - Compromise reached"][Math.floor(Math.random() * 6)] : "";
+
+    // Calculate all deadline columns based on contract rules
+    const filingDeadline = new Date(incidentDate.getTime() + 21 * 24 * 60 * 60 * 1000);
+    const step1DecisionDue = new Date(dateFiled.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const step1DecisionRcvd = (step !== "Informal" && Math.random() > 0.3) ? new Date(dateFiled.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
+    const step2AppealDue = step1DecisionRcvd ? new Date(step1DecisionRcvd.getTime() + 10 * 24 * 60 * 60 * 1000) : "";
+    const step2AppealFiled = (step === "Step II" || step === "Step III" || step === "Arbitration") && step2AppealDue ? new Date(step1DecisionRcvd.getTime() + Math.random() * 10 * 24 * 60 * 60 * 1000) : "";
+    const step2DecisionDue = step2AppealFiled ? new Date(step2AppealFiled.getTime() + 30 * 24 * 60 * 60 * 1000) : "";
+    const step2DecisionRcvd = (step === "Step III" || step === "Arbitration") && step2DecisionDue ? new Date(step2AppealFiled.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
+    const step3AppealDue = step2DecisionRcvd ? new Date(step2DecisionRcvd.getTime() + 30 * 24 * 60 * 60 * 1000) : "";
+    const step3AppealFiled = (step === "Step III" || step === "Arbitration") && step3AppealDue ? new Date(step2DecisionRcvd.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
+    const daysOpen = isClosed && dateClosed ? Math.floor((dateClosed - dateFiled) / (1000 * 60 * 60 * 24)) : Math.floor((Date.now() - dateFiled.getTime()) / (1000 * 60 * 60 * 24));
+    let nextActionDue = "";
+    if (!isClosed) {
+      if (step === "Informal" || step === "Step I") nextActionDue = step1DecisionDue;
+      else if (step === "Step II") nextActionDue = step2DecisionDue || step2AppealDue;
+      else if (step === "Step III") nextActionDue = step3AppealDue;
+      else if (step === "Arbitration") nextActionDue = new Date(Date.now() + Math.random() * 60 * 24 * 60 * 60 * 1000);
+    }
+    const daysToDeadline = nextActionDue ? Math.floor((nextActionDue - Date.now()) / (1000 * 60 * 60 * 24)) : "";
 
     const row = [
       grievanceID, memberID, firstName, lastName, status, step,
-      incidentDate, "", dateFiled, "", "", "", "", "", "", "", "",
-      dateClosed, "", "", "", article, category, email, unit, location,
-      assignedSteward, resolution
+      incidentDate, filingDeadline, dateFiled, step1DecisionDue, step1DecisionRcvd,
+      step2AppealDue, step2AppealFiled, step2DecisionDue, step2DecisionRcvd,
+      step3AppealDue, step3AppealFiled, dateClosed, daysOpen, nextActionDue, daysToDeadline,
+      article, category, email, unit, location, assignedSteward, resolution
     ];
 
     data.push(row);
+    successCount++;
 
     if (data.length === BATCH_SIZE) {
-      grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-      SpreadsheetApp.getActive().toast(`Added ${i} of 5,000 grievances...`, "Progress", 1);
-      data = [];
-      SpreadsheetApp.flush();
+      try {
+        grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, row.length).setValues(data);
+        SpreadsheetApp.getActive().toast(`Added ${successCount} of 5,000 grievances...`, "Progress", 1);
+        data = [];
+        SpreadsheetApp.flush();
+      } catch (e) {
+        Logger.log(`Error writing batch at count ${successCount}: ${e.message}`);
+        SpreadsheetApp.getActive().toast(`⚠️ Error at ${successCount}. Retrying...`, "Warning", 2);
+        // Retry once
+        Utilities.sleep(1000);
+        try {
+          grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, row.length).setValues(data);
+          data = [];
+        } catch (e2) {
+          Logger.log(`Retry failed: ${e2.message}`);
+          throw new Error(`Failed to write grievances: ${e2.message}`);
+        }
+      }
     }
   }
 
+  // Write remaining data
   if (data.length > 0) {
-    grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+    try {
+      grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+    } catch (e) {
+      Logger.log(`Error writing final batch: ${e.message}`);
+      throw new Error(`Failed to write final grievances: ${e.message}`);
+    }
   }
 
-  SpreadsheetApp.getActive().toast("✅ 5,000 grievances added!", "Complete", 5);
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added! Updating member snapshots...`, "Processing", 2);
+  updateMemberDirectorySnapshots();
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added and member snapshots updated!`, "Complete", 5);
+}
+
+function updateMemberDirectorySnapshots() {
+  const ss = SpreadsheetApp.getActive();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!memberDir || !grievanceLog) return;
+  const memberLastRow = memberDir.getLastRow();
+  const grievanceLastRow = grievanceLog.getLastRow();
+  if (memberLastRow < 2 || grievanceLastRow < 2) return;
+  const memberIDs = memberDir.getRange(2, 1, memberLastRow - 1, 1).getValues().flat();
+  const grievanceData = grievanceLog.getRange(2, 1, grievanceLastRow - 1, 28).getValues();
+  const memberSnapshots = {};
+  grievanceData.forEach(row => {
+    const memberID = row[1];
+    const status = row[4];
+    const nextActionDue = row[19];
+    const assignedSteward = row[26];
+    if (!memberID) return;
+    if (!memberSnapshots[memberID]) {
+      memberSnapshots[memberID] = {status, nextDeadline: nextActionDue, stewardWhoContacted: assignedSteward};
+    } else {
+      if (status && (status === "Open" || status.includes("Filed") || status === "Pending Info")) memberSnapshots[memberID].status = status;
+      if (nextActionDue && nextActionDue instanceof Date) {
+        if (!memberSnapshots[memberID].nextDeadline || (memberSnapshots[memberID].nextDeadline instanceof Date && nextActionDue < memberSnapshots[memberID].nextDeadline)) {
+          memberSnapshots[memberID].nextDeadline = nextActionDue;
+        }
+      }
+    }
+  });
+  const updateData = [];
+  for (let i = 0; i < memberIDs.length; i++) {
+    const snapshot = memberSnapshots[memberIDs[i]];
+    if (snapshot) {
+      const contactDate = new Date(Date.now() - Math.floor(Math.random() * 14) * 24 * 60 * 60 * 1000);
+      const contactNotes = ["Discussed case progress", "Member updated on next steps", "Reviewed timeline and deadlines", "Answered member questions", "Scheduled follow-up meeting"][Math.floor(Math.random() * 5)];
+      updateData.push([snapshot.status || "", snapshot.nextDeadline || "", contactDate, snapshot.stewardWhoContacted || "", contactNotes]);
+    } else {
+      updateData.push(["", "", "", "", ""]);
+    }
+  }
+  if (updateData.length > 0) memberDir.getRange(2, 25, updateData.length, 5).setValues(updateData);
 }
 
 function clearAllData() {

@@ -759,24 +759,110 @@ function writeChartData(sheet, startCell, data) {
  * Get chart data for specific metric
  */
 function getChartDataForMetric(metricName, metrics) {
-  // This is a simplified version - you would expand this based on actual data needs
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!grievanceSheet || !memberSheet) {
+    return [["No Data", 0]];
+  }
+
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const memberData = memberSheet.getDataRange().getValues();
+
   switch (metricName) {
     case "Total Members":
       return [
         ["Active", metrics.activeMembers],
         ["Inactive", metrics.totalMembers - metrics.activeMembers]
       ];
+
     case "Active Grievances":
-      return [
-        ["Step I", Math.floor(metrics.activeGrievances * 0.4)],
-        ["Step II", Math.floor(metrics.activeGrievances * 0.35)],
-        ["Step III", Math.floor(metrics.activeGrievances * 0.25)]
-      ];
+      // Count actual grievances by step from Grievance Log
+      const stepCounts = {};
+      grievanceData.slice(1).forEach(row => {
+        const status = row[4]; // Status column (E)
+        const step = row[5];    // Current Step column (F)
+        if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+          stepCounts[step] = (stepCounts[step] || 0) + 1;
+        }
+      });
+
+      const stepData = Object.entries(stepCounts)
+        .filter(([step]) => step && step !== 'Current Step')
+        .map(([step, count]) => [step, count]);
+
+      return stepData.length > 0 ? stepData : [["No Active Grievances", 0]];
+
     case "Win Rate %":
       return [
         ["Won", metrics.grievancesWon],
         ["Lost", metrics.grievancesLost]
       ];
+
+    case "Grievances by Type":
+      // Count grievances by type/category
+      const typeCounts = {};
+      grievanceData.slice(1).forEach(row => {
+        const type = row[22]; // Issue Category column (W)
+        if (type && type !== 'Issue Category') {
+          typeCounts[type] = (typeCounts[type] || 0) + 1;
+        }
+      });
+
+      const typeData = Object.entries(typeCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([type, count]) => [type, count]);
+
+      return typeData.length > 0 ? typeData : [["No Data", 0]];
+
+    case "Grievances by Location":
+      // Count grievances by location
+      const locationCounts = {};
+      grievanceData.slice(1).forEach(row => {
+        const location = row[25]; // Work Location column (Z)
+        if (location && location !== 'Work Location (Site)') {
+          locationCounts[location] = (locationCounts[location] || 0) + 1;
+        }
+      });
+
+      const locationData = Object.entries(locationCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(([location, count]) => [location, count]);
+
+      return locationData.length > 0 ? locationData : [["No Data", 0]];
+
+    case "Grievances by Step":
+      // Count all grievances by step
+      const allStepCounts = {};
+      grievanceData.slice(1).forEach(row => {
+        const step = row[5]; // Current Step column (F)
+        if (step && step !== 'Current Step') {
+          allStepCounts[step] = (allStepCounts[step] || 0) + 1;
+        }
+      });
+
+      const allStepData = Object.entries(allStepCounts)
+        .map(([step, count]) => [step, count]);
+
+      return allStepData.length > 0 ? allStepData : [["No Data", 0]];
+
+    case "Unit 8 Members":
+      const unit8Count = memberData.slice(1).filter(row => row[5] === 'Unit 8').length;
+      return [["Unit 8", unit8Count]];
+
+    case "Unit 10 Members":
+      const unit10Count = memberData.slice(1).filter(row => row[5] === 'Unit 10').length;
+      return [["Unit 10", unit10Count]];
+
+    case "Total Stewards":
+      return [
+        ["Stewards", metrics.totalStewards],
+        ["Non-Stewards", metrics.totalMembers - metrics.totalStewards]
+      ];
+
     default:
       return [["No Data", 0]];
   }
@@ -883,16 +969,165 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
   // Clear existing data
   sheet.getRange("A94:G110").clearContent();
 
-  // Populate based on metric
-  // This is a placeholder - you would customize based on the metric
-  const sampleData = [
-    [1, "Sample Item 1", 45, 12, 33, "73%", "🟢 Good"],
-    [2, "Sample Item 2", 38, 10, 28, "74%", "🟢 Good"],
-    [3, "Sample Item 3", 32, 15, 17, "53%", "🟡 Fair"]
-  ];
+  let tableData = [];
 
-  if (sampleData.length > 0) {
-    sheet.getRange(94, 1, sampleData.length, 7).setValues(sampleData);
+  // Generate table based on selected metric
+  switch (metricName) {
+    case "Grievances by Type":
+    case "Issue Category":
+      // Show top grievance types with detailed breakdown
+      const typeCounts = {};
+      const typeActive = {};
+      const typeResolved = {};
+      const typeWon = {};
+
+      grievanceData.slice(1).forEach(row => {
+        const type = row[22]; // Issue Category column (W)
+        const status = row[4]; // Status column (E)
+
+        if (type && type !== 'Issue Category') {
+          typeCounts[type] = (typeCounts[type] || 0) + 1;
+
+          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+            typeActive[type] = (typeActive[type] || 0) + 1;
+          } else if (status && status.includes('Resolved')) {
+            typeResolved[type] = (typeResolved[type] || 0) + 1;
+            if (row[22] && row[22].includes('Won')) {
+              typeWon[type] = (typeWon[type] || 0) + 1;
+            }
+          }
+        }
+      });
+
+      tableData = Object.entries(typeCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15)
+        .map(([type, total], index) => {
+          const active = typeActive[type] || 0;
+          const resolved = typeResolved[type] || 0;
+          const won = typeWon[type] || 0;
+          const winRate = resolved > 0 ? ((won / resolved) * 100).toFixed(0) + "%" : "N/A";
+          const status = active === 0 ? "🟢 All Clear" : active < 5 ? "🟡 Manageable" : "🔴 High Activity";
+
+          return [index + 1, type, total, active, resolved, winRate, status];
+        });
+      break;
+
+    case "Grievances by Location":
+      // Show top locations with detailed breakdown
+      const locationCounts = {};
+      const locationActive = {};
+      const locationResolved = {};
+      const locationWon = {};
+
+      grievanceData.slice(1).forEach(row => {
+        const location = row[25]; // Work Location column (Z)
+        const status = row[4]; // Status column (E)
+
+        if (location && location !== 'Work Location (Site)') {
+          locationCounts[location] = (locationCounts[location] || 0) + 1;
+
+          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+            locationActive[location] = (locationActive[location] || 0) + 1;
+          } else if (status && status.includes('Resolved')) {
+            locationResolved[location] = (locationResolved[location] || 0) + 1;
+            if (row[22] && row[22].includes('Won')) {
+              locationWon[location] = (locationWon[location] || 0) + 1;
+            }
+          }
+        }
+      });
+
+      tableData = Object.entries(locationCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15)
+        .map(([location, total], index) => {
+          const active = locationActive[location] || 0;
+          const resolved = locationResolved[location] || 0;
+          const won = locationWon[location] || 0;
+          const winRate = resolved > 0 ? ((won / resolved) * 100).toFixed(0) + "%" : "N/A";
+          const status = active === 0 ? "🟢 All Clear" : active < 5 ? "🟡 Manageable" : "🔴 Needs Attention";
+
+          return [index + 1, location, total, active, resolved, winRate, status];
+        });
+      break;
+
+    case "Steward Workload":
+      // Show steward workload breakdown
+      const stewardCounts = {};
+      const stewardActive = {};
+      const stewardResolved = {};
+      const stewardWon = {};
+
+      grievanceData.slice(1).forEach(row => {
+        const steward = row[26]; // Assigned Steward column (AA)
+        const status = row[4]; // Status column (E)
+
+        if (steward && steward !== 'Assigned Steward (Name)') {
+          stewardCounts[steward] = (stewardCounts[steward] || 0) + 1;
+
+          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+            stewardActive[steward] = (stewardActive[steward] || 0) + 1;
+          } else if (status && status.includes('Resolved')) {
+            stewardResolved[steward] = (stewardResolved[steward] || 0) + 1;
+            if (row[22] && row[22].includes('Won')) {
+              stewardWon[steward] = (stewardWon[steward] || 0) + 1;
+            }
+          }
+        }
+      });
+
+      tableData = Object.entries(stewardCounts)
+        .sort((a, b) => (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0))
+        .slice(0, 15)
+        .map(([steward, total], index) => {
+          const active = stewardActive[steward] || 0;
+          const resolved = stewardResolved[steward] || 0;
+          const won = stewardWon[steward] || 0;
+          const winRate = resolved > 0 ? ((won / resolved) * 100).toFixed(0) + "%" : "N/A";
+          const status = active === 0 ? "🟢 Available" : active < 10 ? "🟡 Busy" : "🔴 Overloaded";
+
+          return [index + 1, steward, total, active, resolved, winRate, status];
+        });
+      break;
+
+    default:
+      // For other metrics, show top locations by default
+      const defaultLocationCounts = {};
+      grievanceData.slice(1).forEach(row => {
+        const location = row[25];
+        if (location && location !== 'Work Location (Site)') {
+          defaultLocationCounts[location] = (defaultLocationCounts[location] || 0) + 1;
+        }
+      });
+
+      tableData = Object.entries(defaultLocationCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 15)
+        .map(([location, count], index) => {
+          return [index + 1, location, count, "-", "-", "-", "📊 Data"];
+        });
+      break;
+  }
+
+  // Write data to table
+  if (tableData.length > 0) {
+    sheet.getRange(94, 1, tableData.length, 7).setValues(tableData);
+
+    // Format alternating rows for better readability
+    for (let i = 0; i < tableData.length; i++) {
+      const rowNumber = 94 + i;
+      if (i % 2 === 0) {
+        sheet.getRange(rowNumber, 1, 1, 7).setBackground("#F9FAFB");
+      }
+    }
+  } else {
+    // Show "No data available" message
+    sheet.getRange(94, 1, 1, 7).merge()
+      .setValue("No data available for this metric")
+      .setHorizontalAlignment("center")
+      .setFontStyle("italic")
+      .setFontColor("#9CA3AF");
   }
 }
 
