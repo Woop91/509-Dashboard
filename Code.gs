@@ -53,6 +53,41 @@ const COLORS = {
   HEADER_GREEN: "#10B981"
 };
 
+// Column positions for Member Directory (1-indexed)
+const MEMBER_COLS = {
+  MEMBER_ID: 1,                    // A
+  FIRST_NAME: 2,                   // B
+  LAST_NAME: 3,                    // C
+  JOB_TITLE: 4,                    // D
+  WORK_LOCATION: 5,                // E
+  UNIT: 6,                         // F
+  OFFICE_DAYS: 7,                  // G
+  EMAIL: 8,                        // H
+  PHONE: 9,                        // I
+  IS_STEWARD: 10,                  // J
+  SUPERVISOR: 11,                  // K
+  MANAGER: 12,                     // L
+  ASSIGNED_STEWARD: 13,            // M
+  LAST_VIRTUAL_MTG: 14,            // N
+  LAST_INPERSON_MTG: 15,           // O
+  LAST_SURVEY: 16,                 // P
+  LAST_EMAIL_OPEN: 17,             // Q
+  OPEN_RATE: 18,                   // R
+  VOLUNTEER_HOURS: 19,             // S
+  INTEREST_LOCAL: 20,              // T
+  INTEREST_CHAPTER: 21,            // U
+  INTEREST_ALLIED: 22,             // V
+  TIMESTAMP: 23,                   // W
+  PREFERRED_COMM: 24,              // X
+  BEST_TIME: 25,                   // Y
+  HAS_OPEN_GRIEVANCE: 26,          // Z
+  GRIEVANCE_STATUS: 27,            // AA
+  NEXT_DEADLINE: 28,               // AB
+  RECENT_CONTACT_DATE: 29,         // AC
+  CONTACT_STEWARD: 30,             // AD
+  CONTACT_NOTES: 31                // AE
+};
+
 // Column positions for Grievance Log (1-indexed)
 const GRIEVANCE_COLS = {
   GRIEVANCE_ID: 1,      // A
@@ -412,11 +447,16 @@ function createMainDashboard() {
     .setBackground("#E0E7FF")
     .setFontSize(12);
 
+  const memberIdCol = getColumnLetter(MEMBER_COLS.MEMBER_ID);
+  const isStewardCol = getColumnLetter(MEMBER_COLS.IS_STEWARD);
+  const openRateCol = getColumnLetter(MEMBER_COLS.OPEN_RATE);
+  const volunteerHoursCol = getColumnLetter(MEMBER_COLS.VOLUNTEER_HOURS);
+
   const memberMetrics = [
-    ["Total Members", "=COUNTA('Member Directory'!A:A)-1", "👥"],
-    ["Active Stewards", "=COUNTIF('Member Directory'!J:J,\"Yes\")", "🛡️"],
-    ["Avg Open Rate", "=TEXT(AVERAGE('Member Directory'!R:R)/100,\"0.0%\")", "📧"],
-    ["YTD Vol. Hours", "=SUM('Member Directory'!S:S)", "🙋"]
+    ["Total Members", `=COUNTA('Member Directory'!${memberIdCol}:${memberIdCol})-1`, "👥"],
+    ["Active Stewards", `=COUNTIF('Member Directory'!${isStewardCol}:${isStewardCol},"Yes")`, "🛡️"],
+    ["Avg Open Rate", `=TEXT(AVERAGE('Member Directory'!${openRateCol}:${openRateCol})/100,"0.0%")`, "📧"],
+    ["YTD Vol. Hours", `=SUM('Member Directory'!${volunteerHoursCol}:${volunteerHoursCol})`, "🙋"]
   ];
 
   let col = 1;
@@ -479,11 +519,16 @@ function createMainDashboard() {
     .setBackground("#DCFCE7")
     .setFontSize(12);
 
+  const lastVirtualCol = getColumnLetter(MEMBER_COLS.LAST_VIRTUAL_MTG);
+  const lastInPersonCol = getColumnLetter(MEMBER_COLS.LAST_INPERSON_MTG);
+  const interestLocalCol = getColumnLetter(MEMBER_COLS.INTEREST_LOCAL);
+  const interestChapterCol = getColumnLetter(MEMBER_COLS.INTEREST_CHAPTER);
+
   const engagementMetrics = [
-    ["Virtual Mtgs", "=COUNTIF('Member Directory'!N:N,\">=\"&TODAY()-30)"],
-    ["In-Person Mtgs", "=COUNTIF('Member Directory'!O:O,\">=\"&TODAY()-30)"],
-    ["Local Interest", "=COUNTIF('Member Directory'!T:T,\"Yes\")"],
-    ["Chapter Interest", "=COUNTIF('Member Directory'!U:U,\"Yes\")"]
+    ["Virtual Mtgs", `=COUNTIF('Member Directory'!${lastVirtualCol}:${lastVirtualCol},">="&TODAY()-30)`],
+    ["In-Person Mtgs", `=COUNTIF('Member Directory'!${lastInPersonCol}:${lastInPersonCol},">="&TODAY()-30)`],
+    ["Local Interest", `=COUNTIF('Member Directory'!${interestLocalCol}:${interestLocalCol},"Yes")`],
+    ["Chapter Interest", `=COUNTIF('Member Directory'!${interestChapterCol}:${interestChapterCol},"Yes")`]
   ];
 
   col = 1;
@@ -753,13 +798,16 @@ function createExecutiveDashboard() {
   const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
   const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
 
+  const execMemberIdCol = getColumnLetter(MEMBER_COLS.MEMBER_ID);
+  const execIsStewardCol = getColumnLetter(MEMBER_COLS.IS_STEWARD);
+
   const quickStats = [
-    ["Active Members", "=COUNTA('Member Directory'!A2:A)", "", ""],
+    ["Active Members", `=COUNTA('Member Directory'!${execMemberIdCol}2:${execMemberIdCol})`, "", ""],
     ["Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, "", ""],
     ["Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0%")`, "", ""],
     ["Avg Resolution (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, "", ""],
     ["Overdue Cases", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"<0")`, "", ""],
-    ["Active Stewards", "=COUNTIF('Member Directory'!J:J,\"Yes\")", "", ""]
+    ["Active Stewards", `=COUNTIF('Member Directory'!${execIsStewardCol}:${execIsStewardCol},"Yes")`, "", ""]
   ];
 
   sheet.getRange(6, 1, quickStats.length, 4).setValues(quickStats);
