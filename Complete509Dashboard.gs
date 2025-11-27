@@ -1592,7 +1592,7 @@ function SEED_5K_GRIEVANCES() {
 
     const isClosed = status === "Closed" || status === "Settled" || status === "Withdrawn";
     const dateClosed = isClosed ? new Date(dateFiled.getTime() + Math.random() * 90 * 24 * 60 * 60 * 1000) : "";
-    const resolution = isClosed ? ["Resolved favorably", "Withdrawn by member", "Settled with compromise", "No violation found"][Math.floor(Math.random() * 4)] : "";
+    const resolution = isClosed ? ["Won - Resolved favorably", "Won - Full remedy granted", "Lost - No violation found", "Lost - Withdrawn by member", "Settled - Partial remedy", "Settled - Compromise reached"][Math.floor(Math.random() * 6)] : "";
 
     // Calculate all deadline columns based on contract rules
     const filingDeadline = new Date(incidentDate.getTime() + 21 * 24 * 60 * 60 * 1000); // 21 days after incident
@@ -6538,34 +6538,35 @@ function toggleGrievanceColumns() {
     return;
   }
 
-  // Grievance columns are L through U (columns 12-21)
-  // L: Total Grievances Filed
-  // M: Active Grievances
-  // N: Resolved Grievances
-  // O: Grievances Won
-  // P: Grievances Lost
-  // Q: Last Grievance Date
-  // R: Has Open Grievance?
-  // S: # Open Grievances
-  // T: Last Grievance Status
-  // U: Next Deadline (Soonest)
+  // Note: This feature expects specific grievance tracking columns (Total Grievances Filed,
+  // Active Grievances, etc.) at columns 12-21 which are not present in the current Member
+  // Directory structure. The current columns 12-21 contain engagement/contact data.
 
+  SpreadsheetApp.getUi().alert(
+    '⚠️ Feature Not Available',
+    'This column toggle feature is designed for a different Member Directory structure.\n\n' +
+    'The current Member Directory (31 columns) does not include the advanced grievance tracking columns this feature expects.\n\n' +
+    'You can manually hide/show columns by right-clicking column headers.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+  return;
+
+  /*
+  // Legacy code - disabled because columns don't match current structure
   const firstGrievanceCol = 12; // Column L
   const lastGrievanceCol = 21;  // Column U
   const numCols = lastGrievanceCol - firstGrievanceCol + 1;
 
-  // Check if columns are currently hidden
   const isHidden = sheet.isColumnHiddenByUser(firstGrievanceCol);
 
   if (isHidden) {
-    // Show columns
     sheet.showColumns(firstGrievanceCol, numCols);
     SpreadsheetApp.getUi().alert('✅ Grievance columns are now visible');
   } else {
-    // Hide columns
     sheet.hideColumns(firstGrievanceCol, numCols);
     SpreadsheetApp.getUi().alert('✅ Grievance columns are now hidden');
   }
+  */
 }
 
 /**

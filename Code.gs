@@ -1246,7 +1246,7 @@ function SEED_5K_GRIEVANCES() {
 
     const isClosed = status === "Closed" || status === "Settled" || status === "Withdrawn";
     const dateClosed = isClosed ? new Date(dateFiled.getTime() + Math.random() * 90 * 24 * 60 * 60 * 1000) : "";
-    const resolution = isClosed ? ["Resolved favorably", "Withdrawn by member", "Settled with compromise", "No violation found"][Math.floor(Math.random() * 4)] : "";
+    const resolution = isClosed ? ["Won - Resolved favorably", "Won - Full remedy granted", "Lost - No violation found", "Lost - Withdrawn by member", "Settled - Partial remedy", "Settled - Compromise reached"][Math.floor(Math.random() * 6)] : "";
 
     // Calculate all deadline columns based on contract rules
     const filingDeadline = new Date(incidentDate.getTime() + 21 * 24 * 60 * 60 * 1000);
