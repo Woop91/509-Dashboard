@@ -340,10 +340,11 @@ function createMemberDirectory() {
   const ss = SpreadsheetApp.getActive();
   let memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-  if (!memberDir) {
-    memberDir = ss.insertSheet(SHEETS.MEMBER_DIR);
+  // Delete existing sheet to remove any column groups or formatting issues
+  if (memberDir) {
+    ss.deleteSheet(memberDir);
   }
-  memberDir.clear();
+  memberDir = ss.insertSheet(SHEETS.MEMBER_DIR);
 
   // EXACT columns as specified by user
   const headers = [
