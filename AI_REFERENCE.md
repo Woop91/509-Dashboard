@@ -6,6 +6,36 @@
 
 ---
 
+## 🔴 CRITICAL: Always Reference This Document
+
+**Before making ANY changes to the codebase:**
+
+1. **READ AI_REFERENCE.md first** - This document is the single source of truth for the entire system
+2. **Check the Changelog** - Understand recent changes and current version
+3. **Review Code Quality section** - Avoid repeating fixed issues
+4. **Verify dynamic column usage** - ALL column references MUST use MEMBER_COLS and GRIEVANCE_COLS
+5. **Follow established patterns** - Don't introduce inconsistencies
+
+**Why This Matters:**
+- Prevents re-introducing bugs that were already fixed
+- Ensures consistency across all 21 sheets and 15+ code files
+- Maintains 100% dynamic column coverage (critical for system stability)
+- Documents all design decisions and architectural choices
+
+**⚠️ DO NOT:**
+- Make changes without consulting this document
+- Use hardcoded column references (A:A, AB:AB, etc.)
+- Add features without updating this documentation
+- Skip the verification commands in the Code Quality section
+
+**✅ ALWAYS:**
+- Reference MEMBER_COLS and GRIEVANCE_COLS constants
+- Update changelog when making significant changes
+- Run verification commands after modifications
+- Maintain parity between Code.gs and Complete509Dashboard.gs
+
+---
+
 ## Table of Contents
 
 1. [System Overview](#system-overview)
