@@ -443,11 +443,16 @@ function createMainDashboard() {
     .setBackground("#FEE2E2")
     .setFontSize(12);
 
+  // Dynamic column references for Grievance Log
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const dateClosedCol = getColumnLetter(GRIEVANCE_COLS.DATE_CLOSED);
+  const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
+
   const grievanceMetrics = [
-    ["Open Grievances", "=COUNTIF('Grievance Log'!E:E,\"Open\")", "🔴"],
-    ["Pending Info", "=COUNTIF('Grievance Log'!E:E,\"Pending Info\")", "🟡"],
-    ["Settled (This Mo.)", "=COUNTIFS('Grievance Log'!E:E,\"Settled\",'Grievance Log'!R:R,\">=\"&DATE(YEAR(TODAY()),MONTH(TODAY()),1))", "🟢"],
-    ["Avg Days Open", "=ROUND(AVERAGE(FILTER('Grievance Log'!S:S,'Grievance Log'!E:E=\"Open\")),0)", "⏱️"]
+    ["Open Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, "🔴"],
+    ["Pending Info", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Pending Info")`, "🟡"],
+    ["Settled (This Mo.)", `=COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Settled",'Grievance Log'!${dateClosedCol}:${dateClosedCol},">="&DATE(YEAR(TODAY()),MONTH(TODAY()),1))`, "🟢"],
+    ["Avg Days Open", `=ROUND(AVERAGE(FILTER('Grievance Log'!${daysOpenCol}:${daysOpenCol},'Grievance Log'!${statusCol}:${statusCol}="Open")),0)`, "⏱️"]
   ];
 
   col = 1;
@@ -510,13 +515,20 @@ function createMainDashboard() {
     .setFontWeight("bold")
     .setBackground("#F3F4F6");
 
+  // Dynamic column references for QUERY formula
+  const grievanceIdCol = getColumnLetter(GRIEVANCE_COLS.GRIEVANCE_ID);
+  const firstNameCol = getColumnLetter(GRIEVANCE_COLS.FIRST_NAME);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+  const lastCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION); // AB - last column
+
   // Formula to populate upcoming deadlines (open grievances with deadlines in next 14 days)
   dashboard.getRange("A22").setFormula(
-    '=IFERROR(QUERY(\'Grievance Log\'!A:U, ' +
-    '"SELECT A, C, T, U, E ' +
-    'WHERE E = \'Open\' AND T IS NOT NULL AND T <= date \'"&TEXT(TODAY()+14,"yyyy-mm-dd")&"\' ' +
-    'ORDER BY T ASC ' +
-    'LIMIT 10", 0), "No upcoming deadlines")'
+    `=IFERROR(QUERY('Grievance Log'!${grievanceIdCol}:${lastCol}, ` +
+    `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${daysToDeadlineCol}, ${statusCol} ` +
+    `WHERE ${statusCol} = 'Open' AND ${nextActionCol} IS NOT NULL AND ${nextActionCol} <= date '"&TEXT(TODAY()+14,"yyyy-mm-dd")&"' ` +
+    `ORDER BY ${nextActionCol} ASC ` +
+    `LIMIT 10", 0), "No upcoming deadlines")`
   );
 
   dashboard.setTabColor("#7C3AED");
@@ -535,11 +547,14 @@ function createAnalyticsDataSheet() {
   analytics.getRange("A1").setValue("ANALYTICS DATA - Calculated from Member Directory & Grievance Log");
   analytics.getRange("A1").setFontWeight("bold").setBackground("#6366F1").setFontColor("#FFFFFF");
 
+  // Dynamic column references for Grievance Log
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+
   // Grievances by Status
   analytics.getRange("A3").setValue("Grievances by Status");
   analytics.getRange("A4:B4").setValues([["Status", "Count"]]).setFontWeight("bold");
-  analytics.getRange("A5").setFormula('=UNIQUE(FILTER(\'Grievance Log\'!E:E, \'Grievance Log\'!E:E<>"", \'Grievance Log\'!E:E<>"Status"))');
-  analytics.getRange("B5").setFormula('=ARRAYFORMULA(IF(A5:A<>"", COUNTIF(\'Grievance Log\'!E:E, A5:A), ""))');
+  analytics.getRange("A5").setFormula(`=UNIQUE(FILTER('Grievance Log'!${statusCol}:${statusCol}, 'Grievance Log'!${statusCol}:${statusCol}<>"", 'Grievance Log'!${statusCol}:${statusCol}<>"Status"))`);
+  analytics.getRange("B5").setFormula(`=ARRAYFORMULA(IF(A5:A<>"", COUNTIF('Grievance Log'!${statusCol}:${statusCol}, A5:A), ""))`);
 
   // Grievances by Unit (dynamic column reference)
   const unitCol = getColumnLetter(GRIEVANCE_COLS.UNIT);
@@ -1008,21 +1023,26 @@ function setupFormulasAndCalculations() {
     );
   }
 
+  // Dynamic column references for Member Directory formulas
+  const memberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+
   // Member Directory formulas
   for (let row = 2; row <= 100; row++) {
     // Has Open Grievance?
     memberDir.getRange(row, 26).setFormula(
-      `=IF(COUNTIFS('Grievance Log'!B:B,A${row},'Grievance Log'!E:E,"Open")>0,"Yes","No")`
+      `=IF(COUNTIFS('Grievance Log'!${memberIdCol}:${memberIdCol},A${row},'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No")`
     );
 
     // Grievance Status Snapshot
     memberDir.getRange(row, 27).setFormula(
-      `=IFERROR(INDEX('Grievance Log'!E:E,MATCH(A${row},'Grievance Log'!B:B,0)),"")`
+      `=IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
     );
 
     // Next Grievance Deadline
     memberDir.getRange(row, 28).setFormula(
-      `=IFERROR(INDEX('Grievance Log'!T:T,MATCH(A${row},'Grievance Log'!B:B,0)),"")`
+      `=IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
     );
   }
 }
