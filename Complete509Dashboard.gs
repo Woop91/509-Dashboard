@@ -1461,7 +1461,7 @@ function onOpen() {
       .addItem("Reorder Sheets Logically", "reorderSheetsLogically")
       .addItem("Setup ADHD Defaults", "setupADHDDefaults"))
     .addSubMenu(ui.createMenu("👁️ Column Toggles")
-      .addItem("Toggle Advanced Grievance Columns", "toggleGrievanceColumns")
+      // .addItem("Toggle Advanced Grievance Columns", "toggleGrievanceColumns")  // Disabled - not compatible with current structure
       .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
       .addItem("Show All Member Columns", "showAllMemberColumns"))
     .addSeparator()

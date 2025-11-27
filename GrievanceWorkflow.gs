@@ -363,9 +363,12 @@ function getStewardContactInfo() {
     return { name: '', email: '', phone: '', location: '' };
   }
 
-  // Steward info is in columns U-X (21-24), rows 2-4
+  // Steward contact info is stored in Config sheet
+  // Define column position (update if Config structure changes)
+  const CONFIG_STEWARD_INFO_COL = 21;  // Column U - Steward contact details
+
   try {
-    const stewardData = configSheet.getRange(2, 21, 3, 1).getValues();
+    const stewardData = configSheet.getRange(2, CONFIG_STEWARD_INFO_COL, 3, 1).getValues();
     return {
       name: stewardData[0][0] || '',
       email: stewardData[1][0] || '',
@@ -564,6 +567,70 @@ function addGrievanceToLog(formData) {
   }
 
   return grievanceId;
+}
+
+/**
+ * Recalculates formulas for a specific grievance row
+ * Sets deadline formulas (Filing Deadline, Step deadlines, Days Open, etc.)
+ */
+function recalcGrievanceRow(row) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!grievanceLog) return;
+
+  // Set all deadline formulas for this row
+  // Filing Deadline (Column H): Incident Date + 21 days
+  grievanceLog.getRange(row, 8).setFormula(`=IF(G${row}<>"",G${row}+21,"")`);
+
+  // Step I Decision Due (Column J): Date Filed + 30 days
+  grievanceLog.getRange(row, 10).setFormula(`=IF(I${row}<>"",I${row}+30,"")`);
+
+  // Step II Appeal Due (Column L): Step I Decision + 10 days
+  grievanceLog.getRange(row, 12).setFormula(`=IF(K${row}<>"",K${row}+10,"")`);
+
+  // Step II Decision Due (Column N): Step II Appeal + 30 days
+  grievanceLog.getRange(row, 14).setFormula(`=IF(M${row}<>"",M${row}+30,"")`);
+
+  // Step III Appeal Due (Column P): Step II Decision + 30 days
+  grievanceLog.getRange(row, 16).setFormula(`=IF(O${row}<>"",O${row}+30,"")`);
+
+  // Days Open (Column S): Today - Date Filed (or Date Closed - Date Filed)
+  grievanceLog.getRange(row, 19).setFormula(
+    `=IF(I${row}<>"",IF(R${row}<>"",R${row}-I${row},TODAY()-I${row}),"")`
+  );
+
+  // Next Action Due (Column T): Based on current step
+  grievanceLog.getRange(row, 20).setFormula(
+    `=IF(E${row}="Open",IF(F${row}="Step I",J${row},IF(F${row}="Step II",N${row},IF(F${row}="Step III",P${row},H${row}))),"")`
+  );
+
+  // Days to Deadline (Column U): Next Action - Today
+  grievanceLog.getRange(row, 21).setFormula(`=IF(T${row}<>"",T${row}-TODAY(),"")`);
+}
+
+/**
+ * Recalculates formulas for a specific member row
+ * Updates grievance snapshot columns (Has Open Grievance, Status, Next Deadline)
+ */
+function recalcMemberRow(row) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (!memberDir) return;
+
+  // Has Open Grievance? (Column Z / 26)
+  memberDir.getRange(row, 26).setFormula(
+    `=IF(COUNTIFS('Grievance Log'!B:B,A${row},'Grievance Log'!E:E,"Open")>0,"Yes","No")`
+  );
+
+  // Grievance Status Snapshot (Column AA / 27)
+  memberDir.getRange(row, 27).setFormula(
+    `=IFERROR(INDEX('Grievance Log'!E:E,MATCH(A${row},'Grievance Log'!B:B,0)),"")`
+  );
+
+  // Next Grievance Deadline (Column AB / 28)
+  memberDir.getRange(row, 28).setFormula(
+    `=IFERROR(INDEX('Grievance Log'!T:T,MATCH(A${row},'Grievance Log'!B:B,0)),"")`
+  );
 }
 
 /**

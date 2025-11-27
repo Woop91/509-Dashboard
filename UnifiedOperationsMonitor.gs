@@ -501,13 +501,21 @@ function getContractTrends(grievances) {
   });
 
   return Object.entries(articleCounts)
-    .map(([article, count]) => ({
-      article: article,
-      cases: count,
-      lossRate: 25, // Mock data
-      winRate: 75,  // Mock data
-      severity: count > 10 ? 'HIGH' : 'NORMAL'
-    }))
+    .map(([article, count]) => {
+      // Calculate real win/loss rates for this article
+      const articleGrievances = grievances.filter(g => g[22] === article);  // Column W: Articles Violated
+      const resolvedArticle = articleGrievances.filter(g => g[4] && g[4].toString().includes('Resolved'));
+      const won = resolvedArticle.filter(g => g[27] && g[27].toString().includes('Won')).length;
+      const total = resolvedArticle.length;
+
+      return {
+        article: article,
+        cases: count,
+        winRate: total > 0 ? Math.round((won / total) * 100) : 0,
+        lossRate: total > 0 ? Math.round(((total - won) / total) * 100) : 0,
+        severity: count > 10 ? 'HIGH' : 'NORMAL'
+      };
+    })
     .sort((a, b) => b.cases - a.cases)
     .slice(0, 5);
 }

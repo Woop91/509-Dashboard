@@ -1599,6 +1599,60 @@ Commit f1b28a9 completed the dynamic column conversion. ALL formulas now use dyn
 
 ---
 
+## Code Quality & Known Issues
+
+### Recent Code Review (Version 2.1)
+
+A comprehensive code review was conducted covering stubs, dead ends, and errors. All **critical** and **high-priority** issues have been resolved.
+
+**✅ Fixed Issues (Resolved in Version 2.1):**
+
+1. **Missing Function Definitions (CRITICAL)** - FIXED
+   - Added `recalcGrievanceRow()` to GrievanceWorkflow.gs
+   - Added `recalcMemberRow()` to GrievanceWorkflow.gs
+   - Added `rebuildDashboard()` to SeedNuke.gs
+
+2. **Wrong SHEETS Constants (CRITICAL)** - FIXED
+   - Fixed `SHEETS.EXECUTIVE` → `SHEETS.EXECUTIVE_DASHBOARD`
+   - Fixed `SHEETS.KPI_BOARD` → `SHEETS.KPI_PERFORMANCE`
+   - Removed references to non-existent `SHEETS.PERFORMANCE`, `SHEETS.QUICK_STATS`, `SHEETS.FUTURE_FEATURES`, `SHEETS.PENDING_FEATURES`
+   - Added `SHEETS.MEMBER_SATISFACTION` to reorder list
+
+3. **Hardcoded Config Column** - FIXED
+   - Replaced hardcoded column 21 with named constant `CONFIG_STEWARD_INFO_COL`
+
+4. **Disabled Menu Feature** - FIXED
+   - Removed non-functional "Toggle Advanced Grievance Columns" from menu
+
+5. **Mock Data** - FIXED
+   - Replaced 75% fake win rate with real calculations in UnifiedOperationsMonitor.gs
+
+**⚠️ Known Technical Debt (Non-Critical):**
+
+1. **UnifiedOperationsMonitor.gs Hardcoded Array Indices**
+   - **Severity:** Low (read-only display code)
+   - **Impact:** File works correctly but uses hardcoded array indices (100+ instances)
+   - **Status:** Deferred - file is read-only dashboard, won't cause crashes
+   - **Future:** Should refactor to use MEMBER_COLS and GRIEVANCE_COLS for consistency
+   - **Example:** `g[4]` should be `g[GRIEVANCE_COLS.STATUS - 1]`
+
+2. **Formula Column References**
+   - Some formulas still use hardcoded column numbers (e.g., `getRange(row, 21)`)
+   - These work correctly but could use GRIEVANCE_COLS constants for consistency
+
+**Verification Commands:**
+
+```bash
+# Verify no hardcoded sheet column references (should return 0)
+grep "'Member Directory'![A-Z]:[A-Z]" *.gs | wc -l
+grep "'Grievance Log'![A-Z]:[A-Z]" *.gs | wc -l
+
+# Find remaining array index references (returns many - mostly in UnifiedOperationsMonitor.gs)
+grep -n '\[4\]|\[22\]|\[27\]' UnifiedOperationsMonitor.gs | wc -l
+```
+
+---
+
 ## Support & Maintenance
 
 ### How to Debug Issues
@@ -1632,9 +1686,13 @@ All errors logged here with timestamps.
 - Run setupDataValidations() again
 - Check Config sheet has data in all columns
 
+**Functions not found errors:**
+- Ensure all .gs files are deployed together
+- Check that SHEETS constants match actual sheet names
+
 ### Getting Help
 
-1. Check this FEATURES.md document first
+1. Check this AI_REFERENCE.md document first
 2. Run DIAGNOSE_SETUP() to identify issues
 3. Check Apps Script logs for errors
 4. Review recent commits for changes
@@ -1646,8 +1704,8 @@ All errors logged here with timestamps.
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2025-01-XX
+**Document Version:** 2.1
+**Last Updated:** 2025-01-27
 **Maintained By:** Claude (AI Assistant)
 **Repository:** [Add GitHub URL]
 
