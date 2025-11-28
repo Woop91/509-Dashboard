@@ -312,59 +312,59 @@ function createConfigTab() {
   const configData = [
     ["Job Titles", "Office Locations", "Units", "Office Days", "Yes/No",
      "Supervisors", "Managers", "Stewards", "Grievance Status", "Grievance Step",
-     "Issue Category", "Articles Violated", "Communication Methods"],
+     "Issue Category", "Articles Violated", "Communication Methods", "Committees"],
 
     ["Coordinator", "Boston HQ", "Unit A - Administrative", "Monday", "Yes",
      "Sarah Johnson", "Michael Chen", "Jane Smith", "Open", "Informal",
-     "Discipline", "Art. 1 - Recognition", "Email"],
+     "Discipline", "Art. 1 - Recognition", "Email", "Organizing"],
 
     ["Analyst", "Worcester Office", "Unit B - Technical", "Tuesday", "No",
      "Mike Wilson", "Lisa Anderson", "John Doe", "Pending Info", "Step I",
-     "Workload", "Art. 2 - Union Security", "Phone"],
+     "Workload", "Art. 2 - Union Security", "Phone", "Bargaining"],
 
     ["Case Manager", "Springfield Branch", "Unit C - Support Services", "Wednesday", "",
      "Emily Davis", "Robert Brown", "Mary Johnson", "Settled", "Step II",
-     "Scheduling", "Art. 3 - Management Rights", "Text"],
+     "Scheduling", "Art. 3 - Management Rights", "Text", "Political Action"],
 
     ["Specialist", "Cambridge Office", "Unit D - Operations", "Thursday", "",
      "Tom Harris", "Jennifer Lee", "Bob Wilson", "Withdrawn", "Step III",
-     "Pay", "Art. 4 - No Discrimination", "In Person"],
+     "Pay", "Art. 4 - No Discrimination", "In Person", "Communications"],
 
     ["Senior Analyst", "Lowell Center", "Unit E - Field Services", "Friday", "",
      "Amanda White", "David Martinez", "Alice Brown", "Closed", "Mediation",
-     "Discrimination", "Art. 5 - Union Business", ""],
+     "Discrimination", "Art. 5 - Union Business", "", "Membership"],
 
     ["Team Lead", "Quincy Station", "", "Saturday", "",
      "Chris Taylor", "Susan Garcia", "Tom Davis", "Appealed", "Arbitration",
-     "Safety", "Art. 23 - Grievance Procedure", ""],
+     "Safety", "Art. 23 - Grievance Procedure", "", "Health & Safety"],
 
     ["Director", "Remote/Hybrid", "", "Sunday", "",
      "Patricia Moore", "James Wilson", "Sarah Martinez", "", "",
-     "Benefits", "Art. 24 - Discipline", ""],
+     "Benefits", "Art. 24 - Discipline", "", "Education"],
 
     ["Manager", "Brockton Office", "", "", "",
      "Kevin Anderson", "Nancy Taylor", "Kevin Jones", "", "",
-     "Training", "Art. 25 - Hours of Work", ""],
+     "Training", "Art. 25 - Hours of Work", "", "Diversity & Inclusion"],
 
     ["Assistant", "Lynn Location", "", "", "",
      "Michelle Lee", "Richard White", "Linda Garcia", "", "",
-     "Other", "Art. 26 - Overtime", ""],
+     "Other", "Art. 26 - Overtime", "", "Retirees"],
 
     ["Associate", "Salem Office", "", "", "",
      "Brandon Scott", "Angela Moore", "Daniel Kim", "", "",
-     "Harassment", "Art. 27 - Seniority", ""],
+     "Harassment", "Art. 27 - Seniority", "", "Young Workers"],
 
     ["Technician", "", "", "", "",
      "Jessica Green", "Christopher Lee", "Rachel Adams", "", "",
-     "Equipment", "Art. 28 - Layoff", ""],
+     "Equipment", "Art. 28 - Layoff", "", ""],
 
     ["Administrator", "", "", "", "",
      "Andrew Clark", "Melissa Wright", "", "", "",
-     "Leave", "Art. 29 - Sick Leave", ""],
+     "Leave", "Art. 29 - Sick Leave", "", ""],
 
     ["Support Staff", "", "", "", "",
      "Rachel Brown", "Timothy Davis", "", "", "",
-     "Grievance Process", "Art. 30 - Vacation", ""]
+     "Grievance Process", "Art. 30 - Vacation", "", ""]
   ];
 
   config.getRange(1, 1, configData.length, configData[0].length).setValues(configData);
@@ -401,6 +401,7 @@ function createMemberDirectory() {
     "Job Title",
     "Work Location (Site)",
     "Unit",
+    "Committee(s)",
     "Office Days",
     "Email Address",
     "Phone Number",
@@ -1520,14 +1521,14 @@ function SEED_20K_MEMBERS() {
 
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
-    'Seed 20,000 Members',
-    'This will add 20,000 member records. This may take 2-3 minutes. Continue?',
+    'Seed 5,000 Members',
+    'This will add 5,000 member records. This may take 1 minute. Continue?',
     ui.ButtonSet.YES_NO
   );
 
   if (response !== ui.Button.YES) return;
 
-  SpreadsheetApp.getActive().toast("🚀 Seeding 20,000 members...", "Processing", -1);
+  SpreadsheetApp.getActive().toast("🚀 Seeding 5,000 members...", "Processing", -1);
 
   const firstNames = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley", "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle"];
   const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores"];
@@ -1538,6 +1539,7 @@ function SEED_20K_MEMBERS() {
   const supervisors = config.getRange("F2:F14").getValues().flat().filter(String);
   const managers = config.getRange("G2:G14").getValues().flat().filter(String);
   const stewards = config.getRange("H2:H14").getValues().flat().filter(String);
+  const committees = config.getRange("N2:N14").getValues().flat().filter(String);
   const commMethods = ["Email", "Phone", "Text", "In Person"];
   const times = ["Mornings", "Afternoons", "Evenings", "Weekends", "Flexible"];
 
@@ -1551,13 +1553,20 @@ function SEED_20K_MEMBERS() {
   const BATCH_SIZE = 1000;
   let data = [];
 
-  for (let i = 1; i <= 20000; i++) {
+  for (let i = 1; i <= 5000; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
     const memberID = "M" + String(i).padStart(6, '0');
     const jobTitle = jobTitles[Math.floor(Math.random() * jobTitles.length)];
     const location = locations[Math.floor(Math.random() * locations.length)];
     const unit = units[Math.floor(Math.random() * units.length)];
+
+    // Random committee assignment (30% chance of being on 1-2 committees)
+    const committee = Math.random() > 0.7 ?
+      (Math.random() > 0.5 && committees.length > 1 ?
+        `${committees[Math.floor(Math.random() * committees.length)]}, ${committees[Math.floor(Math.random() * committees.length)]}` :
+        committees[Math.floor(Math.random() * committees.length)]) : "";
+
     const officeDays = ["Mon", "Tue", "Wed", "Thu", "Fri"][Math.floor(Math.random() * 5)];
     const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@union.org`;
     const phone = `(555) ${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
@@ -1582,7 +1591,7 @@ function SEED_20K_MEMBERS() {
     const bestTime = times[Math.floor(Math.random() * times.length)];
 
     const row = [
-      memberID, firstName, lastName, jobTitle, location, unit, officeDays,
+      memberID, firstName, lastName, jobTitle, location, unit, committee, officeDays,
       email, phone, isSteward, supervisor, manager, assignedSteward,
       lastVirtual, lastInPerson, lastSurvey, lastEmailOpen, openRate, volHours,
       localInterest, chapterInterest, alliedInterest, timestamp, commMethod, bestTime,
@@ -1594,7 +1603,7 @@ function SEED_20K_MEMBERS() {
     if (data.length === BATCH_SIZE) {
       try {
         memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-        SpreadsheetApp.getActive().toast(`Added ${i} of 20,000 members...`, "Progress", 1);
+        SpreadsheetApp.getActive().toast(`Added ${i} of 5,000 members...`, "Progress", 1);
         data = [];
         SpreadsheetApp.flush();
       } catch (e) {
@@ -1623,10 +1632,10 @@ function SEED_20K_MEMBERS() {
     }
   }
 
-  SpreadsheetApp.getActive().toast("✅ 20,000 members added!", "Complete", 5);
+  SpreadsheetApp.getActive().toast("✅ 5,000 members added!", "Complete", 5);
 }
 
-/* ===================== SEED 5,000 GRIEVANCES ===================== */
+/* ===================== SEED 1,000 GRIEVANCES ===================== */
 function SEED_5K_GRIEVANCES() {
   const ss = SpreadsheetApp.getActive();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -1635,14 +1644,14 @@ function SEED_5K_GRIEVANCES() {
 
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
-    'Seed 5,000 Grievances',
-    'This will add 5,000 grievance records. This may take 1-2 minutes. Continue?',
+    'Seed 1,000 Grievances',
+    'This will add 1,000 grievance records. This may take 30 seconds. Continue?',
     ui.ButtonSet.YES_NO
   );
 
   if (response !== ui.Button.YES) return;
 
-  SpreadsheetApp.getActive().toast("🚀 Seeding 5,000 grievances...", "Processing", -1);
+  SpreadsheetApp.getActive().toast("🚀 Seeding 1,000 grievances...", "Processing", -1);
 
   // Get member data ONCE before the loop (CRITICAL FIX)
   const memberLastRow = memberDir.getLastRow();
@@ -1651,7 +1660,7 @@ function SEED_5K_GRIEVANCES() {
     return;
   }
 
-  const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
+  const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 32).getValues();
   const memberIDs = allMemberData.map(row => row[0]).filter(String);
 
   const statuses = config.getRange("I2:I8").getValues().flat().filter(String);
@@ -1671,7 +1680,7 @@ function SEED_5K_GRIEVANCES() {
   let data = [];
   let successCount = 0;
 
-  for (let i = 1; i <= 5000; i++) {
+  for (let i = 1; i <= 1000; i++) {
     // Get random member
     const memberIndex = Math.floor(Math.random() * memberIDs.length);
     const memberID = memberIDs[memberIndex];
@@ -1691,7 +1700,7 @@ function SEED_5K_GRIEVANCES() {
 
     const article = articles[Math.floor(Math.random() * articles.length)];
     const category = categories[Math.floor(Math.random() * categories.length)];
-    const email = memberData[7];
+    const email = memberData[8];  // Email is now column 9 (index 8) after adding Committee column
     const unit = memberData[5];
     const location = memberData[4];
     const assignedSteward = stewards[Math.floor(Math.random() * stewards.length)];

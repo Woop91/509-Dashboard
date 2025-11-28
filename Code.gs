@@ -1184,14 +1184,14 @@ function SEED_20K_MEMBERS() {
 
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
-    'Seed 20,000 Members',
-    'This will add 20,000 member records. This may take 2-3 minutes. Continue?',
+    'Seed 5,000 Members',
+    'This will add 5,000 member records. This may take 2-3 minutes. Continue?',
     ui.ButtonSet.YES_NO
   );
 
   if (response !== ui.Button.YES) return;
 
-  SpreadsheetApp.getActive().toast("🚀 Seeding 20,000 members...", "Processing", -1);
+  SpreadsheetApp.getActive().toast("🚀 Seeding 5,000 members...", "Processing", -1);
 
   const firstNames = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley", "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle"];
   const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores"];
@@ -1217,7 +1217,7 @@ function SEED_20K_MEMBERS() {
   const BATCH_SIZE = 1000;
   let data = [];
 
-  for (let i = 1; i <= 20000; i++) {
+  for (let i = 1; i <= 1000; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
     const memberID = "M" + String(i).padStart(6, '0');
@@ -1267,7 +1267,7 @@ function SEED_20K_MEMBERS() {
     if (data.length === BATCH_SIZE) {
       try {
         memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-        SpreadsheetApp.getActive().toast(`Added ${i} of 20,000 members...`, "Progress", 1);
+        SpreadsheetApp.getActive().toast(`Added ${i} of 5,000 members...`, "Progress", 1);
         data = [];
         SpreadsheetApp.flush();
       } catch (e) {
@@ -1296,7 +1296,7 @@ function SEED_20K_MEMBERS() {
     }
   }
 
-  SpreadsheetApp.getActive().toast("✅ 20,000 members added!", "Complete", 5);
+  SpreadsheetApp.getActive().toast("✅ 5,000 members added!", "Complete", 5);
 }
 
 /* ===================== SEED 5,000 GRIEVANCES ===================== */
@@ -1308,14 +1308,14 @@ function SEED_5K_GRIEVANCES() {
 
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
-    'Seed 5,000 Grievances',
-    'This will add 5,000 grievance records. This may take 1-2 minutes. Continue?',
+    'Seed 1,000 Grievances',
+    'This will add 1,000 grievance records. This may take 1-2 minutes. Continue?',
     ui.ButtonSet.YES_NO
   );
 
   if (response !== ui.Button.YES) return;
 
-  SpreadsheetApp.getActive().toast("🚀 Seeding 5,000 grievances...", "Processing", -1);
+  SpreadsheetApp.getActive().toast("🚀 Seeding 1,000 grievances...", "Processing", -1);
 
   // Get member data ONCE before the loop (CRITICAL FIX)
   const memberLastRow = memberDir.getLastRow();
@@ -1344,7 +1344,7 @@ function SEED_5K_GRIEVANCES() {
   let data = [];
   let successCount = 0;
 
-  for (let i = 1; i <= 5000; i++) {
+  for (let i = 1; i <= 1000; i++) {
     // Get random member
     const memberIndex = Math.floor(Math.random() * memberIDs.length);
     const memberID = memberIDs[memberIndex];
