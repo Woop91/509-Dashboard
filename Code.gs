@@ -1075,67 +1075,123 @@ function onOpen() {
   // Check if seed data has been nuked
   const seedNuked = PropertiesService.getScriptProperties().getProperty('SEED_NUKED') === 'true';
 
+  // Helper function to add item if feature is enabled
+  function addIfEnabled(menu, label, functionName, featureName) {
+    if (isFeatureEnabled(featureName)) {
+      menu.addItem(label, functionName);
+    }
+    return menu;
+  }
+
   // VIEW MENU - Consolidates Dashboards + ADHD Features + Column Toggles
-  const viewMenu = ui.createMenu("📊 View")
-    .addItem("🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor")
-    .addItem("📊 Main Dashboard", "goToDashboard")
-    .addItem("✨ Interactive Dashboard", "openInteractiveDashboard")
-    .addItem("🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard")
-    .addSeparator()
-    .addItem("Hide Gridlines (Focus Mode)", "hideAllGridlines")
-    .addItem("Show Gridlines", "showAllGridlines")
-    .addItem("Reorder Sheets Logically", "reorderSheetsLogically")
-    .addItem("Setup ADHD Defaults", "setupADHDDefaults")
-    .addSeparator()
-    .addItem("Toggle Advanced Grievance Columns", "toggleGrievanceColumns")
-    .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
-    .addItem("Show All Member Columns", "showAllMemberColumns");
+  const viewMenu = ui.createMenu("📊 View");
+  addIfEnabled(viewMenu, "🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor", "Unified Operations Monitor");
+  addIfEnabled(viewMenu, "📊 Main Dashboard", "goToDashboard", "Main Dashboard");
+  addIfEnabled(viewMenu, "✨ Interactive Dashboard", "openInteractiveDashboard", "Interactive Dashboard");
+  addIfEnabled(viewMenu, "🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard", "Refresh Interactive Dashboard");
+
+  if (isFeatureEnabled("Hide Gridlines (Focus Mode)") || isFeatureEnabled("Show Gridlines") ||
+      isFeatureEnabled("Reorder Sheets Logically") || isFeatureEnabled("Setup ADHD Defaults")) {
+    viewMenu.addSeparator();
+  }
+
+  addIfEnabled(viewMenu, "Hide Gridlines (Focus Mode)", "hideAllGridlines", "Hide Gridlines (Focus Mode)");
+  addIfEnabled(viewMenu, "Show Gridlines", "showAllGridlines", "Show Gridlines");
+  addIfEnabled(viewMenu, "Reorder Sheets Logically", "reorderSheetsLogically", "Reorder Sheets Logically");
+  addIfEnabled(viewMenu, "Setup ADHD Defaults", "setupADHDDefaults", "Setup ADHD Defaults");
+
+  if (isFeatureEnabled("Toggle Advanced Grievance Columns") || isFeatureEnabled("Toggle Level 2 Member Columns") ||
+      isFeatureEnabled("Show All Member Columns")) {
+    viewMenu.addSeparator();
+  }
+
+  addIfEnabled(viewMenu, "Toggle Advanced Grievance Columns", "toggleGrievanceColumns", "Toggle Advanced Grievance Columns");
+  addIfEnabled(viewMenu, "Toggle Level 2 Member Columns", "toggleLevel2Columns", "Toggle Level 2 Member Columns");
+  addIfEnabled(viewMenu, "Show All Member Columns", "showAllMemberColumns", "Show All Member Columns");
 
   // GRIEVANCES MENU
-  const grievancesMenu = ui.createMenu("📋 Grievances")
-    .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
-    .addSeparator()
-    .addItem("🔍 Advanced Search", "showSearchDialog")
-    .addItem("🎯 Advanced Filter", "showFilterDialog");
+  const grievancesMenu = ui.createMenu("📋 Grievances");
+  addIfEnabled(grievancesMenu, "➕ Start New Grievance", "showStartGrievanceDialog", "Start New Grievance");
+
+  if (isFeatureEnabled("Advanced Search") || isFeatureEnabled("Advanced Filter")) {
+    grievancesMenu.addSeparator();
+  }
+
+  addIfEnabled(grievancesMenu, "🔍 Advanced Search", "showSearchDialog", "Advanced Search");
+  addIfEnabled(grievancesMenu, "🎯 Advanced Filter", "showFilterDialog", "Advanced Filter");
 
   // REPORTS & EXPORT MENU
-  const reportsMenu = ui.createMenu("📊 Reports & Export")
-    .addItem("📥 Export Wizard", "showExportWizard")
-    .addItem("📤 Import Wizard", "showImportWizard");
+  const reportsMenu = ui.createMenu("📊 Reports & Export");
+  addIfEnabled(reportsMenu, "📥 Export Wizard", "showExportWizard", "Export Wizard");
+  addIfEnabled(reportsMenu, "📤 Import Wizard", "showImportWizard", "Import Wizard");
 
   // SECURITY (ADMIN ONLY) MENU
-  const securityMenu = ui.createMenu("🔐 Security (Admin Only)")
-    .addItem("📋 Generate Audit Report", "showAuditReportDialog")
-    .addSeparator()
-    .addItem("💾 Create Backup", "createAutomatedBackup")
-    .addItem("⏰ Setup Daily Backups", "setupDailyBackupTrigger")
-    .addSeparator()
-    .addItem("🔐 Configure RBAC", "setupRBACConfiguration")
-    .addItem("🗑️ Enforce Data Retention", "enforceDataRetention")
-    .addSeparator()
-    .addItem("🚀 Initialize Security Features", "initializeSecurityFeatures");
+  const securityMenu = ui.createMenu("🔐 Security (Admin Only)");
+  addIfEnabled(securityMenu, "📋 Generate Audit Report", "showAuditReportDialog", "Generate Audit Report");
 
-  // ADMIN & TESTING MENU - Conditionally shows seed options
-  const adminMenu = ui.createMenu("⚙️ Admin & Testing");
-  if (!seedNuked) {
-    adminMenu
-      .addItem("🌱 Seed 5k Members", "SEED_20K_MEMBERS")
-      .addItem("🌱 Seed 1k Grievances", "SEED_5K_GRIEVANCES")
-      .addSeparator();
+  if (isFeatureEnabled("Create Backup") || isFeatureEnabled("Setup Daily Backups")) {
+    securityMenu.addSeparator();
   }
-  adminMenu
-    .addItem("🗑️ Clear All Data", "clearAllData")
-    .addItem("💣 Nuke All Seed Data", "nukeSeedData")
+
+  addIfEnabled(securityMenu, "💾 Create Backup", "createAutomatedBackup", "Create Backup");
+  addIfEnabled(securityMenu, "⏰ Setup Daily Backups", "setupDailyBackupTrigger", "Setup Daily Backups");
+
+  if (isFeatureEnabled("Configure RBAC") || isFeatureEnabled("Enforce Data Retention")) {
+    securityMenu.addSeparator();
+  }
+
+  addIfEnabled(securityMenu, "🔐 Configure RBAC", "setupRBACConfiguration", "Configure RBAC");
+  addIfEnabled(securityMenu, "🗑️ Enforce Data Retention", "enforceDataRetention", "Enforce Data Retention");
+
+  if (isFeatureEnabled("Initialize Security Features")) {
+    securityMenu.addSeparator();
+  }
+
+  addIfEnabled(securityMenu, "🚀 Initialize Security Features", "initializeSecurityFeatures", "Initialize Security Features");
+
+  // ADMIN & TESTING MENU - Conditionally shows seed options and feature management
+  const adminMenu = ui.createMenu("⚙️ Admin & Testing");
+
+  // Seed data options (only if not nuked)
+  if (!seedNuked) {
+    if (isFeatureEnabled("Seed 5k Members")) {
+      adminMenu.addItem("🌱 Seed 5k Members", "SEED_20K_MEMBERS");
+    }
+    if (isFeatureEnabled("Seed 1k Grievances")) {
+      adminMenu.addItem("🌱 Seed 1k Grievances", "SEED_5K_GRIEVANCES");
+    }
+    if (isFeatureEnabled("Seed 5k Members") || isFeatureEnabled("Seed 1k Grievances")) {
+      adminMenu.addSeparator();
+    }
+  }
+
+  addIfEnabled(adminMenu, "🗑️ Clear All Data", "clearAllData", "Clear All Data");
+  addIfEnabled(adminMenu, "💣 Nuke All Seed Data", "nukeSeedData", "Nuke All Seed Data");
+
+  adminMenu.addSeparator()
+    .addItem("⚙️ Manage Features", "showFeatureManagementDialog")
+    .addItem("✅ Enable All Features", "enableAllFeatures")
+    .addItem("➖ Disable Non-Essential", "disableNonEssentialFeatures")
     .addSeparator()
-    .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP");
+    .addItem("📤 Export Feature Config", "exportFeatureConfig")
+    .addItem("📥 Import Feature Config", "importFeatureConfig");
+
+  if (isFeatureEnabled("Diagnose Setup")) {
+    adminMenu.addSeparator();
+    adminMenu.addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP");
+  }
 
   // HELP MENU
-  const helpMenu = ui.createMenu("❓ Help")
-    .addItem("⚡ Quick Actions Sidebar", "showQuickActionsSidebar")
-    .addSeparator()
-    .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
-    .addItem("❓ Help", "showHelp")
-    .addItem("⌨️ Keyboard Shortcuts", "setupKeyboardShortcuts");
+  const helpMenu = ui.createMenu("❓ Help");
+  addIfEnabled(helpMenu, "⚡ Quick Actions Sidebar", "showQuickActionsSidebar", "Quick Actions Sidebar");
+
+  if (isFeatureEnabled("Quick Actions Sidebar")) {
+    helpMenu.addSeparator();
+  }
+
+  addIfEnabled(helpMenu, "📚 Getting Started Guide", "showGettingStartedGuide", "Getting Started Guide");
+  addIfEnabled(helpMenu, "❓ Help", "showHelp", "Help");
+  addIfEnabled(helpMenu, "⌨️ Keyboard Shortcuts", "setupKeyboardShortcuts", "Keyboard Shortcuts");
 
   // BUILD MAIN MENU
   ui.createMenu("📊 509 Dashboard")

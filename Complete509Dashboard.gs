@@ -1403,67 +1403,123 @@ function onOpen() {
   // Check if seed data has been nuked
   const seedNuked = PropertiesService.getScriptProperties().getProperty('SEED_NUKED') === 'true';
 
+  // Helper function to add item if feature is enabled
+  function addIfEnabled(menu, label, functionName, featureName) {
+    if (isFeatureEnabled(featureName)) {
+      menu.addItem(label, functionName);
+    }
+    return menu;
+  }
+
   // VIEW MENU - Consolidates Dashboards + ADHD Features + Column Toggles
-  const viewMenu = ui.createMenu("📊 View")
-    .addItem("🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor")
-    .addItem("📊 Main Dashboard", "goToDashboard")
-    .addItem("✨ Interactive Dashboard", "openInteractiveDashboard")
-    .addItem("🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard")
-    .addSeparator()
-    .addItem("Hide Gridlines (Focus Mode)", "hideAllGridlines")
-    .addItem("Show Gridlines", "showAllGridlines")
-    .addItem("Reorder Sheets Logically", "reorderSheetsLogically")
-    .addItem("Setup ADHD Defaults", "setupADHDDefaults")
-    .addSeparator()
-    .addItem("Toggle Advanced Grievance Columns", "toggleGrievanceColumns")
-    .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
-    .addItem("Show All Member Columns", "showAllMemberColumns");
+  const viewMenu = ui.createMenu("📊 View");
+  addIfEnabled(viewMenu, "🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor", "Unified Operations Monitor");
+  addIfEnabled(viewMenu, "📊 Main Dashboard", "goToDashboard", "Main Dashboard");
+  addIfEnabled(viewMenu, "✨ Interactive Dashboard", "openInteractiveDashboard", "Interactive Dashboard");
+  addIfEnabled(viewMenu, "🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard", "Refresh Interactive Dashboard");
+
+  if (isFeatureEnabled("Hide Gridlines (Focus Mode)") || isFeatureEnabled("Show Gridlines") ||
+      isFeatureEnabled("Reorder Sheets Logically") || isFeatureEnabled("Setup ADHD Defaults")) {
+    viewMenu.addSeparator();
+  }
+
+  addIfEnabled(viewMenu, "Hide Gridlines (Focus Mode)", "hideAllGridlines", "Hide Gridlines (Focus Mode)");
+  addIfEnabled(viewMenu, "Show Gridlines", "showAllGridlines", "Show Gridlines");
+  addIfEnabled(viewMenu, "Reorder Sheets Logically", "reorderSheetsLogically", "Reorder Sheets Logically");
+  addIfEnabled(viewMenu, "Setup ADHD Defaults", "setupADHDDefaults", "Setup ADHD Defaults");
+
+  if (isFeatureEnabled("Toggle Advanced Grievance Columns") || isFeatureEnabled("Toggle Level 2 Member Columns") ||
+      isFeatureEnabled("Show All Member Columns")) {
+    viewMenu.addSeparator();
+  }
+
+  addIfEnabled(viewMenu, "Toggle Advanced Grievance Columns", "toggleGrievanceColumns", "Toggle Advanced Grievance Columns");
+  addIfEnabled(viewMenu, "Toggle Level 2 Member Columns", "toggleLevel2Columns", "Toggle Level 2 Member Columns");
+  addIfEnabled(viewMenu, "Show All Member Columns", "showAllMemberColumns", "Show All Member Columns");
 
   // GRIEVANCES MENU
-  const grievancesMenu = ui.createMenu("📋 Grievances")
-    .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
-    .addSeparator()
-    .addItem("🔍 Advanced Search", "showSearchDialog")
-    .addItem("🎯 Advanced Filter", "showFilterDialog");
+  const grievancesMenu = ui.createMenu("📋 Grievances");
+  addIfEnabled(grievancesMenu, "➕ Start New Grievance", "showStartGrievanceDialog", "Start New Grievance");
+
+  if (isFeatureEnabled("Advanced Search") || isFeatureEnabled("Advanced Filter")) {
+    grievancesMenu.addSeparator();
+  }
+
+  addIfEnabled(grievancesMenu, "🔍 Advanced Search", "showSearchDialog", "Advanced Search");
+  addIfEnabled(grievancesMenu, "🎯 Advanced Filter", "showFilterDialog", "Advanced Filter");
 
   // REPORTS & EXPORT MENU
-  const reportsMenu = ui.createMenu("📊 Reports & Export")
-    .addItem("📥 Export Wizard", "showExportWizard")
-    .addItem("📤 Import Wizard", "showImportWizard");
+  const reportsMenu = ui.createMenu("📊 Reports & Export");
+  addIfEnabled(reportsMenu, "📥 Export Wizard", "showExportWizard", "Export Wizard");
+  addIfEnabled(reportsMenu, "📤 Import Wizard", "showImportWizard", "Import Wizard");
 
   // SECURITY (ADMIN ONLY) MENU
-  const securityMenu = ui.createMenu("🔐 Security (Admin Only)")
-    .addItem("📋 Generate Audit Report", "showAuditReportDialog")
-    .addSeparator()
-    .addItem("💾 Create Backup", "createAutomatedBackup")
-    .addItem("⏰ Setup Daily Backups", "setupDailyBackupTrigger")
-    .addSeparator()
-    .addItem("🔐 Configure RBAC", "setupRBACConfiguration")
-    .addItem("🗑️ Enforce Data Retention", "enforceDataRetention")
-    .addSeparator()
-    .addItem("🚀 Initialize Security Features", "initializeSecurityFeatures");
+  const securityMenu = ui.createMenu("🔐 Security (Admin Only)");
+  addIfEnabled(securityMenu, "📋 Generate Audit Report", "showAuditReportDialog", "Generate Audit Report");
 
-  // ADMIN & TESTING MENU - Conditionally shows seed options
-  const adminMenu = ui.createMenu("⚙️ Admin & Testing");
-  if (!seedNuked) {
-    adminMenu
-      .addItem("🌱 Seed 5k Members", "SEED_20K_MEMBERS")
-      .addItem("🌱 Seed 1k Grievances", "SEED_5K_GRIEVANCES")
-      .addSeparator();
+  if (isFeatureEnabled("Create Backup") || isFeatureEnabled("Setup Daily Backups")) {
+    securityMenu.addSeparator();
   }
-  adminMenu
-    .addItem("🗑️ Clear All Data", "clearAllData")
-    .addItem("💣 Nuke All Seed Data", "nukeSeedData")
+
+  addIfEnabled(securityMenu, "💾 Create Backup", "createAutomatedBackup", "Create Backup");
+  addIfEnabled(securityMenu, "⏰ Setup Daily Backups", "setupDailyBackupTrigger", "Setup Daily Backups");
+
+  if (isFeatureEnabled("Configure RBAC") || isFeatureEnabled("Enforce Data Retention")) {
+    securityMenu.addSeparator();
+  }
+
+  addIfEnabled(securityMenu, "🔐 Configure RBAC", "setupRBACConfiguration", "Configure RBAC");
+  addIfEnabled(securityMenu, "🗑️ Enforce Data Retention", "enforceDataRetention", "Enforce Data Retention");
+
+  if (isFeatureEnabled("Initialize Security Features")) {
+    securityMenu.addSeparator();
+  }
+
+  addIfEnabled(securityMenu, "🚀 Initialize Security Features", "initializeSecurityFeatures", "Initialize Security Features");
+
+  // ADMIN & TESTING MENU - Conditionally shows seed options and feature management
+  const adminMenu = ui.createMenu("⚙️ Admin & Testing");
+
+  // Seed data options (only if not nuked)
+  if (!seedNuked) {
+    if (isFeatureEnabled("Seed 5k Members")) {
+      adminMenu.addItem("🌱 Seed 5k Members", "SEED_20K_MEMBERS");
+    }
+    if (isFeatureEnabled("Seed 1k Grievances")) {
+      adminMenu.addItem("🌱 Seed 1k Grievances", "SEED_5K_GRIEVANCES");
+    }
+    if (isFeatureEnabled("Seed 5k Members") || isFeatureEnabled("Seed 1k Grievances")) {
+      adminMenu.addSeparator();
+    }
+  }
+
+  addIfEnabled(adminMenu, "🗑️ Clear All Data", "clearAllData", "Clear All Data");
+  addIfEnabled(adminMenu, "💣 Nuke All Seed Data", "nukeSeedData", "Nuke All Seed Data");
+
+  adminMenu.addSeparator()
+    .addItem("⚙️ Manage Features", "showFeatureManagementDialog")
+    .addItem("✅ Enable All Features", "enableAllFeatures")
+    .addItem("➖ Disable Non-Essential", "disableNonEssentialFeatures")
     .addSeparator()
-    .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP");
+    .addItem("📤 Export Feature Config", "exportFeatureConfig")
+    .addItem("📥 Import Feature Config", "importFeatureConfig");
+
+  if (isFeatureEnabled("Diagnose Setup")) {
+    adminMenu.addSeparator();
+    adminMenu.addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP");
+  }
 
   // HELP MENU
-  const helpMenu = ui.createMenu("❓ Help")
-    .addItem("⚡ Quick Actions Sidebar", "showQuickActionsSidebar")
-    .addSeparator()
-    .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
-    .addItem("❓ Help", "showHelp")
-    .addItem("⌨️ Keyboard Shortcuts", "setupKeyboardShortcuts");
+  const helpMenu = ui.createMenu("❓ Help");
+  addIfEnabled(helpMenu, "⚡ Quick Actions Sidebar", "showQuickActionsSidebar", "Quick Actions Sidebar");
+
+  if (isFeatureEnabled("Quick Actions Sidebar")) {
+    helpMenu.addSeparator();
+  }
+
+  addIfEnabled(helpMenu, "📚 Getting Started Guide", "showGettingStartedGuide", "Getting Started Guide");
+  addIfEnabled(helpMenu, "❓ Help", "showHelp", "Help");
+  addIfEnabled(helpMenu, "⌨️ Keyboard Shortcuts", "setupKeyboardShortcuts", "Keyboard Shortcuts");
 
   // BUILD MAIN MENU
   ui.createMenu("📊 509 Dashboard")
@@ -8303,4 +8359,659 @@ function initializeSecurityFeatures() {
     Logger.log('Error initializing security features: ' + error);
     SpreadsheetApp.getUi().alert('Error initializing: ' + error.message);
   }
+}
+/**
+ * ============================================================================
+ * FEATURE TOGGLE SYSTEM
+ * ============================================================================
+ *
+ * Allows admins to enable/disable features from the Admin menu.
+ * Features are controlled via the "Feature Controls" sheet.
+ *
+ * Features:
+ * - Enable/disable menu items dynamically
+ * - Control dashboard visibility
+ * - Manage tool availability
+ * - Role-based feature access
+ *
+ * ============================================================================
+ */
+
+/**
+ * Creates the Feature Controls sheet
+ */
+function createFeatureControlsSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName("⚙️ Feature Controls");
+
+  if (sheet) {
+    ss.deleteSheet(sheet);
+  }
+
+  sheet = ss.insertSheet("⚙️ Feature Controls");
+  sheet.clear();
+
+  // Title
+  sheet.getRange("A1:G1").merge()
+    .setValue("⚙️ FEATURE CONTROLS - Admin Feature Management")
+    .setFontSize(16)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground("#7C3AED")
+    .setFontColor("#FFFFFF");
+
+  sheet.getRange("A2:G2").merge()
+    .setValue("💡 Enable or disable features by changing the 'Enabled' column. Refresh the page to see changes in the menu.")
+    .setFontSize(10)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setBackground("#F3F4F6")
+    .setFontColor("#6B7280");
+
+  // Headers
+  const headers = [
+    "Feature Name",
+    "Description",
+    "Category",
+    "Enabled",
+    "Menu Location",
+    "Function Name",
+    "Required Role"
+  ];
+
+  sheet.getRange(3, 1, 1, headers.length).setValues([headers])
+    .setFontWeight("bold")
+    .setBackground("#E5E7EB")
+    .setFontColor("#1F2937");
+
+  // Feature list with all features
+  const features = [
+    // VIEW MENU
+    ["Unified Operations Monitor", "Terminal-style comprehensive dashboard", "View", "Yes", "View", "showUnifiedOperationsMonitor", "All"],
+    ["Main Dashboard", "Overview dashboard with key metrics", "View", "Yes", "View", "goToDashboard", "All"],
+    ["Interactive Dashboard", "Customizable dashboard with metric/chart dropdowns", "View", "Yes", "View", "openInteractiveDashboard", "All"],
+    ["Refresh Interactive Dashboard", "Rebuild interactive dashboard charts", "View", "Yes", "View", "rebuildInteractiveDashboard", "All"],
+    ["Hide Gridlines (Focus Mode)", "Hide all gridlines for cleaner view", "View", "Yes", "View", "hideAllGridlines", "All"],
+    ["Show Gridlines", "Show all gridlines", "View", "Yes", "View", "showAllGridlines", "All"],
+    ["Reorder Sheets Logically", "Organize sheets in logical order", "View", "Yes", "View", "reorderSheetsLogically", "All"],
+    ["Setup ADHD Defaults", "Configure ADHD-friendly defaults", "View", "Yes", "View", "setupADHDDefaults", "All"],
+    ["Toggle Advanced Grievance Columns", "Show/hide advanced grievance columns", "View", "Yes", "View", "toggleGrievanceColumns", "All"],
+    ["Toggle Level 2 Member Columns", "Show/hide level 2 member columns", "View", "Yes", "View", "toggleLevel2Columns", "All"],
+    ["Show All Member Columns", "Show all hidden member columns", "View", "Yes", "View", "showAllMemberColumns", "All"],
+
+    // GRIEVANCES MENU
+    ["Start New Grievance", "Launch new grievance workflow", "Grievances", "Yes", "Grievances", "showStartGrievanceDialog", "Steward"],
+    ["Advanced Search", "Search grievances by multiple criteria", "Grievances", "Yes", "Grievances", "showSearchDialog", "All"],
+    ["Advanced Filter", "Filter grievances by status/type/date", "Grievances", "Yes", "Grievances", "showFilterDialog", "All"],
+
+    // REPORTS & EXPORT
+    ["Export Wizard", "Guided data export (CSV/Excel/PDF)", "Reports", "Yes", "Reports & Export", "showExportWizard", "All"],
+    ["Import Wizard", "Bulk data import from CSV/Excel", "Reports", "Yes", "Reports & Export", "showImportWizard", "Steward"],
+
+    // SECURITY (ADMIN ONLY)
+    ["Generate Audit Report", "Create audit trail report", "Security", "Yes", "Security", "showAuditReportDialog", "Steward"],
+    ["Create Backup", "Manual backup to Google Drive", "Security", "Yes", "Security", "createAutomatedBackup", "Admin"],
+    ["Setup Daily Backups", "Configure automated daily backups", "Security", "Yes", "Security", "setupDailyBackupTrigger", "Admin"],
+    ["Configure RBAC", "Set up role-based access control", "Security", "Yes", "Security", "setupRBACConfiguration", "Admin"],
+    ["Enforce Data Retention", "Apply data retention policy", "Security", "Yes", "Security", "enforceDataRetention", "Admin"],
+    ["Initialize Security Features", "Set up security sheets and features", "Security", "Yes", "Security", "initializeSecurityFeatures", "Admin"],
+
+    // ADMIN & TESTING
+    ["Seed 5k Members", "Generate 5,000 test member records", "Admin", "Yes", "Admin & Testing", "SEED_20K_MEMBERS", "Admin"],
+    ["Seed 1k Grievances", "Generate 1,000 test grievance records", "Admin", "Yes", "Admin & Testing", "SEED_5K_GRIEVANCES", "Admin"],
+    ["Clear All Data", "Delete all members and grievances", "Admin", "Yes", "Admin & Testing", "clearAllData", "Admin"],
+    ["Nuke All Seed Data", "Remove all seed data and exit demo mode", "Admin", "Yes", "Admin & Testing", "nukeSeedData", "Admin"],
+    ["Diagnose Setup", "Run system diagnostics", "Admin", "Yes", "Admin & Testing", "DIAGNOSE_SETUP", "Admin"],
+
+    // HELP
+    ["Quick Actions Sidebar", "Interactive sidebar with common actions", "Help", "Yes", "Help", "showQuickActionsSidebar", "All"],
+    ["Getting Started Guide", "New user onboarding guide", "Help", "Yes", "Help", "showGettingStartedGuide", "All"],
+    ["Help", "System help and documentation", "Help", "Yes", "Help", "showHelp", "All"],
+    ["Keyboard Shortcuts", "Available keyboard shortcuts", "Help", "Yes", "Help", "setupKeyboardShortcuts", "All"]
+  ];
+
+  sheet.getRange(4, 1, features.length, 7).setValues(features);
+
+  // Add data validation for Enabled column
+  const enabledRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Yes', 'No'], true)
+    .setAllowInvalid(false)
+    .build();
+  sheet.getRange(4, 4, features.length, 1).setDataValidation(enabledRule);
+
+  // Add data validation for Category column
+  const categoryRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['View', 'Grievances', 'Reports', 'Security', 'Admin', 'Help'], true)
+    .setAllowInvalid(false)
+    .build();
+  sheet.getRange(4, 3, features.length, 1).setDataValidation(categoryRule);
+
+  // Add data validation for Required Role column
+  const roleRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['All', 'Steward', 'Admin'], true)
+    .setAllowInvalid(false)
+    .build();
+  sheet.getRange(4, 7, features.length, 1).setDataValidation(roleRule);
+
+  // Formatting
+  sheet.setFrozenRows(3);
+  sheet.setColumnWidth(1, 250);  // Feature Name
+  sheet.setColumnWidth(2, 350);  // Description
+  sheet.setColumnWidth(3, 100);  // Category
+  sheet.setColumnWidth(4, 80);   // Enabled
+  sheet.setColumnWidth(5, 150);  // Menu Location
+  sheet.setColumnWidth(6, 200);  // Function Name
+  sheet.setColumnWidth(7, 120);  // Required Role
+
+  // Conditional formatting for Enabled column
+  const enabledRange = sheet.getRange(4, 4, features.length, 1);
+
+  // Green for "Yes"
+  const yesRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo("Yes")
+    .setBackground("#D1FAE5")
+    .setFontColor("#059669")
+    .setRanges([enabledRange])
+    .build();
+
+  // Red for "No"
+  const noRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo("No")
+    .setBackground("#FEE2E2")
+    .setFontColor("#DC2626")
+    .setRanges([enabledRange])
+    .build();
+
+  sheet.setConditionalFormatRules([yesRule, noRule]);
+
+  sheet.setTabColor("#7C3AED");
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Feature Controls Created',
+    'The Feature Controls sheet has been created.\n\n' +
+    'You can now enable/disable features by changing the "Enabled" column.\n\n' +
+    'Refresh the page (Ctrl+R or Cmd+R) to see menu changes.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Checks if a feature is enabled
+ * @param {string} featureName - Name of the feature to check
+ * @returns {boolean} - True if feature is enabled
+ */
+function isFeatureEnabled(featureName) {
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const sheet = ss.getSheetByName("⚙️ Feature Controls");
+
+    if (!sheet) {
+      // If Feature Controls sheet doesn't exist, all features are enabled by default
+      return true;
+    }
+
+    const data = sheet.getDataRange().getValues();
+
+    // Find the feature row
+    for (let i = 3; i < data.length; i++) {  // Start from row 4 (index 3)
+      if (data[i][0] === featureName) {
+        return data[i][3] === "Yes";  // Column D (index 3) is Enabled
+      }
+    }
+
+    // If feature not found, enable by default
+    return true;
+  } catch (e) {
+    Logger.log('Error checking feature status: ' + e.message);
+    return true;  // Enable by default on error
+  }
+}
+
+/**
+ * Checks if a feature is enabled by function name
+ * @param {string} functionName - Function name to check
+ * @returns {boolean} - True if feature is enabled
+ */
+function isFeatureEnabledByFunction(functionName) {
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const sheet = ss.getSheetByName("⚙️ Feature Controls");
+
+    if (!sheet) {
+      return true;
+    }
+
+    const data = sheet.getDataRange().getValues();
+
+    // Find the feature row by function name
+    for (let i = 3; i < data.length; i++) {
+      if (data[i][5] === functionName) {  // Column F (index 5) is Function Name
+        return data[i][3] === "Yes";
+      }
+    }
+
+    return true;
+  } catch (e) {
+    Logger.log('Error checking feature by function: ' + e.message);
+    return true;
+  }
+}
+
+/**
+ * Shows a dialog to manage feature toggles
+ */
+function showFeatureManagementDialog() {
+  const ss = SpreadsheetApp.getActive();
+  const sheet = ss.getSheetByName("⚙️ Feature Controls");
+
+  if (!sheet) {
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.alert(
+      '⚙️ Feature Controls Not Found',
+      'The Feature Controls sheet does not exist.\n\n' +
+      'Would you like to create it now?',
+      ui.ButtonSet.YES_NO
+    );
+
+    if (response === ui.Button.YES) {
+      createFeatureControlsSheet();
+    }
+    return;
+  }
+
+  // Navigate to Feature Controls sheet
+  sheet.activate();
+
+  SpreadsheetApp.getUi().alert(
+    '⚙️ Feature Management',
+    'Edit the "Enabled" column to enable or disable features.\n\n' +
+    'Changes will take effect after you refresh the page (Ctrl+R or Cmd+R).\n\n' +
+    'Feature Categories:\n' +
+    '• View - Dashboard and display features\n' +
+    '• Grievances - Grievance management tools\n' +
+    '• Reports - Data import/export\n' +
+    '• Security - Audit and security features\n' +
+    '• Admin - Testing and data seeding\n' +
+    '• Help - User assistance tools',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Enables all features
+ */
+function enableAllFeatures() {
+  const ss = SpreadsheetApp.getActive();
+  const sheet = ss.getSheetByName("⚙️ Feature Controls");
+
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('❌ Error', 'Feature Controls sheet not found. Please create it first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 4) return;
+
+  // Set all Enabled values to "Yes"
+  const range = sheet.getRange(4, 4, lastRow - 3, 1);
+  const values = [];
+  for (let i = 0; i < lastRow - 3; i++) {
+    values.push(["Yes"]);
+  }
+  range.setValues(values);
+
+  SpreadsheetApp.getUi().alert(
+    '✅ All Features Enabled',
+    'All features have been enabled.\n\nRefresh the page to see changes in the menu.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Disables all non-essential features
+ */
+function disableNonEssentialFeatures() {
+  const ss = SpreadsheetApp.getActive();
+  const sheet = ss.getSheetByName("⚙️ Feature Controls");
+
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('❌ Error', 'Feature Controls sheet not found. Please create it first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+
+  const data = sheet.getDataRange().getValues();
+
+  // Essential features that should always be enabled
+  const essentialFeatures = [
+    "Main Dashboard",
+    "Interactive Dashboard",
+    "Start New Grievance",
+    "Advanced Search",
+    "Help"
+  ];
+
+  // Update enabled status
+  for (let i = 3; i < data.length; i++) {
+    const featureName = data[i][0];
+    const isEssential = essentialFeatures.includes(featureName);
+    sheet.getRange(i + 1, 4).setValue(isEssential ? "Yes" : "No");
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Non-Essential Features Disabled',
+    'Only essential features are now enabled:\n\n' +
+    essentialFeatures.join('\n') + '\n\n' +
+    'Refresh the page to see changes in the menu.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Exports feature configuration
+ */
+function exportFeatureConfig() {
+  const ss = SpreadsheetApp.getActive();
+  const sheet = ss.getSheetByName("⚙️ Feature Controls");
+
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('❌ Error', 'Feature Controls sheet not found.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+
+  const data = sheet.getDataRange().getValues();
+  const config = {};
+
+  for (let i = 3; i < data.length; i++) {
+    const featureName = data[i][0];
+    const enabled = data[i][3] === "Yes";
+    config[featureName] = enabled;
+  }
+
+  // Save to Script Properties
+  PropertiesService.getScriptProperties().setProperty('FEATURE_CONFIG', JSON.stringify(config));
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Configuration Exported',
+    'Feature configuration has been saved to Script Properties.\n\n' +
+    'You can now restore this configuration later.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Imports feature configuration
+ */
+function importFeatureConfig() {
+  const configJson = PropertiesService.getScriptProperties().getProperty('FEATURE_CONFIG');
+
+  if (!configJson) {
+    SpreadsheetApp.getUi().alert(
+      '❌ No Saved Configuration',
+      'No saved feature configuration found.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  const config = JSON.parse(configJson);
+  const ss = SpreadsheetApp.getActive();
+  const sheet = ss.getSheetByName("⚙️ Feature Controls");
+
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('❌ Error', 'Feature Controls sheet not found.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+
+  const data = sheet.getDataRange().getValues();
+
+  for (let i = 3; i < data.length; i++) {
+    const featureName = data[i][0];
+    if (config.hasOwnProperty(featureName)) {
+      sheet.getRange(i + 1, 4).setValue(config[featureName] ? "Yes" : "No");
+    }
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Configuration Imported',
+    'Feature configuration has been restored.\n\nRefresh the page to see changes.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+/**
+ * ============================================================================
+ * ARCHIVE IMPLEMENTED FEATURES
+ * ============================================================================
+ *
+ * Adds Features 79-94 to the Feedback & Development sheet as "Completed"
+ * This documents what has been implemented and removes them from active development
+ *
+ * ============================================================================
+ */
+
+/**
+ * Archives all implemented features (79-94) to Feedback & Development sheet
+ */
+function archiveImplementedFeatures() {
+  const ss = SpreadsheetApp.getActive();
+  const feedbackSheet = ss.getSheetByName("Feedback & Development");
+
+  if (!feedbackSheet) {
+    SpreadsheetApp.getUi().alert(
+      '❌ Error',
+      'Feedback & Development sheet not found. Please create it first.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  const implementedFeatures = [
+    // [Type, Submitted/Started, Submitted By, Priority, Title, Description, Status, Progress %, Complexity, Target Completion, Assigned To, Blockers, Resolution/Notes, Last Updated]
+    ["Completed", new Date("2025-11-27"), "System", "High", "Feature 79: Audit Logging",
+     "Tracks all data modifications with comprehensive details including user, timestamp, action type, sheet name, record ID, field changes, and session ID",
+     "Completed", "100%", "Moderate", new Date("2025-11-27"), "Claude AI",
+     "", "Fully implemented in SecurityAndAudit.gs - logDataModification() function with automatic suspicious activity detection", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "High", "Feature 80: Role-Based Access Control (RBAC)",
+     "Three-tier permission system (Admin, Steward, Viewer) with role checking and configuration dialog",
+     "Completed", "100%", "Moderate", new Date("2025-11-27"), "Claude AI",
+     "", "Fully implemented with checkUserPermission() and setupRBACConfiguration() - configurable via Script Properties", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "High", "Feature 83: Input Sanitization",
+     "Validates and sanitizes user input to prevent security vulnerabilities (script tags, HTML, validates emails, numbers, dates)",
+     "Completed", "100%", "Simple", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented sanitizeInput() with support for text, email, number, date, alphanumeric types", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "Medium", "Feature 84: Audit Reporting",
+     "Generates comprehensive audit trail reports for specified date ranges with summary statistics and action counts",
+     "Completed", "100%", "Moderate", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented generateAuditReport() with interactive date range dialog - requires Steward or Admin role", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "Medium", "Feature 85: Data Retention Policy",
+     "Enforces configurable data retention policy (default: 7 years) with automatic deletion of old audit log entries",
+     "Completed", "100%", "Simple", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented enforceDataRetention() - configurable via DATA_RETENTION_YEARS script property", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "High", "Feature 86: Suspicious Activity Detection",
+     "Automatically detects unusual activity patterns (>50 changes/hour) and sends email alerts to admins",
+     "Completed", "100%", "Moderate", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented detectSuspiciousActivity() - runs automatically on each audit log entry", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "Medium", "Feature 87: Quick Actions Sidebar",
+     "Interactive sidebar with one-click access to common actions, role-based menu items, and admin tools",
+     "Completed", "100%", "Moderate", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented showQuickActionsSidebar() with HTML-based interactive UI and role-based filtering", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "Medium", "Feature 88: Advanced Search",
+     "Interactive grievance search with multiple criteria: Grievance ID, Member Name, Issue Type, Steward",
+     "Completed", "100%", "Simple", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented showSearchDialog() with live results display - accessible from menu and sidebar", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "Medium", "Feature 89: Advanced Filtering",
+     "Filter grievances by status (Open/In Progress/Closed), issue type, and date range with clear filters option",
+     "Completed", "100%", "Simple", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented showFilterDialog() using Google Sheets native filters - accessible from menu and sidebar", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "High", "Feature 90: Automated Backups",
+     "Creates automated backups to Google Drive with optional daily scheduled backups (2:00 AM)",
+     "Completed", "100%", "Moderate", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented createAutomatedBackup() and setupDailyBackupTrigger() - requires BACKUP_FOLDER_ID script property", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "Low", "Feature 91: Performance Monitoring",
+     "Tracks script execution times and performance with execution time, parameters, and error status logging",
+     "Completed", "100%", "Simple", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented trackPerformance() - creates Performance_Log sheet automatically", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "Low", "Feature 92: Keyboard Shortcuts",
+     "Provides guidance on keyboard shortcuts (Google Sheets doesn't support custom shortcuts)",
+     "Completed", "100%", "Simple", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented setupKeyboardShortcuts() with documentation of built-in Google Sheets shortcuts", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "High", "Feature 93: Export Wizard",
+     "Guided export with multiple options: type selection, format (CSV/Excel/PDF), headers, date filtering",
+     "Completed", "100%", "Moderate", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented showExportWizard() with interactive wizard and input sanitization", new Date()],
+
+    ["Completed", new Date("2025-11-27"), "System", "High", "Feature 94: Data Import",
+     "Bulk data import capability for members and grievances from CSV/Excel with validation and error handling",
+     "Completed", "100%", "Moderate", new Date("2025-11-27"), "Claude AI",
+     "", "Implemented showImportWizard() with input sanitization - requires Steward or Admin role", new Date()]
+  ];
+
+  // Find the last row with data
+  const lastRow = feedbackSheet.getLastRow();
+
+  // Add all implemented features
+  feedbackSheet.getRange(lastRow + 1, 1, implementedFeatures.length, 14).setValues(implementedFeatures);
+
+  // Apply formatting to completed features
+  const completedRange = feedbackSheet.getRange(lastRow + 1, 1, implementedFeatures.length, 14);
+  completedRange.setBackground("#D1FAE5");  // Light green background
+  completedRange.setFontColor("#059669");   // Dark green text
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Features 79-94 Archived',
+    'All 14 implemented security and enhancement features have been added to the Feedback & Development sheet.\n\n' +
+    'They are marked as "Completed" with:\n' +
+    '• Implementation date: 2025-11-27\n' +
+    '• Progress: 100%\n' +
+    '• Status: Completed\n' +
+    '• Green highlighting for easy identification\n\n' +
+    'These features are now documented and separated from active development items.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Removes all completed features from Feedback & Development sheet
+ * (Use with caution - this is destructive)
+ */
+function clearCompletedFeatures() {
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    '⚠️ Warning: Clear Completed Features',
+    'This will PERMANENTLY DELETE all rows marked as "Completed" from the Feedback & Development sheet.\n\n' +
+    'This action CANNOT be undone!\n\n' +
+    'Are you sure you want to proceed?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    ui.alert('✅ Operation cancelled. No features were deleted.');
+    return;
+  }
+
+  const ss = SpreadsheetApp.getActive();
+  const feedbackSheet = ss.getSheetByName("Feedback & Development");
+
+  if (!feedbackSheet) {
+    ui.alert('❌ Error', 'Feedback & Development sheet not found.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const data = feedbackSheet.getDataRange().getValues();
+  const rowsToDelete = [];
+
+  // Find all rows with "Completed" status (column G, index 6)
+  for (let i = 3; i < data.length; i++) {  // Start from row 4 (index 3), skip headers
+    if (data[i][6] === "Completed") {
+      rowsToDelete.push(i + 1);  // Store row number (1-indexed)
+    }
+  }
+
+  if (rowsToDelete.length === 0) {
+    ui.alert('ℹ️ No Completed Features', 'No completed features found to delete.', ui.ButtonSet.OK);
+    return;
+  }
+
+  // Delete rows in reverse order to maintain row indices
+  for (let i = rowsToDelete.length - 1; i >= 0; i--) {
+    feedbackSheet.deleteRow(rowsToDelete[i]);
+  }
+
+  ui.alert(
+    '✅ Completed Features Cleared',
+    `Deleted ${rowsToDelete.length} completed feature(s) from the Feedback & Development sheet.`,
+    ui.ButtonSet.OK
+  );
+}
+
+/**
+ * Moves completed features to a separate "Completed Features" sheet
+ */
+function moveCompletedToArchive() {
+  const ss = SpreadsheetApp.getActive();
+  const feedbackSheet = ss.getSheetByName("Feedback & Development");
+
+  if (!feedbackSheet) {
+    SpreadsheetApp.getUi().alert('❌ Error', 'Feedback & Development sheet not found.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+
+  // Create or get "Completed Features" sheet
+  let archiveSheet = ss.getSheetByName("📦 Completed Features");
+  if (!archiveSheet) {
+    archiveSheet = ss.insertSheet("📦 Completed Features");
+
+    // Add headers
+    const headers = feedbackSheet.getRange(3, 1, 1, 14).getValues();
+    archiveSheet.getRange(1, 1, 1, 14).setValues(headers)
+      .setFontWeight("bold")
+      .setBackground("#E5E7EB")
+      .setFontColor("#1F2937");
+
+    archiveSheet.setFrozenRows(1);
+    archiveSheet.setTabColor("#6B7280");
+  }
+
+  const data = feedbackSheet.getDataRange().getValues();
+  const completedRows = [];
+  const rowsToDelete = [];
+
+  // Find all completed features
+  for (let i = 3; i < data.length; i++) {
+    if (data[i][6] === "Completed") {
+      completedRows.push(data[i]);
+      rowsToDelete.push(i + 1);
+    }
+  }
+
+  if (completedRows.length === 0) {
+    SpreadsheetApp.getUi().alert('ℹ️ No Completed Features', 'No completed features found to archive.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+
+  // Add completed features to archive sheet
+  const archiveLastRow = archiveSheet.getLastRow();
+  archiveSheet.getRange(archiveLastRow + 1, 1, completedRows.length, 14).setValues(completedRows);
+
+  // Delete from feedback sheet (in reverse order)
+  for (let i = rowsToDelete.length - 1; i >= 0; i--) {
+    feedbackSheet.deleteRow(rowsToDelete[i]);
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Completed Features Archived',
+    `Moved ${completedRows.length} completed feature(s) to the "📦 Completed Features" sheet.`,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
 }
