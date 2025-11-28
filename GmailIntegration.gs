@@ -1,0 +1,618 @@
+/**
+ * ============================================================================
+ * GMAIL INTEGRATION
+ * ============================================================================
+ *
+ * Send and receive grievance-related emails via Gmail
+ * Features:
+ * - Send PDFs directly from dashboard
+ * - Email templates library
+ * - Track communications
+ * - Auto-log sent emails
+ * - Compose emails with templates
+ */
+
+/**
+ * Shows email composition dialog for a grievance
+ * @param {string} grievanceId - Optional grievance ID to pre-populate
+ */
+function composeGrievanceEmail(grievanceId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  let grievanceData = null;
+
+  if (grievanceId) {
+    const lastRow = grievanceSheet.getLastRow();
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+
+    for (let i = 0; i < data.length; i++) {
+      if (data[i][0] === grievanceId) {
+        grievanceData = {
+          id: data[i][0],
+          memberName: `${data[i][2]} ${data[i][3]}`,
+          memberEmail: data[i][7] || '',
+          steward: data[i][13] || '',
+          issueType: data[i][5] || '',
+          status: data[i][4] || ''
+        };
+        break;
+      }
+    }
+  }
+
+  const html = createEmailComposerHTML(grievanceData);
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(800)
+    .setHeight(700);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📧 Compose Email');
+}
+
+/**
+ * Creates HTML for email composer
+ * @param {Object} grievanceData - Grievance information
+ * @returns {string} HTML content
+ */
+function createEmailComposerHTML(grievanceData) {
+  const templates = getEmailTemplates();
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #1a73e8;
+      margin-top: 0;
+      border-bottom: 3px solid #1a73e8;
+      padding-bottom: 10px;
+    }
+    .form-group {
+      margin: 15px 0;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    input[type="text"],
+    input[type="email"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #1a73e8;
+    }
+    textarea {
+      min-height: 200px;
+      font-family: Arial, sans-serif;
+      resize: vertical;
+    }
+    .button-group {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      background: #1a73e8;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      flex: 1;
+    }
+    button:hover {
+      background: #1557b0;
+    }
+    button.secondary {
+      background: #6c757d;
+    }
+    button.secondary:hover {
+      background: #5a6268;
+    }
+    .template-selector {
+      margin: 10px 0;
+    }
+    .info-box {
+      background: #e8f0fe;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 15px 0;
+      border-left: 4px solid #1a73e8;
+    }
+    .checkbox-group {
+      margin: 10px 0;
+    }
+    .checkbox-group label {
+      display: inline;
+      font-weight: normal;
+      margin-left: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📧 Compose Email</h2>
+
+    ${grievanceData ? `
+    <div class="info-box">
+      <strong>Grievance:</strong> ${grievanceData.id} - ${grievanceData.memberName}<br>
+      <strong>Status:</strong> ${grievanceData.status} | <strong>Issue:</strong> ${grievanceData.issueType}
+    </div>
+    ` : ''}
+
+    <div class="form-group template-selector">
+      <label>Template (optional):</label>
+      <select id="templateSelect" onchange="loadTemplate()">
+        <option value="">-- Select a template --</option>
+        ${templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>To:</label>
+      <input type="email" id="toEmail" value="${grievanceData ? grievanceData.memberEmail : ''}" placeholder="recipient@example.com">
+    </div>
+
+    <div class="form-group">
+      <label>CC (optional):</label>
+      <input type="email" id="ccEmail" value="${grievanceData ? grievanceData.steward : ''}" placeholder="cc@example.com">
+    </div>
+
+    <div class="form-group">
+      <label>Subject:</label>
+      <input type="text" id="subject" value="${grievanceData ? `Re: Grievance ${grievanceData.id}` : ''}" placeholder="Email subject">
+    </div>
+
+    <div class="form-group">
+      <label>Message:</label>
+      <textarea id="message" placeholder="Type your message here..."></textarea>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="attachPDF" ${grievanceData ? 'checked' : ''}>
+      <label for="attachPDF">Attach grievance PDF report</label>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="logCommunication" checked>
+      <label for="logCommunication">Log this email in Communications Log</label>
+    </div>
+
+    <div class="button-group">
+      <button onclick="sendEmail()">📤 Send Email</button>
+      <button class="secondary" onclick="google.script.host.close()">❌ Cancel</button>
+    </div>
+
+    <div id="status" style="margin-top: 15px; padding: 10px; display: none;"></div>
+  </div>
+
+  <script>
+    const grievanceData = ${JSON.stringify(grievanceData)};
+    const templates = ${JSON.stringify(templates)};
+
+    function loadTemplate() {
+      const templateId = document.getElementById('templateSelect').value;
+      if (!templateId) return;
+
+      const template = templates.find(t => t.id === templateId);
+      if (!template) return;
+
+      document.getElementById('subject').value = template.subject || '';
+      document.getElementById('message').value = replacePlaceholders(template.body || '');
+    }
+
+    function replacePlaceholders(text) {
+      if (!grievanceData) return text;
+
+      return text
+        .replace(/\\{GRIEVANCE_ID\\}/g, grievanceData.id || '')
+        .replace(/\\{MEMBER_NAME\\}/g, grievanceData.memberName || '')
+        .replace(/\\{ISSUE_TYPE\\}/g, grievanceData.issueType || '')
+        .replace(/\\{STATUS\\}/g, grievanceData.status || '');
+    }
+
+    function sendEmail() {
+      const to = document.getElementById('toEmail').value.trim();
+      const cc = document.getElementById('ccEmail').value.trim();
+      const subject = document.getElementById('subject').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const attachPDF = document.getElementById('attachPDF').checked;
+      const logCommunication = document.getElementById('logCommunication').checked;
+
+      if (!to || !subject || !message) {
+        showStatus('Please fill in all required fields (To, Subject, Message)', 'error');
+        return;
+      }
+
+      showStatus('Sending email...', 'info');
+
+      const emailData = {
+        to: to,
+        cc: cc,
+        subject: subject,
+        message: message,
+        attachPDF: attachPDF,
+        logCommunication: logCommunication,
+        grievanceId: grievanceData ? grievanceData.id : null
+      };
+
+      google.script.run
+        .withSuccessHandler(onEmailSent)
+        .withFailureHandler(onEmailError)
+        .sendGrievanceEmail(emailData);
+    }
+
+    function onEmailSent(result) {
+      showStatus('✅ Email sent successfully!', 'success');
+      setTimeout(() => {
+        google.script.host.close();
+      }, 2000);
+    }
+
+    function onEmailError(error) {
+      showStatus('❌ Error: ' + error.message, 'error');
+    }
+
+    function showStatus(message, type) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = message;
+      statusDiv.style.display = 'block';
+      statusDiv.style.background = type === 'error' ? '#f8d7da' : type === 'success' ? '#d4edda' : '#d1ecf1';
+      statusDiv.style.color = type === 'error' ? '#721c24' : type === 'success' ? '#155724' : '#0c5460';
+      statusDiv.style.border = '1px solid ' + (type === 'error' ? '#f5c6cb' : type === 'success' ? '#c3e6cb' : '#bee5eb');
+      statusDiv.style.borderRadius = '4px';
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Sends email with optional PDF attachment
+ * @param {Object} emailData - Email information
+ */
+function sendGrievanceEmail(emailData) {
+  try {
+    const options = {
+      to: emailData.to,
+      subject: emailData.subject,
+      body: emailData.message,
+      name: 'SEIU Local 509'
+    };
+
+    if (emailData.cc) {
+      options.cc = emailData.cc;
+    }
+
+    // Attach PDF if requested
+    if (emailData.attachPDF && emailData.grievanceId) {
+      const pdf = exportGrievanceToPDF(emailData.grievanceId);
+      if (pdf) {
+        options.attachments = [pdf];
+      }
+    }
+
+    // Send email
+    MailApp.sendEmail(options);
+
+    // Log communication if requested
+    if (emailData.logCommunication && emailData.grievanceId) {
+      logCommunication(
+        emailData.grievanceId,
+        'Email Sent',
+        `To: ${emailData.to}\nSubject: ${emailData.subject}\n\n${emailData.message}`
+      );
+    }
+
+    return { success: true };
+
+  } catch (error) {
+    Logger.log('Error sending email: ' + error.message);
+    throw new Error('Failed to send email: ' + error.message);
+  }
+}
+
+/**
+ * Logs communication in the Communications Log sheet
+ * @param {string} grievanceId - Grievance ID
+ * @param {string} type - Communication type
+ * @param {string} details - Communication details
+ */
+function logCommunication(grievanceId, type, details) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let commLog = ss.getSheetByName('📞 Communications Log');
+
+  if (!commLog) {
+    commLog = createCommunicationsLogSheet();
+  }
+
+  const timestamp = new Date();
+  const user = Session.getActiveUser().getEmail() || 'System';
+
+  const lastRow = commLog.getLastRow();
+  const newRow = [
+    timestamp,
+    grievanceId,
+    type,
+    user,
+    details
+  ];
+
+  commLog.getRange(lastRow + 1, 1, 1, 5).setValues([newRow]);
+}
+
+/**
+ * Creates Communications Log sheet
+ * @returns {Sheet} Communications Log sheet
+ */
+function createCommunicationsLogSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.insertSheet('📞 Communications Log');
+
+  // Set headers
+  const headers = [
+    'Timestamp',
+    'Grievance ID',
+    'Type',
+    'User',
+    'Details'
+  ];
+
+  sheet.getRange(1, 1, 1, 5).setValues([headers]);
+
+  // Format header
+  sheet.getRange(1, 1, 1, 5)
+    .setBackground('#1a73e8')
+    .setFontColor('#ffffff')
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center');
+
+  // Set column widths
+  sheet.setColumnWidth(1, 150); // Timestamp
+  sheet.setColumnWidth(2, 120); // Grievance ID
+  sheet.setColumnWidth(3, 120); // Type
+  sheet.setColumnWidth(4, 200); // User
+  sheet.setColumnWidth(5, 400); // Details
+
+  // Freeze header
+  sheet.setFrozenRows(1);
+
+  return sheet;
+}
+
+/**
+ * Gets email templates from configuration
+ * @returns {Array} Array of template objects
+ */
+function getEmailTemplates() {
+  return [
+    {
+      id: 'initial_acknowledgment',
+      name: 'Initial Acknowledgment',
+      subject: 'Re: Grievance {GRIEVANCE_ID} - Acknowledgment',
+      body: `Dear {MEMBER_NAME},
+
+This email confirms that we have received your grievance (ID: {GRIEVANCE_ID}) regarding {ISSUE_TYPE}.
+
+Your case has been assigned to a steward who will contact you within 2-3 business days to discuss next steps.
+
+Current Status: {STATUS}
+
+If you have any questions or additional information to provide, please don't hesitate to contact us.
+
+In solidarity,
+SEIU Local 509`
+    },
+    {
+      id: 'status_update',
+      name: 'Status Update',
+      subject: 'Grievance {GRIEVANCE_ID} - Status Update',
+      body: `Dear {MEMBER_NAME},
+
+I wanted to provide you with an update on your grievance (ID: {GRIEVANCE_ID}).
+
+Current Status: {STATUS}
+
+[Add specific update details here]
+
+We will continue to keep you informed of any developments.
+
+In solidarity,
+SEIU Local 509`
+    },
+    {
+      id: 'request_information',
+      name: 'Request for Information',
+      subject: 'Grievance {GRIEVANCE_ID} - Additional Information Needed',
+      body: `Dear {MEMBER_NAME},
+
+To proceed with your grievance (ID: {GRIEVANCE_ID}), we need some additional information:
+
+[List the information needed here]
+
+Please provide this information at your earliest convenience so we can continue processing your case.
+
+Thank you for your cooperation.
+
+In solidarity,
+SEIU Local 509`
+    },
+    {
+      id: 'resolution_notification',
+      name: 'Resolution Notification',
+      subject: 'Grievance {GRIEVANCE_ID} - Resolved',
+      body: `Dear {MEMBER_NAME},
+
+I'm pleased to inform you that your grievance (ID: {GRIEVANCE_ID}) has been resolved.
+
+Resolution Details:
+[Add resolution details here]
+
+This case is now closed. If you have any questions about the resolution, please don't hesitate to contact us.
+
+Thank you for your patience throughout this process.
+
+In solidarity,
+SEIU Local 509`
+    },
+    {
+      id: 'meeting_invitation',
+      name: 'Meeting Invitation',
+      subject: 'Grievance {GRIEVANCE_ID} - Meeting Scheduled',
+      body: `Dear {MEMBER_NAME},
+
+We have scheduled a meeting to discuss your grievance (ID: {GRIEVANCE_ID}).
+
+Date: [DATE]
+Time: [TIME]
+Location: [LOCATION]
+
+Please confirm your attendance at your earliest convenience.
+
+In solidarity,
+SEIU Local 509`
+    }
+  ];
+}
+
+/**
+ * Shows email template manager
+ */
+function showEmailTemplateManager() {
+  const templates = getEmailTemplates();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Roboto', Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { color: #1a73e8; margin-top: 0; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; }
+    .template { background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 4px; border-left: 4px solid #1a73e8; }
+    .template h3 { margin-top: 0; color: #333; }
+    .template-body { background: white; padding: 10px; border-radius: 4px; margin: 10px 0; font-size: 13px; white-space: pre-wrap; }
+    .placeholders { background: #fff3cd; padding: 10px; border-radius: 4px; margin: 15px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📝 Email Template Library</h2>
+
+    <div class="placeholders">
+      <strong>Available Placeholders:</strong><br>
+      {GRIEVANCE_ID}, {MEMBER_NAME}, {ISSUE_TYPE}, {STATUS}
+    </div>
+
+    ${templates.map(t => `
+      <div class="template">
+        <h3>${t.name}</h3>
+        <strong>Subject:</strong> ${t.subject}<br><br>
+        <strong>Body:</strong>
+        <div class="template-body">${t.body}</div>
+      </div>
+    `).join('')}
+  </div>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(700)
+    .setHeight(600);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📝 Email Templates');
+}
+
+/**
+ * Shows communication log for a specific grievance
+ * @param {string} grievanceId - Grievance ID
+ */
+function showGrievanceCommunications(grievanceId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const commLog = ss.getSheetByName('📞 Communications Log');
+
+  if (!commLog) {
+    SpreadsheetApp.getUi().alert('No communications logged yet.');
+    return;
+  }
+
+  const lastRow = commLog.getLastRow();
+  if (lastRow < 2) {
+    SpreadsheetApp.getUi().alert('No communications logged for this grievance.');
+    return;
+  }
+
+  const data = commLog.getRange(2, 1, lastRow - 1, 5).getValues();
+  const grievanceComms = data.filter(row => row[1] === grievanceId);
+
+  if (grievanceComms.length === 0) {
+    SpreadsheetApp.getUi().alert('No communications logged for this grievance.');
+    return;
+  }
+
+  const commsList = grievanceComms
+    .map(row => `
+      <div style="background: #f8f9fa; padding: 12px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #1a73e8;">
+        <strong>${row[2]}</strong> - ${row[0].toLocaleString()}<br>
+        <em>By: ${row[3]}</em><br><br>
+        <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[4]}</div>
+      </div>
+    `)
+    .join('');
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Roboto', Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-height: 500px; overflow-y: auto; }
+    h2 { color: #1a73e8; margin-top: 0; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; position: sticky; top: 0; background: white; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📞 Communications Log - ${grievanceId}</h2>
+    ${commsList}
+  </div>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(700)
+    .setHeight(600);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, `Communications - ${grievanceId}`);
+}
