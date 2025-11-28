@@ -955,6 +955,15 @@ function setupDataValidations() {
     memberDir.getRange(2, v.col, 5000, 1).setDataValidation(rule);
   });
 
+  // Office Days - Allow multiple selections (custom text with dropdown suggestions)
+  const officeDaysRange = config.getRange(2, 4, 50, 1);
+  const officeDaysRule = SpreadsheetApp.newDataValidation()
+    .requireValueInRange(officeDaysRange, true)
+    .setAllowInvalid(true)  // Allow custom values for multiple selections like "Mon, Wed, Fri"
+    .setHelpText("Select a day or enter multiple days separated by commas (e.g., Mon, Wed, Fri)")
+    .build();
+  memberDir.getRange(2, 7, 5000, 1).setDataValidation(officeDaysRule);
+
   // Grievance Log validations
   const grievanceValidations = [
     { col: 5, configCol: 9 },   // Status
@@ -1431,8 +1440,9 @@ function updateMemberDirectorySnapshots() {
     const assignedSteward = row[26];
     if (!memberID) return;
     if (!memberSnapshots[memberID]) {
-      memberSnapshots[memberID] = {status, nextDeadline: nextActionDue, stewardWhoContacted: assignedSteward};
+      memberSnapshots[memberID] = {status, nextDeadline: nextActionDue, stewardWhoContacted: assignedSteward, hasOpenGrievance: true};
     } else {
+      memberSnapshots[memberID].hasOpenGrievance = true;
       if (status && (status === "Open" || status.includes("Filed") || status === "Pending Info")) memberSnapshots[memberID].status = status;
       if (nextActionDue && nextActionDue instanceof Date) {
         if (!memberSnapshots[memberID].nextDeadline || (memberSnapshots[memberID].nextDeadline instanceof Date && nextActionDue < memberSnapshots[memberID].nextDeadline)) {
@@ -1447,12 +1457,13 @@ function updateMemberDirectorySnapshots() {
     if (snapshot) {
       const contactDate = new Date(Date.now() - Math.floor(Math.random() * 14) * 24 * 60 * 60 * 1000);
       const contactNotes = ["Discussed case progress", "Member updated on next steps", "Reviewed timeline and deadlines", "Answered member questions", "Scheduled follow-up meeting"][Math.floor(Math.random() * 5)];
-      updateData.push([snapshot.status || "", snapshot.nextDeadline || "", contactDate, snapshot.stewardWhoContacted || "", contactNotes]);
+      // Columns 25-30: Has Open Grievance?, Grievance Status Snapshot, Next Grievance Deadline, Most Recent Steward Contact Date, Steward Who Contacted Member, Notes from Steward Contact
+      updateData.push(["Yes", snapshot.status || "", snapshot.nextDeadline || "", contactDate, snapshot.stewardWhoContacted || "", contactNotes]);
     } else {
-      updateData.push(["", "", "", "", ""]);
+      updateData.push(["No", "", "", "", "", ""]);
     }
   }
-  if (updateData.length > 0) memberDir.getRange(2, 25, updateData.length, 5).setValues(updateData);
+  if (updateData.length > 0) memberDir.getRange(2, 25, updateData.length, 6).setValues(updateData);
 }
 
 function clearAllData() {

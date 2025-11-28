@@ -1292,6 +1292,15 @@ function setupDataValidations() {
     memberDir.getRange(2, v.col, 5000, 1).setDataValidation(rule);
   });
 
+  // Office Days - Allow multiple selections (custom text with dropdown suggestions)
+  const officeDaysRange = config.getRange(2, 4, 50, 1);
+  const officeDaysRule = SpreadsheetApp.newDataValidation()
+    .requireValueInRange(officeDaysRange, true)
+    .setAllowInvalid(true)  // Allow custom values for multiple selections like "Mon, Wed, Fri"
+    .setHelpText("Select a day or enter multiple days separated by commas (e.g., Mon, Wed, Fri)")
+    .build();
+  memberDir.getRange(2, 7, 5000, 1).setDataValidation(officeDaysRule);
+
   // Grievance Log validations
   const grievanceValidations = [
     { col: 5, configCol: 9 },   // Status
@@ -1890,21 +1899,22 @@ function updateMemberDirectorySnapshots() {
       ][Math.floor(Math.random() * 5)];
 
       updateData.push([
-        snapshot.status || "",                    // Column 25: Grievance Status Snapshot
-        snapshot.nextDeadline || "",              // Column 26: Next Grievance Deadline
-        contactDate,                              // Column 27: Most Recent Steward Contact Date
-        snapshot.stewardWhoContacted || "",       // Column 28: Steward Who Contacted Member
-        contactNotes                              // Column 29: Notes from Steward Contact
+        "Yes",                                    // Column 25: Has Open Grievance?
+        snapshot.status || "",                    // Column 26: Grievance Status Snapshot
+        snapshot.nextDeadline || "",              // Column 27: Next Grievance Deadline
+        contactDate,                              // Column 28: Most Recent Steward Contact Date
+        snapshot.stewardWhoContacted || "",       // Column 29: Steward Who Contacted Member
+        contactNotes                              // Column 30: Notes from Steward Contact
       ]);
     } else {
       // No grievances for this member
-      updateData.push(["", "", "", "", ""]);
+      updateData.push(["No", "", "", "", "", ""]);
     }
   }
 
-  // Write to Member Directory columns 25-29 (Y-AC)
+  // Write to Member Directory columns 25-30 (Y-AD)
   if (updateData.length > 0) {
-    memberDir.getRange(2, 25, updateData.length, 5).setValues(updateData);
+    memberDir.getRange(2, 25, updateData.length, 6).setValues(updateData);
   }
 }
 
