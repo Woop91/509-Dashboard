@@ -1400,60 +1400,81 @@ function setupFormulasAndCalculations() {
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
 
+  // Check if seed data has been nuked
+  const seedNuked = PropertiesService.getScriptProperties().getProperty('SEED_NUKED') === 'true';
+
+  // VIEW MENU - Consolidates Dashboards + ADHD Features + Column Toggles
+  const viewMenu = ui.createMenu("📊 View")
+    .addItem("🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor")
+    .addItem("📊 Main Dashboard", "goToDashboard")
+    .addItem("✨ Interactive Dashboard", "openInteractiveDashboard")
+    .addItem("🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard")
+    .addSeparator()
+    .addItem("Hide Gridlines (Focus Mode)", "hideAllGridlines")
+    .addItem("Show Gridlines", "showAllGridlines")
+    .addItem("Reorder Sheets Logically", "reorderSheetsLogically")
+    .addItem("Setup ADHD Defaults", "setupADHDDefaults")
+    .addSeparator()
+    .addItem("Toggle Advanced Grievance Columns", "toggleGrievanceColumns")
+    .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
+    .addItem("Show All Member Columns", "showAllMemberColumns");
+
+  // GRIEVANCES MENU
+  const grievancesMenu = ui.createMenu("📋 Grievances")
+    .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
+    .addSeparator()
+    .addItem("🔍 Advanced Search", "showSearchDialog")
+    .addItem("🎯 Advanced Filter", "showFilterDialog");
+
+  // REPORTS & EXPORT MENU
+  const reportsMenu = ui.createMenu("📊 Reports & Export")
+    .addItem("📥 Export Wizard", "showExportWizard")
+    .addItem("📤 Import Wizard", "showImportWizard");
+
+  // SECURITY (ADMIN ONLY) MENU
+  const securityMenu = ui.createMenu("🔐 Security (Admin Only)")
+    .addItem("📋 Generate Audit Report", "showAuditReportDialog")
+    .addSeparator()
+    .addItem("💾 Create Backup", "createAutomatedBackup")
+    .addItem("⏰ Setup Daily Backups", "setupDailyBackupTrigger")
+    .addSeparator()
+    .addItem("🔐 Configure RBAC", "setupRBACConfiguration")
+    .addItem("🗑️ Enforce Data Retention", "enforceDataRetention")
+    .addSeparator()
+    .addItem("🚀 Initialize Security Features", "initializeSecurityFeatures");
+
+  // ADMIN & TESTING MENU - Conditionally shows seed options
+  const adminMenu = ui.createMenu("⚙️ Admin & Testing");
+  if (!seedNuked) {
+    adminMenu
+      .addItem("🌱 Seed 5k Members", "SEED_20K_MEMBERS")
+      .addItem("🌱 Seed 1k Grievances", "SEED_5K_GRIEVANCES")
+      .addSeparator();
+  }
+  adminMenu
+    .addItem("🗑️ Clear All Data", "clearAllData")
+    .addItem("💣 Nuke All Seed Data", "nukeSeedData")
+    .addSeparator()
+    .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP");
+
+  // HELP MENU
+  const helpMenu = ui.createMenu("❓ Help")
+    .addItem("⚡ Quick Actions Sidebar", "showQuickActionsSidebar")
+    .addSeparator()
+    .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
+    .addItem("❓ Help", "showHelp")
+    .addItem("⌨️ Keyboard Shortcuts", "setupKeyboardShortcuts");
+
+  // BUILD MAIN MENU
   ui.createMenu("📊 509 Dashboard")
     .addItem("🔄 Refresh All", "refreshCalculations")
     .addSeparator()
-    .addSubMenu(ui.createMenu("📊 Dashboards")
-      .addItem("🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor")
-      .addItem("📊 Main Dashboard", "goToDashboard")
-      .addItem("✨ Interactive Dashboard", "openInteractiveDashboard")
-      .addItem("🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("📋 Grievance Tools")
-      .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
-      .addSeparator()
-      .addItem("🔍 Advanced Search", "showSearchDialog")
-      .addItem("🎯 Advanced Filter", "showFilterDialog"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("⚡ Quick Actions")
-      .addItem("⚡ Show Quick Actions Sidebar", "showQuickActionsSidebar")
-      .addSeparator()
-      .addItem("📥 Export Wizard", "showExportWizard")
-      .addItem("📤 Import Wizard", "showImportWizard"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("🔐 Security & Audit")
-      .addItem("📋 Generate Audit Report", "showAuditReportDialog")
-      .addSeparator()
-      .addItem("💾 Create Backup", "createAutomatedBackup")
-      .addItem("⏰ Setup Daily Backups", "setupDailyBackupTrigger")
-      .addSeparator()
-      .addItem("🔐 Configure RBAC", "setupRBACConfiguration")
-      .addItem("🗑️ Enforce Data Retention", "enforceDataRetention")
-      .addSeparator()
-      .addItem("🚀 Initialize Security Features", "initializeSecurityFeatures"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("⚙️ Admin")
-      .addItem("Seed 20k Members", "SEED_20K_MEMBERS")
-      .addItem("Seed 5k Grievances", "SEED_5K_GRIEVANCES")
-      .addSeparator()
-      .addItem("Clear All Data", "clearAllData")
-      .addItem("🗑️ Nuke All Seed Data", "nukeSeedData"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("♿ ADHD Features")
-      .addItem("Hide Gridlines (Focus Mode)", "hideAllGridlines")
-      .addItem("Show Gridlines", "showAllGridlines")
-      .addItem("Reorder Sheets Logically", "reorderSheetsLogically")
-      .addItem("Setup ADHD Defaults", "setupADHDDefaults"))
-    .addSubMenu(ui.createMenu("👁️ Column Toggles")
-      .addItem("Toggle Advanced Grievance Columns", "toggleGrievanceColumns")
-      .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
-      .addItem("Show All Member Columns", "showAllMemberColumns"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("❓ Help & Support")
-      .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
-      .addItem("❓ Help", "showHelp")
-      .addItem("⌨️ Keyboard Shortcuts", "setupKeyboardShortcuts")
-      .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP"))
+    .addSubMenu(viewMenu)
+    .addSubMenu(grievancesMenu)
+    .addSubMenu(reportsMenu)
+    .addSubMenu(securityMenu)
+    .addSubMenu(adminMenu)
+    .addSubMenu(helpMenu)
     .addToUi();
 }
 
