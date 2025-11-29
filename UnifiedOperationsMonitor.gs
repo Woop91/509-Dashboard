@@ -71,7 +71,7 @@ function getUnifiedDashboardData() {
     steps: calculateStepEfficiency(grievances),
 
     // Section 3: Network Health
-    totalMembers: members.filter(m => m[0]).length,
+    totalMembers: members.filter(m => m[MEMBER_COLS.MEMBER_ID - 1]).length,
     engagementRate: calculateEngagementRate(grievances, members),
     noContactCount: calculateNoContact(members, today),
     stewardCount: calculateActiveStewards(grievances),
@@ -157,15 +157,15 @@ function getUnifiedDashboardData() {
 
 function calculateActiveCases(grievances) {
   return grievances.filter(g => {
-    const status = g[4];
+    const status = g[GRIEVANCE_COLS.STATUS - 1];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   }).length;
 }
 
 function calculateOverdue(grievances, today) {
   return grievances.filter(g => {
-    const status = g[4];
-    const nextDeadline = g[19];
+    const status = g[GRIEVANCE_COLS.STATUS - 1];
+    const nextDeadline = g[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
     if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
       if (nextDeadline instanceof Date) {
         const deadline = new Date(nextDeadline);
@@ -182,8 +182,8 @@ function calculateDueThisWeek(grievances, today) {
   oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
 
   return grievances.filter(g => {
-    const status = g[4];
-    const nextDeadline = g[19];
+    const status = g[GRIEVANCE_COLS.STATUS - 1];
+    const nextDeadline = g[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
     if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
       if (nextDeadline instanceof Date) {
         const deadline = new Date(nextDeadline);
@@ -196,17 +196,17 @@ function calculateDueThisWeek(grievances, today) {
 }
 
 function calculateWinRate(grievances) {
-  const closed = grievances.filter(g => g[4] === 'Settled' || g[4] === 'Closed' || g[4] === 'Withdrawn');
+  const closed = grievances.filter(g => g[GRIEVANCE_COLS.STATUS - 1] === 'Settled' || g[GRIEVANCE_COLS.STATUS - 1] === 'Closed' || g[GRIEVANCE_COLS.STATUS - 1] === 'Withdrawn');
   if (closed.length === 0) return 0;
-  const won = closed.filter(g => g[4] === 'Settled').length;
+  const won = closed.filter(g => g[GRIEVANCE_COLS.STATUS - 1] === 'Settled').length;
   return (won / closed.length) * 100;
 }
 
 function calculateAvgDays(grievances) {
   const closed = grievances.filter(g => {
-    const status = g[4];
-    const filedDate = g[8];
-    const closedDate = g[17];
+    const status = g[GRIEVANCE_COLS.STATUS - 1];
+    const filedDate = g[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = g[GRIEVANCE_COLS.DATE_CLOSED - 1];
     return (status === 'Settled' || status === 'Closed' || status === 'Withdrawn') &&
            filedDate instanceof Date && closedDate instanceof Date;
   });
@@ -214,7 +214,7 @@ function calculateAvgDays(grievances) {
   if (closed.length === 0) return 0;
 
   const totalDays = closed.reduce((sum, g) => {
-    const days = Math.floor((g[17] - g[8]) / (1000 * 60 * 60 * 24));
+    const days = Math.floor((g[GRIEVANCE_COLS.DATE_CLOSED - 1] - g[GRIEVANCE_COLS.DATE_FILED - 1]) / (1000 * 60 * 60 * 24));
     return sum + days;
   }, 0);
 
@@ -223,21 +223,21 @@ function calculateAvgDays(grievances) {
 
 function calculateEscalations(grievances) {
   return grievances.filter(g => {
-    const step = g[5]; // Current Step column
+    const step = g[GRIEVANCE_COLS.CURRENT_STEP - 1]; // Current Step column
     return step && (step.includes('III') || step.includes('3'));
   }).length;
 }
 
 function calculateArbitrations(grievances) {
   return grievances.filter(g => {
-    const step = g[5];
+    const step = g[GRIEVANCE_COLS.CURRENT_STEP - 1];
     return step && (step.includes('Arbitration') || step.includes('Mediation'));
   }).length;
 }
 
 function calculateHighRisk(grievances) {
   return grievances.filter(g => {
-    const issueCategory = g[22];
+    const issueCategory = g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
     return issueCategory && (issueCategory.includes('Discipline') || issueCategory.includes('Discrimination'));
   }).length;
 }
@@ -245,12 +245,12 @@ function calculateHighRisk(grievances) {
 function calculateStepEfficiency(grievances) {
   const stepData = {};
   const active = grievances.filter(g => {
-    const status = g[4];
+    const status = g[GRIEVANCE_COLS.STATUS - 1];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
   active.forEach(g => {
-    const step = g[5] || 'Unassigned';
+    const step = g[GRIEVANCE_COLS.CURRENT_STEP - 1] || 'Unassigned';
     stepData[step] = (stepData[step] || 0) + 1;
   });
 
@@ -272,15 +272,15 @@ function calculateStepEfficiency(grievances) {
 function calculateEngagementRate(grievances, members) {
   const membersWithGrievances = new Set();
   grievances.forEach(g => {
-    if (g[1]) membersWithGrievances.add(g[1]);
+    if (g[GRIEVANCE_COLS.MEMBER_ID - 1]) membersWithGrievances.add(g[GRIEVANCE_COLS.MEMBER_ID - 1]);
   });
-  const totalMembers = members.filter(m => m[0]).length;
+  const totalMembers = members.filter(m => m[MEMBER_COLS.MEMBER_ID - 1]).length;
   return totalMembers > 0 ? (membersWithGrievances.size / totalMembers) * 100 : 0;
 }
 
 function calculateNoContact(members, today) {
   return members.filter(m => {
-    const lastContact = m[20]; // Last Contact Date column
+    const lastContact = m[MEMBER_COLS.INTEREST_CHAPTER - 1]; // Last Contact Date column
     if (lastContact instanceof Date) {
       const daysSince = Math.floor((today - lastContact) / (1000 * 60 * 60 * 24));
       return daysSince > 60;
@@ -292,7 +292,7 @@ function calculateNoContact(members, today) {
 function calculateActiveStewards(grievances) {
   const stewards = new Set();
   grievances.forEach(g => {
-    const steward = g[26];
+    const steward = g[GRIEVANCE_COLS.STEWARD - 1];
     if (steward) stewards.add(steward);
   });
   return stewards.size;
@@ -301,8 +301,8 @@ function calculateActiveStewards(grievances) {
 function calculateAvgLoad(grievances) {
   const stewardLoad = {};
   grievances.forEach(g => {
-    const status = g[4];
-    const steward = g[26];
+    const status = g[GRIEVANCE_COLS.STATUS - 1];
+    const steward = g[GRIEVANCE_COLS.STEWARD - 1];
     if (steward && status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
       stewardLoad[steward] = (stewardLoad[steward] || 0) + 1;
     }
@@ -318,8 +318,8 @@ function calculateAvgLoad(grievances) {
 function calculateOverloadedStewards(grievances) {
   const stewardLoad = {};
   grievances.forEach(g => {
-    const status = g[4];
-    const steward = g[26];
+    const status = g[GRIEVANCE_COLS.STATUS - 1];
+    const steward = g[GRIEVANCE_COLS.STEWARD - 1];
     if (steward && status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
       stewardLoad[steward] = (stewardLoad[steward] || 0) + 1;
     }
@@ -330,25 +330,25 @@ function calculateOverloadedStewards(grievances) {
 
 function calculateIssueDistribution(grievances) {
   const active = grievances.filter(g => {
-    const status = g[4];
+    const status = g[GRIEVANCE_COLS.STATUS - 1];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
   return {
-    disciplinary: active.filter(g => (g[22] || '').includes('Discipline')).length,
-    contract: active.filter(g => (g[22] || '').includes('Pay') || (g[22] || '').includes('Workload')).length,
-    work: active.filter(g => (g[22] || '').includes('Safety') || (g[22] || '').includes('Scheduling')).length
+    disciplinary: active.filter(g => (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Discipline')).length,
+    contract: active.filter(g => (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Pay') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Workload')).length,
+    work: active.filter(g => (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Safety') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Scheduling')).length
   };
 }
 
 function getTopProcesses(grievances, today, limit) {
   return grievances
     .filter(g => {
-      const status = g[4];
+      const status = g[GRIEVANCE_COLS.STATUS - 1];
       return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
     })
     .map(g => {
-      const nextDeadline = g[19];
+      const nextDeadline = g[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
       let daysUntilDue = null;
 
       if (nextDeadline instanceof Date) {
@@ -358,11 +358,11 @@ function getTopProcesses(grievances, today, limit) {
       }
 
       return {
-        id: g[0],
-        program: g[22] || 'General',
-        memberId: g[1] || 'N/A',
-        steward: g[26] || 'Unassigned',
-        step: g[5] || 'Pending',
+        id: g[GRIEVANCE_COLS.GRIEVANCE_ID - 1],
+        program: g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || 'General',
+        memberId: g[GRIEVANCE_COLS.MEMBER_ID - 1] || 'N/A',
+        steward: g[GRIEVANCE_COLS.STEWARD - 1] || 'Unassigned',
+        step: g[GRIEVANCE_COLS.CURRENT_STEP - 1] || 'Pending',
         due: daysUntilDue !== null ? daysUntilDue : 999,
         status: daysUntilDue !== null && daysUntilDue < 0 ? 'CRITICAL' :
                 daysUntilDue !== null && daysUntilDue <= 3 ? 'ALERT' : 'NORMAL'
@@ -378,8 +378,8 @@ function getFollowUpTasks(grievances, today) {
   oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
 
   grievances.forEach(g => {
-    const status = g[4];
-    const nextDeadline = g[19];
+    const status = g[GRIEVANCE_COLS.STATUS - 1];
+    const nextDeadline = g[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
 
     if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info') &&
         nextDeadline instanceof Date) {
@@ -389,8 +389,8 @@ function getFollowUpTasks(grievances, today) {
       if (deadline <= oneWeekFromNow) {
         tasks.push({
           type: 'Deadline Follow-up',
-          memberId: g[1] || 'N/A',
-          steward: g[26] || 'Unassigned',
+          memberId: g[GRIEVANCE_COLS.MEMBER_ID - 1] || 'N/A',
+          steward: g[GRIEVANCE_COLS.STEWARD - 1] || 'Unassigned',
           date: deadline.toLocaleDateString(),
           priority: deadline < today ? 'CRITICAL' : deadline.getTime() === today.getTime() ? 'ALERT' : 'WARNING'
         });
@@ -405,8 +405,8 @@ function getPredictiveAlerts(members, grievances, today) {
   const alerts = [];
 
   members.forEach(m => {
-    const memberID = m[0];
-    const lastContact = m[20];
+    const memberID = m[MEMBER_COLS.MEMBER_ID - 1];
+    const lastContact = m[MEMBER_COLS.INTEREST_CHAPTER - 1];
 
     if (lastContact instanceof Date) {
       const daysSince = Math.floor((today - lastContact) / (1000 * 60 * 60 * 24));
@@ -435,12 +435,12 @@ function getPredictiveAlerts(members, grievances, today) {
 function getSystemicRisks(grievances) {
   const locationRisks = {};
   const active = grievances.filter(g => {
-    const status = g[4];
+    const status = g[GRIEVANCE_COLS.STATUS - 1];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
   active.forEach(g => {
-    const location = g[25] || 'Unknown';
+    const location = g[GRIEVANCE_COLS.LOCATION - 1] || 'Unknown';
     if (!locationRisks[location]) {
       locationRisks[location] = { total: 0, lost: 0 };
     }
@@ -474,7 +474,7 @@ function getOutreachScorecard(members) {
 
 function getArbitrationTracker(grievances) {
   const arbs = grievances.filter(g => {
-    const step = g[5];
+    const step = g[GRIEVANCE_COLS.CURRENT_STEP - 1];
     return step && (step.includes('Arbitration') || step.includes('Mediation'));
   });
 
@@ -485,7 +485,7 @@ function getArbitrationTracker(grievances) {
     maxFinancialImpact: 125000,
     docCompliance: 78.5,
     pendingWitness: 3,
-    step3Cases: grievances.filter(g => (g[5] || '').includes('III')).length,
+    step3Cases: grievances.filter(g => (g[GRIEVANCE_COLS.CURRENT_STEP - 1] || '').includes('III')).length,
     highRiskCases: 2
   };
 }
@@ -494,7 +494,7 @@ function getContractTrends(grievances) {
   const articleCounts = {};
 
   grievances.forEach(g => {
-    const article = g[21]; // Articles Violated column
+    const article = g[GRIEVANCE_COLS.ARTICLES - 1]; // Articles Violated column
     if (article) {
       articleCounts[article] = (articleCounts[article] || 0) + 1;
     }
@@ -503,9 +503,9 @@ function getContractTrends(grievances) {
   return Object.entries(articleCounts)
     .map(([article, count]) => {
       // Calculate real win/loss rates for this article
-      const articleGrievances = grievances.filter(g => g[22] === article);  // Column W: Articles Violated
-      const resolvedArticle = articleGrievances.filter(g => g[4] && g[4].toString().includes('Resolved'));
-      const won = resolvedArticle.filter(g => g[27] && g[27].toString().includes('Won')).length;
+      const articleGrievances = grievances.filter(g => g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] === article);  // Column W: Articles Violated
+      const resolvedArticle = articleGrievances.filter(g => g[GRIEVANCE_COLS.STATUS - 1] && g[GRIEVANCE_COLS.STATUS - 1].toString().includes('Resolved'));
+      const won = resolvedArticle.filter(g => g[GRIEVANCE_COLS.RESOLUTION - 1] && g[GRIEVANCE_COLS.RESOLUTION - 1].toString().includes('Won')).length;
       const total = resolvedArticle.length;
 
       return {
@@ -521,7 +521,7 @@ function getContractTrends(grievances) {
 }
 
 function getTrainingMatrix(members) {
-  const stewards = members.filter(m => m[9] === 'Yes'); // Is Steward column
+  const stewards = members.filter(m => m[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'); // Is Steward column
   return {
     complianceRate: 82.3,
     missingGrievance: 5,
@@ -535,12 +535,12 @@ function getTrainingMatrix(members) {
 function getLocationCaseload(grievances) {
   const locationData = {};
   const active = grievances.filter(g => {
-    const status = g[4];
+    const status = g[GRIEVANCE_COLS.STATUS - 1];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
   active.forEach(g => {
-    const location = g[25] || 'Unknown';
+    const location = g[GRIEVANCE_COLS.LOCATION - 1] || 'Unknown';
     locationData[location] = (locationData[location] || 0) + 1;
   });
 
@@ -653,7 +653,7 @@ function getRecruitmentTracker(members, today) {
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
   const newMembers = members.filter(m => {
-    const hireDate = m[7]; // Hire Date column
+    const hireDate = m[MEMBER_COLS.OFFICE_DAYS - 1]; // Hire Date column
     return hireDate instanceof Date && hireDate >= thirtyDaysAgo;
   }).length;
 
