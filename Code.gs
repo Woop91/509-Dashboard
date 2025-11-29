@@ -2280,9 +2280,12 @@ function createConfigSheet(ss) {
 
 function createMemberDirectorySheet(ss) {
   let sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-  if (!sheet) sheet = ss.insertSheet(SHEETS.MEMBER_DIR);
 
-  sheet.clear();
+  // Delete existing sheet to remove any column groups or formatting issues
+  if (sheet) {
+    ss.deleteSheet(sheet);
+  }
+  sheet = ss.insertSheet(SHEETS.MEMBER_DIR);
   sheet.setHiddenGridlines(true); // Remove gridlines
 
   // Reordered columns for logical grouping with toggles
