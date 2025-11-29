@@ -929,6 +929,25 @@ function setupDataValidations() {
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
+  // ENHANCEMENT: Email validation for Member Directory (Column H - Email Address)
+  const emailRule = SpreadsheetApp.newDataValidation()
+    .requireTextMatchesPattern('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$')
+    .setAllowInvalid(false)
+    .setHelpText('Enter a valid email address (e.g., name@example.com)')
+    .build();
+  memberDir.getRange(2, 8, 5000, 1).setDataValidation(emailRule);
+
+  // ENHANCEMENT: Phone number validation for Member Directory (Column I - Phone Number)
+  const phoneRule = SpreadsheetApp.newDataValidation()
+    .requireTextMatchesPattern('^\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$')
+    .setAllowInvalid(false)
+    .setHelpText('Enter phone number (formats: 555-123-4567, (555) 123-4567, 5551234567)')
+    .build();
+  memberDir.getRange(2, 9, 5000, 1).setDataValidation(phoneRule);
+
+  // ENHANCEMENT: Email validation for Grievance Log (Column X - Member Email)
+  grievanceLog.getRange(2, 24, 5000, 1).setDataValidation(emailRule);
+
   // Member Directory validations
   const memberValidations = [
     { col: 4, configCol: 1 },   // Job Title
@@ -980,71 +999,67 @@ function setupFormulasAndCalculations() {
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-  // Grievance Log formulas
-  for (let row = 2; row <= 100; row++) {
-    // Filing Deadline (Incident Date + 21 days)
-    grievanceLog.getRange(row, 8).setFormula(
-      `=IF(G${row}<>"",G${row}+21,"")`
-    );
+  // Grievance Log formulas - ENHANCED: Now covers 1000 rows instead of 100
+  // Filing Deadline (Incident Date + 21 days) - Column H
+  grievanceLog.getRange("H2").setFormula(
+    `=ARRAYFORMULA(IF(G2:G1000<>"",G2:G1000+21,""))`
+  );
 
-    // Step I Decision Due (Date Filed + 30 days)
-    grievanceLog.getRange(row, 10).setFormula(
-      `=IF(I${row}<>"",I${row}+30,"")`
-    );
+  // Step I Decision Due (Date Filed + 30 days) - Column J
+  grievanceLog.getRange("J2").setFormula(
+    `=ARRAYFORMULA(IF(I2:I1000<>"",I2:I1000+30,""))`
+  );
 
-    // Step II Appeal Due (Step I Decision Rcvd + 10 days)
-    grievanceLog.getRange(row, 12).setFormula(
-      `=IF(K${row}<>"",K${row}+10,"")`
-    );
+  // Step II Appeal Due (Step I Decision Rcvd + 10 days) - Column L
+  grievanceLog.getRange("L2").setFormula(
+    `=ARRAYFORMULA(IF(K2:K1000<>"",K2:K1000+10,""))`
+  );
 
-    // Step II Decision Due (Step II Appeal Filed + 30 days)
-    grievanceLog.getRange(row, 14).setFormula(
-      `=IF(M${row}<>"",M${row}+30,"")`
-    );
+  // Step II Decision Due (Step II Appeal Filed + 30 days) - Column N
+  grievanceLog.getRange("N2").setFormula(
+    `=ARRAYFORMULA(IF(M2:M1000<>"",M2:M1000+30,""))`
+  );
 
-    // Step III Appeal Due (Step II Decision Rcvd + 30 days)
-    grievanceLog.getRange(row, 16).setFormula(
-      `=IF(O${row}<>"",O${row}+30,"")`
-    );
+  // Step III Appeal Due (Step II Decision Rcvd + 30 days) - Column P
+  grievanceLog.getRange("P2").setFormula(
+    `=ARRAYFORMULA(IF(O2:O1000<>"",O2:O1000+30,""))`
+  );
 
-    // Days Open
-    grievanceLog.getRange(row, 19).setFormula(
-      `=IF(I${row}<>"",IF(R${row}<>"",R${row}-I${row},TODAY()-I${row}),"")`
-    );
+  // Days Open - Column S
+  grievanceLog.getRange("S2").setFormula(
+    `=ARRAYFORMULA(IF(I2:I1000<>"",IF(R2:R1000<>"",R2:R1000-I2:I1000,TODAY()-I2:I1000),""))`
+  );
 
-    // Next Action Due
-    grievanceLog.getRange(row, 20).setFormula(
-      `=IF(E${row}="Open",IF(F${row}="Step I",J${row},IF(F${row}="Step II",N${row},IF(F${row}="Step III",P${row},H${row}))),"")`
-    );
+  // Next Action Due - Column T
+  grievanceLog.getRange("T2").setFormula(
+    `=ARRAYFORMULA(IF(E2:E1000="Open",IF(F2:F1000="Step I",J2:J1000,IF(F2:F1000="Step II",N2:N1000,IF(F2:F1000="Step III",P2:P1000,H2:H1000))),""))`
+  );
 
-    // Days to Deadline
-    grievanceLog.getRange(row, 21).setFormula(
-      `=IF(T${row}<>"",T${row}-TODAY(),"")`
-    );
-  }
+  // Days to Deadline - Column U
+  grievanceLog.getRange("U2").setFormula(
+    `=ARRAYFORMULA(IF(T2:T1000<>"",T2:T1000-TODAY(),""))`
+  );
 
   // Dynamic column references for Member Directory formulas
   const memberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
   const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
 
-  // Member Directory formulas
-  for (let row = 2; row <= 100; row++) {
-    // Has Open Grievance?
-    memberDir.getRange(row, 26).setFormula(
-      `=IF(COUNTIFS('Grievance Log'!${memberIdCol}:${memberIdCol},A${row},'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No")`
-    );
+  // Member Directory formulas - ENHANCED: Now covers 1000 rows instead of 100
+  // Has Open Grievance? - Column Z (26)
+  memberDir.getRange("Z2").setFormula(
+    `=ARRAYFORMULA(IF(A2:A1000<>"",IF(COUNTIFS('Grievance Log'!${memberIdCol}:${memberIdCol},A2:A1000,'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No"),""))`
+  );
 
-    // Grievance Status Snapshot
-    memberDir.getRange(row, 27).setFormula(
-      `=IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
-    );
+  // Grievance Status Snapshot - Column AA (27)
+  memberDir.getRange("AA2").setFormula(
+    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A2:A1000,'Grievance Log'!${memberIdCol}:${memberIdCol},0)),""),""))`
+  );
 
-    // Next Grievance Deadline
-    memberDir.getRange(row, 28).setFormula(
-      `=IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
-    );
-  }
+  // Next Grievance Deadline - Column AB (28)
+  memberDir.getRange("AB2").setFormula(
+    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A2:A1000,'Grievance Log'!${memberIdCol}:${memberIdCol},0)),""),""))`
+  );
 }
 
 /* ===================== MENU ===================== */
@@ -1060,8 +1075,117 @@ function onOpen() {
       .addItem("✨ Interactive Dashboard", "openInteractiveDashboard")
       .addItem("🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard"))
     .addSeparator()
+    .addSubMenu(ui.createMenu("🔍 Search & Lookup")
+      .addItem("🔍 Search Members", "showMemberSearch")
+      .addItem("🔍 Quick Member Search", "quickMemberSearch"))
+    .addSeparator()
     .addSubMenu(ui.createMenu("📋 Grievance Tools")
       .addItem("➕ Start New Grievance", "showStartGrievanceDialog"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🔄 Workflow Management")
+      .addItem("🔄 Workflow Visualizer", "showWorkflowVisualizer")
+      .addItem("🔄 Change Workflow State", "changeWorkflowState")
+      .addItem("📊 View Current State", "showCurrentWorkflowState")
+      .addSeparator()
+      .addItem("📦 Batch Update State", "batchUpdateWorkflowState"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🤖 Smart Assignment")
+      .addItem("🤖 Auto-Assign Steward", "showAutoAssignDialog")
+      .addItem("📦 Batch Auto-Assign", "batchAutoAssign")
+      .addSeparator()
+      .addItem("👥 Steward Workload Dashboard", "showStewardWorkloadDashboard"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("⚡ Batch Operations")
+      .addItem("⚡ Show Batch Operations Menu", "showBatchOperationsMenu")
+      .addSeparator()
+      .addItem("👤 Bulk Assign Steward", "batchAssignSteward")
+      .addItem("📊 Bulk Update Status", "batchUpdateStatus")
+      .addItem("📄 Bulk Export to PDF", "batchExportPDF")
+      .addItem("📧 Bulk Email Notifications", "batchEmailNotifications")
+      .addItem("📝 Bulk Add Notes", "batchAddNotes"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🔮 Analytics & Insights")
+      .addItem("🔮 Predictive Analytics Dashboard", "showPredictiveAnalyticsDashboard")
+      .addSeparator()
+      .addItem("📈 Generate Full Analysis", "performPredictiveAnalysis"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🤖 Automation")
+      .addItem("📬 Notification Settings", "showNotificationSettings")
+      .addItem("📊 Report Automation Settings", "showReportAutomationSettings")
+      .addSeparator()
+      .addItem("✅ Enable Daily Deadline Notifications", "setupDailyDeadlineNotifications")
+      .addItem("🔕 Disable Deadline Notifications", "disableDailyDeadlineNotifications")
+      .addSeparator()
+      .addItem("✅ Enable Monthly Reports", "setupMonthlyReports")
+      .addItem("✅ Enable Quarterly Reports", "setupQuarterlyReports")
+      .addItem("🔕 Disable All Reports", "disableAutomatedReports")
+      .addSeparator()
+      .addItem("🧪 Test Deadline Notifications", "testDeadlineNotifications")
+      .addItem("🧪 Test Monthly Report", "generateMonthlyReport")
+      .addItem("🧪 Test Quarterly Report", "generateQuarterlyReport"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📧 Communications")
+      .addItem("📧 Compose Email", "composeGrievanceEmail")
+      .addItem("📝 Email Templates", "showEmailTemplateManager")
+      .addSeparator()
+      .addItem("📞 View Communications Log", "showGrievanceCommunications"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📁 Google Drive")
+      .addItem("📁 Setup Folder for Grievance", "setupDriveFolderForGrievance")
+      .addItem("📎 Upload Files", "showFileUploadDialog")
+      .addItem("📂 Show Grievance Files", "showGrievanceFiles")
+      .addSeparator()
+      .addItem("📁 Batch Create All Folders", "batchCreateGrievanceFolders"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📅 Calendar Integration")
+      .addItem("📅 Sync Deadlines to Calendar", "syncDeadlinesToCalendar")
+      .addItem("👀 View Upcoming Deadlines", "showUpcomingDeadlinesFromCalendar")
+      .addSeparator()
+      .addItem("🗑️ Clear All Calendar Events", "clearAllCalendarEvents"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🔒 Data Integrity")
+      .addItem("📊 Data Quality Dashboard", "showDataQualityDashboard")
+      .addItem("🔍 Check Referential Integrity", "checkReferentialIntegrity")
+      .addSeparator()
+      .addItem("📝 Create Change Log Sheet", "createChangeLogSheet")
+      .addItem("🆔 Generate Next Member ID", "showNextMemberID")
+      .addItem("🆔 Generate Next Grievance ID", "showNextGrievanceID"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("⚡ Performance")
+      .addItem("🗄️ Cache Status Dashboard", "showCacheStatusDashboard")
+      .addSeparator()
+      .addItem("🔥 Warm Up All Caches", "warmUpCaches")
+      .addItem("🗑️ Clear All Caches", "invalidateAllCaches"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("⌨️ Keyboard Shortcuts")
+      .addItem("⌨️ Show Shortcuts Guide", "showKeyboardShortcuts")
+      .addItem("⚙️ Shortcuts Configuration", "showKeyboardShortcutsConfig")
+      .addSeparator()
+      .addItem("F1 Context Help", "showContextHelp"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📊 Reports")
+      .addItem("📊 Custom Report Builder", "showCustomReportBuilder")
+      .addSeparator()
+      .addItem("📄 Export Grievances to CSV", "exportGrievancesToCSV")
+      .addItem("📄 Export Members to CSV", "exportMembersToCSV"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📚 Knowledge Base")
+      .addItem("📚 Search FAQ", "showFAQSearch")
+      .addItem("➕ Add New FAQ", "showFAQAdmin")
+      .addSeparator()
+      .addItem("📝 Create FAQ Database", "createFAQSheet"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🔬 Analysis Tools")
+      .addItem("🔬 Root Cause Analysis", "showRootCauseAnalysisDashboard"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("💾 Data Management")
+      .addItem("💾 Backup & Recovery Manager", "showBackupManager")
+      .addSeparator()
+      .addItem("💾 Create Backup Now", "createBackup")
+      .addItem("✅ Enable Automated Backups", "setupAutomatedBackups")
+      .addItem("🔕 Disable Automated Backups", "disableAutomatedBackups")
+      .addSeparator()
+      .addItem("📊 View Backup Log", "navigateToBackupLog"))
     .addSeparator()
     .addSubMenu(ui.createMenu("⚙️ Admin")
       .addItem("Seed 20k Members", "SEED_20K_MEMBERS")
@@ -1070,11 +1194,41 @@ function onOpen() {
       .addItem("Clear All Data", "clearAllData")
       .addItem("🗑️ Nuke All Seed Data", "nukeSeedData"))
     .addSeparator()
-    .addSubMenu(ui.createMenu("♿ ADHD Features")
+    .addSubMenu(ui.createMenu("♿ Accessibility")
+      .addItem("♿ ADHD Control Panel", "showADHDControlPanel")
+      .addItem("🎨 Theme Manager", "showThemeManager")
+      .addSeparator()
       .addItem("Hide Gridlines (Focus Mode)", "hideAllGridlines")
       .addItem("Show Gridlines", "showAllGridlines")
       .addItem("Reorder Sheets Logically", "reorderSheetsLogically")
-      .addItem("Setup ADHD Defaults", "setupADHDDefaults"))
+      .addItem("Setup ADHD Defaults", "setupADHDDefaults")
+      .addSeparator()
+      .addItem("🌙 Quick Toggle Dark Mode", "quickToggleDarkMode")
+      .addItem("🎯 Activate Focus Mode", "activateFocusMode")
+      .addItem("🎯 Deactivate Focus Mode", "deactivateFocusMode"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📱 Mobile & Viewing")
+      .addItem("📱 Mobile Dashboard", "showMobileDashboard")
+      .addItem("📋 Mobile Grievance List", "showMobileGrievanceList")
+      .addSeparator()
+      .addItem("📄 Paginated Data Viewer", "showPaginatedViewer"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("↩️ History & Undo")
+      .addItem("↩️ Undo/Redo History", "showUndoRedoPanel")
+      .addItem("⌨️ Install Undo Shortcuts", "installUndoRedoShortcuts")
+      .addSeparator()
+      .addItem("↩️ Undo Last Action (Ctrl+Z)", "undoLastAction")
+      .addItem("↪️ Redo Last Action (Ctrl+Y)", "redoLastAction")
+      .addSeparator()
+      .addItem("🗑️ Clear Undo History", "clearUndoHistory"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("⚠️ System Health")
+      .addItem("⚠️ Error Dashboard", "showErrorDashboard")
+      .addItem("🏥 Run Health Check", "performSystemHealthCheck")
+      .addSeparator()
+      .addItem("📊 View Error Trends", "createErrorTrendReport")
+      .addItem("🧪 Test Error Logging", "testErrorLogging"))
+    .addSeparator()
     .addSubMenu(ui.createMenu("👁️ Column Toggles")
       .addItem("Toggle Advanced Grievance Columns", "toggleGrievanceColumns")
       .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
