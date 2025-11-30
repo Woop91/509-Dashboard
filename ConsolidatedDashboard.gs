@@ -690,7 +690,6 @@ function createAnalyticsDataSheet() {
 
   // Steward Workload (dynamic column references)
   const stewardCol = getColumnLetter(GRIEVANCE_COLS.STEWARD);
-  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   analytics.getRange("J3").setValue("Steward Workload");
   analytics.getRange("J4:K4").setValues([["Steward", "Open Cases"]]).setFontWeight("bold");
   analytics.getRange("J5").setFormula(`=UNIQUE(FILTER('Grievance Log'!${stewardCol}:${stewardCol}, 'Grievance Log'!${stewardCol}:${stewardCol}<>"", 'Grievance Log'!${stewardCol}:${stewardCol}<>"Assigned Steward (Name)"))`);
