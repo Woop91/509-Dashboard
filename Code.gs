@@ -221,60 +221,60 @@ function createConfigTab() {
 
   const configData = [
     ["Job Titles", "Office Locations", "Units", "Office Days", "Yes/No",
-     "Supervisors", "Managers", "Stewards", "Grievance Status", "Grievance Step",
-     "Issue Category", "Articles Violated", "Communication Methods"],
+     "Supervisor First Name", "Supervisor Last Name", "Manager First Name", "Manager Last Name", "Stewards",
+     "Grievance Status", "Grievance Step", "Issue Category", "Articles Violated", "Communication Methods"],
 
     ["Coordinator", "Boston HQ", "Unit A - Administrative", "Monday", "Yes",
-     "Sarah Johnson", "Michael Chen", "Jane Smith", "Open", "Informal",
-     "Discipline", "Art. 1 - Recognition", "Email"],
+     "Sarah", "Johnson", "Michael", "Chen", "Jane Smith",
+     "Open", "Informal", "Discipline", "Art. 1 - Recognition", "Email"],
 
     ["Analyst", "Worcester Office", "Unit B - Technical", "Tuesday", "No",
-     "Mike Wilson", "Lisa Anderson", "John Doe", "Pending Info", "Step I",
-     "Workload", "Art. 2 - Union Security", "Phone"],
+     "Mike", "Wilson", "Lisa", "Anderson", "John Doe",
+     "Pending Info", "Step I", "Workload", "Art. 2 - Union Security", "Phone"],
 
     ["Case Manager", "Springfield Branch", "Unit C - Support Services", "Wednesday", "",
-     "Emily Davis", "Robert Brown", "Mary Johnson", "Settled", "Step II",
-     "Scheduling", "Art. 3 - Management Rights", "Text"],
+     "Emily", "Davis", "Robert", "Brown", "Mary Johnson",
+     "Settled", "Step II", "Scheduling", "Art. 3 - Management Rights", "Text"],
 
     ["Specialist", "Cambridge Office", "Unit D - Operations", "Thursday", "",
-     "Tom Harris", "Jennifer Lee", "Bob Wilson", "Withdrawn", "Step III",
-     "Pay", "Art. 4 - No Discrimination", "In Person"],
+     "Tom", "Harris", "Jennifer", "Lee", "Bob Wilson",
+     "Withdrawn", "Step III", "Pay", "Art. 4 - No Discrimination", "In Person"],
 
     ["Senior Analyst", "Lowell Center", "Unit E - Field Services", "Friday", "",
-     "Amanda White", "David Martinez", "Alice Brown", "Closed", "Mediation",
-     "Discrimination", "Art. 5 - Union Business", ""],
+     "Amanda", "White", "David", "Martinez", "Alice Brown",
+     "Closed", "Mediation", "Discrimination", "Art. 5 - Union Business", ""],
 
     ["Team Lead", "Quincy Station", "", "Saturday", "",
-     "Chris Taylor", "Susan Garcia", "Tom Davis", "Appealed", "Arbitration",
-     "Safety", "Art. 23 - Grievance Procedure", ""],
+     "Chris", "Taylor", "Susan", "Garcia", "Tom Davis",
+     "Appealed", "Arbitration", "Safety", "Art. 23 - Grievance Procedure", ""],
 
     ["Director", "Remote/Hybrid", "", "Sunday", "",
-     "Patricia Moore", "James Wilson", "Sarah Martinez", "", "",
-     "Benefits", "Art. 24 - Discipline", ""],
+     "Patricia", "Moore", "James", "Wilson", "Sarah Martinez",
+     "", "", "Benefits", "Art. 24 - Discipline", ""],
 
     ["Manager", "Brockton Office", "", "", "",
-     "Kevin Anderson", "Nancy Taylor", "Kevin Jones", "", "",
-     "Training", "Art. 25 - Hours of Work", ""],
+     "Kevin", "Anderson", "Nancy", "Taylor", "Kevin Jones",
+     "", "", "Training", "Art. 25 - Hours of Work", ""],
 
     ["Assistant", "Lynn Location", "", "", "",
-     "Michelle Lee", "Richard White", "Linda Garcia", "", "",
-     "Other", "Art. 26 - Overtime", ""],
+     "Michelle", "Lee", "Richard", "White", "Linda Garcia",
+     "", "", "Other", "Art. 26 - Overtime", ""],
 
     ["Associate", "Salem Office", "", "", "",
-     "Brandon Scott", "Angela Moore", "Daniel Kim", "", "",
-     "Harassment", "Art. 27 - Seniority", ""],
+     "Brandon", "Scott", "Angela", "Moore", "Daniel Kim",
+     "", "", "Harassment", "Art. 27 - Seniority", ""],
 
     ["Technician", "", "", "", "",
-     "Jessica Green", "Christopher Lee", "Rachel Adams", "", "",
-     "Equipment", "Art. 28 - Layoff", ""],
+     "Jessica", "Green", "Christopher", "Lee", "Rachel Adams",
+     "", "", "Equipment", "Art. 28 - Layoff", ""],
 
     ["Administrator", "", "", "", "",
-     "Andrew Clark", "Melissa Wright", "", "", "",
-     "Leave", "Art. 29 - Sick Leave", ""],
+     "Andrew", "Clark", "Melissa", "Wright", "",
+     "", "", "Leave", "Art. 29 - Sick Leave", ""],
 
     ["Support Staff", "", "", "", "",
-     "Rachel Brown", "Timothy Davis", "", "", "",
-     "Grievance Process", "Art. 30 - Vacation", ""]
+     "Rachel", "Brown", "Timothy", "Davis", "",
+     "", "", "Grievance Process", "Art. 30 - Vacation", ""]
   ];
 
   config.getRange(1, 1, configData.length, configData[0].length).setValues(configData);
@@ -996,19 +996,17 @@ function setupDataValidations() {
   // ENHANCEMENT: Email validation for Grievance Log (Column X - Member Email)
   grievanceLog.getRange(2, 24, 5000, 1).setDataValidation(emailRule);
 
-  // Member Directory validations
+  // Member Directory validations (updated for new Config structure)
   const memberValidations = [
-    { col: 4, configCol: 1 },   // Job Title
-    { col: 5, configCol: 2 },   // Work Location
-    { col: 6, configCol: 3 },   // Unit
-    { col: 10, configCol: 5 },  // Is Steward
-    { col: 11, configCol: 6 },  // Supervisor
-    { col: 12, configCol: 7 },  // Manager
-    { col: 13, configCol: 8 },  // Assigned Steward
-    { col: 20, configCol: 5 },  // Interest: Local
-    { col: 21, configCol: 5 },  // Interest: Chapter
-    { col: 22, configCol: 5 },  // Interest: Allied
-    { col: 24, configCol: 13 }  // Comm Methods
+    { col: 4, configCol: 1 },    // Job Title
+    { col: 5, configCol: 2 },    // Work Location
+    { col: 6, configCol: 3 },    // Unit
+    { col: 10, configCol: 5 },   // Is Steward
+    { col: 13, configCol: 10 },  // Assigned Steward
+    { col: 20, configCol: 5 },   // Interest: Local
+    { col: 21, configCol: 5 },   // Interest: Chapter
+    { col: 22, configCol: 5 },   // Interest: Allied
+    { col: 24, configCol: 15 }   // Comm Methods
   ];
 
   memberValidations.forEach(v => {
@@ -1020,15 +1018,34 @@ function setupDataValidations() {
     memberDir.getRange(2, v.col, 5000, 1).setDataValidation(rule);
   });
 
-  // Grievance Log validations
+  // Office Days - allow text input with guidance (column 7)
+  // Note: Multiple days should be entered as comma-separated values
+  const officeDaysRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter office days (e.g., "Monday, Wednesday, Friday" or select from Config tab)')
+    .build();
+  memberDir.getRange(2, 7, 5000, 1).setDataValidation(officeDaysRule);
+
+  // Supervisor and Manager - allow text input since they're now first+last name combinations
+  // Users can manually type "FirstName LastName" or the seed function will populate them
+  const nameRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter full name (e.g., "John Smith")')
+    .build();
+  memberDir.getRange(2, 11, 5000, 1).setDataValidation(nameRule); // Supervisor
+  memberDir.getRange(2, 12, 5000, 1).setDataValidation(nameRule); // Manager
+
+  // Grievance Log validations (updated for new Config structure)
   const grievanceValidations = [
-    { col: 5, configCol: 9 },   // Status
-    { col: 6, configCol: 10 },  // Current Step
-    { col: 22, configCol: 12 }, // Articles Violated
-    { col: 23, configCol: 11 }, // Issue Category
+    { col: 5, configCol: 11 },  // Status (now column K)
+    { col: 6, configCol: 12 },  // Current Step (now column L)
+    { col: 22, configCol: 14 }, // Articles Violated (now column N)
+    { col: 23, configCol: 13 }, // Issue Category (now column M)
     { col: 25, configCol: 3 },  // Unit
     { col: 26, configCol: 2 },  // Work Location
-    { col: 27, configCol: 8 }   // Assigned Steward
+    { col: 27, configCol: 10 }  // Assigned Steward (now column J)
   ];
 
   grievanceValidations.forEach(v => {
@@ -1236,8 +1253,18 @@ function onOpen() {
       .addItem("📊 View Backup Log", "navigateToBackupLog"))
     .addSeparator()
     .addSubMenu(ui.createMenu("⚙️ Admin")
-      .addItem("Seed 20k Members", "SEED_20K_MEMBERS")
-      .addItem("Seed 5k Grievances", "SEED_5K_GRIEVANCES")
+      .addSubMenu(ui.createMenu("👥 Seed Members")
+        .addItem("Seed Members - Toggle 1 (5,000)", "SEED_MEMBERS_TOGGLE_1")
+        .addItem("Seed Members - Toggle 2 (5,000)", "SEED_MEMBERS_TOGGLE_2")
+        .addItem("Seed Members - Toggle 3 (5,000)", "SEED_MEMBERS_TOGGLE_3")
+        .addItem("Seed Members - Toggle 4 (5,000)", "SEED_MEMBERS_TOGGLE_4")
+        .addSeparator()
+        .addItem("Seed All 20k Members (Legacy)", "SEED_20K_MEMBERS"))
+      .addSubMenu(ui.createMenu("📋 Seed Grievances")
+        .addItem("Seed Grievances - Toggle 1 (2,500)", "SEED_GRIEVANCES_TOGGLE_1")
+        .addItem("Seed Grievances - Toggle 2 (2,500)", "SEED_GRIEVANCES_TOGGLE_2")
+        .addSeparator()
+        .addItem("Seed All 5k Grievances (Legacy)", "SEED_5K_GRIEVANCES"))
       .addSeparator()
       .addItem("Clear All Data", "clearAllData")
       .addItem("🗑️ Nuke All Seed Data", "nukeSeedData"))
@@ -1336,22 +1363,27 @@ No fake CPU/memory metrics - everything tracks actual union activity.
   SpreadsheetApp.getUi().alert("Help", helpText, SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
-/* ===================== SEED 20,000 MEMBERS ===================== */
-function SEED_20K_MEMBERS() {
+/* ===================== SEED MEMBERS (WITH TOGGLES) ===================== */
+function SEED_MEMBERS_TOGGLE_1() { seedMembersWithCount(5000, "Toggle 1"); }
+function SEED_MEMBERS_TOGGLE_2() { seedMembersWithCount(5000, "Toggle 2"); }
+function SEED_MEMBERS_TOGGLE_3() { seedMembersWithCount(5000, "Toggle 3"); }
+function SEED_MEMBERS_TOGGLE_4() { seedMembersWithCount(5000, "Toggle 4"); }
+
+function seedMembersWithCount(count, toggleName) {
   const ss = SpreadsheetApp.getActive();
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
-    'Seed 20,000 Members',
-    'This will add 20,000 member records. This may take 2-3 minutes. Continue?',
+    `Seed ${count} Members (${toggleName})`,
+    `This will add ${count} member records. This may take 1-2 minutes. Continue?`,
     ui.ButtonSet.YES_NO
   );
 
   if (response !== ui.Button.YES) return;
 
-  SpreadsheetApp.getActive().toast("🚀 Seeding 20,000 members...", "Processing", -1);
+  SpreadsheetApp.getActive().toast(`🚀 Seeding ${count} members (${toggleName})...`, "Processing", -1);
 
   const firstNames = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley", "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle"];
   const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores"];
@@ -1359,35 +1391,60 @@ function SEED_20K_MEMBERS() {
   const jobTitles = config.getRange("A2:A14").getValues().flat().filter(String);
   const locations = config.getRange("B2:B14").getValues().flat().filter(String);
   const units = config.getRange("C2:C7").getValues().flat().filter(String);
-  const supervisors = config.getRange("F2:F14").getValues().flat().filter(String);
-  const managers = config.getRange("G2:G14").getValues().flat().filter(String);
-  const stewards = config.getRange("H2:H14").getValues().flat().filter(String);
+  const officeDays = config.getRange("D2:D8").getValues().flat().filter(String);
+
+  // Get supervisor and manager names (first and last name columns)
+  const supervisorFirstNames = config.getRange("F2:F14").getValues().flat().filter(String);
+  const supervisorLastNames = config.getRange("G2:G14").getValues().flat().filter(String);
+  const managerFirstNames = config.getRange("H2:H14").getValues().flat().filter(String);
+  const managerLastNames = config.getRange("I2:I14").getValues().flat().filter(String);
+  const stewards = config.getRange("J2:J14").getValues().flat().filter(String);
+
   const commMethods = ["Email", "Phone", "Text", "In Person"];
   const times = ["Mornings", "Afternoons", "Evenings", "Weekends", "Flexible"];
 
   // Validate config data
   if (jobTitles.length === 0 || locations.length === 0 || units.length === 0 ||
-      supervisors.length === 0 || managers.length === 0 || stewards.length === 0) {
+      supervisorFirstNames.length === 0 || managerFirstNames.length === 0 || stewards.length === 0) {
     ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.', ui.ButtonSet.OK);
     return;
   }
 
   const BATCH_SIZE = 1000;
   let data = [];
+  const startingRow = memberDir.getLastRow();
 
-  for (let i = 1; i <= 20000; i++) {
+  for (let i = 1; i <= count; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-    const memberID = "M" + String(i).padStart(6, '0');
+    const memberID = "M" + String(startingRow + i).padStart(6, '0');
     const jobTitle = jobTitles[Math.floor(Math.random() * jobTitles.length)];
     const location = locations[Math.floor(Math.random() * locations.length)];
     const unit = units[Math.floor(Math.random() * units.length)];
-    const officeDays = ["Mon", "Tue", "Wed", "Thu", "Fri"][Math.floor(Math.random() * 5)];
-    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@union.org`;
+
+    // Generate multiple office days (1-3 days)
+    const numDays = Math.floor(Math.random() * 3) + 1;
+    const selectedDays = [];
+    const availableDays = [...officeDays];
+    for (let d = 0; d < numDays; d++) {
+      if (availableDays.length > 0) {
+        const idx = Math.floor(Math.random() * availableDays.length);
+        selectedDays.push(availableDays.splice(idx, 1)[0]);
+      }
+    }
+    const officeDaysValue = selectedDays.join(", ");
+
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${startingRow + i}@union.org`;
     const phone = `(555) ${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
     const isSteward = Math.random() > 0.95 ? "Yes" : "No";
-    const supervisor = supervisors[Math.floor(Math.random() * supervisors.length)];
-    const manager = managers[Math.floor(Math.random() * managers.length)];
+
+    // Build full supervisor and manager names
+    const supervisorIdx = Math.floor(Math.random() * supervisorFirstNames.length);
+    const supervisor = `${supervisorFirstNames[supervisorIdx]} ${supervisorLastNames[supervisorIdx]}`;
+
+    const managerIdx = Math.floor(Math.random() * managerFirstNames.length);
+    const manager = `${managerFirstNames[managerIdx]} ${managerLastNames[managerIdx]}`;
+
     const assignedSteward = stewards[Math.floor(Math.random() * stewards.length)];
 
     const daysAgo = Math.floor(Math.random() * 90);
@@ -1406,7 +1463,7 @@ function SEED_20K_MEMBERS() {
     const bestTime = times[Math.floor(Math.random() * times.length)];
 
     const row = [
-      memberID, firstName, lastName, jobTitle, location, unit, officeDays,
+      memberID, firstName, lastName, jobTitle, location, unit, officeDaysValue,
       email, phone, isSteward, supervisor, manager, assignedSteward,
       lastVirtual, lastInPerson, lastSurvey, lastEmailOpen, openRate, volHours,
       localInterest, chapterInterest, alliedInterest, timestamp, commMethod, bestTime,
@@ -1418,7 +1475,7 @@ function SEED_20K_MEMBERS() {
     if (data.length === BATCH_SIZE) {
       try {
         memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-        SpreadsheetApp.getActive().toast(`Added ${i} of 20,000 members...`, "Progress", 1);
+        SpreadsheetApp.getActive().toast(`Added ${i} of ${count} members (${toggleName})...`, "Progress", 1);
         data = [];
         SpreadsheetApp.flush();
       } catch (e) {
@@ -1447,11 +1504,37 @@ function SEED_20K_MEMBERS() {
     }
   }
 
-  SpreadsheetApp.getActive().toast("✅ 20,000 members added!", "Complete", 5);
+  SpreadsheetApp.getActive().toast(`✅ ${count} members added (${toggleName})!`, "Complete", 5);
 }
 
-/* ===================== SEED 5,000 GRIEVANCES ===================== */
-function SEED_5K_GRIEVANCES() {
+/* ===================== LEGACY: SEED 20,000 MEMBERS ===================== */
+function SEED_20K_MEMBERS() {
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    'Seed 20,000 Members',
+    'Use the 4 toggles instead for better performance:\n\n' +
+    '• Seed Members - Toggle 1 (5,000)\n' +
+    '• Seed Members - Toggle 2 (5,000)\n' +
+    '• Seed Members - Toggle 3 (5,000)\n' +
+    '• Seed Members - Toggle 4 (5,000)\n\n' +
+    'Would you like to seed all 20,000 at once anyway?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) return;
+
+  // Call all 4 toggles
+  seedMembersWithCount(5000, "Toggle 1");
+  seedMembersWithCount(5000, "Toggle 2");
+  seedMembersWithCount(5000, "Toggle 3");
+  seedMembersWithCount(5000, "Toggle 4");
+}
+
+/* ===================== SEED GRIEVANCES (WITH TOGGLES) ===================== */
+function SEED_GRIEVANCES_TOGGLE_1() { seedGrievancesWithCount(2500, "Toggle 1"); }
+function SEED_GRIEVANCES_TOGGLE_2() { seedGrievancesWithCount(2500, "Toggle 2"); }
+
+function seedGrievancesWithCount(count, toggleName) {
   const ss = SpreadsheetApp.getActive();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -1459,14 +1542,14 @@ function SEED_5K_GRIEVANCES() {
 
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
-    'Seed 5,000 Grievances',
-    'This will add 5,000 grievance records. This may take 1-2 minutes. Continue?',
+    `Seed ${count} Grievances (${toggleName})`,
+    `This will add ${count} grievance records. This may take 1-2 minutes. Continue?`,
     ui.ButtonSet.YES_NO
   );
 
   if (response !== ui.Button.YES) return;
 
-  SpreadsheetApp.getActive().toast("🚀 Seeding 5,000 grievances...", "Processing", -1);
+  SpreadsheetApp.getActive().toast(`🚀 Seeding ${count} grievances (${toggleName})...`, "Processing", -1);
 
   // Get member data ONCE before the loop (CRITICAL FIX)
   const memberLastRow = memberDir.getLastRow();
@@ -1478,11 +1561,12 @@ function SEED_5K_GRIEVANCES() {
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
   const memberIDs = allMemberData.map(row => row[0]).filter(String);
 
-  const statuses = config.getRange("I2:I8").getValues().flat().filter(String);
-  const steps = config.getRange("J2:J7").getValues().flat().filter(String);
-  const articles = config.getRange("L2:L14").getValues().flat().filter(String);
-  const categories = config.getRange("K2:K12").getValues().flat().filter(String);
-  const stewards = config.getRange("H2:H14").getValues().flat().filter(String);
+  // Updated config column references for new structure
+  const statuses = config.getRange("K2:K8").getValues().flat().filter(String);       // Grievance Status (column K)
+  const steps = config.getRange("L2:L7").getValues().flat().filter(String);          // Grievance Step (column L)
+  const categories = config.getRange("M2:M12").getValues().flat().filter(String);    // Issue Category (column M)
+  const articles = config.getRange("N2:N14").getValues().flat().filter(String);      // Articles Violated (column N)
+  const stewards = config.getRange("J2:J14").getValues().flat().filter(String);      // Stewards (column J)
 
   // Validate config data
   if (statuses.length === 0 || steps.length === 0 || articles.length === 0 ||
@@ -1494,8 +1578,9 @@ function SEED_5K_GRIEVANCES() {
   const BATCH_SIZE = 500;
   let data = [];
   let successCount = 0;
+  const startingRow = grievanceLog.getLastRow();
 
-  for (let i = 1; i <= 5000; i++) {
+  for (let i = 1; i <= count; i++) {
     // Get random member
     const memberIndex = Math.floor(Math.random() * memberIDs.length);
     const memberID = memberIDs[memberIndex];
@@ -1503,7 +1588,7 @@ function SEED_5K_GRIEVANCES() {
 
     if (!memberData || !memberID) continue;
 
-    const grievanceID = "G-" + String(i).padStart(6, '0');
+    const grievanceID = "G-" + String(startingRow + i).padStart(6, '0');
     const firstName = memberData[1];
     const lastName = memberData[2];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
@@ -1558,7 +1643,7 @@ function SEED_5K_GRIEVANCES() {
     if (data.length === BATCH_SIZE) {
       try {
         grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-        SpreadsheetApp.getActive().toast(`Added ${successCount} of 5,000 grievances...`, "Progress", 1);
+        SpreadsheetApp.getActive().toast(`Added ${successCount} of ${count} grievances (${toggleName})...`, "Progress", 1);
         data = [];
         SpreadsheetApp.flush();
       } catch (e) {
@@ -1587,9 +1672,28 @@ function SEED_5K_GRIEVANCES() {
     }
   }
 
-  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added! Updating member snapshots...`, "Processing", 2);
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added (${toggleName})! Updating member snapshots...`, "Processing", 2);
   updateMemberDirectorySnapshots();
-  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added and member snapshots updated!`, "Complete", 5);
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added (${toggleName}) and member snapshots updated!`, "Complete", 5);
+}
+
+/* ===================== LEGACY: SEED 5,000 GRIEVANCES ===================== */
+function SEED_5K_GRIEVANCES() {
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    'Seed 5,000 Grievances',
+    'Use the 2 toggles instead for better performance:\n\n' +
+    '• Seed Grievances - Toggle 1 (2,500)\n' +
+    '• Seed Grievances - Toggle 2 (2,500)\n\n' +
+    'Would you like to seed all 5,000 at once anyway?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) return;
+
+  // Call both toggles
+  seedGrievancesWithCount(2500, "Toggle 1");
+  seedGrievancesWithCount(2500, "Toggle 2");
 }
 
 function updateMemberDirectorySnapshots() {
