@@ -243,15 +243,19 @@ function calculateAllMetricsOptimized(dataCache) {
     // Upcoming deadlines (next 14 days)
     if (nextActionDue && status === 'Open') {
       const deadline = new Date(nextActionDue);
-      const daysUntil = Math.floor((deadline - now) / (1000 * 60 * 60 * 24));
+      // Validate that the date is valid and not in the past
+      if (!isNaN(deadline.getTime())) {
+        const daysUntil = Math.floor((deadline - now) / (1000 * 60 * 60 * 24));
 
-      if (daysUntil >= 0 && daysUntil <= 14) {
-        metrics.upcomingDeadlines.push({
-          grievanceId: row[0],
-          memberName: `${row[2]} ${row[3]}`,
-          deadline: deadline,
-          daysUntil: daysUntil
-        });
+        // Only include upcoming deadlines (0-14 days), not past deadlines
+        if (daysUntil >= 0 && daysUntil <= 14) {
+          metrics.upcomingDeadlines.push({
+            grievanceId: row[0],
+            memberName: `${row[2]} ${row[3]}`,
+            deadline: deadline,
+            daysUntil: daysUntil
+          });
+        }
       }
     }
   }
@@ -355,7 +359,7 @@ function writeDashboardData(metrics, chartData) {
     ['Total Members', metrics.totalMembers],
     ['Active Stewards', metrics.activeStewards],
     ['Avg Open Rate', `${metrics.avgOpenRate.toFixed(1)}%`],
-    ['YTD Volunteer Hours', metrics.ytdVolunteerHours],
+    ['YTD Volunteer Hours', metrics.ytdVolunteerHours.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1})],
     ['', ''],
 
     ['GRIEVANCE METRICS', ''],
@@ -381,7 +385,7 @@ function writeDashboardData(metrics, chartData) {
     updates.push([
       d.grievanceId,
       d.memberName,
-      d.deadline,
+      Utilities.formatDate(d.deadline, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
       d.daysUntil
     ]);
   }

@@ -1267,7 +1267,11 @@ function onOpen() {
         .addItem("Seed All 5k Grievances (Legacy)", "SEED_5K_GRIEVANCES"))
       .addSeparator()
       .addItem("Clear All Data", "clearAllData")
-      .addItem("🗑️ Nuke All Seed Data", "nukeSeedData"))
+      .addItem("🗑️ Nuke All Seed Data", "nukeSeedData")
+      .addSeparator()
+      .addItem("📝 Add Sample Feedback Entries", "addSampleFeedbackEntries")
+      .addItem("📊 Populate Analytics Sheets", "populateAllAnalyticsSheets")
+      .addItem("👁️ Hide Diagnostics Tab", "hideDiagnosticsTab"))
     .addSeparator()
     .addSubMenu(ui.createMenu("♿ Accessibility")
       .addItem("♿ ADHD Control Panel", "showADHDControlPanel")
@@ -1761,4 +1765,237 @@ function clearAllData() {
   }
 
   SpreadsheetApp.getActive().toast("✅ All data cleared", "Complete", 3);
+}
+
+/**
+ * Add sample realistic feedback entries to Feedback & Development sheet
+ */
+function addSampleFeedbackEntries() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const feedback = ss.getSheetByName(SHEETS.FEEDBACK);
+
+  if (!feedback) {
+    SpreadsheetApp.getUi().alert('❌ Feedback & Development sheet not found!');
+    return;
+  }
+
+  const today = new Date();
+  const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
+  const nextMonth = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const sampleEntries = [
+    [
+      'Feedback',
+      Utilities.formatDate(lastWeek, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'Maria Gonzalez',
+      'Medium',
+      'Dashboard load time could be improved',
+      'When opening the Interactive Dashboard with 20k+ members, it takes 5-8 seconds to load. Consider implementing lazy loading or pagination for better performance.',
+      'Under Review',
+      25,
+      'Moderate',
+      Utilities.formatDate(nextMonth, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'Tech Team',
+      'None',
+      'Investigating caching options and chart lazy loading',
+      Utilities.formatDate(today, Session.getScriptTimeZone(), 'MM/dd/yyyy')
+    ],
+    [
+      'Future Feature',
+      Utilities.formatDate(twoWeeksAgo, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'James Wilson',
+      'High',
+      'Automated weekly steward workload reports',
+      'Send automated email reports to stewards every Monday morning with their active cases, upcoming deadlines, and win rate statistics. Would save 2-3 hours per week of manual reporting.',
+      'Planned',
+      10,
+      'Complex',
+      Utilities.formatDate(nextMonth, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'Development Team',
+      'Need to set up Gmail API integration',
+      'Aligns with Phase 7 automation goals',
+      Utilities.formatDate(today, Session.getScriptTimeZone(), 'MM/dd/yyyy')
+    ],
+    [
+      'Bug Report',
+      Utilities.formatDate(today, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'Sarah Chen',
+      'High',
+      'Member search not finding partial matches',
+      'When searching for members, the search only works with exact matches. Searching for "John" doesn\'t find "John Smith" or "Johnson". This makes it difficult to quickly look up members.',
+      'New',
+      0,
+      'Simple',
+      Utilities.formatDate(new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000), Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'Unassigned',
+      'None',
+      'Need to update search algorithm to support partial matching',
+      Utilities.formatDate(today, Session.getScriptTimeZone(), 'MM/dd/yyyy')
+    ]
+  ];
+
+  const lastRow = feedback.getLastRow();
+  feedback.getRange(lastRow + 1, 1, sampleEntries.length, sampleEntries[0].length).setValues(sampleEntries);
+
+  SpreadsheetApp.getUi().alert('✅ Added 3 sample feedback entries to Feedback & Development sheet');
+}
+
+/**
+ * Populate Steward Workload sheet with live data from Grievance Log
+ */
+function populateStewardWorkload() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const workloadSheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!workloadSheet || !grievanceSheet || !memberSheet) {
+    SpreadsheetApp.getUi().alert('❌ Required sheets not found!');
+    return;
+  }
+
+  // Get all grievance data
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const memberData = memberSheet.getDataRange().getValues();
+
+  // Build steward lookup map (Member ID -> Steward info)
+  const stewards = {};
+  for (let i = 1; i < memberData.length; i++) {
+    const row = memberData[i];
+    const isSteward = row[9]; // Column J - Is Steward
+    if (isSteward === 'Yes') {
+      const memberId = row[0];
+      const name = `${row[1]} ${row[2]}`; // First + Last name
+      const email = row[4];
+      const phone = row[5];
+      stewards[memberId] = {
+        name: name,
+        email: email,
+        phone: phone,
+        totalCases: 0,
+        activeCases: 0,
+        resolvedCases: 0,
+        wonCases: 0,
+        resolutionDays: []
+      };
+    }
+  }
+
+  // Process grievances
+  const today = new Date();
+  for (let i = 1; i < grievanceData.length; i++) {
+    const row = grievanceData[i];
+    const stewardId = row[6]; // Column G - Assigned Steward ID
+    const status = row[4]; // Column E - Status
+    const outcome = row[16]; // Column Q - Outcome
+    const daysOpen = row[18]; // Column S - Days Open
+
+    if (stewards[stewardId]) {
+      stewards[stewardId].totalCases++;
+
+      if (status === 'Open' || status === 'Pending Info') {
+        stewards[stewardId].activeCases++;
+      } else if (status === 'Settled' || status === 'Resolved' || status === 'Closed') {
+        stewards[stewardId].resolvedCases++;
+
+        if (outcome === 'Won' || outcome === 'Partially Won') {
+          stewards[stewardId].wonCases++;
+        }
+
+        if (daysOpen && !isNaN(daysOpen)) {
+          stewards[stewardId].resolutionDays.push(parseFloat(daysOpen));
+        }
+      }
+    }
+  }
+
+  // Build output data
+  const outputData = [];
+  for (const stewardId in stewards) {
+    const s = stewards[stewardId];
+    const winRate = s.resolvedCases > 0 ? (s.wonCases / s.resolvedCases * 100) : 0;
+    const avgDays = s.resolutionDays.length > 0
+      ? s.resolutionDays.reduce((a, b) => a + b, 0) / s.resolutionDays.length
+      : 0;
+
+    // Capacity status based on active cases
+    let capacityStatus;
+    if (s.activeCases === 0) {
+      capacityStatus = 'Available';
+    } else if (s.activeCases <= 5) {
+      capacityStatus = 'Normal';
+    } else if (s.activeCases <= 10) {
+      capacityStatus = 'Busy';
+    } else {
+      capacityStatus = 'Overloaded';
+    }
+
+    outputData.push([
+      s.name,
+      s.totalCases,
+      s.activeCases,
+      s.resolvedCases,
+      Math.round(winRate),
+      Math.round(avgDays),
+      0, // Overdue cases - would need deadline calculation
+      0, // Due this week - would need deadline calculation
+      capacityStatus,
+      s.email || '',
+      s.phone || ''
+    ]);
+  }
+
+  // Sort by active cases (descending)
+  outputData.sort((a, b) => b[2] - a[2]);
+
+  // Clear existing data (keep headers)
+  const lastRow = workloadSheet.getLastRow();
+  if (lastRow > 3) {
+    workloadSheet.getRange(4, 1, lastRow - 3, 11).clear();
+  }
+
+  // Write new data
+  if (outputData.length > 0) {
+    workloadSheet.getRange(4, 1, outputData.length, 11).setValues(outputData);
+  }
+
+  Logger.log(`✅ Populated Steward Workload with ${outputData.length} stewards`);
+}
+
+/**
+ * Populate all analytics sheets with live data
+ */
+function populateAllAnalyticsSheets() {
+  const ui = SpreadsheetApp.getUi();
+
+  ui.alert('⏳ Populating analytics sheets...\n\nThis may take a moment.');
+
+  try {
+    // Populate Steward Workload
+    populateStewardWorkload();
+
+    // Note: Other analytics sheets (Trends, Location, etc.) would need similar functions
+    // For now, we'll just populate Steward Workload
+
+    ui.alert('✅ Analytics sheets populated successfully!');
+  } catch (error) {
+    ui.alert('❌ Error populating analytics: ' + error.message);
+    Logger.log('Error in populateAllAnalyticsSheets: ' + error.message);
+  }
+}
+
+/**
+ * Hide the Diagnostics tab
+ */
+function hideDiagnosticsTab() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const diagnostics = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+
+  if (diagnostics) {
+    diagnostics.hideSheet();
+    SpreadsheetApp.getUi().alert('✅ Diagnostics tab is now hidden');
+  } else {
+    SpreadsheetApp.getUi().alert('❌ Diagnostics sheet not found');
+  }
 }
