@@ -361,12 +361,12 @@ function createMobileDashboardHTML() {
               <span class="recent-detail-label">Filed:</span>
               <span>\${g.filedDate || 'N/A'}</span>
             </div>
-            ${g.deadline ? \`
+            ${g.deadline ? `
             <div class="recent-detail">
               <span class="recent-detail-label">Deadline:</span>
               <span>\${g.deadline}</span>
             </div>
-            \` : ''}
+            ` : ''}
           </div>
         \`;
       });

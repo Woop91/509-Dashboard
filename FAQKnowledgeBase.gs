@@ -117,7 +117,7 @@ function seedInitialFAQs() {
     {
       category: FAQ_CATEGORIES.MEMBERS,
       question: 'How do I search for a member?',
-      answer: 'Use the Member Search tool: 1) Press Ctrl+F or go to 🔍 Search & Lookup → 🔍 Search Members, 2) Type name, ID, or email in the search box, 3) Use filters to narrow by location, unit, or steward status, 4) Click on a result to navigate to that member's row.',
+      answer: "Use the Member Search tool: 1) Press Ctrl+F or go to 🔍 Search & Lookup → 🔍 Search Members, 2) Type name, ID, or email in the search box, 3) Use filters to narrow by location, unit, or steward status, 4) Click on a result to navigate to that member's row.",
       tags: 'search, member, find, lookup'
     },
     {
@@ -463,7 +463,7 @@ function createFAQSearchHTML() {
           </div>
           <div class="faq-meta">
             <span class="category-tag">${faq.category}</span>
-            ${faq.helpfulCount > 0 ? \`<span>👍 \${faq.helpfulCount} found this helpful</span>\` : ''}
+            ${faq.helpfulCount > 0 ? `<span>👍 ${faq.helpfulCount} found this helpful</span>` : ''}
           </div>
           <div class="faq-answer" id="answer\${index}">
             ${faq.answer}
