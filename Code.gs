@@ -15,12 +15,16 @@ const SHEETS = {
   INTERACTIVE_DASHBOARD: "🎯 Interactive (Your Custom View)",
   STEWARD_WORKLOAD: "👨‍⚖️ Steward Workload",
   TRENDS: "📈 Trends & Timeline",
+  PERFORMANCE: "🎯 Test 2: Performance",
   LOCATION: "🗺️ Location Analytics",
   TYPE_ANALYSIS: "📊 Type Analysis",
   EXECUTIVE_DASHBOARD: "💼 Executive Dashboard",
+  EXECUTIVE: "💼 Executive Dashboard",  // Alias for backward compatibility
   KPI_PERFORMANCE: "📊 KPI Performance Dashboard",
+  KPI_BOARD: "📊 KPI Performance Dashboard",  // Alias for backward compatibility
   MEMBER_ENGAGEMENT: "👥 Member Engagement",
   COST_IMPACT: "💰 Cost Impact",
+  QUICK_STATS: "⚡ Quick Stats",
   ARCHIVE: "📦 Archive",
   DIAGNOSTICS: "🔧 Diagnostics"
 };
@@ -1964,6 +1968,91 @@ function populateStewardWorkload() {
 }
 
 /**
+ * Populate Member Satisfaction sheet with sample survey data
+ */
+function populateMemberSatisfaction() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const satisfactionSheet = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!satisfactionSheet || !memberSheet) {
+    SpreadsheetApp.getUi().alert('❌ Required sheets not found!');
+    return;
+  }
+
+  // Get member data
+  const memberData = memberSheet.getDataRange().getValues();
+
+  // Generate 50 sample survey responses
+  const sampleSurveys = [];
+  const today = new Date();
+
+  for (let i = 0; i < 50; i++) {
+    // Pick a random member (skip header row)
+    const randomMemberIndex = Math.floor(Math.random() * (memberData.length - 1)) + 1;
+    const member = memberData[randomMemberIndex];
+    const memberId = member[0];
+    const memberName = `${member[1]} ${member[2]}`;
+
+    // Generate survey dates
+    const sentDaysAgo = Math.floor(Math.random() * 60) + 1; // 1-60 days ago
+    const completedDaysAgo = sentDaysAgo - Math.floor(Math.random() * 7); // Within a week of being sent
+
+    const dateSent = new Date(today.getTime() - sentDaysAgo * 24 * 60 * 60 * 1000);
+    const dateCompleted = completedDaysAgo > 0 ? new Date(today.getTime() - completedDaysAgo * 24 * 60 * 60 * 1000) : '';
+
+    // Generate ratings (weighted toward positive)
+    const overallSat = Math.random() < 0.7 ? (4 + Math.floor(Math.random() * 2)) : (3 + Math.floor(Math.random() * 2));
+    const stewardSupport = Math.random() < 0.75 ? (4 + Math.floor(Math.random() * 2)) : (3 + Math.floor(Math.random() * 2));
+    const communication = Math.random() < 0.65 ? (4 + Math.floor(Math.random() * 2)) : (3 + Math.floor(Math.random() * 2));
+    const wouldRecommend = overallSat >= 4 ? 'Y' : (Math.random() < 0.7 ? 'Y' : 'N');
+
+    // Generate realistic comments
+    const comments = [
+      'My steward was very helpful and responsive',
+      'Great communication throughout the process',
+      'Could use faster response times',
+      'Very satisfied with the support I received',
+      'Steward went above and beyond',
+      'Process was clear and well-explained',
+      'Would like more frequent updates',
+      'Excellent representation',
+      'Professional and knowledgeable',
+      'Satisfied overall',
+      ''
+    ];
+    const comment = comments[Math.floor(Math.random() * comments.length)];
+
+    sampleSurveys.push([
+      `SURVEY-${String(i + 1).padStart(4, '0')}`,
+      memberId,
+      memberName,
+      Utilities.formatDate(dateSent, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      dateCompleted ? Utilities.formatDate(dateCompleted, Session.getScriptTimeZone(), 'MM/dd/yyyy') : '',
+      overallSat,
+      stewardSupport,
+      communication,
+      wouldRecommend,
+      comment
+    ]);
+  }
+
+  // Clear existing data (keep headers)
+  const lastRow = satisfactionSheet.getLastRow();
+  if (lastRow > 3) {
+    satisfactionSheet.getRange(4, 1, lastRow - 3, 10).clear();
+  }
+
+  // Write new data
+  if (sampleSurveys.length > 0) {
+    satisfactionSheet.getRange(4, 1, sampleSurveys.length, 10).setValues(sampleSurveys);
+  }
+
+  SpreadsheetApp.getUi().alert(`✅ Added ${sampleSurveys.length} sample surveys to Member Satisfaction sheet`);
+  Logger.log(`✅ Populated Member Satisfaction with ${sampleSurveys.length} surveys`);
+}
+
+/**
  * Populate all analytics sheets with live data
  */
 function populateAllAnalyticsSheets() {
@@ -1975,8 +2064,11 @@ function populateAllAnalyticsSheets() {
     // Populate Steward Workload
     populateStewardWorkload();
 
-    // Note: Other analytics sheets (Trends, Location, etc.) would need similar functions
-    // For now, we'll just populate Steward Workload
+    // Populate Member Satisfaction
+    populateMemberSatisfaction();
+
+    // Note: Other analytics sheets (Trends, Location, etc.) use formulas and auto-populate
+    // Performance, Quick Stats, Executive Dashboard, KPI Performance, etc. all use formulas
 
     ui.alert('✅ Analytics sheets populated successfully!');
   } catch (error) {

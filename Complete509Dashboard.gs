@@ -61,12 +61,16 @@ const SHEETS = {
   INTERACTIVE_DASHBOARD: "🎯 Interactive (Your Custom View)",
   STEWARD_WORKLOAD: "👨‍⚖️ Steward Workload",
   TRENDS: "📈 Trends & Timeline",
+  PERFORMANCE: "🎯 Test 2: Performance",
   LOCATION: "🗺️ Location Analytics",
   TYPE_ANALYSIS: "📊 Type Analysis",
   EXECUTIVE_DASHBOARD: "💼 Executive Dashboard",
+  EXECUTIVE: "💼 Executive Dashboard",  // Alias for backward compatibility
   KPI_PERFORMANCE: "📊 KPI Performance Dashboard",
+  KPI_BOARD: "📊 KPI Performance Dashboard",  // Alias for backward compatibility
   MEMBER_ENGAGEMENT: "👥 Member Engagement",
   COST_IMPACT: "💰 Cost Impact",
+  QUICK_STATS: "⚡ Quick Stats",
   ARCHIVE: "📦 Archive",
   DIAGNOSTICS: "🔧 Diagnostics"
 };
@@ -296,6 +300,7 @@ function CREATE_509_DASHBOARD() {
     // Create all analytics and test sheets
     createStewardWorkloadSheet();
     createTrendsSheet();
+    createPerformanceSheet();
     createLocationSheet();
     createTypeAnalysisSheet();
     SpreadsheetApp.getActive().toast("✅ Analytics sheets created", "75%", 2);
@@ -304,6 +309,7 @@ function CREATE_509_DASHBOARD() {
     createKPIPerformanceDashboard();
     createMemberEngagementSheet();
     createCostImpactSheet();
+    createQuickStatsSheet();
     SpreadsheetApp.getActive().toast("✅ Executive sheets created", "80%", 2);
 
     // Create utility sheets
@@ -1247,6 +1253,126 @@ function createCostImpactSheet() {
 
   sheet.setFrozenRows(3);
   sheet.setTabColor(COLORS.SOLIDARITY_RED);
+}
+
+/* ===================== TEST 2: PERFORMANCE ===================== */
+function createPerformanceSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.PERFORMANCE);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEETS.PERFORMANCE);
+  }
+  sheet.clear();
+
+  sheet.getRange("A1:K1").merge()
+    .setValue("🎯 PERFORMANCE METRICS & TRENDS")
+    .setFontSize(16)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
+
+  // Column definitions for formulas
+  const statusCol = 'E';
+  const dateOpenedCol = 'D';
+  const dateClosedCol = 'R';
+  const resolutionCol = 'Q';
+  const daysOpenCol = 'S';
+
+  // Key Performance Indicators
+  sheet.getRange("A3").setValue("KEY PERFORMANCE INDICATORS").setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+
+  const kpis = [
+    ["Metric", "Current Value", "Target", "Variance", "Status"],
+    ["Total Grievances", `=COUNTA('Grievance Log'!A:A)-1`, 5000, `=B5-C5`, `=IF(D5>=0,"✅","⚠️")`],
+    ["Open Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, 50, `=B6-C6`, `=IF(B6<=C6,"✅","⚠️")`],
+    ["Win Rate %", `=IFERROR(TEXT(COUNTIFS('Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),"0.0%"),"-")`, "75%", `=VALUE(LEFT(B7,LEN(B7)-1))-VALUE(LEFT(C7,LEN(C7)-1))`, `=IF(D7>=0,"✅","⚠️")`],
+    ["Avg Resolution Days", `=IFERROR(ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),0),"-")`, 30, `=B8-C8`, `=IF(B8<=C8,"✅","⚠️")`],
+    ["Active Stewards", `=COUNTIF('Member Directory'!J:J,"Yes")`, 20, `=B9-C9`, `=IF(B9>=C9,"✅","⚠️")`]
+  ];
+
+  sheet.getRange(4, 1, kpis.length, 5).setValues(kpis);
+  sheet.getRange(4, 1, 1, 5).setFontWeight("bold").setBackground(COLORS.INFO_LIGHT);
+
+  // Monthly Performance Trend
+  sheet.getRange("A12").setValue("MONTHLY PERFORMANCE TREND").setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+
+  const trendHeaders = ["Month", "New Cases", "Resolved", "Win Rate %", "Avg Days", "Open EOMonth"];
+  sheet.getRange(13, 1, 1, trendHeaders.length).setValues([trendHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.INFO_LIGHT);
+
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.PRIMARY_BLUE);
+}
+
+/* ===================== TEST 9: QUICK STATS ===================== */
+function createQuickStatsSheet() {
+  const ss = SpreadsheetApp.getActive();
+  let sheet = ss.getSheetByName(SHEETS.QUICK_STATS);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEETS.QUICK_STATS);
+  }
+  sheet.clear();
+
+  sheet.getRange("A1:G1").merge()
+    .setValue("⚡ QUICK STATS - AT-A-GLANCE DASHBOARD")
+    .setFontSize(16)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_ORANGE)
+    .setFontColor("white");
+
+  sheet.getRange("A2:G2").merge()
+    .setValue("Real-time snapshot of critical metrics - refresh any time")
+    .setFontSize(10)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  // Column definitions
+  const statusCol = 'E';
+  const resolutionCol = 'Q';
+  const isStewardCol = 'J';
+  const daysOpenCol = 'S';
+
+  // Quick stats grid
+  const quickStats = [
+    ["📊 MEMBERS & STEWARDS", ""],
+    ["Total Members", `=COUNTA('Member Directory'!A:A)-1`],
+    ["Active Stewards", `=COUNTIF('Member Directory'!${isStewardCol}:${isStewardCol},"Yes")`],
+    ["Avg Cases/Steward", `=IFERROR(ROUND(COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")/COUNTIF('Member Directory'!${isStewardCol}:${isStewardCol},"Yes"),1),"-")`],
+    ["", ""],
+    ["📋 GRIEVANCES", ""],
+    ["Total Grievances", `=COUNTA('Grievance Log'!A:A)-1`],
+    ["Open", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`],
+    ["Pending Info", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Pending Info")`],
+    ["Resolved/Settled", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Settled")+COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved")`],
+    ["", ""],
+    ["🎯 PERFORMANCE", ""],
+    ["Win Rate", `=IFERROR(TEXT(COUNTIFS('Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),"0.0%"),"-")`],
+    ["Avg Days to Resolve", `=IFERROR(ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),0),"-")`],
+    ["Cases This Month", `=COUNTIFS('Grievance Log'!D:D,">="&DATE(YEAR(TODAY()),MONTH(TODAY()),1))`]
+  ];
+
+  sheet.getRange(4, 1, quickStats.length, 2).setValues(quickStats);
+
+  // Format section headers
+  sheet.getRange("A4").setFontWeight("bold").setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
+  sheet.getRange("A9").setFontWeight("bold").setBackground(COLORS.UNION_GREEN).setFontColor("white");
+  sheet.getRange("A15").setFontWeight("bold").setBackground(COLORS.PRIMARY_PURPLE).setFontColor("white");
+
+  // Last updated timestamp
+  sheet.getRange("A" + (quickStats.length + 6)).setValue("Last Updated:");
+  sheet.getRange("B" + (quickStats.length + 6)).setFormula("=NOW()").setNumberFormat("MM/dd/yyyy hh:mm:ss");
+
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.ACCENT_ORANGE);
+  sheet.setColumnWidth(1, 200);
+  sheet.setColumnWidth(2, 150);
 }
 
 /* ===================== ARCHIVE ===================== */
@@ -6968,14 +7094,102 @@ function populateAllAnalyticsSheets() {
     // Populate Steward Workload
     populateStewardWorkload();
 
-    // Note: Other analytics sheets (Trends, Location, etc.) would need similar functions
-    // For now, we'll just populate Steward Workload
+    // Populate Member Satisfaction
+    populateMemberSatisfaction();
+
+    // Note: Other analytics sheets (Trends, Location, etc.) use formulas and auto-populate
+    // Performance, Quick Stats, Executive Dashboard, KPI Performance, etc. all use formulas
 
     ui.alert('✅ Analytics sheets populated successfully!');
   } catch (error) {
     ui.alert('❌ Error populating analytics: ' + error.message);
     Logger.log('Error in populateAllAnalyticsSheets: ' + error.message);
   }
+}
+
+/**
+ * Populate Member Satisfaction sheet with sample survey data
+ */
+function populateMemberSatisfaction() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const satisfactionSheet = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!satisfactionSheet || !memberSheet) {
+    SpreadsheetApp.getUi().alert('❌ Required sheets not found!');
+    return;
+  }
+
+  // Get member data
+  const memberData = memberSheet.getDataRange().getValues();
+
+  // Generate 50 sample survey responses
+  const sampleSurveys = [];
+  const today = new Date();
+
+  for (let i = 0; i < 50; i++) {
+    // Pick a random member (skip header row)
+    const randomMemberIndex = Math.floor(Math.random() * (memberData.length - 1)) + 1;
+    const member = memberData[randomMemberIndex];
+    const memberId = member[0];
+    const memberName = `${member[1]} ${member[2]}`;
+
+    // Generate survey dates
+    const sentDaysAgo = Math.floor(Math.random() * 60) + 1; // 1-60 days ago
+    const completedDaysAgo = sentDaysAgo - Math.floor(Math.random() * 7); // Within a week of being sent
+
+    const dateSent = new Date(today.getTime() - sentDaysAgo * 24 * 60 * 60 * 1000);
+    const dateCompleted = completedDaysAgo > 0 ? new Date(today.getTime() - completedDaysAgo * 24 * 60 * 60 * 1000) : '';
+
+    // Generate ratings (weighted toward positive)
+    const overallSat = Math.random() < 0.7 ? (4 + Math.floor(Math.random() * 2)) : (3 + Math.floor(Math.random() * 2));
+    const stewardSupport = Math.random() < 0.75 ? (4 + Math.floor(Math.random() * 2)) : (3 + Math.floor(Math.random() * 2));
+    const communication = Math.random() < 0.65 ? (4 + Math.floor(Math.random() * 2)) : (3 + Math.floor(Math.random() * 2));
+    const wouldRecommend = overallSat >= 4 ? 'Y' : (Math.random() < 0.7 ? 'Y' : 'N');
+
+    // Generate realistic comments
+    const comments = [
+      'My steward was very helpful and responsive',
+      'Great communication throughout the process',
+      'Could use faster response times',
+      'Very satisfied with the support I received',
+      'Steward went above and beyond',
+      'Process was clear and well-explained',
+      'Would like more frequent updates',
+      'Excellent representation',
+      'Professional and knowledgeable',
+      'Satisfied overall',
+      ''
+    ];
+    const comment = comments[Math.floor(Math.random() * comments.length)];
+
+    sampleSurveys.push([
+      `SURVEY-${String(i + 1).padStart(4, '0')}`,
+      memberId,
+      memberName,
+      Utilities.formatDate(dateSent, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      dateCompleted ? Utilities.formatDate(dateCompleted, Session.getScriptTimeZone(), 'MM/dd/yyyy') : '',
+      overallSat,
+      stewardSupport,
+      communication,
+      wouldRecommend,
+      comment
+    ]);
+  }
+
+  // Clear existing data (keep headers)
+  const lastRow = satisfactionSheet.getLastRow();
+  if (lastRow > 3) {
+    satisfactionSheet.getRange(4, 1, lastRow - 3, 10).clear();
+  }
+
+  // Write new data
+  if (sampleSurveys.length > 0) {
+    satisfactionSheet.getRange(4, 1, sampleSurveys.length, 10).setValues(sampleSurveys);
+  }
+
+  SpreadsheetApp.getUi().alert(`✅ Added ${sampleSurveys.length} sample surveys to Member Satisfaction sheet`);
+  Logger.log(`✅ Populated Member Satisfaction with ${sampleSurveys.length} surveys`);
 }
 
 /**
