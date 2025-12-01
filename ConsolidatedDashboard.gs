@@ -15717,7 +15717,7 @@ function createFAQSearchHTML() {
           </div>
           <div class="faq-meta">
             <span class="category-tag">${faq.category}</span>
-            ${faq.helpfulCount > 0 ? \`<span>👍 \${faq.helpfulCount} found this helpful</span>\` : ''}
+            ${faq.helpfulCount > 0 ? `<span>👍 ${faq.helpfulCount} found this helpful</span>` : ''}
           </div>
           <div class="faq-answer" id="answer\${index}">
             ${faq.answer}
@@ -20312,12 +20312,12 @@ function createMobileDashboardHTML() {
               <span class="recent-detail-label">Filed:</span>
               <span>\${g.filedDate || 'N/A'}</span>
             </div>
-            ${g.deadline ? \`
+            ${g.deadline ? `
             <div class="recent-detail">
               <span class="recent-detail-label">Deadline:</span>
               <span>\${g.deadline}</span>
             </div>
-            \` : ''}
+            ` : ''}
           </div>
         \`;
       });
