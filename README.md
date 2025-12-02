@@ -708,6 +708,46 @@ For issues with the 509 Dashboard:
 3. Test with fresh setup using `CREATE_509_DASHBOARD()`
 4. Document bugs in the Feedback & Development sheet
 
+## 🚧 Pending Features
+
+The following features are partially implemented and need completion:
+
+### Grievance Workflow Enhancement
+The grievance workflow now includes:
+- ✅ Google Drive folder creation for each grievance
+- ✅ Sharing dialog with multiple recipient selection options:
+  - Member email
+  - Steward email
+  - Grievance Coordinator 1, 2, 3
+  - Grievance email address
+
+**Remaining Tasks:**
+1. Configure actual email addresses for Grievance Coordinators in Config sheet
+2. Set up grievance email address (grievances@seiu509.org or similar)
+3. Add email address column mapping for coordinators
+4. Enable actual folder sharing (currently commented out - needs email validation)
+5. Enable actual email sending (currently commented out - needs SMTP configuration)
+6. Add grievance folder URL column to Grievance Log sheet for tracking
+7. Test complete workflow from member selection through folder sharing
+
+## 🔮 Future Features
+
+### Fillable PDF Grievance Form
+**Goal:** Auto-populate a fillable PDF grievance form from Google Form submissions
+
+**Description:**
+- Create a template fillable PDF with form fields
+- Map Google Form responses to PDF form fields
+- Auto-fill PDF when grievance is submitted
+- Save filled PDF to grievance folder
+- Include in sharing options alongside the generated summary PDF
+
+**Implementation Notes:**
+- Could use PDF libraries like PDFLib or third-party services
+- Needs PDF template designed with fillable fields
+- Would complement existing PDF generation (not replace it)
+- Both PDFs (summary and fillable form) would be available in folder
+
 ## 📄 License
 
 Created for Local 509. Modify as needed for your union's requirements.
