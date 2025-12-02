@@ -566,6 +566,17 @@ function addGrievanceToLog(formData) {
     recalcMemberRow(memberRow);
   }
 
+  // Automatically create Google Drive folder for the grievance
+  try {
+    const grievantName = `${formData.firstName}_${formData.lastName}`;
+    const folder = createGrievanceFolder(grievanceId, grievantName);
+    linkFolderToGrievance(grievanceId, folder.getId());
+    Logger.log(`Auto-created Drive folder for grievance ${grievanceId}`);
+  } catch (error) {
+    Logger.log(`Error auto-creating Drive folder for ${grievanceId}: ${error.message}`);
+    // Continue even if folder creation fails
+  }
+
   return grievanceId;
 }
 

@@ -35,13 +35,19 @@ function createRootFolder() {
 /**
  * Creates folder for a specific grievance
  * @param {string} grievanceId - Grievance ID
+ * @param {string} grievantName - Optional grievant name for folder naming
  * @returns {Folder} Grievance folder
  */
-function createGrievanceFolder(grievanceId) {
+function createGrievanceFolder(grievanceId, grievantName) {
   const rootFolder = createRootFolder();
 
+  // Create folder name with grievant name if provided
+  let folderName = `Grievance_${grievanceId}`;
+  if (grievantName) {
+    folderName = `Grievance_${grievanceId}_${grievantName}`;
+  }
+
   // Check if grievance folder already exists
-  const folderName = `Grievance_${grievanceId}`;
   const existingFolders = rootFolder.getFoldersByName(folderName);
 
   if (existingFolders.hasNext()) {
