@@ -45,7 +45,7 @@
  * Sheet names used throughout the application
  * @const {Object}
  */
-const SHEETS = {
+var SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
   GRIEVANCE_LOG: "Grievance Log",
@@ -79,7 +79,7 @@ const SHEETS = {
  * Color palette for consistent theming
  * @const {Object}
  */
-const COLORS = {
+var COLORS = {
   // Primary brand colors
   PRIMARY_BLUE: "#7EC8E3",
   PRIMARY_PURPLE: "#7C3AED",
@@ -124,7 +124,7 @@ const COLORS = {
  * Use getColumnLetter() to convert to letter notation
  * @const {Object}
  */
-const MEMBER_COLS = {
+var MEMBER_COLS = {
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -165,7 +165,7 @@ const MEMBER_COLS = {
  * Use getColumnLetter() to convert to letter notation
  * @const {Object}
  */
-const GRIEVANCE_COLS = {
+var GRIEVANCE_COLS = {
   GRIEVANCE_ID: 1,      // A
   MEMBER_ID: 2,         // B
   FIRST_NAME: 3,        // C
@@ -203,7 +203,7 @@ const GRIEVANCE_COLS = {
  * Based on standard union contract
  * @const {Object}
  */
-const GRIEVANCE_TIMELINES = {
+var GRIEVANCE_TIMELINES = {
   FILING_DEADLINE_DAYS: 21,      // Days after incident to file
   STEP1_DECISION_DAYS: 30,       // Days for Step I decision
   STEP2_APPEAL_DAYS: 10,         // Days to appeal to Step II
@@ -220,7 +220,7 @@ const GRIEVANCE_TIMELINES = {
  * Valid grievance status values
  * @const {Array<string>}
  */
-const GRIEVANCE_STATUSES = [
+var GRIEVANCE_STATUSES = [
   'Open',
   'Pending Info',
   'Settled',
@@ -235,7 +235,7 @@ const GRIEVANCE_STATUSES = [
  * Valid grievance step values
  * @const {Array<string>}
  */
-const GRIEVANCE_STEPS = [
+var GRIEVANCE_STEPS = [
   'Informal',
   'Step I',
   'Step II',
@@ -248,7 +248,7 @@ const GRIEVANCE_STEPS = [
  * Valid issue categories
  * @const {Array<string>}
  */
-const ISSUE_CATEGORIES = [
+var ISSUE_CATEGORIES = [
   'Discipline',
   'Workload',
   'Scheduling',
@@ -270,7 +270,7 @@ const ISSUE_CATEGORIES = [
  * Column mappings for Config sheet
  * @const {Object}
  */
-const CONFIG_COLS = {
+var CONFIG_COLS = {
   JOB_TITLES: 1,           // A
   OFFICE_LOCATIONS: 2,     // B
   UNITS: 3,                // C
@@ -298,7 +298,7 @@ const CONFIG_COLS = {
  * Cache configuration for performance optimization
  * @const {Object}
  */
-const CACHE_CONFIG = {
+var CACHE_CONFIG = {
   MEMORY_TTL: 300,              // 5 minutes (in seconds)
   PROPERTIES_TTL: 3600,         // 1 hour (in seconds)
   DOCUMENT_TTL: 21600,          // 6 hours (in seconds)
@@ -310,7 +310,7 @@ const CACHE_CONFIG = {
  * Cache keys used throughout the application
  * @const {Object}
  */
-const CACHE_KEYS = {
+var CACHE_KEYS = {
   MEMBER_COUNT: 'member_count',
   GRIEVANCE_COUNT: 'grievance_count',
   STEWARD_WORKLOAD: 'steward_workload',
@@ -326,7 +326,7 @@ const CACHE_KEYS = {
  * Error handling and logging configuration
  * @const {Object}
  */
-const ERROR_CONFIG = {
+var ERROR_CONFIG = {
   LOG_SHEET_NAME: 'Error_Log',
   MAX_LOG_ENTRIES: 1000,
   ERROR_LEVELS: {
@@ -345,7 +345,7 @@ const ERROR_CONFIG = {
  * Error categories for classification
  * @const {Object}
  */
-const ERROR_CATEGORIES = {
+var ERROR_CATEGORIES = {
   VALIDATION: 'VALIDATION',
   PERMISSION: 'PERMISSION',
   NETWORK: 'NETWORK',
@@ -362,7 +362,7 @@ const ERROR_CATEGORIES = {
  * User interface configuration
  * @const {Object}
  */
-const UI_CONFIG = {
+var UI_CONFIG = {
   TOAST_DURATION: 3,          // Seconds
   DIALOG_WIDTH: 700,          // Pixels
   DIALOG_HEIGHT: 500,         // Pixels
@@ -377,7 +377,7 @@ const UI_CONFIG = {
  * Email configuration
  * @const {Object}
  */
-const EMAIL_CONFIG = {
+var EMAIL_CONFIG = {
   FROM_NAME: 'SEIU Local 509',
   REPLY_TO: 'info@seiu509.org',
   GRIEVANCE_EMAIL: 'grievances@seiu509.org',
@@ -393,7 +393,7 @@ const EMAIL_CONFIG = {
  * Performance and batch operation settings
  * @const {Object}
  */
-const PERFORMANCE_CONFIG = {
+var PERFORMANCE_CONFIG = {
   BATCH_SIZE: 1000,           // Rows per batch for bulk operations
   MAX_EXECUTION_TIME: 300,    // Max execution time in seconds (5 min)
   LAZY_LOAD_THRESHOLD: 5000,  // Load data lazily after this many rows
@@ -407,7 +407,7 @@ const PERFORMANCE_CONFIG = {
  * Feature flags for enabling/disabling features
  * @const {Object}
  */
-const FEATURE_FLAGS = {
+var FEATURE_FLAGS = {
   ENABLE_DARK_MODE: true,
   ENABLE_KEYBOARD_SHORTCUTS: true,
   ENABLE_MOBILE_OPTIMIZATION: true,
@@ -429,7 +429,7 @@ const FEATURE_FLAGS = {
  * Version information
  * @const {Object}
  */
-const VERSION_INFO = {
+var VERSION_INFO = {
   MAJOR: 2,
   MINOR: 0,
   PATCH: 0,
@@ -579,7 +579,7 @@ function validateRequiredSheets() {
  * Role definitions for access control
  * @const {Object}
  */
-const SECURITY_ROLES = {
+var SECURITY_ROLES = {
   ADMIN: 'ADMIN',
   STEWARD: 'STEWARD',
   MEMBER: 'MEMBER',
@@ -590,7 +590,7 @@ const SECURITY_ROLES = {
  * Admin email addresses with full system access
  * @const {string[]}
  */
-const ADMIN_EMAILS = [
+var ADMIN_EMAILS = [
   'admin@seiu509.org',
   'president@seiu509.org',
   'techsupport@seiu509.org'
@@ -600,13 +600,13 @@ const ADMIN_EMAILS = [
  * Audit log sheet name
  * @const {string}
  */
-const AUDIT_LOG_SHEET = '🔒 Audit Log';
+var AUDIT_LOG_SHEET = '🔒 Audit Log';
 
 /**
  * Rate limiting configuration
  * @const {Object}
  */
-const RATE_LIMITS = {
+var RATE_LIMITS = {
   EMAIL_MIN_INTERVAL: 5000,        // 5 seconds between emails
   API_CALLS_PER_MINUTE: 60,        // Max API calls per minute
   EXPORT_MIN_INTERVAL: 30000,      // 30 seconds between exports
@@ -1421,7 +1421,7 @@ function showSecurityAudit() {
  ****************************************************/
 
 /* --------------------= CONFIGURATION --------------------= */
-const SHEETS = {
+var SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
   GRIEVANCE_LOG: "Grievance Log",
@@ -1446,7 +1446,7 @@ const SHEETS = {
   DIAGNOSTICS: "🔧 Diagnostics"
 };
 
-const COLORS = {
+var COLORS = {
   // Primary brand colors
   PRIMARY_BLUE: "#7EC8E3",
   PRIMARY_PURPLE: "#7C3AED",
@@ -1475,7 +1475,7 @@ const COLORS = {
 };
 
 // Column positions for Member Directory (1-indexed)
-const MEMBER_COLS = {
+var MEMBER_COLS = {
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -1510,7 +1510,7 @@ const MEMBER_COLS = {
 };
 
 // Column positions for Grievance Log (1-indexed)
-const GRIEVANCE_COLS = {
+var GRIEVANCE_COLS = {
   GRIEVANCE_ID: 1,      // A
   MEMBER_ID: 2,         // B
   FIRST_NAME: 3,        // C
@@ -4317,7 +4317,7 @@ function setupADHDDefaults() {
 /**
  * ADHD configuration
  */
-const ADHD_CONFIG = {
+var ADHD_CONFIG = {
   FOCUS_MODE_COLORS: {
     background: '#f5f5f5',
     header: '#4a4a4a',
@@ -8876,7 +8876,7 @@ function getReportTemplates() {
 /**
  * Theme configuration
  */
-const THEME_CONFIG = {
+var THEME_CONFIG = {
   THEMES: {
     LIGHT: {
       name: 'Light',
@@ -10198,7 +10198,7 @@ function verifyBackup(backupFileId) {
 /**
  * Cache configuration
  */
-const CACHE_CONFIG = {
+var CACHE_CONFIG = {
   MEMORY_TTL: 300,        // 5 minutes for memory cache
   PROPERTIES_TTL: 3600,   // 1 hour for properties cache
   ENABLE_LOGGING: true
@@ -10207,7 +10207,7 @@ const CACHE_CONFIG = {
 /**
  * Cache keys
  */
-const CACHE_KEYS = {
+var CACHE_KEYS = {
   ALL_GRIEVANCES: 'all_grievances',
   ALL_MEMBERS: 'all_members',
   ALL_STEWARDS: 'all_stewards',
@@ -11096,7 +11096,7 @@ function showNextGrievanceID() {
 /**
  * Pagination configuration
  */
-const PAGINATION_CONFIG = {
+var PAGINATION_CONFIG = {
   DEFAULT_PAGE_SIZE: 100,
   PAGE_SIZE_OPTIONS: [25, 50, 100, 200, 500],
   MAX_CACHED_PAGES: 10,
@@ -12214,7 +12214,7 @@ function batchUpdateWithLock(updates) {
 /**
  * Error handling configuration
  */
-const ERROR_CONFIG = {
+var ERROR_CONFIG = {
   LOG_SHEET_NAME: 'Error_Log',
   MAX_LOG_ENTRIES: 1000,
   ERROR_LEVELS: {
@@ -12230,7 +12230,7 @@ const ERROR_CONFIG = {
 /**
  * Error categories
  */
-const ERROR_CATEGORIES = {
+var ERROR_CATEGORIES = {
   VALIDATION: 'Data Validation',
   PERMISSION: 'Permission Error',
   NETWORK: 'Network Error',
@@ -13036,7 +13036,7 @@ function createErrorTrendReport() {
 /**
  * FAQ categories
  */
-const FAQ_CATEGORIES = {
+var FAQ_CATEGORIES = {
   GETTING_STARTED: 'Getting Started',
   GRIEVANCES: 'Grievance Process',
   MEMBERS: 'Member Management',
@@ -16472,7 +16472,7 @@ function showGrievanceFloatPanel() {
  * Configuration for grievance workflow and Google Form integration
  * @type {Object}
  */
-const GRIEVANCE_FORM_CONFIG = {
+var GRIEVANCE_FORM_CONFIG = {
   // Replace with your actual Google Form URL
   // To find: Create a Google Form, then copy the URL from the browser
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform",
@@ -17945,7 +17945,7 @@ function makeIdempotent(operation, keyGenerator, ttl = 600) {
  * Idempotent member addition
  * Safe to retry - won't create duplicates
  */
-const addMemberIdempotent = makeIdempotent(
+var addMemberIdempotent = makeIdempotent(
   function(memberData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -17989,7 +17989,7 @@ const addMemberIdempotent = makeIdempotent(
 /**
  * Idempotent grievance addition
  */
-const addGrievanceIdempotent = makeIdempotent(
+var addGrievanceIdempotent = makeIdempotent(
   function(grievanceData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -18034,7 +18034,7 @@ const addGrievanceIdempotent = makeIdempotent(
  * Idempotent backup creation
  * Won't create duplicate backups if retried within TTL
  */
-const createBackupIdempotent = makeIdempotent(
+var createBackupIdempotent = makeIdempotent(
   function() {
     if (typeof createIncrementalBackup === 'function') {
       return createIncrementalBackup();
@@ -18055,7 +18055,7 @@ const createBackupIdempotent = makeIdempotent(
  * Idempotent recalculation wrapper
  * Prevents multiple simultaneous recalculations
  */
-const recalcAllIdempotent = makeIdempotent(
+var recalcAllIdempotent = makeIdempotent(
   function() {
     // Run both member and grievance recalculations
     const results = {};
@@ -18083,7 +18083,7 @@ const recalcAllIdempotent = makeIdempotent(
 /**
  * Idempotent dashboard rebuild
  */
-const rebuildDashboardIdempotent = makeIdempotent(
+var rebuildDashboardIdempotent = makeIdempotent(
   function() {
     if (typeof rebuildDashboardOptimized === 'function') {
       return rebuildDashboardOptimized();
@@ -20269,7 +20269,7 @@ function quickRefresh() {
 /**
  * Keyboard shortcut registry and handler
  */
-const KEYBOARD_SHORTCUTS = {
+var KEYBOARD_SHORTCUTS = {
   // Navigation
   'Ctrl+G': 'navigateToGrievanceLog',
   'Ctrl+M': 'navigateToMemberDirectory',
@@ -21531,7 +21531,7 @@ function removeEmergencyContactColumns() {
  */
 
 // Configuration for the member info Google Form
-const MEMBER_FORM_CONFIG = {
+var MEMBER_FORM_CONFIG = {
   // Replace with your actual Google Form URL
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_MEMBER_FORM_ID/viewform",
 
@@ -22227,7 +22227,7 @@ function quickMemberSearch() {
 /**
  * Mobile configuration
  */
-const MOBILE_CONFIG = {
+var MOBILE_CONFIG = {
   MAX_COLUMNS_MOBILE: 8,  // Show max 8 columns on mobile
   CARD_LAYOUT_ENABLED: true,
   TOUCH_TARGET_SIZE: '44px',
@@ -23874,9 +23874,9 @@ function showPerformanceSummary() {
 // Create tracked versions of critical functions
 // These can be used instead of the original functions to automatically track performance
 
-const recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
-const recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
-const rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);
+var recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
+var recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
+var rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);
 
 
 
@@ -26344,7 +26344,7 @@ function rebuildDashboard() {
 /**
  * Assignment algorithm weights
  */
-const ASSIGNMENT_WEIGHTS = {
+var ASSIGNMENT_WEIGHTS = {
   WORKLOAD: 0.4,        // 40% - Balance caseload
   LOCATION: 0.3,        // 30% - Same location preference
   EXPERTISE: 0.2,       // 20% - Issue type experience
@@ -27411,7 +27411,7 @@ function manualRollback() {
 /**
  * Undo/Redo configuration
  */
-const UNDO_CONFIG = {
+var UNDO_CONFIG = {
   MAX_HISTORY: 50,  // Maximum actions to keep
   STORAGE_KEY: 'undoRedoHistory',
   SUPPORTED_ACTIONS: [
@@ -29232,7 +29232,7 @@ function getUnifiedOperationsMonitorHTML() {
 /**
  * Workflow state definitions
  */
-const WORKFLOW_STATES = {
+var WORKFLOW_STATES = {
   FILED: {
     name: 'Filed',
     description: 'Grievance has been filed and is awaiting initial review',
@@ -29918,7 +29918,7 @@ function batchUpdateWorkflowState() {
  */
 
 // Test results storage
-const TEST_RESULTS = {
+var TEST_RESULTS = {
   passed: [],
   failed: [],
   skipped: []
@@ -29927,7 +29927,7 @@ const TEST_RESULTS = {
 /**
  * Assertion library
  */
-const Assert = {
+var Assert = {
   /**
    * Assert that two values are equal
    */

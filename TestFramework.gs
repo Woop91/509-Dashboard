@@ -15,7 +15,7 @@
  */
 
 // Test results storage
-const TEST_RESULTS = {
+var TEST_RESULTS = {
   passed: [],
   failed: [],
   skipped: []
@@ -24,7 +24,7 @@ const TEST_RESULTS = {
 /**
  * Assertion library
  */
-const Assert = {
+var Assert = {
   /**
    * Assert that two values are equal
    */

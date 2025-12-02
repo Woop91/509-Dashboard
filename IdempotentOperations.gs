@@ -78,7 +78,7 @@ function makeIdempotent(operation, keyGenerator, ttl = 600) {
  * Idempotent member addition
  * Safe to retry - won't create duplicates
  */
-const addMemberIdempotent = makeIdempotent(
+var addMemberIdempotent = makeIdempotent(
   function(memberData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -122,7 +122,7 @@ const addMemberIdempotent = makeIdempotent(
 /**
  * Idempotent grievance addition
  */
-const addGrievanceIdempotent = makeIdempotent(
+var addGrievanceIdempotent = makeIdempotent(
   function(grievanceData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -167,7 +167,7 @@ const addGrievanceIdempotent = makeIdempotent(
  * Idempotent backup creation
  * Won't create duplicate backups if retried within TTL
  */
-const createBackupIdempotent = makeIdempotent(
+var createBackupIdempotent = makeIdempotent(
   function() {
     if (typeof createIncrementalBackup === 'function') {
       return createIncrementalBackup();
@@ -188,7 +188,7 @@ const createBackupIdempotent = makeIdempotent(
  * Idempotent recalculation wrapper
  * Prevents multiple simultaneous recalculations
  */
-const recalcAllIdempotent = makeIdempotent(
+var recalcAllIdempotent = makeIdempotent(
   function() {
     // Run both member and grievance recalculations
     const results = {};
@@ -216,7 +216,7 @@ const recalcAllIdempotent = makeIdempotent(
 /**
  * Idempotent dashboard rebuild
  */
-const rebuildDashboardIdempotent = makeIdempotent(
+var rebuildDashboardIdempotent = makeIdempotent(
   function() {
     if (typeof rebuildDashboardOptimized === 'function') {
       return rebuildDashboardOptimized();

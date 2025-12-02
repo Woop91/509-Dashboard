@@ -358,7 +358,7 @@ function getSheetDataSafely(sheetName) {
 /**
  * Simple in-memory cache for expensive operations
  */
-const SimpleCache = {
+var SimpleCache = {
   _cache: {},
   _timestamps: {},
   _ttl: 5 * 60 * 1000, // 5 minutes default TTL

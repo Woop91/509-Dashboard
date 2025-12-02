@@ -17,7 +17,7 @@
 /**
  * Workflow state definitions
  */
-const WORKFLOW_STATES = {
+var WORKFLOW_STATES = {
   FILED: {
     name: 'Filed',
     description: 'Grievance has been filed and is awaiting initial review',

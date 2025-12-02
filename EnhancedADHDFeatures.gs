@@ -20,7 +20,7 @@
 /**
  * ADHD configuration
  */
-const ADHD_CONFIG = {
+var ADHD_CONFIG = {
   FOCUS_MODE_COLORS: {
     background: '#f5f5f5',
     header: '#4a4a4a',

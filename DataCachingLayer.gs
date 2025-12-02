@@ -16,7 +16,7 @@
 /**
  * Cache configuration
  */
-const CACHE_CONFIG = {
+var CACHE_CONFIG = {
   MEMORY_TTL: 300,        // 5 minutes for memory cache
   PROPERTIES_TTL: 3600,   // 1 hour for properties cache
   ENABLE_LOGGING: true
@@ -25,7 +25,7 @@ const CACHE_CONFIG = {
 /**
  * Cache keys
  */
-const CACHE_KEYS = {
+var CACHE_KEYS = {
   ALL_GRIEVANCES: 'all_grievances',
   ALL_MEMBERS: 'all_members',
   ALL_STEWARDS: 'all_stewards',

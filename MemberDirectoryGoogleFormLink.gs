@@ -14,7 +14,7 @@
  */
 
 // Configuration for the member info Google Form
-const MEMBER_FORM_CONFIG = {
+var MEMBER_FORM_CONFIG = {
   // Replace with your actual Google Form URL
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_MEMBER_FORM_ID/viewform",
 

@@ -4,7 +4,7 @@
  ****************************************************/
 
 /* --------------------- CONFIGURATION --------------------- */
-const SHEETS = {
+var SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
   GRIEVANCE_LOG: "Grievance Log",
@@ -29,7 +29,7 @@ const SHEETS = {
   DIAGNOSTICS: "🔧 Diagnostics"
 };
 
-const COLORS = {
+var COLORS = {
   // Primary brand colors
   PRIMARY_BLUE: "#7EC8E3",
   PRIMARY_PURPLE: "#7C3AED",
@@ -58,7 +58,7 @@ const COLORS = {
 };
 
 // Column positions for Member Directory (1-indexed)
-const MEMBER_COLS = {
+var MEMBER_COLS = {
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -93,7 +93,7 @@ const MEMBER_COLS = {
 };
 
 // Column positions for Grievance Log (1-indexed)
-const GRIEVANCE_COLS = {
+var GRIEVANCE_COLS = {
   GRIEVANCE_ID: 1,      // A
   MEMBER_ID: 2,         // B
   FIRST_NAME: 3,        // C

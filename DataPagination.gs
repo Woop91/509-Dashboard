@@ -17,7 +17,7 @@
 /**
  * Pagination configuration
  */
-const PAGINATION_CONFIG = {
+var PAGINATION_CONFIG = {
   DEFAULT_PAGE_SIZE: 100,
   PAGE_SIZE_OPTIONS: [25, 50, 100, 200, 500],
   MAX_CACHED_PAGES: 10,

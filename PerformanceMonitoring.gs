@@ -378,6 +378,6 @@ function showPerformanceSummary() {
 // Create tracked versions of critical functions
 // These can be used instead of the original functions to automatically track performance
 
-const recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
-const recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
-const rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);
+var recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
+var recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
+var rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);
