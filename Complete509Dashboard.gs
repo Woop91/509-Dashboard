@@ -3872,7 +3872,8 @@ function createDynamicChart(sheet, metricName, chartType, metrics, startCell, wi
   const charts = sheet.getCharts();
   charts.forEach(chart => {
     const anchor = chart.getContainerInfo().getAnchorRow();
-    if (anchor >= parseInt(startCell.substring(1))) {
+    // Extract row number correctly (handles cells like "AA22" not just "A22")
+    if (anchor >= parseInt(startCell.match(/\d+/)[0])) {
       sheet.removeChart(chart);
     }
   });

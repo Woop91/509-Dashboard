@@ -306,6 +306,14 @@ function createMemberSelectionDialog(members) {
  * Generates a pre-filled Google Form URL for the selected member
  */
 function generatePreFilledGrievanceForm(memberRowIndex) {
+  // Validate configuration before proceeding
+  if (GRIEVANCE_FORM_CONFIG.FORM_URL.includes('YOUR_FORM_ID')) {
+    throw new Error(
+      'Grievance form is not configured yet. Please update GRIEVANCE_FORM_CONFIG.FORM_URL in GrievanceWorkflow.gs with your actual Google Form URL. ' +
+      'Instructions: 1) Create a Google Form, 2) Get the form URL, 3) Replace the placeholder in the code.'
+    );
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
