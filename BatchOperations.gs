@@ -399,8 +399,7 @@ function batchExportPDF() {
  * @returns {File} PDF file object
  */
 function exportGrievanceToPDF(grievanceId) {
-  // This is a placeholder - actual PDF generation would be implemented here
-  // For now, we'll create a simple text-based PDF using Google Docs
+  // Creates a PDF using Google Docs conversion
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);

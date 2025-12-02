@@ -19,30 +19,42 @@
  * @returns {Object} Analytics results
  */
 function performPredictiveAnalysis() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  const lastRow = grievanceSheet.getLastRow();
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  if (lastRow < 2) {
+    if (!grievanceSheet) {
+      throw new Error('Grievance Log sheet not found');
+    }
+
+    const lastRow = grievanceSheet.getLastRow();
+
+    if (lastRow < 2) {
+      return {
+        error: 'Insufficient data for analysis. Please add grievance data to generate predictions.'
+      };
+    }
+
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+
+    const analytics = {
+      volumeTrend: analyzeVolumeTrend(data),
+      issueTypeTrends: analyzeIssueTypeTrends(data),
+      seasonalPatterns: detectSeasonalPatterns(data),
+      resolutionTimeTrend: analyzeResolutionTimeTrend(data),
+      stewardWorkloadForecast: forecastStewardWorkload(data),
+      riskFactors: identifyRiskFactors(data),
+      anomalies: detectAnomalies(data),
+      recommendations: generateRecommendations(data)
+    };
+
+    return analytics;
+  } catch (error) {
+    Logger.log('Error in performPredictiveAnalysis: ' + error.message);
     return {
-      error: 'Insufficient data for analysis'
+      error: 'Failed to perform predictive analysis: ' + error.message
     };
   }
-
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
-
-  const analytics = {
-    volumeTrend: analyzeVolumeTrend(data),
-    issueTypeTrends: analyzeIssueTypeTrends(data),
-    seasonalPatterns: detectSeasonalPatterns(data),
-    resolutionTimeTrend: analyzeResolutionTimeTrend(data),
-    stewardWorkloadForecast: forecastStewardWorkload(data),
-    riskFactors: identifyRiskFactors(data),
-    anomalies: detectAnomalies(data),
-    recommendations: generateRecommendations(data)
-  };
-
-  return analytics;
 }
 
 /**
@@ -51,40 +63,53 @@ function performPredictiveAnalysis() {
  * @returns {Object} Volume trend analysis
  */
 function analyzeVolumeTrend(data) {
-  // Group by month
-  const monthlyVolumes = {};
+  try {
+    // Group by month
+    const monthlyVolumes = {};
 
-  data.forEach(row => {
-    const filedDate = row[6]; // Column G: Filed Date
+    data.forEach(row => {
+      const filedDate = row[6]; // Column G: Filed Date
 
-    if (!filedDate) return;
+      if (!filedDate) return;
 
-    const monthKey = `${filedDate.getFullYear()}-${String(filedDate.getMonth() + 1).padStart(2, '0')}`;
+      const monthKey = `${filedDate.getFullYear()}-${String(filedDate.getMonth() + 1).padStart(2, '0')}`;
 
-    monthlyVolumes[monthKey] = (monthlyVolumes[monthKey] || 0) + 1;
-  });
+      monthlyVolumes[monthKey] = (monthlyVolumes[monthKey] || 0) + 1;
+    });
 
-  // Convert to array and sort
-  const months = Object.keys(monthlyVolumes).sort();
-  const volumes = months.map(m => monthlyVolumes[m]);
+    // Convert to array and sort
+    const months = Object.keys(monthlyVolumes).sort();
+    const volumes = months.map(m => monthlyVolumes[m]);
 
-  // Calculate trend (simple linear regression)
-  const trend = calculateLinearTrend(volumes);
+    // Calculate trend (simple linear regression)
+    const trend = calculateLinearTrend(volumes);
 
-  // Forecast next 3 months
-  const forecast = [];
-  for (let i = 1; i <= 3; i++) {
-    forecast.push(Math.round(trend.slope * (volumes.length + i) + trend.intercept));
+    // Forecast next 3 months
+    const forecast = [];
+    for (let i = 1; i <= 3; i++) {
+      forecast.push(Math.round(trend.slope * (volumes.length + i) + trend.intercept));
+    }
+
+    return {
+      currentMonthVolume: volumes[volumes.length - 1] || 0,
+      previousMonthVolume: volumes[volumes.length - 2] || 0,
+      trend: trend.slope > 0 ? 'increasing' : trend.slope < 0 ? 'decreasing' : 'stable',
+      trendPercentage: Math.abs(trend.slope),
+      forecast: forecast,
+      monthlyVolumes: monthlyVolumes
+    };
+  } catch (error) {
+    Logger.log('Error in analyzeVolumeTrend: ' + error.message);
+    return {
+      currentMonthVolume: 0,
+      previousMonthVolume: 0,
+      trend: 'unknown',
+      trendPercentage: 0,
+      forecast: [0, 0, 0],
+      monthlyVolumes: {},
+      error: error.message
+    };
   }
-
-  return {
-    currentMonthVolume: volumes[volumes.length - 1] || 0,
-    previousMonthVolume: volumes[volumes.length - 2] || 0,
-    trend: trend.slope > 0 ? 'increasing' : trend.slope < 0 ? 'decreasing' : 'stable',
-    trendPercentage: Math.abs(trend.slope),
-    forecast: forecast,
-    monthlyVolumes: monthlyVolumes
-  };
 }
 
 /**
@@ -93,64 +118,73 @@ function analyzeVolumeTrend(data) {
  * @returns {Object} Issue type trends
  */
 function analyzeIssueTypeTrends(data) {
-  const issueTypesByMonth = {};
+  try {
+    const issueTypesByMonth = {};
 
-  data.forEach(row => {
-    const filedDate = row[6];
-    const issueType = row[5];
+    data.forEach(row => {
+      const filedDate = row[6];
+      const issueType = row[5];
 
-    if (!filedDate || !issueType) return;
+      if (!filedDate || !issueType) return;
 
-    const monthKey = `${filedDate.getFullYear()}-${String(filedDate.getMonth() + 1).padStart(2, '0')}`;
+      const monthKey = `${filedDate.getFullYear()}-${String(filedDate.getMonth() + 1).padStart(2, '0')}`;
 
-    if (!issueTypesByMonth[monthKey]) {
-      issueTypesByMonth[monthKey] = {};
+      if (!issueTypesByMonth[monthKey]) {
+        issueTypesByMonth[monthKey] = {};
+      }
+
+      issueTypesByMonth[monthKey][issueType] = (issueTypesByMonth[monthKey][issueType] || 0) + 1;
+    });
+
+    // Find trending issue types (increasing over time)
+    const trendingIssues = {};
+    const months = Object.keys(issueTypesByMonth).sort();
+
+    if (months.length >= 3) {
+      const recentMonths = months.slice(-3);
+      const olderMonths = months.slice(0, -3);
+
+      const recentCounts = {};
+      const olderCounts = {};
+
+      recentMonths.forEach(month => {
+        Object.entries(issueTypesByMonth[month]).forEach(([type, count]) => {
+          recentCounts[type] = (recentCounts[type] || 0) + count;
+        });
+      });
+
+      olderMonths.forEach(month => {
+        Object.entries(issueTypesByMonth[month]).forEach(([type, count]) => {
+          olderCounts[type] = (olderCounts[type] || 0) + count;
+        });
+      });
+
+      Object.keys(recentCounts).forEach(type => {
+        const recentAvg = recentCounts[type] / recentMonths.length;
+        const olderAvg = olderCounts[type] ? olderCounts[type] / olderMonths.length : 0;
+
+        if (recentAvg > olderAvg * 1.2) {
+          trendingIssues[type] = {
+            recentAverage: recentAvg.toFixed(1),
+            olderAverage: olderAvg.toFixed(1),
+            percentIncrease: olderAvg > 0 ? (((recentAvg - olderAvg) / olderAvg) * 100).toFixed(1) : 100
+          };
+        }
+      });
     }
 
-    issueTypesByMonth[monthKey][issueType] = (issueTypesByMonth[monthKey][issueType] || 0) + 1;
-  });
-
-  // Find trending issue types (increasing over time)
-  const trendingIssues = {};
-  const months = Object.keys(issueTypesByMonth).sort();
-
-  if (months.length >= 3) {
-    const recentMonths = months.slice(-3);
-    const olderMonths = months.slice(0, -3);
-
-    const recentCounts = {};
-    const olderCounts = {};
-
-    recentMonths.forEach(month => {
-      Object.entries(issueTypesByMonth[month]).forEach(([type, count]) => {
-        recentCounts[type] = (recentCounts[type] || 0) + count;
-      });
-    });
-
-    olderMonths.forEach(month => {
-      Object.entries(issueTypesByMonth[month]).forEach(([type, count]) => {
-        olderCounts[type] = (olderCounts[type] || 0) + count;
-      });
-    });
-
-    Object.keys(recentCounts).forEach(type => {
-      const recentAvg = recentCounts[type] / recentMonths.length;
-      const olderAvg = olderCounts[type] ? olderCounts[type] / olderMonths.length : 0;
-
-      if (recentAvg > olderAvg * 1.2) {
-        trendingIssues[type] = {
-          recentAverage: recentAvg.toFixed(1),
-          olderAverage: olderAvg.toFixed(1),
-          percentIncrease: olderAvg > 0 ? (((recentAvg - olderAvg) / olderAvg) * 100).toFixed(1) : 100
-        };
-      }
-    });
+    return {
+      trendingUp: trendingIssues,
+      monthlyBreakdown: issueTypesByMonth
+    };
+  } catch (error) {
+    Logger.log('Error in analyzeIssueTypeTrends: ' + error.message);
+    return {
+      trendingUp: {},
+      monthlyBreakdown: {},
+      error: error.message
+    };
   }
-
-  return {
-    trendingUp: trendingIssues,
-    monthlyBreakdown: issueTypesByMonth
-  };
 }
 
 /**
