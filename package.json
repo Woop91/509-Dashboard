@@ -1,0 +1,30 @@
+{
+  "name": "509-dashboard",
+  "version": "2.0.0",
+  "description": "SEIU Local 509 Union Grievance Tracking Dashboard - Security Enhanced",
+  "main": "Code.gs",
+  "scripts": {
+    "build": "node build.js",
+    "build:verify": "node build.js --verify",
+    "build:clean": "node build.js --clean",
+    "test": "echo \"Run tests in Google Apps Script environment\"",
+    "help": "node build.js --help"
+  },
+  "keywords": [
+    "union",
+    "grievance",
+    "tracking",
+    "google-apps-script",
+    "seiu",
+    "local-509"
+  ],
+  "author": "SEIU Local 509 Tech Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Woop91/509-dashboard.git"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
