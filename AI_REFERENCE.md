@@ -1,7 +1,7 @@
 # 509 Dashboard - Complete Feature Reference
 
-**Version:** 2.2
-**Last Updated:** 2025-11-27
+**Version:** 2.3
+**Last Updated:** 2025-12-02
 **Purpose:** Union grievance tracking and member engagement system for SEIU Local 509
 
 ---
@@ -1535,7 +1535,32 @@ const SHEETS = {
 
 ## Changelog
 
-### Version 2.2 (Current)
+### Version 2.3 (Current)
+
+**🔴 CRITICAL BUG FIX: hideGridlines() TypeError Resolved**
+
+**Issue:**
+- Runtime error: `TypeError: sheet.hideGridlines is not a function`
+- Affected CREATE_509_DASHBOARD and all gridline-related functions
+- Method `hideGridlines()` does not exist in Google Apps Script API
+
+**Fix:**
+- Replaced all `sheet.hideGridlines()` calls with `sheet.setHiddenGridlines(true)`
+- This is the correct Google Apps Script method for hiding gridlines
+- Fixed 9 occurrences across 3 files
+
+**Files Changed:**
+- Complete509Dashboard.gs: Fixed 3 instances (lines 4446, 4610, 4765)
+- ADHDEnhancements.gs: Fixed 3 instances (lines 29, 189, 344)
+- ConsolidatedDashboard.gs: Fixed 3 instances (lines 11709, 11869, 12024)
+- AI_REFERENCE.md: Updated version and changelog
+
+**Commit:**
+- Fix hideGridlines TypeError - use setHiddenGridlines(true) instead
+
+---
+
+### Version 2.2
 
 **🔴 CRITICAL UPDATE: All Runtime Errors Fixed**
 
