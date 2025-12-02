@@ -722,13 +722,39 @@ The grievance workflow now includes:
   - Grievance email address
 
 **Remaining Tasks:**
-1. Configure actual email addresses for Grievance Coordinators in Config sheet
-2. Set up grievance email address (grievances@seiu509.org or similar)
-3. Add email address column mapping for coordinators
-4. Enable actual folder sharing (currently commented out - needs email validation)
-5. Enable actual email sending (currently commented out - needs SMTP configuration)
-6. Add grievance folder URL column to Grievance Log sheet for tracking
+
+### ⚙️ Configuration Required:
+1. **Configure Grievance Coordinator Email Addresses**
+   - Current State: Config sheet has coordinator names only
+   - Action Needed: Add email address column mapping for each coordinator
+   - Location: Config sheet columns P, Q, R (currently storing names)
+   - Suggested: Add columns S, T, U for coordinator emails or create separate section
+
+2. **Set Up Grievance Email Address**
+   - Current State: Placeholder email `grievances@seiu509.org`
+   - Action Needed: Configure actual union grievance inbox email
+   - Location: `GrievanceWorkflow.gs` line 543
+
+3. **Enable Folder Sharing**
+   - Current State: Commented out in `shareGrievanceWithRecipients()` function
+   - Action Needed: Uncomment `folder.addEditor(email)` line 769
+   - Prerequisites: Valid email addresses configured for all coordinators
+
+4. **Enable Email Notifications**
+   - Current State: Email sending commented out (lines 792-796)
+   - Action Needed: Uncomment `GmailApp.sendEmail()` calls
+   - Prerequisites: Valid email addresses and Gmail API permissions
+
+### 🔧 Technical Tasks:
+5. Add grievance folder URL column to Grievance Log sheet for tracking
+6. Update `addGrievanceToLog()` to store folder URL in new column
 7. Test complete workflow from member selection through folder sharing
+8. Verify email delivery and folder permissions work correctly
+
+### ✅ Implementation Status:
+- **Committed**: Branch `claude/add-grievance-coordinator-fields-01KQXAdQS7vbxqQm6hD8RkMo`
+- **Status**: Ready for pull request creation
+- **Foundation**: Complete - folder creation, UI, and sharing infrastructure in place
 
 ## 🔮 Future Features
 
