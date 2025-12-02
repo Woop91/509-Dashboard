@@ -19,7 +19,7 @@
  * Configuration for grievance workflow and Google Form integration
  * @type {Object}
  */
-var GRIEVANCE_FORM_CONFIG = {
+GRIEVANCE_FORM_CONFIG = {
   // Replace with your actual Google Form URL
   // To find: Create a Google Form, then copy the URL from the browser
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform",

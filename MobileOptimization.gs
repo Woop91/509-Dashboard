@@ -17,7 +17,7 @@
 /**
  * Mobile configuration
  */
-var MOBILE_CONFIG = {
+MOBILE_CONFIG = {
   MAX_COLUMNS_MOBILE: 8,  // Show max 8 columns on mobile
   CARD_LAYOUT_ENABLED: true,
   TOUCH_TARGET_SIZE: '44px',

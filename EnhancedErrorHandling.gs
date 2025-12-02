@@ -17,7 +17,7 @@
 /**
  * Error handling configuration
  */
-var ERROR_CONFIG = {
+ERROR_CONFIG = {
   LOG_SHEET_NAME: 'Error_Log',
   MAX_LOG_ENTRIES: 1000,
   ERROR_LEVELS: {
@@ -33,7 +33,7 @@ var ERROR_CONFIG = {
 /**
  * Error categories
  */
-var ERROR_CATEGORIES = {
+ERROR_CATEGORIES = {
   VALIDATION: 'Data Validation',
   PERMISSION: 'Permission Error',
   NETWORK: 'Network Error',

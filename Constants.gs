@@ -18,7 +18,7 @@
  * Sheet names used throughout the application
  * @const {Object}
  */
-var SHEETS = {
+SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
   GRIEVANCE_LOG: "Grievance Log",
@@ -52,7 +52,7 @@ var SHEETS = {
  * Color palette for consistent theming
  * @const {Object}
  */
-var COLORS = {
+COLORS = {
   // Primary brand colors
   PRIMARY_BLUE: "#7EC8E3",
   PRIMARY_PURPLE: "#7C3AED",
@@ -97,7 +97,7 @@ var COLORS = {
  * Use getColumnLetter() to convert to letter notation
  * @const {Object}
  */
-var MEMBER_COLS = {
+MEMBER_COLS = {
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -138,7 +138,7 @@ var MEMBER_COLS = {
  * Use getColumnLetter() to convert to letter notation
  * @const {Object}
  */
-var GRIEVANCE_COLS = {
+GRIEVANCE_COLS = {
   GRIEVANCE_ID: 1,      // A
   MEMBER_ID: 2,         // B
   FIRST_NAME: 3,        // C
@@ -176,7 +176,7 @@ var GRIEVANCE_COLS = {
  * Based on standard union contract
  * @const {Object}
  */
-var GRIEVANCE_TIMELINES = {
+GRIEVANCE_TIMELINES = {
   FILING_DEADLINE_DAYS: 21,      // Days after incident to file
   STEP1_DECISION_DAYS: 30,       // Days for Step I decision
   STEP2_APPEAL_DAYS: 10,         // Days to appeal to Step II
@@ -193,7 +193,7 @@ var GRIEVANCE_TIMELINES = {
  * Valid grievance status values
  * @const {Array<string>}
  */
-var GRIEVANCE_STATUSES = [
+GRIEVANCE_STATUSES = [
   'Open',
   'Pending Info',
   'Settled',
@@ -208,7 +208,7 @@ var GRIEVANCE_STATUSES = [
  * Valid grievance step values
  * @const {Array<string>}
  */
-var GRIEVANCE_STEPS = [
+GRIEVANCE_STEPS = [
   'Informal',
   'Step I',
   'Step II',
@@ -221,7 +221,7 @@ var GRIEVANCE_STEPS = [
  * Valid issue categories
  * @const {Array<string>}
  */
-var ISSUE_CATEGORIES = [
+ISSUE_CATEGORIES = [
   'Discipline',
   'Workload',
   'Scheduling',
@@ -243,7 +243,7 @@ var ISSUE_CATEGORIES = [
  * Column mappings for Config sheet
  * @const {Object}
  */
-var CONFIG_COLS = {
+CONFIG_COLS = {
   JOB_TITLES: 1,           // A
   OFFICE_LOCATIONS: 2,     // B
   UNITS: 3,                // C
@@ -271,7 +271,7 @@ var CONFIG_COLS = {
  * Cache configuration for performance optimization
  * @const {Object}
  */
-var CACHE_CONFIG = {
+CACHE_CONFIG = {
   MEMORY_TTL: 300,              // 5 minutes (in seconds)
   PROPERTIES_TTL: 3600,         // 1 hour (in seconds)
   DOCUMENT_TTL: 21600,          // 6 hours (in seconds)
@@ -283,7 +283,7 @@ var CACHE_CONFIG = {
  * Cache keys used throughout the application
  * @const {Object}
  */
-var CACHE_KEYS = {
+CACHE_KEYS = {
   MEMBER_COUNT: 'member_count',
   GRIEVANCE_COUNT: 'grievance_count',
   STEWARD_WORKLOAD: 'steward_workload',
@@ -299,7 +299,7 @@ var CACHE_KEYS = {
  * Error handling and logging configuration
  * @const {Object}
  */
-var ERROR_CONFIG = {
+ERROR_CONFIG = {
   LOG_SHEET_NAME: 'Error_Log',
   MAX_LOG_ENTRIES: 1000,
   ERROR_LEVELS: {
@@ -318,7 +318,7 @@ var ERROR_CONFIG = {
  * Error categories for classification
  * @const {Object}
  */
-var ERROR_CATEGORIES = {
+ERROR_CATEGORIES = {
   VALIDATION: 'VALIDATION',
   PERMISSION: 'PERMISSION',
   NETWORK: 'NETWORK',
@@ -335,7 +335,7 @@ var ERROR_CATEGORIES = {
  * User interface configuration
  * @const {Object}
  */
-var UI_CONFIG = {
+UI_CONFIG = {
   TOAST_DURATION: 3,          // Seconds
   DIALOG_WIDTH: 700,          // Pixels
   DIALOG_HEIGHT: 500,         // Pixels
@@ -350,7 +350,7 @@ var UI_CONFIG = {
  * Email configuration
  * @const {Object}
  */
-var EMAIL_CONFIG = {
+EMAIL_CONFIG = {
   FROM_NAME: 'SEIU Local 509',
   REPLY_TO: 'info@seiu509.org',
   GRIEVANCE_EMAIL: 'grievances@seiu509.org',
@@ -366,7 +366,7 @@ var EMAIL_CONFIG = {
  * Performance and batch operation settings
  * @const {Object}
  */
-var PERFORMANCE_CONFIG = {
+PERFORMANCE_CONFIG = {
   BATCH_SIZE: 1000,           // Rows per batch for bulk operations
   MAX_EXECUTION_TIME: 300,    // Max execution time in seconds (5 min)
   LAZY_LOAD_THRESHOLD: 5000,  // Load data lazily after this many rows
@@ -380,7 +380,7 @@ var PERFORMANCE_CONFIG = {
  * Feature flags for enabling/disabling features
  * @const {Object}
  */
-var FEATURE_FLAGS = {
+FEATURE_FLAGS = {
   ENABLE_DARK_MODE: true,
   ENABLE_KEYBOARD_SHORTCUTS: true,
   ENABLE_MOBILE_OPTIMIZATION: true,
@@ -402,7 +402,7 @@ var FEATURE_FLAGS = {
  * Version information
  * @const {Object}
  */
-var VERSION_INFO = {
+VERSION_INFO = {
   MAJOR: 2,
   MINOR: 0,
   PATCH: 0,

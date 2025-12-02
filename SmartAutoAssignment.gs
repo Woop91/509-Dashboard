@@ -17,7 +17,7 @@
 /**
  * Assignment algorithm weights
  */
-var ASSIGNMENT_WEIGHTS = {
+ASSIGNMENT_WEIGHTS = {
   WORKLOAD: 0.4,        // 40% - Balance caseload
   LOCATION: 0.3,        // 30% - Same location preference
   EXPERTISE: 0.2,       // 20% - Issue type experience

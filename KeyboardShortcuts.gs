@@ -345,7 +345,7 @@ function quickRefresh() {
 /**
  * Keyboard shortcut registry and handler
  */
-var KEYBOARD_SHORTCUTS = {
+KEYBOARD_SHORTCUTS = {
   // Navigation
   'Ctrl+G': 'navigateToGrievanceLog',
   'Ctrl+M': 'navigateToMemberDirectory',
