@@ -30,20 +30,50 @@ const SECURITY_ROLES = {
 };
 
 /**
- * Admin email addresses with full system access
- * @const {string[]}
+ * Gets admin email addresses from Config sheet
+ * Falls back to ADMIN_CONFIG.FALLBACK_ADMINS if Config sheet not available
+ * @returns {string[]} Array of admin email addresses
  */
-const ADMIN_EMAILS = [
-  'admin@seiu509.org',
-  'president@seiu509.org',
-  'techsupport@seiu509.org'
-];
+function getAdminEmails() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
-/**
- * Audit log sheet name
- * @const {string}
- */
-const AUDIT_LOG_SHEET = '🔒 Audit Log';
+    if (!configSheet) {
+      Logger.log('Config sheet not found, using fallback admin emails');
+      return ADMIN_CONFIG.FALLBACK_ADMINS;
+    }
+
+    // Read admin emails from Config sheet (Column S, starting from row 2)
+    const lastRow = configSheet.getLastRow();
+    if (lastRow < 2) {
+      return ADMIN_CONFIG.FALLBACK_ADMINS;
+    }
+
+    const adminEmailsRange = configSheet.getRange(2, ADMIN_CONFIG.CONFIG_COLUMN, lastRow - 1, 1);
+    const adminEmailsData = adminEmailsRange.getValues();
+
+    // Filter out empty rows and validate emails
+    const adminEmails = adminEmailsData
+      .flat()
+      .filter(email => email && typeof email === 'string' && email.trim().length > 0)
+      .map(email => email.trim());
+
+    // If no admin emails found in Config, use fallback
+    if (adminEmails.length === 0) {
+      Logger.log('No admin emails found in Config sheet, using fallback');
+      return ADMIN_CONFIG.FALLBACK_ADMINS;
+    }
+
+    return adminEmails;
+
+  } catch (error) {
+    Logger.log('Error reading admin emails from Config: ' + error.message);
+    return ADMIN_CONFIG.FALLBACK_ADMINS;
+  }
+}
+
+// Audit log configuration moved to Constants.gs (AUDIT_LOG_CONFIG)
 
 /**
  * Rate limiting configuration
@@ -138,12 +168,14 @@ function getCurrentUserEmail() {
 
 /**
  * Checks if current user is an administrator
+ * Reads admin emails from Config sheet
  *
  * @returns {boolean} True if user is admin
  */
 function isAdmin() {
   const userEmail = getCurrentUserEmail();
-  return ADMIN_EMAILS.includes(userEmail);
+  const adminEmails = getAdminEmails();
+  return adminEmails.includes(userEmail);
 }
 
 /**
@@ -490,11 +522,11 @@ function validateInput(input, type, maxLength = 255) {
 function logAuditEvent(action, details = {}, level = 'INFO') {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
+    let auditLog = ss.getSheetByName(AUDIT_LOG_CONFIG.LOG_SHEET_NAME);
 
     // Create audit log sheet if it doesn't exist
     if (!auditLog) {
-      auditLog = ss.insertSheet(AUDIT_LOG_SHEET);
+      auditLog = ss.insertSheet(AUDIT_LOG_CONFIG.LOG_SHEET_NAME);
 
       // Set up headers
       auditLog.appendRow([
@@ -538,10 +570,15 @@ function logAuditEvent(action, details = {}, level = 'INFO') {
       'N/A' // Apps Script doesn't provide IP addresses
     ]);
 
-    // Trim old entries if needed (keep last 10,000)
-    const lastRow = auditLog.getLastRow();
-    if (lastRow > 10001) { // 10,000 + header
-      auditLog.deleteRows(2, lastRow - 10001);
+    // Trim old entries if needed (configured in AUDIT_LOG_CONFIG)
+    if (AUDIT_LOG_CONFIG.AUTO_TRIM_ENABLED) {
+      const lastRow = auditLog.getLastRow();
+      const maxRows = AUDIT_LOG_CONFIG.MAX_ENTRIES + AUDIT_LOG_CONFIG.HEADER_ROWS;
+
+      if (lastRow > maxRows) {
+        const rowsToDelete = lastRow - maxRows;
+        auditLog.deleteRows(2, rowsToDelete); // Delete from row 2 (after header)
+      }
     }
 
   } catch (e) {
@@ -562,7 +599,7 @@ function getAuditLog(limit = 100, action = null) {
 
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
+    const auditLog = ss.getSheetByName(AUDIT_LOG_CONFIG.LOG_SHEET_NAME);
 
     if (!auditLog) {
       return [];
@@ -761,7 +798,7 @@ function runSecurityAudit() {
       const email = data[i][MEMBER_COLS.EMAIL - 1];
       const isStewardFlag = data[i][MEMBER_COLS.IS_STEWARD - 1];
 
-      if (ADMIN_EMAILS.includes(email)) {
+      if (getAdminEmails().includes(email)) {
         report.results.adminCount++;
       } else if (isStewardFlag === 'Yes') {
         report.results.stewardCount++;
@@ -772,7 +809,7 @@ function runSecurityAudit() {
   }
 
   // Get recent security events
-  const auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
+  const auditLog = ss.getSheetByName(AUDIT_LOG_CONFIG.LOG_SHEET_NAME);
   if (auditLog) {
     const data = auditLog.getDataRange().getValues();
     report.results.auditLogSize = data.length - 1;
@@ -808,8 +845,8 @@ function runSecurityAudit() {
     report.recommendations.push('⚠️ High number of access denied events. Review user roles and permissions.');
   }
 
-  if (report.results.auditLogSize > 9000) {
-    report.recommendations.push('ℹ️ Audit log approaching limit (10,000 entries). Old entries will be auto-deleted.');
+  if (report.results.auditLogSize > AUDIT_LOG_CONFIG.MAX_ENTRIES * 0.9) {
+    report.recommendations.push(`ℹ️ Audit log approaching limit (${AUDIT_LOG_CONFIG.MAX_ENTRIES} entries). Old entries will be auto-deleted.`);
   }
 
   logAuditEvent('SECURITY_AUDIT', report.results, 'INFO');

@@ -22,6 +22,85 @@ const TEST_RESULTS = {
 };
 
 /**
+ * Code coverage tracking
+ * Tracks which functions are called during test execution
+ */
+const CODE_COVERAGE = {
+  enabled: true,
+  functionsExecuted: new Set(),
+  totalFunctions: 0,
+  coveredFunctions: 0,
+  coveragePercent: 0
+};
+
+/**
+ * Tracks function execution for code coverage
+ * @param {string} functionName - Name of function being executed
+ */
+function trackCoverage(functionName) {
+  if (CODE_COVERAGE.enabled) {
+    CODE_COVERAGE.functionsExecuted.add(functionName);
+  }
+}
+
+/**
+ * Gets list of all testable functions in the project
+ * @returns {Array<string>} Array of function names
+ */
+function getAllFunctionNames() {
+  const functionNames = [];
+
+  // Get all global functions (this won't work perfectly in Apps Script, but provides baseline)
+  try {
+    // This is a best-effort approach
+    // In production, you'd maintain a manual list or use static analysis
+    const knownModules = [
+      'CREATE_509_DASHBOARD', 'createConfigTab', 'createMemberDirectory', 'createGrievanceLog',
+      'sanitizeHTML', 'isAdmin', 'requireRole', 'logAuditEvent',
+      'getMemberList', 'archiveOldGrievances', 't', 'getUserLanguage'
+      // Add more as needed
+    ];
+
+    return knownModules;
+  } catch (error) {
+    Logger.log('Error getting function names: ' + error.message);
+    return [];
+  }
+}
+
+/**
+ * Calculates code coverage statistics
+ * @returns {Object} Coverage statistics
+ */
+function calculateCoverage() {
+  const allFunctions = getAllFunctionNames();
+  CODE_COVERAGE.totalFunctions = allFunctions.length;
+  CODE_COVERAGE.coveredFunctions = CODE_COVERAGE.functionsExecuted.size;
+
+  if (CODE_COVERAGE.totalFunctions > 0) {
+    CODE_COVERAGE.coveragePercent =
+      (CODE_COVERAGE.coveredFunctions / CODE_COVERAGE.totalFunctions) * 100;
+  }
+
+  return {
+    total: CODE_COVERAGE.totalFunctions,
+    covered: CODE_COVERAGE.coveredFunctions,
+    percent: CODE_COVERAGE.coveragePercent.toFixed(2),
+    uncovered: allFunctions.filter(fn => !CODE_COVERAGE.functionsExecuted.has(fn))
+  };
+}
+
+/**
+ * Resets code coverage tracking
+ */
+function resetCoverage() {
+  CODE_COVERAGE.functionsExecuted.clear();
+  CODE_COVERAGE.totalFunctions = 0;
+  CODE_COVERAGE.coveredFunctions = 0;
+  CODE_COVERAGE.coveragePercent = 0;
+}
+
+/**
  * Assertion library
  */
 const Assert = {
@@ -182,6 +261,9 @@ function runAllTests() {
   TEST_RESULTS.failed = [];
   TEST_RESULTS.skipped = [];
 
+  // Reset code coverage
+  resetCoverage();
+
   const startTime = new Date();
 
   // Discover and run all test functions
@@ -251,6 +333,9 @@ function runAllTests() {
   const endTime = new Date();
   const duration = (endTime - startTime) / 1000;
 
+  // Calculate code coverage
+  const coverage = calculateCoverage();
+
   // Generate test report
   generateTestReport(duration);
 
@@ -305,6 +390,9 @@ function generateTestReport(duration) {
   const total = TEST_RESULTS.passed.length + TEST_RESULTS.failed.length + TEST_RESULTS.skipped.length;
   const passRate = ((TEST_RESULTS.passed.length / total) * 100).toFixed(1);
 
+  // Get code coverage
+  const coverage = calculateCoverage();
+
   const summary = [
     ['Total Tests', total],
     ['✅ Passed', TEST_RESULTS.passed.length],
@@ -312,6 +400,8 @@ function generateTestReport(duration) {
     ['⏭️ Skipped', TEST_RESULTS.skipped.length],
     ['Pass Rate', `${passRate}%`],
     ['Duration', `${duration.toFixed(2)}s`],
+    ['📊 Code Coverage', `${coverage.percent}%`],
+    ['Functions Covered', `${coverage.covered}/${coverage.total}`],
     ['Timestamp', new Date().toLocaleString()]
   ];
 

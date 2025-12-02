@@ -396,6 +396,140 @@ const FEATURE_FLAGS = {
   ENABLE_ADHD_FEATURES: true
 };
 
+/* ===================== ERROR MESSAGES ===================== */
+
+/**
+ * Standardized error and notification messages
+ * Ensures consistent UX across the application
+ * @const {Object}
+ */
+const ERROR_MESSAGES = {
+  // Access and permissions
+  ACCESS_DENIED: (operation) => `⛔ Access Denied: ${operation}`,
+  INSUFFICIENT_ROLE: (required, current) => `⛔ Insufficient Permissions: ${required} role required (you have ${current})`,
+
+  // Not found errors
+  NOT_FOUND: (item) => `❌ Not Found: ${item}`,
+  SHEET_NOT_FOUND: (sheetName) => `❌ Sheet Not Found: ${sheetName}`,
+  MEMBER_NOT_FOUND: (memberId) => `❌ Member Not Found: ${memberId}`,
+  GRIEVANCE_NOT_FOUND: (grievanceId) => `❌ Grievance Not Found: ${grievanceId}`,
+
+  // Validation errors
+  INVALID_INPUT: (field) => `⚠️ Invalid Input: ${field}`,
+  INVALID_EMAIL: 'Invalid email address format',
+  INVALID_PHONE: 'Invalid phone number format',
+  INVALID_DATE: 'Invalid date format',
+  REQUIRED_FIELD: (field) => `⚠️ Required Field: ${field} cannot be empty`,
+
+  // Rate limiting
+  RATE_LIMIT: (seconds) => `⏱️ Rate Limit Exceeded: Please wait ${seconds} seconds before trying again`,
+
+  // Success messages
+  SUCCESS: (action) => `✅ Success: ${action}`,
+  CREATED: (item) => `✅ Created: ${item}`,
+  UPDATED: (item) => `✅ Updated: ${item}`,
+  DELETED: (item) => `✅ Deleted: ${item}`,
+
+  // Progress messages
+  IN_PROGRESS: (action) => `⏳ ${action}...`,
+  LOADING: (item) => `⏳ Loading ${item}...`,
+  PROCESSING: (item) => `⏳ Processing ${item}...`,
+
+  // Warnings
+  WARNING: (message) => `⚠️ Warning: ${message}`,
+  DATA_LOSS_WARNING: 'This action cannot be undone. Are you sure?',
+
+  // System errors
+  SYSTEM_ERROR: 'An unexpected error occurred. Please try again.',
+  NETWORK_ERROR: 'Network error. Please check your connection.',
+  TIMEOUT_ERROR: 'Operation timed out. Please try again.',
+
+  // Data integrity
+  DATA_INTEGRITY_ERROR: 'Data integrity check failed',
+  DUPLICATE_ENTRY: (field) => `⚠️ Duplicate Entry: ${field} already exists`
+};
+
+/* ===================== ADMIN CONFIGURATION ===================== */
+
+/**
+ * Admin email configuration
+ * Note: For security, admin emails should also be configured in the Config sheet.
+ * These are fallback defaults if Config sheet is not set up yet.
+ * @const {Object}
+ */
+const ADMIN_CONFIG = {
+  // Column position in Config sheet for admin emails
+  CONFIG_COLUMN: 19, // Column S - Admin Emails
+
+  // Fallback admin emails (used only if Config sheet not available)
+  FALLBACK_ADMINS: [
+    'admin@seiu509.org',
+    'president@seiu509.org',
+    'techsupport@seiu509.org'
+  ],
+
+  // Admin permissions
+  CAN_MODIFY_CONFIG: true,
+  CAN_VIEW_AUDIT_LOG: true,
+  CAN_RUN_SECURITY_AUDIT: true,
+  CAN_MANAGE_USERS: true,
+  CAN_DELETE_DATA: true,
+  CAN_EXPORT_DATA: true
+};
+
+/* ===================== AUDIT LOG CONFIGURATION ===================== */
+
+/**
+ * Audit log settings and constants
+ * @const {Object}
+ */
+const AUDIT_LOG_CONFIG = {
+  MAX_ENTRIES: 10000,          // Maximum number of audit log entries to keep
+  HEADER_ROWS: 1,              // Number of header rows in audit log
+  AUTO_TRIM_ENABLED: true,     // Automatically trim old entries when limit reached
+  RETENTION_DAYS: 365,         // Days to retain audit entries
+  LOG_SHEET_NAME: '🔒 Audit Log'
+};
+
+/* ===================== MAGIC NUMBER REPLACEMENTS ===================== */
+
+/**
+ * Named constants for commonly used numeric values
+ * Replaces "magic numbers" throughout the codebase for clarity
+ * @const {Object}
+ */
+const NUMERIC_CONSTANTS = {
+  // Cache TTL (Time To Live) in seconds
+  CACHE_TTL_SHORT: 300,        // 5 minutes
+  CACHE_TTL_MEDIUM: 3600,      // 1 hour
+  CACHE_TTL_LONG: 21600,       // 6 hours
+  CACHE_TTL_VERY_LONG: 86400,  // 24 hours
+
+  // Performance thresholds in milliseconds
+  SLOW_OPERATION_MS: 60000,    // 1 minute
+  VERY_SLOW_MS: 120000,        // 2 minutes
+  MAX_EXECUTION_TIME_MS: 300000, // 5 minutes (Apps Script limit: 6 minutes)
+
+  // Data limits
+  MAX_BATCH_SIZE: 1000,        // Maximum rows per batch operation
+  MAX_SEARCH_RESULTS: 100,     // Maximum search results to display at once
+  LAZY_LOAD_THRESHOLD: 5000,   // Start lazy loading after this many rows
+
+  // Time intervals in milliseconds
+  DEBOUNCE_DELAY_MS: 300,      // Debounce delay for search/input
+  TOAST_DURATION_SHORT: 2,     // Short toast notification (seconds)
+  TOAST_DURATION_MEDIUM: 5,    // Medium toast notification (seconds)
+  TOAST_DURATION_LONG: 10,     // Long toast notification (seconds)
+
+  // Archive settings
+  ARCHIVE_AFTER_YEARS: 2,      // Archive grievances closed for 2+ years
+  ARCHIVE_BATCH_SIZE: 500,     // Archive in batches of 500
+
+  // Pagination
+  ITEMS_PER_PAGE: 100,         // Items to display per page
+  MAX_PAGES_TO_SHOW: 10        // Maximum page numbers to show in pagination
+};
+
 /* ===================== VERSION INFORMATION ===================== */
 
 /**
@@ -404,11 +538,11 @@ const FEATURE_FLAGS = {
  */
 const VERSION_INFO = {
   MAJOR: 2,
-  MINOR: 0,
+  MINOR: 1,
   PATCH: 0,
-  BUILD: '20251202',
+  BUILD: '20251202-improvements',
   RELEASE_DATE: '2025-12-02',
-  CODENAME: 'Security Enhanced'
+  CODENAME: 'Security Enhanced + Code Review Improvements'
 };
 
 /**

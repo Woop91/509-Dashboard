@@ -3,139 +3,13 @@
  * All issues addressed, real data only, 20k members + 5k grievances
  ****************************************************/
 
-/* ===================== CONFIGURATION ===================== */
-const SHEETS = {
-  CONFIG: "Config",
-  MEMBER_DIR: "Member Directory",
-  GRIEVANCE_LOG: "Grievance Log",
-  DASHBOARD: "Dashboard",
-  ANALYTICS: "Analytics Data",
-  FEEDBACK: "Feedback & Development",
-  MEMBER_SATISFACTION: "Member Satisfaction",
-  INTERACTIVE_DASHBOARD: "🎯 Interactive (Your Custom View)",
-  STEWARD_WORKLOAD: "👨‍⚖️ Steward Workload",
-  TRENDS: "📈 Trends & Timeline",
-  PERFORMANCE: "🎯 Test 2: Performance",
-  LOCATION: "🗺️ Location Analytics",
-  TYPE_ANALYSIS: "📊 Type Analysis",
-  EXECUTIVE_DASHBOARD: "💼 Executive Dashboard",
-  EXECUTIVE: "💼 Executive Dashboard",  // Alias for backward compatibility
-  KPI_PERFORMANCE: "📊 KPI Performance Dashboard",
-  KPI_BOARD: "📊 KPI Performance Dashboard",  // Alias for backward compatibility
-  MEMBER_ENGAGEMENT: "👥 Member Engagement",
-  COST_IMPACT: "💰 Cost Impact",
-  QUICK_STATS: "⚡ Quick Stats",
-  ARCHIVE: "📦 Archive",
-  DIAGNOSTICS: "🔧 Diagnostics"
-};
-
-const COLORS = {
-  // Primary brand colors
-  PRIMARY_BLUE: "#7EC8E3",
-  PRIMARY_PURPLE: "#7C3AED",
-  UNION_GREEN: "#059669",
-  SOLIDARITY_RED: "#DC2626",
-
-  // Accent colors
-  ACCENT_TEAL: "#14B8A6",
-  ACCENT_PURPLE: "#7C3AED",
-  ACCENT_ORANGE: "#F97316",
-  ACCENT_YELLOW: "#FCD34D",
-
-  // Neutral colors
-  WHITE: "#FFFFFF",
-  LIGHT_GRAY: "#F3F4F6",
-  BORDER_GRAY: "#D1D5DB",
-  TEXT_GRAY: "#6B7280",
-  TEXT_DARK: "#1F2937",
-
-  // Specialty colors
-  CARD_BG: "#FAFAFA",
-  INFO_LIGHT: "#E0E7FF",
-  SUCCESS_LIGHT: "#D1FAE5",
-  HEADER_BLUE: "#3B82F6",
-  HEADER_GREEN: "#10B981"
-};
-
-// Column positions for Member Directory (1-indexed)
-const MEMBER_COLS = {
-  MEMBER_ID: 1,                    // A
-  FIRST_NAME: 2,                   // B
-  LAST_NAME: 3,                    // C
-  JOB_TITLE: 4,                    // D
-  WORK_LOCATION: 5,                // E
-  UNIT: 6,                         // F
-  OFFICE_DAYS: 7,                  // G
-  EMAIL: 8,                        // H
-  PHONE: 9,                        // I
-  IS_STEWARD: 10,                  // J
-  SUPERVISOR: 11,                  // K
-  MANAGER: 12,                     // L
-  ASSIGNED_STEWARD: 13,            // M
-  LAST_VIRTUAL_MTG: 14,            // N
-  LAST_INPERSON_MTG: 15,           // O
-  LAST_SURVEY: 16,                 // P
-  LAST_EMAIL_OPEN: 17,             // Q
-  OPEN_RATE: 18,                   // R
-  VOLUNTEER_HOURS: 19,             // S
-  INTEREST_LOCAL: 20,              // T
-  INTEREST_CHAPTER: 21,            // U
-  INTEREST_ALLIED: 22,             // V
-  TIMESTAMP: 23,                   // W
-  PREFERRED_COMM: 24,              // X
-  BEST_TIME: 25,                   // Y
-  HAS_OPEN_GRIEVANCE: 26,          // Z
-  GRIEVANCE_STATUS: 27,            // AA
-  NEXT_DEADLINE: 28,               // AB
-  RECENT_CONTACT_DATE: 29,         // AC
-  CONTACT_STEWARD: 30,             // AD
-  CONTACT_NOTES: 31                // AE
-};
-
-// Column positions for Grievance Log (1-indexed)
-const GRIEVANCE_COLS = {
-  GRIEVANCE_ID: 1,      // A
-  MEMBER_ID: 2,         // B
-  FIRST_NAME: 3,        // C
-  LAST_NAME: 4,         // D
-  STATUS: 5,            // E
-  CURRENT_STEP: 6,      // F
-  INCIDENT_DATE: 7,     // G
-  FILING_DEADLINE: 8,   // H
-  DATE_FILED: 9,        // I
-  STEP1_DUE: 10,        // J
-  STEP1_RCVD: 11,       // K
-  STEP2_APPEAL_DUE: 12, // L
-  STEP2_APPEAL_FILED: 13, // M
-  STEP2_DUE: 14,        // N
-  STEP2_RCVD: 15,       // O
-  STEP3_APPEAL_DUE: 16, // P
-  STEP3_APPEAL_FILED: 17, // Q
-  DATE_CLOSED: 18,      // R
-  DAYS_OPEN: 19,        // S
-  NEXT_ACTION_DUE: 20,  // T
-  DAYS_TO_DEADLINE: 21, // U
-  ARTICLES: 22,         // V
-  ISSUE_CATEGORY: 23,   // W
-  MEMBER_EMAIL: 24,     // X
-  UNIT: 25,             // Y
-  LOCATION: 26,         // Z
-  STEWARD: 27,          // AA
-  RESOLUTION: 28        // AB
-};
-
 /**
- * Converts a column number to letter notation (1=A, 27=AA, etc.)
+ * NOTE: This file depends on Constants.gs which must be loaded first.
+ * All configuration constants (SHEETS, COLORS, MEMBER_COLS, GRIEVANCE_COLS)
+ * are defined in Constants.gs to avoid duplication.
+ *
+ * See build.js for module loading order.
  */
-function getColumnLetter(columnNumber) {
-  let letter = '';
-  while (columnNumber > 0) {
-    const remainder = (columnNumber - 1) % 26;
-    letter = String.fromCharCode(65 + remainder) + letter;
-    columnNumber = Math.floor((columnNumber - 1) / 26);
-  }
-  return letter;
-}
 
 /* ===================== ONE-CLICK SETUP ===================== */
 function CREATE_509_DASHBOARD() {
@@ -227,72 +101,72 @@ function createConfigTab() {
     ["Job Titles", "Office Locations", "Units", "Office Days", "Yes/No",
      "Supervisor First Name", "Supervisor Last Name", "Manager First Name", "Manager Last Name", "Stewards",
      "Grievance Status", "Grievance Step", "Issue Category", "Articles Violated", "Communication Methods",
-     "Grievance Coordinator 1", "Grievance Coordinator 2", "Grievance Coordinator 3"],
+     "Grievance Coordinator 1", "Grievance Coordinator 2", "Grievance Coordinator 3", "Admin Emails"],
 
     ["Coordinator", "Boston HQ", "Unit A - Administrative", "Monday", "Yes",
      "Sarah", "Johnson", "Michael", "Chen", "Jane Smith",
      "Open", "Informal", "Discipline", "Art. 1 - Recognition", "Email",
-     "Jane Smith", "John Doe", "Mary Johnson"],
+     "Jane Smith", "John Doe", "Mary Johnson", "admin@seiu509.org"],
 
     ["Analyst", "Worcester Office", "Unit B - Technical", "Tuesday", "No",
      "Mike", "Wilson", "Lisa", "Anderson", "John Doe",
      "Pending Info", "Step I", "Workload", "Art. 2 - Union Security", "Phone",
-     "Bob Wilson", "Alice Brown", "Tom Davis"],
+     "Bob Wilson", "Alice Brown", "Tom Davis", "president@seiu509.org"],
 
     ["Case Manager", "Springfield Branch", "Unit C - Support Services", "Wednesday", "",
      "Emily", "Davis", "Robert", "Brown", "Mary Johnson",
      "Settled", "Step II", "Scheduling", "Art. 3 - Management Rights", "Text",
-     "Sarah Martinez", "Kevin Jones", "Linda Garcia"],
+     "Sarah Martinez", "Kevin Jones", "Linda Garcia", "techsupport@seiu509.org"],
 
     ["Specialist", "Cambridge Office", "Unit D - Operations", "Thursday", "",
      "Tom", "Harris", "Jennifer", "Lee", "Bob Wilson",
      "Withdrawn", "Step III", "Pay", "Art. 4 - No Discrimination", "In Person",
-     "Daniel Kim", "Rachel Adams", "Jane Smith"],
+     "Daniel Kim", "Rachel Adams", "Jane Smith", ""],
 
     ["Senior Analyst", "Lowell Center", "Unit E - Field Services", "Friday", "",
      "Amanda", "White", "David", "Martinez", "Alice Brown",
      "Closed", "Mediation", "Discrimination", "Art. 5 - Union Business", "",
-     "John Doe", "Mary Johnson", "Bob Wilson"],
+     "John Doe", "Mary Johnson", "Bob Wilson", ""],
 
     ["Team Lead", "Quincy Station", "", "Saturday", "",
      "Chris", "Taylor", "Susan", "Garcia", "Tom Davis",
      "Appealed", "Arbitration", "Safety", "Art. 23 - Grievance Procedure", "",
-     "Alice Brown", "Tom Davis", "Sarah Martinez"],
+     "Alice Brown", "Tom Davis", "Sarah Martinez", ""],
 
     ["Director", "Remote/Hybrid", "", "Sunday", "",
      "Patricia", "Moore", "James", "Wilson", "Sarah Martinez",
      "", "", "Benefits", "Art. 24 - Discipline", "",
-     "Kevin Jones", "Linda Garcia", "Daniel Kim"],
+     "Kevin Jones", "Linda Garcia", "Daniel Kim", ""],
 
     ["Manager", "Brockton Office", "", "", "",
      "Kevin", "Anderson", "Nancy", "Taylor", "Kevin Jones",
      "", "", "Training", "Art. 25 - Hours of Work", "",
-     "Rachel Adams", "", ""],
+     "Rachel Adams", "", "", ""],
 
     ["Assistant", "Lynn Location", "", "", "",
      "Michelle", "Lee", "Richard", "White", "Linda Garcia",
      "", "", "Other", "Art. 26 - Overtime", "",
-     "", "", ""],
+     "", "", "", ""],
 
     ["Associate", "Salem Office", "", "", "",
      "Brandon", "Scott", "Angela", "Moore", "Daniel Kim",
      "", "", "Harassment", "Art. 27 - Seniority", "",
-     "", "", ""],
+     "", "", "", ""],
 
     ["Technician", "", "", "", "",
      "Jessica", "Green", "Christopher", "Lee", "Rachel Adams",
      "", "", "Equipment", "Art. 28 - Layoff", "",
-     "", "", ""],
+     "", "", "", ""],
 
     ["Administrator", "", "", "", "",
      "Andrew", "Clark", "Melissa", "Wright", "",
      "", "", "Leave", "Art. 29 - Sick Leave", "",
-     "", "", ""],
+     "", "", "", ""],
 
     ["Support Staff", "", "", "", "",
      "Rachel", "Brown", "Timothy", "Davis", "",
      "", "", "Grievance Process", "Art. 30 - Vacation", "",
-     "", "", ""]
+     "", "", "", ""]
   ];
 
   config.getRange(1, 1, configData.length, configData[0].length).setValues(configData);

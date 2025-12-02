@@ -1,14 +1,23 @@
 {
   "name": "509-dashboard",
-  "version": "2.0.0",
-  "description": "SEIU Local 509 Union Grievance Tracking Dashboard - Security Enhanced",
+  "version": "2.1.0",
+  "description": "SEIU Local 509 Union Grievance Tracking Dashboard - Security Enhanced + Code Review Improvements",
   "main": "Code.gs",
   "scripts": {
     "build": "node build.js",
     "build:verify": "node build.js --verify",
     "build:clean": "node build.js --clean",
+    "build:deps": "node build.js --verify && echo '\n✅ Dependencies validated'",
     "test": "echo \"Run tests in Google Apps Script environment\"",
-    "help": "node build.js --help"
+    "docs": "jsdoc -c jsdoc.json",
+    "docs:serve": "npx http-server ./docs -p 8080",
+    "help": "node build.js --help",
+    "lint": "echo \"Linting not configured for .gs files\"",
+    "precommit": "npm run build && npm run build:verify"
+  },
+  "devDependencies": {
+    "jsdoc": "^4.0.0",
+    "http-server": "^14.1.1"
   },
   "keywords": [
     "union",
