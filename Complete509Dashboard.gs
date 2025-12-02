@@ -4443,7 +4443,7 @@ function hideAllGridlines() {
     if (!sheetName.includes('Config') &&
         !sheetName.includes('Member Directory') &&
         !sheetName.includes('Grievance Log')) {
-      sheet.hideGridlines();
+      sheet.setHiddenGridlines(true);
     }
   });
 
@@ -4607,7 +4607,7 @@ function addStewardWorkloadInstructions() {
   sheet.setRowHeight(8, 30);
 
   // Hide gridlines for cleaner look
-  sheet.hideGridlines();
+  sheet.setHiddenGridlines(true);
 
   SpreadsheetApp.getUi().alert('✅ Visual instructions added to Steward Workload!\n\n' +
     'The sheet now has a clear guide at the top showing:\n' +
@@ -4762,7 +4762,7 @@ function createUserSettingsSheet() {
   sheet.setColumnWidth(6, 300);
 
   // Hide gridlines
-  sheet.hideGridlines();
+  sheet.setHiddenGridlines(true);
 
   SpreadsheetApp.getUi().alert('✅ User Settings sheet created!\n\n' +
     'You can now customize:\n' +
