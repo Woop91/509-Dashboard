@@ -49,7 +49,7 @@
  * All issues addressed, real data only, 20k members + 5k grievances
  ****************************************************/
 
-/* ===================== CONFIGURATION ===================== */
+/* --------------------= CONFIGURATION --------------------= */
 const SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
@@ -183,7 +183,7 @@ function getColumnLetter(columnNumber) {
   return letter;
 }
 
-/* ===================== DIAGNOSTIC TOOL ===================== */
+/* --------------------= DIAGNOSTIC TOOL --------------------= */
 /**
  * RUN THIS FIRST TO DIAGNOSE SETUP ISSUES
  * Shows what sheets exist and what's missing
@@ -260,7 +260,7 @@ function DIAGNOSE_SETUP() {
   Logger.log(report);
 }
 
-/* ===================== ONE-CLICK SETUP ===================== */
+/* --------------------= ONE-CLICK SETUP --------------------= */
 function CREATE_509_DASHBOARD() {
   const ss = SpreadsheetApp.getActive();
 
@@ -338,7 +338,7 @@ function CREATE_509_DASHBOARD() {
   }
 }
 
-/* ===================== CONFIG TAB ===================== */
+/* --------------------= CONFIG TAB --------------------= */
 function createConfigTab() {
   const ss = SpreadsheetApp.getActive();
   let config = ss.getSheetByName(SHEETS.CONFIG);
@@ -421,7 +421,7 @@ function createConfigTab() {
   config.setTabColor("#2563EB");
 }
 
-/* ===================== MEMBER DIRECTORY - ALL CORRECT COLUMNS ===================== */
+/* --------------------= MEMBER DIRECTORY - ALL CORRECT COLUMNS --------------------= */
 function createMemberDirectory() {
   const ss = SpreadsheetApp.getActive();
   let memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -484,7 +484,7 @@ function createMemberDirectory() {
   memberDir.setTabColor("#059669");
 }
 
-/* ===================== GRIEVANCE LOG - ALL CORRECT COLUMNS ===================== */
+/* --------------------= GRIEVANCE LOG - ALL CORRECT COLUMNS --------------------= */
 function createGrievanceLog() {
   const ss = SpreadsheetApp.getActive();
   let grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -543,7 +543,7 @@ function createGrievanceLog() {
   grievanceLog.setTabColor("#DC2626");
 }
 
-/* ===================== DASHBOARD - ONLY REAL DATA ===================== */
+/* --------------------= DASHBOARD - ONLY REAL DATA --------------------= */
 function createMainDashboard() {
   const ss = SpreadsheetApp.getActive();
   let dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
@@ -708,7 +708,7 @@ function createMainDashboard() {
   dashboard.setTabColor("#7C3AED");
 }
 
-/* ===================== ANALYTICS DATA SHEET ===================== */
+/* --------------------= ANALYTICS DATA SHEET --------------------= */
 function createAnalyticsDataSheet() {
   const ss = SpreadsheetApp.getActive();
   let analytics = ss.getSheetByName(SHEETS.ANALYTICS);
@@ -753,7 +753,7 @@ function createAnalyticsDataSheet() {
   analytics.hideSheet();
 }
 
-/* ===================== MEMBER SATISFACTION ===================== */
+/* --------------------= MEMBER SATISFACTION --------------------= */
 function createMemberSatisfactionSheet() {
   const ss = SpreadsheetApp.getActive();
   let satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
@@ -806,7 +806,7 @@ function createMemberSatisfactionSheet() {
   satisfaction.setTabColor("#10B981");
 }
 
-/* ===================== FEEDBACK & DEVELOPMENT ===================== */
+/* --------------------= FEEDBACK & DEVELOPMENT --------------------= */
 function createFeedbackSheet() {
   const ss = SpreadsheetApp.getActive();
   let feedback = ss.getSheetByName(SHEETS.FEEDBACK);
@@ -902,7 +902,7 @@ function createFeedbackSheet() {
   feedback.setColumnWidth(14, 110); // Last Updated
 }
 
-/* ===================== STEWARD WORKLOAD ===================== */
+/* --------------------= STEWARD WORKLOAD --------------------= */
 function createStewardWorkloadSheet() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
@@ -932,7 +932,7 @@ function createStewardWorkloadSheet() {
   sheet.setTabColor(COLORS.PRIMARY_PURPLE);
 }
 
-/* ===================== TEST 1: TRENDS & TIMELINE ===================== */
+/* --------------------= TEST 1: TRENDS & TIMELINE --------------------= */
 function createTrendsSheet() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEETS.TRENDS);
@@ -963,7 +963,7 @@ function createTrendsSheet() {
   sheet.setTabColor(COLORS.UNION_GREEN);
 }
 
-/* ===================== EXECUTIVE DASHBOARD ===================== */
+/* --------------------= EXECUTIVE DASHBOARD --------------------= */
 function createExecutiveDashboard() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName("💼 Executive Dashboard");
@@ -1062,7 +1062,7 @@ function createExecutiveDashboard() {
   sheet.setColumnWidth(4, 100);
 }
 
-/* ===================== KPI PERFORMANCE DASHBOARD ===================== */
+/* --------------------= KPI PERFORMANCE DASHBOARD --------------------= */
 function createKPIPerformanceDashboard() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
@@ -1134,7 +1134,7 @@ function createKPIPerformanceDashboard() {
   sheet.setColumnWidth(12, 110); // Last Updated
 }
 
-/* ===================== TEST 3: LOCATION ANALYTICS ===================== */
+/* --------------------= TEST 3: LOCATION ANALYTICS --------------------= */
 function createLocationSheet() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEETS.LOCATION);
@@ -1164,7 +1164,7 @@ function createLocationSheet() {
   sheet.setTabColor(COLORS.ACCENT_TEAL);
 }
 
-/* ===================== TEST 4: TYPE ANALYSIS ===================== */
+/* --------------------= TEST 4: TYPE ANALYSIS --------------------= */
 function createTypeAnalysisSheet() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
@@ -1194,7 +1194,7 @@ function createTypeAnalysisSheet() {
   sheet.setTabColor(COLORS.PRIMARY_BLUE);
 }
 
-/* ===================== TEST 7: MEMBER ENGAGEMENT ===================== */
+/* --------------------= TEST 7: MEMBER ENGAGEMENT --------------------= */
 function createMemberEngagementSheet() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
@@ -1225,7 +1225,7 @@ function createMemberEngagementSheet() {
   sheet.setTabColor(COLORS.ACCENT_PURPLE);
 }
 
-/* ===================== TEST 8: COST IMPACT ===================== */
+/* --------------------= TEST 8: COST IMPACT --------------------= */
 function createCostImpactSheet() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
@@ -1255,7 +1255,7 @@ function createCostImpactSheet() {
   sheet.setTabColor(COLORS.SOLIDARITY_RED);
 }
 
-/* ===================== TEST 2: PERFORMANCE ===================== */
+/* --------------------= TEST 2: PERFORMANCE --------------------= */
 function createPerformanceSheet() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEETS.PERFORMANCE);
@@ -1307,7 +1307,7 @@ function createPerformanceSheet() {
   sheet.setTabColor(COLORS.PRIMARY_BLUE);
 }
 
-/* ===================== TEST 9: QUICK STATS ===================== */
+/* --------------------= TEST 9: QUICK STATS --------------------= */
 function createQuickStatsSheet() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEETS.QUICK_STATS);
@@ -1375,7 +1375,7 @@ function createQuickStatsSheet() {
   sheet.setColumnWidth(2, 150);
 }
 
-/* ===================== ARCHIVE ===================== */
+/* --------------------= ARCHIVE --------------------= */
 function createArchiveSheet() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEETS.ARCHIVE);
@@ -1404,7 +1404,7 @@ function createArchiveSheet() {
   sheet.setTabColor(COLORS.TEXT_GRAY);
 }
 
-/* ===================== DIAGNOSTICS ===================== */
+/* --------------------= DIAGNOSTICS --------------------= */
 function createDiagnosticsSheet() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
@@ -1433,7 +1433,7 @@ function createDiagnosticsSheet() {
   sheet.setTabColor(COLORS.SOLIDARITY_RED);
 }
 
-/* ===================== DATA VALIDATIONS ===================== */
+/* --------------------= DATA VALIDATIONS --------------------= */
 function setupDataValidations() {
   const ss = SpreadsheetApp.getActive();
   const config = ss.getSheetByName(SHEETS.CONFIG);
@@ -1485,7 +1485,7 @@ function setupDataValidations() {
   });
 }
 
-/* ===================== FORMULAS ===================== */
+/* --------------------= FORMULAS --------------------= */
 function setupFormulasAndCalculations() {
   const ss = SpreadsheetApp.getActive();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -1558,7 +1558,7 @@ function setupFormulasAndCalculations() {
   }
 }
 
-/* ===================== MENU ===================== */
+/* --------------------= MENU --------------------= */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
 
@@ -1660,7 +1660,7 @@ No fake CPU/memory metrics - everything tracks actual union activity.
   SpreadsheetApp.getUi().alert("Help", helpText, SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
-/* ===================== SEED 20,000 MEMBERS ===================== */
+/* --------------------= SEED 20,000 MEMBERS --------------------= */
 function SEED_20K_MEMBERS() {
   const ss = SpreadsheetApp.getActive();
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -1774,7 +1774,7 @@ function SEED_20K_MEMBERS() {
   SpreadsheetApp.getActive().toast("✅ 20,000 members added!", "Complete", 5);
 }
 
-/* ===================== SEED 5,000 GRIEVANCES ===================== */
+/* --------------------= SEED 5,000 GRIEVANCES --------------------= */
 function SEED_5K_GRIEVANCES() {
   const ss = SpreadsheetApp.getActive();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -2091,15 +2091,15 @@ function clearAllData() {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * UNIFIED OPERATIONS MONITOR
  * Terminal-themed comprehensive dashboard with 26+ analytics sections
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * SEIU 509 COMPREHENSIVE ACTION DASHBOARD
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Terminal-themed comprehensive operations monitor with 26+ sections covering:
  * - Executive status and deadlines
@@ -2113,7 +2113,7 @@ function clearAllData() {
  *
  * Designed for union stewards and administrators to monitor all operational
  * aspects in a single, information-dense terminal interface.
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -2249,9 +2249,9 @@ function getUnifiedDashboardData() {
   };
 }
 
-// ============================================================================
+// ------------------------------------------------------------------------====
 // CALCULATION FUNCTIONS
-// ============================================================================
+// ------------------------------------------------------------------------====
 
 function calculateActiveCases(grievances) {
   return grievances.filter(g => {
@@ -3206,14 +3206,14 @@ function getUnifiedOperationsMonitorHTML() {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * INTERACTIVE DASHBOARD
  * Member-customizable dashboard with dynamic charts and tables
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
-// ============================================================================
+// ------------------------------------------------------------------------====
 // INTERACTIVE DASHBOARD - USER-SELECTABLE METRICS & CHARTS
-// ============================================================================
+// ------------------------------------------------------------------------====
 //
 // Features:
 // - User-selectable metrics with dropdown controls
@@ -3224,7 +3224,7 @@ function getUnifiedOperationsMonitorHTML() {
 // - Warehouse-style location charts
 // - Real-time chart updates based on user selection
 //
-// ============================================================================
+// ------------------------------------------------------------------------====
 
 /**
  * Creates the Interactive Dashboard sheet with user-selectable controls
@@ -3235,9 +3235,9 @@ function createInteractiveDashboardSheet(ss) {
 
   sheet.clear();
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // HEADER SECTION
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A1:T1").merge()
     .setValue("✨ YOUR UNION DASHBOARD - Where Data Comes Alive!")
     .setFontSize(22).setFontFamily("Roboto")
@@ -3265,9 +3265,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setFontColor(COLORS.ACCENT_TEAL);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CONTROL PANEL - Row 4
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A4:T4").merge()
     .setValue("🎛️ YOUR COMMAND CENTER - Make This Dashboard Your Own!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -3317,9 +3317,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.LIGHT_GRAY)
     .setHorizontalAlignment("left");
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // METRIC CARDS SECTION - Row 10-18 (4 cards)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A10:T10").merge()
     .setValue("📈 YOUR VICTORIES AT A GLANCE - Watch These Numbers Grow!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -3376,9 +3376,9 @@ function createInteractiveDashboardSheet(ss) {
       .setValue("📈 Growing Together");
   });
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CHART AREA 1 - Row 21-42 (Selected Metric 1)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A21:J21").merge()
     .setValue("📊 YOUR STORY IN CHARTS - Watch Your Data Come to Life!")
     .setFontSize(13).setFontFamily("Roboto")
@@ -3399,9 +3399,9 @@ function createInteractiveDashboardSheet(ss) {
     .setVerticalAlignment("middle")
     .setFontColor(COLORS.TEXT_GRAY);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CHART AREA 2 - Row 21-42 (Comparison or Selected Metric 2)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("L21:T21").merge()
     .setValue("📊 DOUBLE THE INSIGHTS - See Two Stories Side by Side!")
     .setFontSize(13).setFontFamily("Roboto")
@@ -3422,9 +3422,9 @@ function createInteractiveDashboardSheet(ss) {
     .setVerticalAlignment("middle")
     .setFontColor(COLORS.TEXT_GRAY);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // PIE CHARTS SECTION - Row 45-65
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A45:T45").merge()
     .setValue("🥧 COLORFUL INSIGHTS - Your Work in Living Color!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -3459,9 +3459,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // WAREHOUSE-STYLE LOCATION CHART - Row 68-88
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A68:T68").merge()
     .setValue("🏢 UNITED ACROSS LOCATIONS - Our Collective Strength!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -3482,9 +3482,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // DATA TABLE - Top Performers/Issues - Row 91-110
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A91:T91").merge()
     .setValue("📋 THE DETAILS THAT MATTER - Celebrating Excellence!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -4410,14 +4410,14 @@ function openInteractiveDashboard() {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * ADHD ENHANCEMENTS
  * Accessibility and ADHD-friendly UI improvements
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
-// ============================================================================
+// ------------------------------------------------------------------------====
 // ADHD-FRIENDLY ENHANCEMENTS
-// ============================================================================
+// ------------------------------------------------------------------------====
 //
 // Features optimized for ADHD users:
 // - No gridlines (cleaner visual)
@@ -4427,7 +4427,7 @@ function openInteractiveDashboard() {
 // - Quick-glance data display
 // - User customization options
 //
-// ============================================================================
+// ------------------------------------------------------------------------====
 
 /**
  * Hide gridlines on all dashboard sheets for cleaner, less distracting view
@@ -4864,15 +4864,15 @@ function setupADHDDefaults() {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * GRIEVANCE WORKFLOW
  * Workflow automation and process management
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GRIEVANCE WORKFLOW - Start Grievance from Member Directory
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Allows stewards to click a member in the directory and start a grievance
  * with pre-filled member and steward information via Google Form.
@@ -4883,7 +4883,7 @@ function setupADHDDefaults() {
  * - PDF generation with fillable grievance form
  * - Email to multiple addresses or download option
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 // Configuration - Update this with your Google Form URL
@@ -5310,9 +5310,9 @@ function addStewardContactInfoToConfig() {
 }
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GOOGLE FORM SUBMISSION HANDLING
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -5492,9 +5492,9 @@ function findMemberRow(memberId) {
 }
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * PDF GENERATION AND DISTRIBUTION
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -5784,20 +5784,20 @@ function getGrievancePDFUrl(grievanceId) {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * GETTING STARTED & FAQ
  * Help system and documentation
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GETTING STARTED AND FAQ SHEETS
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Creates informational sheets with getting started guide and FAQ
  * Includes GitHub repository information
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -6250,15 +6250,15 @@ function addFAQSection(sheet, startRow, faqs) {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * SEED & NUKE UTILITIES
  * Data generation and cleanup utilities
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * SEED NUKE - Remove All Seeded Data and Exit Demo Mode
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Allows stewards to remove all test/seeded data and exit demo mode.
  * After nuking, the dashboard will be ready for production use.
@@ -6270,7 +6270,7 @@ function addFAQSection(sheet, startRow, faqs) {
  * - Shows getting started reminder
  * - Hides seed menu options after nuke
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -6764,21 +6764,21 @@ function showGettingStartedGuide() {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * COLUMN TOGGLES
  * UI controls for column visibility
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * COLUMN VISIBILITY TOGGLES
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Functions to show/hide column groups in Member Directory
  * - Grievance columns toggle
  * - Level 2 columns toggle
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**

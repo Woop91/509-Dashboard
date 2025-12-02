@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * TEST FRAMEWORK - Simple Testing Library for Google Apps Script
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * A lightweight testing framework that runs within the Apps Script environment.
  * Provides assertion methods, test runners, and reporting.
@@ -11,7 +11,7 @@
  *   2. Run via menu: 🧪 Tests > Run All Tests
  *   3. View results in test report sheet
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 // Test results storage

@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * REORGANIZED MENU SYSTEM
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Organizes dashboard menus into three categories:
  * 1. Average User - Daily operations and common tasks
@@ -16,7 +16,7 @@
 function onOpen_Reorganized() {
   const ui = SpreadsheetApp.getUi();
 
-  // ============ AVERAGE USER MENU ============
+  // ------------ AVERAGE USER MENU ------------
   ui.createMenu("👤 Dashboard")
     .addItem("🔄 Refresh All", "refreshCalculations")
     .addSeparator()
@@ -66,7 +66,7 @@ function onOpen_Reorganized() {
       .addItem("⌨️ Keyboard Shortcuts", "showKeyboardShortcuts"))
     .addToUi();
 
-  // ============ SHEET MANAGER MENU ============
+  // ------------ SHEET MANAGER MENU ------------
   ui.createMenu("📊 Sheet Manager")
     .addSubMenu(ui.createMenu("💾 Data Management")
       .addItem("💾 Backup & Recovery Manager", "showBackupManager")
@@ -139,7 +139,7 @@ function onOpen_Reorganized() {
       .addItem("📝 Create FAQ Database", "createFAQSheet"))
     .addToUi();
 
-  // ============ ADMINISTRATOR MENU ============
+  // ------------ ADMINISTRATOR MENU ------------
   ui.createMenu("⚙️ Administrator")
     .addSubMenu(ui.createMenu("🌱 Seed Functions")
       .addSubMenu(ui.createMenu("👥 Seed Members")

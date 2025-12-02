@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * INTEGRATION TESTS
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * End-to-end tests for complete workflows:
  * - Complete grievance lifecycle
@@ -9,10 +9,10 @@
  * - Member-grievance linking
  * - Data consistency across sheets
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
-/* ===================== COMPLETE WORKFLOW TESTS ===================== */
+/* --------------------= COMPLETE WORKFLOW TESTS --------------------= */
 
 /**
  * Test: Complete grievance workflow from creation to closure
@@ -269,7 +269,7 @@ function testMemberGrievanceSnapshot() {
   }
 }
 
-/* ===================== DATA CONSISTENCY TESTS ===================== */
+/* --------------------= DATA CONSISTENCY TESTS --------------------= */
 
 /**
  * Test: Config changes propagate to dropdowns
@@ -444,7 +444,7 @@ function testDashboardHandlesEmptyData() {
   }
 }
 
-/* ===================== PERFORMANCE TESTS ===================== */
+/* --------------------= PERFORMANCE TESTS --------------------= */
 
 /**
  * Test: Dashboard refresh completes in reasonable time
@@ -536,7 +536,7 @@ function testFormulaPerformanceWithData() {
   }
 }
 
-/* ===================== REGRESSION TESTS ===================== */
+/* --------------------= REGRESSION TESTS --------------------= */
 
 /**
  * Test: Grievance updates trigger Member Directory recalculation

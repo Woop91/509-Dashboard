@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * CONSTANTS - Centralized Configuration
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Single source of truth for all constants used throughout the 509 Dashboard.
  * This prevents duplication and makes configuration changes easier.
@@ -9,10 +9,10 @@
  * @module Constants
  * @version 2.0.0
  * @author SEIU Local 509 Tech Team
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
-/* ===================== SHEET NAMES ===================== */
+/* --------------------= SHEET NAMES --------------------= */
 
 /**
  * Sheet names used throughout the application
@@ -46,7 +46,7 @@ const SHEETS = {
   USER_SETTINGS: "⚙️ User Settings"
 };
 
-/* ===================== COLOR SCHEME ===================== */
+/* --------------------= COLOR SCHEME --------------------= */
 
 /**
  * Color palette for consistent theming
@@ -90,7 +90,7 @@ const COLORS = {
   STATUS_APPEALED: "#7C3AED"     // Purple
 };
 
-/* ===================== MEMBER DIRECTORY COLUMNS ===================== */
+/* --------------------= MEMBER DIRECTORY COLUMNS --------------------= */
 
 /**
  * Column positions for Member Directory (1-indexed)
@@ -131,7 +131,7 @@ const MEMBER_COLS = {
   CONTACT_NOTES: 31                // AE
 };
 
-/* ===================== GRIEVANCE LOG COLUMNS ===================== */
+/* --------------------= GRIEVANCE LOG COLUMNS --------------------= */
 
 /**
  * Column positions for Grievance Log (1-indexed)
@@ -169,7 +169,7 @@ const GRIEVANCE_COLS = {
   RESOLUTION: 28        // AB
 };
 
-/* ===================== GRIEVANCE TIMELINE CONSTANTS ===================== */
+/* --------------------= GRIEVANCE TIMELINE CONSTANTS --------------------= */
 
 /**
  * Timeline rules for grievance deadlines (in days)
@@ -187,7 +187,7 @@ const GRIEVANCE_TIMELINES = {
   WARNING_THRESHOLD_DAYS: 7      // Show warning when deadline within X days
 };
 
-/* ===================== GRIEVANCE STATUS VALUES ===================== */
+/* --------------------= GRIEVANCE STATUS VALUES --------------------= */
 
 /**
  * Valid grievance status values
@@ -237,7 +237,7 @@ const ISSUE_CATEGORIES = [
   'Other'
 ];
 
-/* ===================== CONFIG COLUMN MAPPINGS ===================== */
+/* --------------------= CONFIG COLUMN MAPPINGS --------------------= */
 
 /**
  * Column mappings for Config sheet
@@ -265,7 +265,7 @@ const CONFIG_COLS = {
   COORDINATOR_3_EMAIL: 21  // U
 };
 
-/* ===================== CACHE CONFIGURATION ===================== */
+/* --------------------= CACHE CONFIGURATION --------------------= */
 
 /**
  * Cache configuration for performance optimization
@@ -293,7 +293,7 @@ const CACHE_KEYS = {
   ANALYTICS_DATA: 'analytics_data'
 };
 
-/* ===================== ERROR CONFIGURATION ===================== */
+/* --------------------= ERROR CONFIGURATION --------------------= */
 
 /**
  * Error handling and logging configuration
@@ -329,7 +329,7 @@ const ERROR_CATEGORIES = {
   SECURITY: 'SECURITY'
 };
 
-/* ===================== UI CONFIGURATION ===================== */
+/* --------------------= UI CONFIGURATION --------------------= */
 
 /**
  * User interface configuration
@@ -344,7 +344,7 @@ const UI_CONFIG = {
   DEFAULT_THEME: 'light'      // light or dark
 };
 
-/* ===================== EMAIL CONFIGURATION ===================== */
+/* --------------------= EMAIL CONFIGURATION --------------------= */
 
 /**
  * Email configuration
@@ -360,7 +360,7 @@ const EMAIL_CONFIG = {
   MAX_ATTACHMENT_SIZE_MB: 25
 };
 
-/* ===================== PERFORMANCE CONFIGURATION ===================== */
+/* --------------------= PERFORMANCE CONFIGURATION --------------------= */
 
 /**
  * Performance and batch operation settings
@@ -374,7 +374,7 @@ const PERFORMANCE_CONFIG = {
   AUTO_FLUSH_ENABLED: true    // Auto SpreadsheetApp.flush()
 };
 
-/* ===================== FEATURE FLAGS ===================== */
+/* --------------------= FEATURE FLAGS --------------------= */
 
 /**
  * Feature flags for enabling/disabling features
@@ -396,7 +396,7 @@ const FEATURE_FLAGS = {
   ENABLE_ADHD_FEATURES: true
 };
 
-/* ===================== VERSION INFORMATION ===================== */
+/* --------------------= VERSION INFORMATION --------------------= */
 
 /**
  * Version information
@@ -427,7 +427,7 @@ function getFullVersionString() {
   return `v${getVersionString()} (${VERSION_INFO.CODENAME}) - Build ${VERSION_INFO.BUILD}`;
 }
 
-/* ===================== UTILITY FUNCTIONS ===================== */
+/* --------------------= UTILITY FUNCTIONS --------------------= */
 
 /**
  * Converts a column number to letter notation (1=A, 27=AA, etc.)

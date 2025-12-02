@@ -1,6 +1,6 @@
-// ============================================================================
+// ------------------------------------------------------------------------====
 // INTERACTIVE DASHBOARD - USER-SELECTABLE METRICS & CHARTS
-// ============================================================================
+// ------------------------------------------------------------------------====
 //
 // Features:
 // - User-selectable metrics with dropdown controls
@@ -11,7 +11,7 @@
 // - Warehouse-style location charts
 // - Real-time chart updates based on user selection
 //
-// ============================================================================
+// ------------------------------------------------------------------------====
 
 /**
  * Creates the Interactive Dashboard sheet with user-selectable controls
@@ -22,9 +22,9 @@ function createInteractiveDashboardSheet(ss) {
 
   sheet.clear();
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // HEADER SECTION
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A1:T1").merge()
     .setValue("✨ YOUR UNION DASHBOARD - Where Data Comes Alive!")
     .setFontSize(22).setFontFamily("Roboto")
@@ -52,9 +52,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setFontColor(COLORS.ACCENT_TEAL);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CONTROL PANEL - Row 4
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A4:T4").merge()
     .setValue("🎛️ YOUR COMMAND CENTER - Make This Dashboard Your Own!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -104,9 +104,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.LIGHT_GRAY)
     .setHorizontalAlignment("left");
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // METRIC CARDS SECTION - Row 10-18 (4 cards)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A10:T10").merge()
     .setValue("📈 YOUR VICTORIES AT A GLANCE - Watch These Numbers Grow!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -163,9 +163,9 @@ function createInteractiveDashboardSheet(ss) {
       .setValue("📈 Growing Together");
   });
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CHART AREA 1 - Row 21-42 (Selected Metric 1)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A21:J21").merge()
     .setValue("📊 YOUR STORY IN CHARTS - Watch Your Data Come to Life!")
     .setFontSize(13).setFontFamily("Roboto")
@@ -186,9 +186,9 @@ function createInteractiveDashboardSheet(ss) {
     .setVerticalAlignment("middle")
     .setFontColor(COLORS.TEXT_GRAY);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CHART AREA 2 - Row 21-42 (Comparison or Selected Metric 2)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("L21:T21").merge()
     .setValue("📊 DOUBLE THE INSIGHTS - See Two Stories Side by Side!")
     .setFontSize(13).setFontFamily("Roboto")
@@ -209,9 +209,9 @@ function createInteractiveDashboardSheet(ss) {
     .setVerticalAlignment("middle")
     .setFontColor(COLORS.TEXT_GRAY);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // PIE CHARTS SECTION - Row 45-65
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A45:T45").merge()
     .setValue("🥧 COLORFUL INSIGHTS - Your Work in Living Color!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -246,9 +246,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // WAREHOUSE-STYLE LOCATION CHART - Row 68-88
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A68:T68").merge()
     .setValue("🏢 UNITED ACROSS LOCATIONS - Our Collective Strength!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -269,9 +269,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // DATA TABLE - Top Performers/Issues - Row 91-110
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A91:T91").merge()
     .setValue("📋 THE DETAILS THAT MATTER - Celebrating Excellence!")
     .setFontSize(14).setFontFamily("Roboto")
