@@ -1,0 +1,22 @@
+# Git files
+.git/**
+.gitignore
+
+# Node modules
+node_modules/**
+
+# Config files
+.clasp.json
+.claspignore
+package.json
+package-lock.json
+
+# Build files
+build.js
+
+# Documentation
+README.md
+*.md
+
+# Other
+.DS_Store
