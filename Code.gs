@@ -3,7 +3,7 @@
  * All issues addressed, real data only, 20k members + 5k grievances
  ****************************************************/
 
-/* ===================== CONFIGURATION ===================== */
+/* --------------------- CONFIGURATION --------------------- */
 const SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
@@ -137,7 +137,7 @@ function getColumnLetter(columnNumber) {
   return letter;
 }
 
-/* ===================== ONE-CLICK SETUP ===================== */
+/* --------------------- ONE-CLICK SETUP --------------------- */
 function CREATE_509_DASHBOARD() {
   const ss = SpreadsheetApp.getActive();
 
@@ -213,7 +213,7 @@ function CREATE_509_DASHBOARD() {
   }
 }
 
-/* ===================== CONFIG TAB ===================== */
+/* --------------------- CONFIG TAB --------------------- */
 function createConfigTab() {
   const ss = SpreadsheetApp.getActive();
   let config = ss.getSheetByName(SHEETS.CONFIG);
@@ -310,7 +310,7 @@ function createConfigTab() {
   config.setTabColor("#2563EB");
 }
 
-/* ===================== MEMBER DIRECTORY - ALL CORRECT COLUMNS ===================== */
+/* --------------------- MEMBER DIRECTORY - ALL CORRECT COLUMNS --------------------- */
 function createMemberDirectory() {
   const ss = SpreadsheetApp.getActive();
   let memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -373,7 +373,7 @@ function createMemberDirectory() {
   memberDir.setTabColor("#059669");
 }
 
-/* ===================== GRIEVANCE LOG - ALL CORRECT COLUMNS ===================== */
+/* --------------------- GRIEVANCE LOG - ALL CORRECT COLUMNS --------------------- */
 function createGrievanceLog() {
   const ss = SpreadsheetApp.getActive();
   let grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -432,7 +432,7 @@ function createGrievanceLog() {
   grievanceLog.setTabColor("#DC2626");
 }
 
-/* ===================== DASHBOARD - ONLY REAL DATA ===================== */
+/* --------------------- DASHBOARD - ONLY REAL DATA --------------------- */
 function createMainDashboard() {
   const ss = SpreadsheetApp.getActive();
   let dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
@@ -597,7 +597,7 @@ function createMainDashboard() {
   dashboard.setTabColor("#7C3AED");
 }
 
-/* ===================== ANALYTICS DATA SHEET ===================== */
+/* --------------------- ANALYTICS DATA SHEET --------------------- */
 function createAnalyticsDataSheet() {
   const ss = SpreadsheetApp.getActive();
   let analytics = ss.getSheetByName(SHEETS.ANALYTICS);
@@ -642,7 +642,7 @@ function createAnalyticsDataSheet() {
   analytics.hideSheet();
 }
 
-/* ===================== MEMBER SATISFACTION ===================== */
+/* --------------------- MEMBER SATISFACTION --------------------- */
 function createMemberSatisfactionSheet() {
   const ss = SpreadsheetApp.getActive();
   let satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
@@ -695,7 +695,7 @@ function createMemberSatisfactionSheet() {
   satisfaction.setTabColor("#10B981");
 }
 
-/* ===================== FEEDBACK & DEVELOPMENT ===================== */
+/* --------------------- FEEDBACK & DEVELOPMENT --------------------- */
 function createFeedbackSheet() {
   const ss = SpreadsheetApp.getActive();
   let feedback = ss.getSheetByName(SHEETS.FEEDBACK);
@@ -718,7 +718,7 @@ function createFeedbackSheet() {
   feedback.setColumnWidth(1, 120); feedback.setColumnWidth(2, 110); feedback.setColumnWidth(3, 120); feedback.setColumnWidth(4, 80); feedback.setColumnWidth(5, 200); feedback.setColumnWidth(6, 300); feedback.setColumnWidth(7, 100); feedback.setColumnWidth(8, 90); feedback.setColumnWidth(9, 100); feedback.setColumnWidth(10, 110); feedback.setColumnWidth(11, 120); feedback.setColumnWidth(12, 200); feedback.setColumnWidth(13, 250); feedback.setColumnWidth(14, 110);
 }
 
-/* ===================== STEWARD WORKLOAD ===================== */
+/* --------------------- STEWARD WORKLOAD --------------------- */
 function createStewardWorkloadSheet() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
@@ -768,7 +768,7 @@ function createTypeAnalysisSheet() {
   sheet.setTabColor(COLORS.PRIMARY_BLUE);
 }
 
-/* ===================== EXECUTIVE DASHBOARD (Merged Summary + Quick Stats) ===================== */
+/* --------------------- EXECUTIVE DASHBOARD (Merged Summary + Quick Stats) --------------------- */
 function createExecutiveDashboard() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName("💼 Executive Dashboard");
@@ -867,7 +867,7 @@ function createExecutiveDashboard() {
   sheet.setColumnWidth(4, 100);
 }
 
-/* ===================== KPI PERFORMANCE DASHBOARD (Merged Performance + KPI Board) ===================== */
+/* --------------------- KPI PERFORMANCE DASHBOARD (Merged Performance + KPI Board) --------------------- */
 function createKPIPerformanceDashboard() {
   const ss = SpreadsheetApp.getActive();
   let sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
@@ -988,7 +988,7 @@ function createDiagnosticsSheet() {
   sheet.setTabColor(COLORS.SOLIDARITY_RED);
 }
 
-/* ===================== DATA VALIDATIONS ===================== */
+/* --------------------- DATA VALIDATIONS --------------------- */
 function setupDataValidations() {
   const ss = SpreadsheetApp.getActive();
   const config = ss.getSheetByName(SHEETS.CONFIG);
@@ -1076,7 +1076,7 @@ function setupDataValidations() {
   });
 }
 
-/* ===================== FORMULAS ===================== */
+/* --------------------- FORMULAS --------------------- */
 function setupFormulasAndCalculations() {
   const ss = SpreadsheetApp.getActive();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -1145,7 +1145,7 @@ function setupFormulasAndCalculations() {
   );
 }
 
-/* ===================== MENU ===================== */
+/* --------------------- MENU --------------------- */
 /**
  * Runs when spreadsheet opens - creates menu and validates configuration
  */
@@ -1155,7 +1155,7 @@ function onOpen() {
 
   const ui = SpreadsheetApp.getUi();
 
-  // ============ AVERAGE USER MENU ============
+  // ------------ AVERAGE USER MENU ------------
   ui.createMenu("👤 Dashboard")
     .addItem("🔄 Refresh All", "refreshCalculations")
     .addSeparator()
@@ -1205,7 +1205,7 @@ function onOpen() {
       .addItem("⌨️ Keyboard Shortcuts", "showKeyboardShortcuts"))
     .addToUi();
 
-  // ============ SHEET MANAGER MENU ============
+  // ------------ SHEET MANAGER MENU ------------
   ui.createMenu("📊 Sheet Manager")
     .addSubMenu(ui.createMenu("💾 Data Management")
       .addItem("💾 Backup & Recovery Manager", "showBackupManager")
@@ -1277,7 +1277,7 @@ function onOpen() {
       .addItem("👥 Steward Workload Dashboard", "showStewardWorkloadDashboard"))
     .addToUi();
 
-  // ============ ADMINISTRATOR MENU ============
+  // ------------ ADMINISTRATOR MENU ------------
   ui.createMenu("⚙️ Administrator")
     .addSubMenu(ui.createMenu("🌱 Seed Functions")
       .addSubMenu(ui.createMenu("👥 Seed Members")
@@ -1429,7 +1429,7 @@ No fake CPU/memory metrics - everything tracks actual union activity.
   SpreadsheetApp.getUi().alert("Help", helpText, SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
-/* ===================== SEED MEMBERS (WITH TOGGLES) ===================== */
+/* --------------------- SEED MEMBERS (WITH TOGGLES) --------------------- */
 function SEED_MEMBERS_TOGGLE_1() { seedMembersWithCount(5000, "Toggle 1"); }
 function SEED_MEMBERS_TOGGLE_2() { seedMembersWithCount(5000, "Toggle 2"); }
 function SEED_MEMBERS_TOGGLE_3() { seedMembersWithCount(5000, "Toggle 3"); }
@@ -1573,7 +1573,7 @@ function seedMembersWithCount(count, toggleName) {
   SpreadsheetApp.getActive().toast(`✅ ${count} members added (${toggleName})!`, "Complete", 5);
 }
 
-/* ===================== LEGACY: SEED 20,000 MEMBERS ===================== */
+/* --------------------- LEGACY: SEED 20,000 MEMBERS --------------------- */
 function SEED_20K_MEMBERS() {
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
@@ -1596,7 +1596,7 @@ function SEED_20K_MEMBERS() {
   seedMembersWithCount(5000, "Toggle 4");
 }
 
-/* ===================== SEED GRIEVANCES (WITH TOGGLES) ===================== */
+/* --------------------- SEED GRIEVANCES (WITH TOGGLES) --------------------- */
 function SEED_GRIEVANCES_TOGGLE_1() { seedGrievancesWithCount(2500, "Toggle 1"); }
 function SEED_GRIEVANCES_TOGGLE_2() { seedGrievancesWithCount(2500, "Toggle 2"); }
 
@@ -1743,7 +1743,7 @@ function seedGrievancesWithCount(count, toggleName) {
   SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added (${toggleName}) and member snapshots updated!`, "Complete", 5);
 }
 
-/* ===================== LEGACY: SEED 5,000 GRIEVANCES ===================== */
+/* --------------------- LEGACY: SEED 5,000 GRIEVANCES --------------------- */
 function SEED_5K_GRIEVANCES() {
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
