@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * SECURITY UTILITIES - Core Security Functions
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Provides essential security functions for the 509 Dashboard:
  * - HTML sanitization to prevent XSS attacks
@@ -13,10 +13,10 @@
  * @module SecurityUtils
  * @version 2.0.0
  * @author SEIU Local 509 Tech Team
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
-/* ===================== CONFIGURATION ===================== */
+/* --------------------= CONFIGURATION --------------------= */
 
 /**
  * Role definitions for access control
@@ -56,7 +56,7 @@ const RATE_LIMITS = {
   BULK_OPERATION_MIN_INTERVAL: 60000 // 1 minute between bulk operations
 };
 
-/* ===================== HTML SANITIZATION ===================== */
+/* --------------------= HTML SANITIZATION --------------------= */
 
 /**
  * Sanitizes HTML string to prevent XSS attacks
@@ -120,7 +120,7 @@ function sanitizeObject(obj) {
   return sanitized;
 }
 
-/* ===================== ACCESS CONTROL ===================== */
+/* --------------------= ACCESS CONTROL --------------------= */
 
 /**
  * Gets the current user's email address
@@ -317,7 +317,7 @@ function showAccessDeniedDialog(operationName, requiredRole) {
   );
 }
 
-/* ===================== INPUT VALIDATION ===================== */
+/* --------------------= INPUT VALIDATION --------------------= */
 
 /**
  * Validates email address format
@@ -475,7 +475,7 @@ function validateInput(input, type, maxLength = 255) {
   return result;
 }
 
-/* ===================== AUDIT LOGGING ===================== */
+/* --------------------= AUDIT LOGGING --------------------= */
 
 /**
  * Logs security and audit events
@@ -594,7 +594,7 @@ function getAuditLog(limit = 100, action = null) {
   }
 }
 
-/* ===================== RATE LIMITING ===================== */
+/* --------------------= RATE LIMITING --------------------= */
 
 /**
  * Checks if rate limit has been exceeded
@@ -655,7 +655,7 @@ function enforceRateLimit(operation, minInterval) {
   updateRateLimit(operation);
 }
 
-/* ===================== EMAIL SECURITY ===================== */
+/* --------------------= EMAIL SECURITY --------------------= */
 
 /**
  * Validates email recipient is a registered member or steward
@@ -723,7 +723,7 @@ function getAllMemberEmails() {
   }
 }
 
-/* ===================== SECURITY AUDIT ===================== */
+/* --------------------= SECURITY AUDIT --------------------= */
 
 /**
  * Runs security audit and returns report

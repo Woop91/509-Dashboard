@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * SECURITY SERVICE - RBAC and Audit Logging
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Provides role-based access control and comprehensive audit logging for
  * the 509 Dashboard to ensure security and compliance.
@@ -13,10 +13,10 @@
  * - User activity tracking
  * - Change history
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
-/* ===================== ROLE DEFINITIONS ===================== */
+/* --------------------= ROLE DEFINITIONS --------------------= */
 
 /**
  * Role definitions with permissions
@@ -63,7 +63,7 @@ const ROLES = {
   }
 };
 
-/* ===================== USER ROLE MANAGEMENT ===================== */
+/* --------------------= USER ROLE MANAGEMENT --------------------= */
 
 /**
  * Gets the role for a user
@@ -179,7 +179,7 @@ function createUserRolesSheet() {
   return sheet;
 }
 
-/* ===================== PERMISSION CHECKING ===================== */
+/* --------------------= PERMISSION CHECKING --------------------= */
 
 /**
  * Checks if current user has a specific permission
@@ -239,7 +239,7 @@ function withPermission(fn, requiredPermission, actionDescription) {
   };
 }
 
-/* ===================== AUDIT LOGGING ===================== */
+/* --------------------= AUDIT LOGGING --------------------= */
 
 /**
  * Logs an audit event
@@ -330,7 +330,7 @@ function logUserAccess() {
   });
 }
 
-/* ===================== DATA ACCESS CONTROL ===================== */
+/* --------------------= DATA ACCESS CONTROL --------------------= */
 
 /**
  * Filters member data based on user permissions
@@ -450,7 +450,7 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
   return [grievanceData[0]]; // Return only header for unknown roles
 }
 
-/* ===================== PROTECTED OPERATIONS ===================== */
+/* --------------------= PROTECTED OPERATIONS --------------------= */
 
 /**
  * Protected version of SEED_MEMBERS - requires admin permission
@@ -487,7 +487,7 @@ function protectedClearAllData() {
   return CLEAR_ALL_DATA();
 }
 
-/* ===================== ADMIN FUNCTIONS ===================== */
+/* --------------------= ADMIN FUNCTIONS --------------------= */
 
 /**
  * Shows the user management dialog (Admin only)

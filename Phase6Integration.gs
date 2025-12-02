@@ -6,7 +6,7 @@
  * menu items for accessing the new functionality.
  *
  * PHASE 6 FEATURES:
- * ================
+ * ------------====
  *
  * CRITICAL PRIORITY (Phase 1):
  * 1. Batch Grievance Recalculation (2500x speedup)
@@ -24,7 +24,7 @@
  * 9. Lazy Load Charts (faster initial load)
  *
  * FILES CREATED:
- * ==============
+ * ------------==
  * - BatchGrievanceRecalc.gs (357 lines)
  * - TransactionRollback.gs (453 lines)
  * - IncrementalBackupSystem.gs (456 lines)

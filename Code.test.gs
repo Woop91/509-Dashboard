@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * UNIT TESTS FOR CODE.GS
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Tests for core functionality:
  * - Formula calculations (deadlines, days open, etc.)
@@ -9,10 +9,10 @@
  * - Seeding functions
  * - Helper functions
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
-/* ===================== FORMULA CALCULATION TESTS ===================== */
+/* --------------------= FORMULA CALCULATION TESTS --------------------= */
 
 /**
  * Test: Filing Deadline = Incident Date + 21 days
@@ -259,7 +259,7 @@ function testMemberDirectoryFormulas() {
   }
 }
 
-/* ===================== DATA VALIDATION TESTS ===================== */
+/* --------------------= DATA VALIDATION TESTS --------------------= */
 
 /**
  * Test: Data validation setup creates proper rules
@@ -383,7 +383,7 @@ function testGrievanceValidationRules() {
   Logger.log('✅ Grievance validation rules test passed');
 }
 
-/* ===================== SEEDING FUNCTION TESTS ===================== */
+/* --------------------= SEEDING FUNCTION TESTS --------------------= */
 
 /**
  * Test: Member seeding generates valid data
@@ -600,7 +600,7 @@ function testOpenRateRange() {
   Logger.log('✅ Open rate range test passed');
 }
 
-/* ===================== EDGE CASE TESTS ===================== */
+/* --------------------= EDGE CASE TESTS --------------------= */
 
 /**
  * Test: Empty sheets don't break formulas

@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * UTILITY SERVICE - Common Helper Functions
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Centralized utility functions for:
  * - Error handling
@@ -10,10 +10,10 @@
  * - HTML escaping
  * - Logging
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
-/* ===================== ERROR HANDLING ===================== */
+/* --------------------= ERROR HANDLING --------------------= */
 
 /**
  * Standardized error handler with user feedback and logging
@@ -96,7 +96,7 @@ function withErrorHandling(fn, context) {
   };
 }
 
-/* ===================== INPUT SANITIZATION ===================== */
+/* --------------------= INPUT SANITIZATION --------------------= */
 
 /**
  * Escapes HTML special characters to prevent XSS
@@ -163,7 +163,7 @@ function sanitizePhone(phone) {
   return phone; // Return original if not 10 digits
 }
 
-/* ===================== DATA VALIDATION ===================== */
+/* --------------------= DATA VALIDATION --------------------= */
 
 /**
  * Validates that a sheet exists
@@ -234,7 +234,7 @@ function validateRequiredFields(data, requiredFields, context = 'validation') {
   }
 }
 
-/* ===================== CONFIGURATION VALIDATION ===================== */
+/* --------------------= CONFIGURATION VALIDATION --------------------= */
 
 /**
  * Validates that all required configuration is present and valid
@@ -309,7 +309,7 @@ function validateConfigurationOnOpen() {
   }
 }
 
-/* ===================== DATA HELPERS ===================== */
+/* --------------------= DATA HELPERS --------------------= */
 
 /**
  * Safely gets a sheet by name with error handling
@@ -353,7 +353,7 @@ function getSheetDataSafely(sheetName) {
   }
 }
 
-/* ===================== PERFORMANCE HELPERS ===================== */
+/* --------------------= PERFORMANCE HELPERS --------------------= */
 
 /**
  * Simple in-memory cache for expensive operations
@@ -430,7 +430,7 @@ function withCache(fn, cacheKey, ttl = 5 * 60 * 1000) {
   };
 }
 
-/* ===================== LOGGING HELPERS ===================== */
+/* --------------------= LOGGING HELPERS --------------------= */
 
 /**
  * Logs info message to diagnostics
