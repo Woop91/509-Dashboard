@@ -57,7 +57,7 @@ function syncDeadlinesToCalendar() {
     var eventsCreated = 0;
     var eventsSkipped = 0;
 
-    data.forEachfunction((row, index) {
+    data.forEach(function((row, index) {
       const grievanceId = row[0]; // Column A
       const memberName = `${row[2]} ${row[3]}`; // Columns C, D
       const status = row[4]; // Column E

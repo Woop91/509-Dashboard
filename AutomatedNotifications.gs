@@ -88,7 +88,7 @@ function checkDeadlinesAndNotify() {
   };
 
   // Categorize grievances by deadline urgency
-  data.forEachfunction((row, index) {
+  data.forEach(function((row, index) {
     const grievanceId = row[0];
     const memberFirstName = row[2];
     const memberLastName = row[3];

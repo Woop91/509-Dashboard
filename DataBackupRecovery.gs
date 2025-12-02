@@ -167,13 +167,13 @@ function cleanOldBackups() {
     }
 
     // Sort by date (oldest first)
-    backupFiles.sortfunction((a, b) { return a.created - b.created; });
+    backupFiles.sort(function((a, b) { return a.created - b.created; });
 
     const now = new Date();
     const cutoffDate = new Date(now.getTime() - (RETENTION_DAYS * 24 * 60 * 60 * 1000));
 
     // Delete old backups
-    backupFiles.forEachfunction((backup, index) {
+    backupFiles.forEach(function((backup, index) {
       // Keep if:
       // 1. Within retention period
       // 2. One of the most recent MAX_BACKUPS

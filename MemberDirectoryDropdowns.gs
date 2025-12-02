@@ -330,7 +330,7 @@ function removeEmergencyContactColumns() {
     const columnsToDelete = [];
 
     // Find columns with "Emergency Contact" in the header
-    headers.forEachfunction((header, index) {
+    headers.forEach(function((header, index) {
       const headerStr = String(header).toLowerCase();
       if (headerStr.includes('emergency contact') || headerStr.includes('emergency phone')) {
         columnsToDelete.push(index + 1); // +1 because columns are 1-indexed

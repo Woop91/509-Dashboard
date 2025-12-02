@@ -107,7 +107,7 @@ function getMemberList() {
 
     const data = memberSheet.getRange(2, 1, lastRow - 1, numCols).getValues();
 
-    return data.mapfunction((row, index) { return ({
+    return data.map(function((row, index) { return ({
       rowIndex: index + 2,
       memberId: safeArrayGet(row, MEMBER_COLS.MEMBER_ID - 1, ''),
       firstName: safeArrayGet(row, MEMBER_COLS.FIRST_NAME - 1, ''),
