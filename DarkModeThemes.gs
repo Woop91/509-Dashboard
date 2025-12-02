@@ -77,6 +77,54 @@ const THEME_CONFIG = {
       text: '#3e2723',
       border: '#bcaaa4',
       accent: '#6d4c41'
+    },
+    PURPLE: {
+      name: 'MassAbility Purple',
+      icon: '💜',
+      background: '#ffffff',
+      headerBackground: '#6B5FED',
+      headerText: '#ffffff',
+      evenRow: '#E8E5FD',
+      oddRow: '#ffffff',
+      text: '#1F2937',
+      border: '#D1D5DB',
+      accent: '#7C3AED'
+    },
+    GREEN: {
+      name: 'Union Green',
+      icon: '💚',
+      background: '#ffffff',
+      headerBackground: '#059669',
+      headerText: '#ffffff',
+      evenRow: '#D1FAE5',
+      oddRow: '#ffffff',
+      text: '#1F2937',
+      border: '#D1D5DB',
+      accent: '#10B981'
+    },
+    ORANGE: {
+      name: 'Solidarity Orange',
+      icon: '🧡',
+      background: '#ffffff',
+      headerBackground: '#F97316',
+      headerText: '#ffffff',
+      evenRow: '#FFEDD5',
+      oddRow: '#ffffff',
+      text: '#1F2937',
+      border: '#D1D5DB',
+      accent: '#FB923C'
+    },
+    TEAL: {
+      name: 'Teal Accent',
+      icon: '💙',
+      background: '#ffffff',
+      headerBackground: '#14B8A6',
+      headerText: '#ffffff',
+      evenRow: '#CCFBF1',
+      oddRow: '#ffffff',
+      text: '#1F2937',
+      border: '#D1D5DB',
+      accent: '#2DD4BF'
     }
   },
   DEFAULT_THEME: 'LIGHT',
@@ -506,6 +554,7 @@ function applyThemeToSheet(sheet, theme) {
   headerRange.setBackground(theme.headerBackground);
   headerRange.setFontColor(theme.headerText);
   headerRange.setFontWeight('bold');
+  headerRange.setFontFamily('Roboto');
 
   // Apply data row styling
   if (lastRow > 1) {
