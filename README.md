@@ -1,16 +1,37 @@
-# 509 Dashboard - Google Apps Script
+# 509 Dashboard - Google Apps Script v2.0
 
 Complete union member database and grievance tracking system for Local 509.
 
+## 🆕 What's New in v2.0
+
+### Major Updates
+- **Three-Tier Menu System**: Reorganized menus by role (User, Manager, Administrator)
+- **Toggle-Based Data Generation**: Seed members and grievances in 5k/2.5k increments
+- **Enhanced Accessibility**: ADHD-friendly controls, dark mode, focus mode, custom themes
+- **Advanced Analytics**: Predictive analytics and root cause analysis tools
+- **Performance Optimization**: Caching layer, lazy loading, optimized batch operations
+- **Security Enhancements**: Improved input validation and error handling
+- **Integration Suite**: Gmail, Google Drive, and Calendar integration
+- **Mobile Optimization**: Responsive dashboards for mobile devices
+- **Backup & Recovery**: Automated backup system with point-in-time restoration
+- **Bug Fixes**: Resolved hideGridlines TypeError and other stability improvements
+
 ## 📋 Table of Contents
-- [Overview](#overview)
-- [How It Works](#how-it-works)
-- [Features](#features)
+- [What's New in v2.0](#-whats-new-in-v20)
+- [Overview](#-overview)
+- [How It Works](#-how-it-works)
+- [Features](#-features)
 - [Setup Instructions](#setup-instructions)
-- [Architecture](#architecture)
-- [Detailed Features](#detailed-features)
-- [Usage Examples](#usage-examples)
-- [Troubleshooting](#troubleshooting)
+- [Architecture](#-architecture)
+- [Three-Tier Menu System](#-three-tier-menu-system)
+- [Detailed Features](#-detailed-features)
+- [Data Seeding](#data-seeding)
+- [Key Improvements](#key-improvements)
+- [Usage](#usage)
+- [Usage Examples](#-usage-examples)
+- [Troubleshooting](#-troubleshooting)
+- [Best Practices](#-best-practices)
+- [Data Privacy & Security](#-data-privacy--security)
 
 ## 🎯 Overview
 
@@ -57,15 +78,33 @@ Dashboard (Real-time metrics and visualizations)
 
 ## ✨ Features
 
+### Core Functionality
 ✅ **Correct Member Directory** - All 31 required columns exactly as specified
 ✅ **Complete Grievance Log** - All 28 required columns with auto-calculated deadlines
 ✅ **Real Data Only** - No fake CPU/memory metrics, all analytics from actual data
 ✅ **Config Tab** - Centralized dropdown management for consistency
 ✅ **Auto-Calculations** - Deadline tracking, days open, status snapshots
 ✅ **Data Seeding** - Generate 20k members + 5k grievances for testing/training
-✅ **Custom Menu** - Easy access to all admin functions
 ✅ **Member Satisfaction Tracking** - Survey data with calculated averages
 ✅ **Feedback System** - Track system improvements and feature requests
+
+### Advanced Features
+✅ **Three-Tier Menu System** - Role-based menu organization (User, Manager, Admin)
+✅ **Interactive Dashboard** - Real-time metrics with visual analytics
+✅ **Google Drive Integration** - Auto-create folders for grievances, file management
+✅ **Gmail Integration** - Email templates, communications log, bulk notifications
+✅ **Calendar Integration** - Sync deadlines, deadline reminders
+✅ **Accessibility Features** - ADHD-friendly controls, dark mode, focus mode, themes
+✅ **Batch Operations** - Bulk steward assignment, status updates, PDF exports
+✅ **Smart Assignment** - Auto-assign stewards based on workload and expertise
+✅ **Predictive Analytics** - Forecast trends, identify patterns
+✅ **Root Cause Analysis** - Advanced diagnostic tools for grievance patterns
+✅ **Backup & Recovery** - Automated backups with point-in-time recovery
+✅ **Performance Optimization** - Caching layer, lazy loading, batch processing
+✅ **Workflow Management** - State machine for grievance lifecycle tracking
+✅ **Knowledge Base** - FAQ system with search functionality
+✅ **Mobile Optimization** - Mobile-friendly dashboards and views
+✅ **Undo/Redo System** - Full history tracking with keyboard shortcuts
 
 ## Setup Instructions
 
@@ -75,8 +114,8 @@ Dashboard (Real-time metrics and visualizations)
 4. Copy and paste the entire contents of `Code.gs`
 5. Save the project
 6. Refresh your Google Sheet
-7. A new menu **"📊 509 Dashboard"** will appear
-8. Click **Admin > Seed 20k Members** and **Seed 5k Grievances**
+7. Three new menus will appear: **"👤 Dashboard"**, **"📊 Sheet Manager"**, and **"⚙️ Administrator"**
+8. Click **Administrator > Seed Functions > Seed Members** to generate test data
 
 ## 🏗️ Architecture
 
@@ -131,6 +170,52 @@ The system uses a **normalized sheet structure**:
 4. **Relationships**: Member Directory ← Member ID → Grievance Log
 
 This prevents data duplication and ensures consistency.
+
+## 🎯 Three-Tier Menu System
+
+The dashboard features a role-based menu organization for improved usability:
+
+### 👤 Dashboard (Average User)
+**For daily operations and common tasks**
+
+Features include:
+- **Dashboards**: Unified Operations Monitor, Main Dashboard, Interactive Dashboard
+- **Search & Lookup**: Member search with quick lookup
+- **Grievance Tools**: Start new grievances, float toggle, control panel
+- **Google Drive**: Folder setup, file uploads, grievance file management
+- **Communications**: Email composition, templates, communications log
+- **Reports**: Custom report builder, CSV exports
+- **Accessibility**: ADHD control panel, theme manager, dark mode, focus mode
+- **Help & Support**: Getting started guide, help resources, keyboard shortcuts
+
+### 📊 Sheet Manager
+**For data management, performance, and integrity**
+
+Features include:
+- **Data Management**: Backup & recovery, automated backups, backup logs
+- **Performance**: Cache management, cache warming, performance monitoring
+- **Data Integrity**: Quality dashboard, referential integrity checks, change logs
+- **Automations**: Notification settings, deadline alerts, monthly/quarterly reports
+- **Google Drive Integration**: Batch folder creation
+- **Calendar Integration**: Deadline syncing, upcoming deadline views
+- **Analysis & Insights**: Predictive analytics, root cause analysis
+- **Batch Operations**: Bulk steward assignment, status updates, PDF exports
+- **Smart Assignment**: Auto-assign stewards, workload balancing
+- **Knowledge Base**: FAQ management and search
+
+### ⚙️ Administrator
+**For system administration and configuration**
+
+Features include:
+- **Seed Functions**: Toggle-based member/grievance generation (5,000 increments), legacy 20k/5k functions
+- **System Health**: Error dashboard, health checks, error trend analysis
+- **Root Cause Analysis**: Advanced diagnostic tools
+- **Workflow Management**: Workflow visualizer, state management, batch updates
+- **Setup & Configuration**: Dashboard enhancements, analytics population, dropdown management
+- **Column Toggles & View**: Member column visibility, diagnostics hiding, gridline control
+- **History & Undo**: Undo/redo system with keyboard shortcuts
+- **Mobile & Viewing**: Mobile-optimized dashboards, paginated data viewer
+- **Testing**: Notification testing, report generation, diagnostics
 
 ## 📊 Detailed Features
 
@@ -417,14 +502,31 @@ System improvement tracking
 
 ## Data Seeding
 
-Generate realistic test data:
-- **20,000 Members**: Diverse names, locations, job titles, engagement history
-- **5,000 Grievances**: Linked to members, various statuses, realistic timelines
+Generate realistic test data using the toggle-based approach:
 
-Access via: **📊 509 Dashboard > Admin > Seed Data**
+### Member Seeding
+- **Toggle 1-4**: Generate 5,000 members each (20,000 total maximum)
+- Each batch includes diverse names, locations, job titles, engagement history
+- Access via: **⚙️ Administrator > Seed Functions > Seed Members**
+
+### Grievance Seeding
+- **Toggle 1-2**: Generate 2,500 grievances each (5,000 total maximum)
+- Linked to existing members with various statuses and realistic timelines
+- Access via: **⚙️ Administrator > Seed Functions > Seed Grievances**
+
+### Benefits of Toggle-Based Approach
+- Avoids Google Apps Script timeout limits
+- Allows incremental data generation
+- Better performance for large datasets
+- Legacy functions (Seed All 20k/5k) still available for backward compatibility
+
+### Clear Data
+- **Nuke All Seed Data**: Removes all test data while preserving structure
+- Access via: **⚙️ Administrator > Seed Functions > Nuke All Seed Data**
 
 ## Key Improvements
 
+### Core Enhancements
 ✅ **All columns match specifications exactly**
 ✅ **No fake metrics** (removed CPU usage, memory, innovation index, etc.)
 ✅ **Real analytics** based on actual Member Directory and Grievance Log data
@@ -432,14 +534,33 @@ Access via: **📊 509 Dashboard > Admin > Seed Data**
 ✅ **Linked data** between Member Directory and Grievance Log
 ✅ **Data validation** from Config tab prevents inconsistent entries
 
+### Recent Enhancements (v2.0)
+✅ **Three-tier menu system** - Role-based organization for improved usability
+✅ **Toggle-based seeding** - Incremental data generation to avoid timeouts
+✅ **Enhanced accessibility** - ADHD-friendly features, dark mode, focus mode
+✅ **Advanced analytics** - Predictive analytics and root cause analysis
+✅ **Workflow automation** - State machine for grievance lifecycle management
+✅ **Performance optimization** - Caching, lazy loading, batch operations
+✅ **Security enhancements** - Input validation, error handling, access controls
+✅ **Mobile optimization** - Responsive dashboards for mobile devices
+✅ **Integration ecosystem** - Gmail, Google Drive, Calendar integration
+✅ **Backup & recovery** - Automated backups with point-in-time restoration
+
 ## Usage
 
-1. **Add Members**: Manually or use seed function
-2. **Log Grievances**: Enter incident date, filing date, status, step
-3. **Track Progress**: Deadlines calculate automatically
-4. **Monitor Dashboard**: Real-time metrics update automatically
-5. **Maintain Config**: Add new locations, stewards, etc. in Config tab
-6. **Main Function**: Run `CREATE_509_DASHBOARD()` to set up all sheets
+### Quick Start
+1. **Setup**: Run `CREATE_509_DASHBOARD()` from Apps Script to create all sheets
+2. **Generate Test Data**: Use **Administrator > Seed Functions** to populate with sample data
+3. **Add Members**: Manually enter in Member Directory or use seed functions
+4. **Log Grievances**: Use **Dashboard > Grievance Tools > Start New Grievance**
+5. **Track Progress**: Deadlines calculate automatically
+6. **Monitor**: Access dashboards via **Dashboard > Dashboards** menu
+7. **Maintain Config**: Add locations, stewards, etc. in Config tab
+
+### Menu Navigation
+- **👤 Dashboard**: Daily operations (search, grievances, reports, accessibility)
+- **📊 Sheet Manager**: Data management, backups, automations, analytics
+- **⚙️ Administrator**: System setup, seed functions, health monitoring
 
 ## 💡 Usage Examples
 
@@ -523,14 +644,15 @@ Access via: **📊 509 Dashboard > Admin > Seed Data**
 
 **For Training or Testing**:
 
-1. Click **📊 509 Dashboard** menu
-2. Select **Admin > Seed 20k Members**
-3. Confirm the dialog
-4. Wait 2-3 minutes while it generates realistic member data
-5. Select **Admin > Seed 5k Grievances**
-6. Confirm and wait 1-2 minutes
-7. Go to **Dashboard** to see populated metrics
-8. Use **Admin > Clear All Data** when done testing
+1. Click **⚙️ Administrator** menu
+2. Select **Seed Functions > Seed Members > Seed Members - Toggle 1 (5,000)**
+3. Repeat for additional member batches if needed (Toggle 2, 3, 4 for up to 20k total)
+4. Select **Seed Functions > Seed Grievances > Seed Grievances - Toggle 1 (2,500)**
+5. Repeat for additional grievance batch if needed (Toggle 2 for up to 5k total)
+6. Go to **Dashboard > Dashboards > Main Dashboard** to see populated metrics
+7. Use **Administrator > Seed Functions > Nuke All Seed Data** when done testing
+
+**Note**: The toggle-based approach allows for incremental data generation to avoid timeouts
 
 ### Example 7: Monthly Report Generation
 
@@ -562,13 +684,14 @@ Access via: **📊 509 Dashboard > Admin > Seed Data**
 
 ## 🐛 Troubleshooting
 
-### Issue: Menu "📊 509 Dashboard" doesn't appear
+### Issue: Menus "👤 Dashboard", "📊 Sheet Manager", or "⚙️ Administrator" don't appear
 
 **Solution**:
 - Close and reopen the Google Sheet
 - Check that the script is saved: Extensions > Apps Script
-- Run `onOpen()` manually from script editor
+- Run `onOpen()` manually from script editor (or `onOpen_Reorganized()` if using reorganized menu)
 - Check permissions: Apps Script may need authorization on first run
+- Ensure Code.gs has the correct menu structure implemented
 
 ### Issue: Formulas showing #REF! errors
 
