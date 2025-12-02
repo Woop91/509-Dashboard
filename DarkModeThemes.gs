@@ -16,7 +16,7 @@
 /**
  * Theme configuration
  */
-var THEME_CONFIG = {
+THEME_CONFIG = {
   THEMES: {
     LIGHT: {
       name: 'Light',

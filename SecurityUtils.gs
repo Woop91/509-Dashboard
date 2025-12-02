@@ -22,7 +22,7 @@
  * Role definitions for access control
  * @const {Object}
  */
-var SECURITY_ROLES = {
+SECURITY_ROLES = {
   ADMIN: 'ADMIN',
   STEWARD: 'STEWARD',
   MEMBER: 'MEMBER',
@@ -33,7 +33,7 @@ var SECURITY_ROLES = {
  * Admin email addresses with full system access
  * @const {string[]}
  */
-var ADMIN_EMAILS = [
+ADMIN_EMAILS = [
   'admin@seiu509.org',
   'president@seiu509.org',
   'techsupport@seiu509.org'
@@ -43,13 +43,13 @@ var ADMIN_EMAILS = [
  * Audit log sheet name
  * @const {string}
  */
-var AUDIT_LOG_SHEET = '🔒 Audit Log';
+AUDIT_LOG_SHEET = '🔒 Audit Log';
 
 /**
  * Rate limiting configuration
  * @const {Object}
  */
-var RATE_LIMITS = {
+RATE_LIMITS = {
   EMAIL_MIN_INTERVAL: 5000,        // 5 seconds between emails
   API_CALLS_PER_MINUTE: 60,        // Max API calls per minute
   EXPORT_MIN_INTERVAL: 30000,      // 30 seconds between exports

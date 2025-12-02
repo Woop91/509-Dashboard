@@ -22,7 +22,7 @@
  * Role definitions with permissions
  * @type {Object}
  */
-var ROLES = {
+ROLES = {
   ADMIN: {
     name: 'Admin',
     permissions: [

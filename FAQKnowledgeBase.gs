@@ -17,7 +17,7 @@
 /**
  * FAQ categories
  */
-var FAQ_CATEGORIES = {
+FAQ_CATEGORIES = {
   GETTING_STARTED: 'Getting Started',
   GRIEVANCES: 'Grievance Process',
   MEMBERS: 'Member Management',

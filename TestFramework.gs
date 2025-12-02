@@ -15,7 +15,7 @@
  */
 
 // Test results storage
-var TEST_RESULTS = {
+TEST_RESULTS = {
   passed: [],
   failed: [],
   skipped: []

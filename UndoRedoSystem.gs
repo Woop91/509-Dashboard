@@ -17,7 +17,7 @@
 /**
  * Undo/Redo configuration
  */
-var UNDO_CONFIG = {
+UNDO_CONFIG = {
   MAX_HISTORY: 50,  // Maximum actions to keep
   STORAGE_KEY: 'undoRedoHistory',
   SUPPORTED_ACTIONS: [

@@ -45,7 +45,7 @@
  * Sheet names used throughout the application
  * @const {Object}
  */
-var SHEETS = {
+SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
   GRIEVANCE_LOG: "Grievance Log",
@@ -79,7 +79,7 @@ var SHEETS = {
  * Color palette for consistent theming
  * @const {Object}
  */
-var COLORS = {
+COLORS = {
   // Primary brand colors
   PRIMARY_BLUE: "#7EC8E3",
   PRIMARY_PURPLE: "#7C3AED",
@@ -124,7 +124,7 @@ var COLORS = {
  * Use getColumnLetter() to convert to letter notation
  * @const {Object}
  */
-var MEMBER_COLS = {
+MEMBER_COLS = {
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -165,7 +165,7 @@ var MEMBER_COLS = {
  * Use getColumnLetter() to convert to letter notation
  * @const {Object}
  */
-var GRIEVANCE_COLS = {
+GRIEVANCE_COLS = {
   GRIEVANCE_ID: 1,      // A
   MEMBER_ID: 2,         // B
   FIRST_NAME: 3,        // C
@@ -203,7 +203,7 @@ var GRIEVANCE_COLS = {
  * Based on standard union contract
  * @const {Object}
  */
-var GRIEVANCE_TIMELINES = {
+GRIEVANCE_TIMELINES = {
   FILING_DEADLINE_DAYS: 21,      // Days after incident to file
   STEP1_DECISION_DAYS: 30,       // Days for Step I decision
   STEP2_APPEAL_DAYS: 10,         // Days to appeal to Step II
@@ -220,7 +220,7 @@ var GRIEVANCE_TIMELINES = {
  * Valid grievance status values
  * @const {Array<string>}
  */
-var GRIEVANCE_STATUSES = [
+GRIEVANCE_STATUSES = [
   'Open',
   'Pending Info',
   'Settled',
@@ -235,7 +235,7 @@ var GRIEVANCE_STATUSES = [
  * Valid grievance step values
  * @const {Array<string>}
  */
-var GRIEVANCE_STEPS = [
+GRIEVANCE_STEPS = [
   'Informal',
   'Step I',
   'Step II',
@@ -248,7 +248,7 @@ var GRIEVANCE_STEPS = [
  * Valid issue categories
  * @const {Array<string>}
  */
-var ISSUE_CATEGORIES = [
+ISSUE_CATEGORIES = [
   'Discipline',
   'Workload',
   'Scheduling',
@@ -270,7 +270,7 @@ var ISSUE_CATEGORIES = [
  * Column mappings for Config sheet
  * @const {Object}
  */
-var CONFIG_COLS = {
+CONFIG_COLS = {
   JOB_TITLES: 1,           // A
   OFFICE_LOCATIONS: 2,     // B
   UNITS: 3,                // C
@@ -298,7 +298,7 @@ var CONFIG_COLS = {
  * Cache configuration for performance optimization
  * @const {Object}
  */
-var CACHE_CONFIG = {
+CACHE_CONFIG = {
   MEMORY_TTL: 300,              // 5 minutes (in seconds)
   PROPERTIES_TTL: 3600,         // 1 hour (in seconds)
   DOCUMENT_TTL: 21600,          // 6 hours (in seconds)
@@ -310,7 +310,7 @@ var CACHE_CONFIG = {
  * Cache keys used throughout the application
  * @const {Object}
  */
-var CACHE_KEYS = {
+CACHE_KEYS = {
   MEMBER_COUNT: 'member_count',
   GRIEVANCE_COUNT: 'grievance_count',
   STEWARD_WORKLOAD: 'steward_workload',
@@ -326,7 +326,7 @@ var CACHE_KEYS = {
  * Error handling and logging configuration
  * @const {Object}
  */
-var ERROR_CONFIG = {
+ERROR_CONFIG = {
   LOG_SHEET_NAME: 'Error_Log',
   MAX_LOG_ENTRIES: 1000,
   ERROR_LEVELS: {
@@ -345,7 +345,7 @@ var ERROR_CONFIG = {
  * Error categories for classification
  * @const {Object}
  */
-var ERROR_CATEGORIES = {
+ERROR_CATEGORIES = {
   VALIDATION: 'VALIDATION',
   PERMISSION: 'PERMISSION',
   NETWORK: 'NETWORK',
@@ -362,7 +362,7 @@ var ERROR_CATEGORIES = {
  * User interface configuration
  * @const {Object}
  */
-var UI_CONFIG = {
+UI_CONFIG = {
   TOAST_DURATION: 3,          // Seconds
   DIALOG_WIDTH: 700,          // Pixels
   DIALOG_HEIGHT: 500,         // Pixels
@@ -377,7 +377,7 @@ var UI_CONFIG = {
  * Email configuration
  * @const {Object}
  */
-var EMAIL_CONFIG = {
+EMAIL_CONFIG = {
   FROM_NAME: 'SEIU Local 509',
   REPLY_TO: 'info@seiu509.org',
   GRIEVANCE_EMAIL: 'grievances@seiu509.org',
@@ -393,7 +393,7 @@ var EMAIL_CONFIG = {
  * Performance and batch operation settings
  * @const {Object}
  */
-var PERFORMANCE_CONFIG = {
+PERFORMANCE_CONFIG = {
   BATCH_SIZE: 1000,           // Rows per batch for bulk operations
   MAX_EXECUTION_TIME: 300,    // Max execution time in seconds (5 min)
   LAZY_LOAD_THRESHOLD: 5000,  // Load data lazily after this many rows
@@ -407,7 +407,7 @@ var PERFORMANCE_CONFIG = {
  * Feature flags for enabling/disabling features
  * @const {Object}
  */
-var FEATURE_FLAGS = {
+FEATURE_FLAGS = {
   ENABLE_DARK_MODE: true,
   ENABLE_KEYBOARD_SHORTCUTS: true,
   ENABLE_MOBILE_OPTIMIZATION: true,
@@ -429,7 +429,7 @@ var FEATURE_FLAGS = {
  * Version information
  * @const {Object}
  */
-var VERSION_INFO = {
+VERSION_INFO = {
   MAJOR: 2,
   MINOR: 0,
   PATCH: 0,
@@ -579,7 +579,7 @@ function validateRequiredSheets() {
  * Role definitions for access control
  * @const {Object}
  */
-var SECURITY_ROLES = {
+SECURITY_ROLES = {
   ADMIN: 'ADMIN',
   STEWARD: 'STEWARD',
   MEMBER: 'MEMBER',
@@ -590,7 +590,7 @@ var SECURITY_ROLES = {
  * Admin email addresses with full system access
  * @const {string[]}
  */
-var ADMIN_EMAILS = [
+ADMIN_EMAILS = [
   'admin@seiu509.org',
   'president@seiu509.org',
   'techsupport@seiu509.org'
@@ -600,13 +600,13 @@ var ADMIN_EMAILS = [
  * Audit log sheet name
  * @const {string}
  */
-var AUDIT_LOG_SHEET = '🔒 Audit Log';
+AUDIT_LOG_SHEET = '🔒 Audit Log';
 
 /**
  * Rate limiting configuration
  * @const {Object}
  */
-var RATE_LIMITS = {
+RATE_LIMITS = {
   EMAIL_MIN_INTERVAL: 5000,        // 5 seconds between emails
   API_CALLS_PER_MINUTE: 60,        // Max API calls per minute
   EXPORT_MIN_INTERVAL: 30000,      // 30 seconds between exports
@@ -1421,7 +1421,7 @@ function showSecurityAudit() {
  ****************************************************/
 
 /* --------------------= CONFIGURATION --------------------= */
-var SHEETS = {
+SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
   GRIEVANCE_LOG: "Grievance Log",
@@ -1446,7 +1446,7 @@ var SHEETS = {
   DIAGNOSTICS: "🔧 Diagnostics"
 };
 
-var COLORS = {
+COLORS = {
   // Primary brand colors
   PRIMARY_BLUE: "#7EC8E3",
   PRIMARY_PURPLE: "#7C3AED",
@@ -1475,7 +1475,7 @@ var COLORS = {
 };
 
 // Column positions for Member Directory (1-indexed)
-var MEMBER_COLS = {
+MEMBER_COLS = {
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -1510,7 +1510,7 @@ var MEMBER_COLS = {
 };
 
 // Column positions for Grievance Log (1-indexed)
-var GRIEVANCE_COLS = {
+GRIEVANCE_COLS = {
   GRIEVANCE_ID: 1,      // A
   MEMBER_ID: 2,         // B
   FIRST_NAME: 3,        // C
@@ -4317,7 +4317,7 @@ function setupADHDDefaults() {
 /**
  * ADHD configuration
  */
-var ADHD_CONFIG = {
+ADHD_CONFIG = {
   FOCUS_MODE_COLORS: {
     background: '#f5f5f5',
     header: '#4a4a4a',
@@ -8876,7 +8876,7 @@ function getReportTemplates() {
 /**
  * Theme configuration
  */
-var THEME_CONFIG = {
+THEME_CONFIG = {
   THEMES: {
     LIGHT: {
       name: 'Light',
@@ -10198,7 +10198,7 @@ function verifyBackup(backupFileId) {
 /**
  * Cache configuration
  */
-var CACHE_CONFIG = {
+CACHE_CONFIG = {
   MEMORY_TTL: 300,        // 5 minutes for memory cache
   PROPERTIES_TTL: 3600,   // 1 hour for properties cache
   ENABLE_LOGGING: true
@@ -10207,7 +10207,7 @@ var CACHE_CONFIG = {
 /**
  * Cache keys
  */
-var CACHE_KEYS = {
+CACHE_KEYS = {
   ALL_GRIEVANCES: 'all_grievances',
   ALL_MEMBERS: 'all_members',
   ALL_STEWARDS: 'all_stewards',
@@ -11096,7 +11096,7 @@ function showNextGrievanceID() {
 /**
  * Pagination configuration
  */
-var PAGINATION_CONFIG = {
+PAGINATION_CONFIG = {
   DEFAULT_PAGE_SIZE: 100,
   PAGE_SIZE_OPTIONS: [25, 50, 100, 200, 500],
   MAX_CACHED_PAGES: 10,
@@ -12214,7 +12214,7 @@ function batchUpdateWithLock(updates) {
 /**
  * Error handling configuration
  */
-var ERROR_CONFIG = {
+ERROR_CONFIG = {
   LOG_SHEET_NAME: 'Error_Log',
   MAX_LOG_ENTRIES: 1000,
   ERROR_LEVELS: {
@@ -12230,7 +12230,7 @@ var ERROR_CONFIG = {
 /**
  * Error categories
  */
-var ERROR_CATEGORIES = {
+ERROR_CATEGORIES = {
   VALIDATION: 'Data Validation',
   PERMISSION: 'Permission Error',
   NETWORK: 'Network Error',
@@ -13036,7 +13036,7 @@ function createErrorTrendReport() {
 /**
  * FAQ categories
  */
-var FAQ_CATEGORIES = {
+FAQ_CATEGORIES = {
   GETTING_STARTED: 'Getting Started',
   GRIEVANCES: 'Grievance Process',
   MEMBERS: 'Member Management',
@@ -16472,7 +16472,7 @@ function showGrievanceFloatPanel() {
  * Configuration for grievance workflow and Google Form integration
  * @type {Object}
  */
-var GRIEVANCE_FORM_CONFIG = {
+GRIEVANCE_FORM_CONFIG = {
   // Replace with your actual Google Form URL
   // To find: Create a Google Form, then copy the URL from the browser
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform",
@@ -20269,7 +20269,7 @@ function quickRefresh() {
 /**
  * Keyboard shortcut registry and handler
  */
-var KEYBOARD_SHORTCUTS = {
+KEYBOARD_SHORTCUTS = {
   // Navigation
   'Ctrl+G': 'navigateToGrievanceLog',
   'Ctrl+M': 'navigateToMemberDirectory',
@@ -21531,7 +21531,7 @@ function removeEmergencyContactColumns() {
  */
 
 // Configuration for the member info Google Form
-var MEMBER_FORM_CONFIG = {
+MEMBER_FORM_CONFIG = {
   // Replace with your actual Google Form URL
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_MEMBER_FORM_ID/viewform",
 
@@ -22227,7 +22227,7 @@ function quickMemberSearch() {
 /**
  * Mobile configuration
  */
-var MOBILE_CONFIG = {
+MOBILE_CONFIG = {
   MAX_COLUMNS_MOBILE: 8,  // Show max 8 columns on mobile
   CARD_LAYOUT_ENABLED: true,
   TOUCH_TARGET_SIZE: '44px',
@@ -26344,7 +26344,7 @@ function rebuildDashboard() {
 /**
  * Assignment algorithm weights
  */
-var ASSIGNMENT_WEIGHTS = {
+ASSIGNMENT_WEIGHTS = {
   WORKLOAD: 0.4,        // 40% - Balance caseload
   LOCATION: 0.3,        // 30% - Same location preference
   EXPERTISE: 0.2,       // 20% - Issue type experience
@@ -27411,7 +27411,7 @@ function manualRollback() {
 /**
  * Undo/Redo configuration
  */
-var UNDO_CONFIG = {
+UNDO_CONFIG = {
   MAX_HISTORY: 50,  // Maximum actions to keep
   STORAGE_KEY: 'undoRedoHistory',
   SUPPORTED_ACTIONS: [
@@ -29232,7 +29232,7 @@ function getUnifiedOperationsMonitorHTML() {
 /**
  * Workflow state definitions
  */
-var WORKFLOW_STATES = {
+WORKFLOW_STATES = {
   FILED: {
     name: 'Filed',
     description: 'Grievance has been filed and is awaiting initial review',
@@ -29918,7 +29918,7 @@ function batchUpdateWorkflowState() {
  */
 
 // Test results storage
-var TEST_RESULTS = {
+TEST_RESULTS = {
   passed: [],
   failed: [],
   skipped: []
