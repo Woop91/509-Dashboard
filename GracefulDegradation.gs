@@ -68,7 +68,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
         // All functions failed - log critical error
         if (typeof logError === 'function') {
           logError(
-            new Error(`All degradation levels failed: ${errors.map(e => e.error.message).join('; ')}`),
+            new Error(`All degradation levels failed: ${errors.map(function(e) { return e.error.message; }).join('; ')}`),
             'GracefulDegradation.complete_failure',
             'CRITICAL'
           );
@@ -77,7 +77,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
         // Throw aggregate error
         throw new Error(
           `Complete failure - all degradation levels failed:\n` +
-          errors.map(e => `${e.level}: ${e.error.message}`).join('\n')
+          errors.map(function(e) { return `${e.level}: ${e.error.message}`).join('\n'; })
         );
       }
     }
@@ -93,7 +93,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
 function rebuildDashboardSafe() {
   return withGracefulDegradation(
     // Primary: Full rebuild (optimized if available)
-    () => {
+    function() {
       if (typeof rebuildDashboardOptimized === 'function') {
         return rebuildDashboardOptimized();
       } else if (typeof rebuildDashboard === 'function') {
@@ -103,12 +103,12 @@ function rebuildDashboardSafe() {
     },
 
     // Fallback: Minimal rebuild (KPIs only, no charts)
-    () => {
+    function() {
       return rebuildDashboardMinimal();
     },
 
     // Minimal: Show cached dashboard
-    () => {
+    function() {
       return showCachedDashboard();
     }
   );
@@ -151,7 +151,7 @@ function rebuildDashboardMinimal() {
     const totalGrievances = grievanceData.length - 1;
 
     // Count open grievances
-    let openGrievances = 0;
+    var openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
       if (grievanceData[i][4] === 'Open') { // Column E (index 4)
         openGrievances++;
@@ -271,7 +271,7 @@ function cacheDashboardState() {
     const totalMembers = memberData.length - 1;
     const totalGrievances = grievanceData.length - 1;
 
-    let openGrievances = 0;
+    var openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
       if (grievanceData[i][4] === 'Open') {
         openGrievances++;
@@ -303,7 +303,7 @@ function cacheDashboardState() {
 function recalcMembersSafe() {
   return withGracefulDegradation(
     // Primary: Batched recalculation
-    () => {
+    function() {
       if (typeof recalcAllMembers === 'function') {
         return recalcAllMembers();
       }
@@ -311,12 +311,12 @@ function recalcMembersSafe() {
     },
 
     // Fallback: Recalculate just grievance status fields
-    () => {
+    function() {
       return recalcMembersGrievanceFieldsOnly();
     },
 
     // Minimal: Skip recalculation, return success
-    () => {
+    function() {
       Logger.log('Skipping member recalculation (minimal mode)');
       return { mode: 'minimal', message: 'Recalculation skipped' };
     }
@@ -346,9 +346,9 @@ function recalcMembersGrievanceFieldsOnly() {
   // For each member, find their open grievances
   for (let i = 1; i < memberData.length; i++) {
     const memberID = memberData[i][0];
-    let hasOpen = 'No';
-    let status = '';
-    let deadline = '';
+    var hasOpen = 'No';
+    var status = '';
+    var deadline = '';
 
     // Find grievances for this member
     for (let j = 1; j < grievanceData.length; j++) {
@@ -383,7 +383,7 @@ function recalcMembersGrievanceFieldsOnly() {
 function seedDataSafe() {
   return withGracefulDegradation(
     // Primary: Full seed with rollback protection
-    () => {
+    function() {
       if (typeof seedAllWithRollback === 'function') {
         return seedAllWithRollback();
       }
@@ -391,7 +391,7 @@ function seedDataSafe() {
     },
 
     // Fallback: Seed without rollback protection
-    () => {
+    function() {
       Logger.log('Seeding without rollback protection...');
       if (typeof SEED_20K_MEMBERS === 'function') {
         SEED_20K_MEMBERS();
@@ -403,7 +403,7 @@ function seedDataSafe() {
     },
 
     // Minimal: Skip seeding
-    () => {
+    function() {
       return { mode: 'skipped', message: 'Seeding skipped due to errors' };
     }
   );
@@ -420,7 +420,7 @@ function REBUILD_DASHBOARD_SAFE() {
 
     const result = rebuildDashboardSafe();
 
-    let message;
+    var message;
     if (result.mode === 'minimal') {
       message = 'Dashboard rebuilt in MINIMAL mode.\n\n' +
                 'Only basic KPIs are displayed.\n\n' +

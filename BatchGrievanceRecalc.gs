@@ -36,8 +36,8 @@ function recalcAllGrievancesBatched() {
   const updates = [];
   const today = new Date();
 
-  let processed = 0;
-  let errors = 0;
+  var processed = 0;
+  var errors = 0;
 
   // Process all rows in memory
   for (let i = 0; i < data.length; i++) {
@@ -122,7 +122,7 @@ function calculateGrievanceTimeline(row, today) {
   const currentStep = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
 
   // Calculate days open
-  let daysOpen = '';
+  var daysOpen = '';
   if (dateFiled) {
     const endDate = dateClosed ? new Date(dateClosed) : today;
     const filed = new Date(dateFiled);
@@ -131,7 +131,7 @@ function calculateGrievanceTimeline(row, today) {
 
   // Determine next action due based on current step
   const deadlines = calculateGrievanceDeadlines(row);
-  let nextActionDue = '';
+  var nextActionDue = '';
 
   if (status !== 'Closed' && status !== 'Settled' && status !== 'Withdrawn') {
     switch(currentStep) {
@@ -154,7 +154,7 @@ function calculateGrievanceTimeline(row, today) {
   }
 
   // Calculate days to deadline
-  let daysToDeadline = '';
+  var daysToDeadline = '';
   if (nextActionDue && nextActionDue !== '') {
     const deadline = new Date(nextActionDue);
     daysToDeadline = Math.floor((deadline - today) / (1000 * 60 * 60 * 24));

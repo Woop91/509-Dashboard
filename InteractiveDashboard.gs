@@ -17,7 +17,7 @@
  * Creates the Interactive Dashboard sheet with user-selectable controls
  */
 function createInteractiveDashboardSheet(ss) {
-  let sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
+  var sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
   if (!sheet) sheet = ss.insertSheet(SHEETS.INTERACTIVE_DASHBOARD);
 
   sheet.clear();
@@ -123,7 +123,7 @@ function createInteractiveDashboardSheet(ss) {
     {col: "P", endCol: "T", title: "⏰ Needs Attention", color: COLORS.SOLIDARITY_RED}
   ];
 
-  cardPositions.forEach((card, idx) => {
+  cardPositions.forEachfunction((card, idx) {
     const startRow = 12;
     const endRow = 18;
 
@@ -479,31 +479,31 @@ function calculateAllMetrics(memberData, grievanceData) {
 
   // Member metrics
   metrics.totalMembers = memberData.length - 1;
-  metrics.activeMembers = memberData.slice(1).filter(row => row[10] === 'Active').length;
-  metrics.totalStewards = memberData.slice(1).filter(row => row[9] === 'Yes').length;
-  metrics.unit8Members = memberData.slice(1).filter(row => row[5] === 'Unit 8').length;
-  metrics.unit10Members = memberData.slice(1).filter(row => row[5] === 'Unit 10').length;
+  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row[10] === 'Active'; }).length;
+  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row[9] === 'Yes'; }).length;
+  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
+  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
 
   // Grievance metrics
   metrics.totalGrievances = grievanceData.length - 1;
-  metrics.activeGrievances = grievanceData.slice(1).filter(row =>
+  metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
     row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision')).length;
-  metrics.resolvedGrievances = grievanceData.slice(1).filter(row =>
+  metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
     row[4] && row[4].startsWith('Resolved')).length;
 
-  const resolvedData = grievanceData.slice(1).filter(row => row[4] && row[4].startsWith('Resolved'));
-  metrics.grievancesWon = resolvedData.filter(row => row[24] && row[24].includes('Won')).length;
-  metrics.grievancesLost = resolvedData.filter(row => row[24] && row[24].includes('Lost')).length;
+  const resolvedData = grievanceData.slice(1).filter(function(row) { return row[4] && row[4].startsWith('Resolved'); });
+  metrics.grievancesWon = resolvedData.filter(function(row) { return row[24] && row[24].includes('Won'); }).length;
+  metrics.grievancesLost = resolvedData.filter(function(row) { return row[24] && row[24].includes('Lost'); }).length;
 
   metrics.winRate = metrics.resolvedGrievances > 0
     ? ((metrics.grievancesWon / metrics.resolvedGrievances) * 100).toFixed(1)
     : 0;
 
-  metrics.overdueGrievances = grievanceData.slice(1).filter(row => row[28] === 'YES').length;
+  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) { return row[28] === 'YES'; }).length;
 
   // Additional metrics
-  metrics.inMediation = grievanceData.slice(1).filter(row => row[4] === 'In Mediation').length;
-  metrics.inArbitration = grievanceData.slice(1).filter(row => row[4] === 'In Arbitration').length;
+  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Mediation'; }).length;
+  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Arbitration'; }).length;
 
   return metrics;
 }
@@ -667,7 +667,7 @@ function createDynamicChart(sheet, metricName, chartType, metrics, startCell, wi
   try {
     // Remove existing charts in this area first
     const charts = sheet.getCharts();
-    charts.forEach(chart => {
+    charts.forEach(function(chart) {
       const anchor = chart.getContainerInfo().getAnchorRow();
       // Extract row number correctly (handles cells like "AA22" not just "A22")
       if (anchor >= parseInt(startCell.match(/\d+/)[0])) {
@@ -681,7 +681,7 @@ function createDynamicChart(sheet, metricName, chartType, metrics, startCell, wi
   if (!chartData || chartData.length === 0) return;
 
   // Create chart based on type
-  let chartBuilder;
+  var chartBuilder;
   const range = sheet.getRange(startCell);
 
   if (chartType === "Donut Chart") {
@@ -804,7 +804,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
     case "Active Grievances":
       // Count actual grievances by step from Grievance Log
       const stepCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const status = row[4]; // Status column (E)
         const step = row[5];    // Current Step column (F)
         if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
@@ -813,8 +813,8 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const stepData = Object.entries(stepCounts)
-        .filter(([step]) => step && step !== 'Current Step')
-        .map(([step, count]) => [step, count]);
+        .filterfunction(([step]) { return step && step !== 'Current Step'; })
+        .mapfunction(([step, count]) { return [step, count]; });
 
       return stepData.length > 0 ? stepData : [["No Active Grievances", 0]];
 
@@ -827,7 +827,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
     case "Grievances by Type":
       // Count grievances by type/category
       const typeCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const type = row[22]; // Issue Category column (W)
         if (type && type !== 'Issue Category') {
           typeCounts[type] = (typeCounts[type] || 0) + 1;
@@ -835,16 +835,16 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const typeData = Object.entries(typeCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sortfunction((a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(([type, count]) => [type, count]);
+        .mapfunction(([type, count]) { return [type, count]; });
 
       return typeData.length > 0 ? typeData : [["No Data", 0]];
 
     case "Grievances by Location":
       // Count grievances by location
       const locationCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const location = row[25]; // Work Location column (Z)
         if (location && location !== 'Work Location (Site)') {
           locationCounts[location] = (locationCounts[location] || 0) + 1;
@@ -852,16 +852,16 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const locationData = Object.entries(locationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sortfunction((a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(([location, count]) => [location, count]);
+        .mapfunction(([location, count]) { return [location, count]; });
 
       return locationData.length > 0 ? locationData : [["No Data", 0]];
 
     case "Grievances by Step":
       // Count all grievances by step
       const allStepCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const step = row[5]; // Current Step column (F)
         if (step && step !== 'Current Step') {
           allStepCounts[step] = (allStepCounts[step] || 0) + 1;
@@ -869,16 +869,16 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const allStepData = Object.entries(allStepCounts)
-        .map(([step, count]) => [step, count]);
+        .mapfunction(([step, count]) { return [step, count]; });
 
       return allStepData.length > 0 ? allStepData : [["No Data", 0]];
 
     case "Unit 8 Members":
-      const unit8Count = memberData.slice(1).filter(row => row[5] === 'Unit 8').length;
+      const unit8Count = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
       return [["Unit 8", unit8Count]];
 
     case "Unit 10 Members":
-      const unit10Count = memberData.slice(1).filter(row => row[5] === 'Unit 10').length;
+      const unit10Count = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
       return [["Unit 10", unit10Count]];
 
     case "Total Stewards":
@@ -898,12 +898,12 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
 function createGrievanceStatusDonut(sheet, grievanceData) {
   // Count by status
   const statusCounts = {};
-  grievanceData.slice(1).forEach(row => {
+  grievanceData.slice(1).forEach(function(row) {
     const status = row[4] || 'Unknown';
     statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
 
-  const data = Object.entries(statusCounts).map(([status, count]) => [status, count]);
+  const data = Object.entries(statusCounts).mapfunction(([status, count]) { return [status, count]; });
 
   const chart = sheet.newChart()
     .setChartType(Charts.ChartType.PIE)
@@ -929,14 +929,14 @@ function createGrievanceStatusDonut(sheet, grievanceData) {
 function createLocationPieChart(sheet, grievanceData) {
   // Count by location (from member data)
   const locationCounts = {};
-  grievanceData.slice(1).forEach(row => {
+  grievanceData.slice(1).forEach(function(row) {
     const location = row[4] || 'Unknown';  // Adjust column as needed
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
   // Get top 10
   const topLocations = Object.entries(locationCounts)
-    .sort((a, b) => b[1] - a[1])
+    .sortfunction((a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const chart = sheet.newChart()
@@ -962,13 +962,13 @@ function createLocationPieChart(sheet, grievanceData) {
 function createWarehouseLocationChart(sheet, grievanceData) {
   // This would create a horizontal bar chart similar to warehouse dashboard
   const locationCounts = {};
-  grievanceData.slice(1).forEach(row => {
+  grievanceData.slice(1).forEach(function(row) {
     const location = row[4] || 'Unknown';
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
   const topLocations = Object.entries(locationCounts)
-    .sort((a, b) => b[1] - a[1])
+    .sortfunction((a, b) { return b[1] - a[1]; })
     .slice(0, 15);
 
   const chart = sheet.newChart()
@@ -993,7 +993,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
   // Clear existing data
   sheet.getRange("A94:G110").clearContent();
 
-  let tableData = [];
+  var tableData = [];
 
   // Generate table based on selected metric
   switch (metricName) {
@@ -1005,7 +1005,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const typeResolved = {};
       const typeWon = {};
 
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const type = row[22]; // Issue Category column (W)
         const status = row[4]; // Status column (E)
 
@@ -1024,9 +1024,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(typeCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sortfunction((a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([type, total], index) => {
+        .mapfunction(([type, total], index) {
           const active = typeActive[type] || 0;
           const resolved = typeResolved[type] || 0;
           const won = typeWon[type] || 0;
@@ -1044,7 +1044,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const locationResolved = {};
       const locationWon = {};
 
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const location = row[25]; // Work Location column (Z)
         const status = row[4]; // Status column (E)
 
@@ -1063,9 +1063,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(locationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sortfunction((a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([location, total], index) => {
+        .mapfunction(([location, total], index) {
           const active = locationActive[location] || 0;
           const resolved = locationResolved[location] || 0;
           const won = locationWon[location] || 0;
@@ -1083,7 +1083,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const stewardResolved = {};
       const stewardWon = {};
 
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const steward = row[26]; // Assigned Steward column (AA)
         const status = row[4]; // Status column (E)
 
@@ -1102,9 +1102,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(stewardCounts)
-        .sort((a, b) => (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0))
+        .sortfunction((a, b) { return (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0); })
         .slice(0, 15)
-        .map(([steward, total], index) => {
+        .mapfunction(([steward, total], index) {
           const active = stewardActive[steward] || 0;
           const resolved = stewardResolved[steward] || 0;
           const won = stewardWon[steward] || 0;
@@ -1118,7 +1118,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
     default:
       // For other metrics, show top locations by default
       const defaultLocationCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const location = row[25];
         if (location && location !== 'Work Location (Site)') {
           defaultLocationCounts[location] = (defaultLocationCounts[location] || 0) + 1;
@@ -1126,9 +1126,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(defaultLocationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sortfunction((a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([location, count], index) => {
+        .mapfunction(([location, count], index) {
           return [index + 1, location, count, "-", "-", "-", "📊 Data"];
         });
       break;
@@ -1159,7 +1159,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
  * Apply theme to dashboard
  */
 function applyDashboardTheme(sheet, themeName) {
-  let primaryColor, accentColor;
+  var primaryColor, accentColor;
 
   switch (themeName) {
     case "Union Blue":

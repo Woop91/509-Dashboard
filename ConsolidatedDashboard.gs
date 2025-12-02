@@ -45,7 +45,7 @@
  * Sheet names used throughout the application
  * @const {Object}
  */
-const SHEETS = {
+var SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
   GRIEVANCE_LOG: "Grievance Log",
@@ -79,7 +79,7 @@ const SHEETS = {
  * Color palette for consistent theming
  * @const {Object}
  */
-const COLORS = {
+var COLORS = {
   // Primary brand colors
   PRIMARY_BLUE: "#7EC8E3",
   PRIMARY_PURPLE: "#7C3AED",
@@ -124,7 +124,7 @@ const COLORS = {
  * Use getColumnLetter() to convert to letter notation
  * @const {Object}
  */
-const MEMBER_COLS = {
+var MEMBER_COLS = {
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -165,7 +165,7 @@ const MEMBER_COLS = {
  * Use getColumnLetter() to convert to letter notation
  * @const {Object}
  */
-const GRIEVANCE_COLS = {
+var GRIEVANCE_COLS = {
   GRIEVANCE_ID: 1,      // A
   MEMBER_ID: 2,         // B
   FIRST_NAME: 3,        // C
@@ -203,7 +203,7 @@ const GRIEVANCE_COLS = {
  * Based on standard union contract
  * @const {Object}
  */
-const GRIEVANCE_TIMELINES = {
+var GRIEVANCE_TIMELINES = {
   FILING_DEADLINE_DAYS: 21,      // Days after incident to file
   STEP1_DECISION_DAYS: 30,       // Days for Step I decision
   STEP2_APPEAL_DAYS: 10,         // Days to appeal to Step II
@@ -220,7 +220,7 @@ const GRIEVANCE_TIMELINES = {
  * Valid grievance status values
  * @const {Array<string>}
  */
-const GRIEVANCE_STATUSES = [
+var GRIEVANCE_STATUSES = [
   'Open',
   'Pending Info',
   'Settled',
@@ -235,7 +235,7 @@ const GRIEVANCE_STATUSES = [
  * Valid grievance step values
  * @const {Array<string>}
  */
-const GRIEVANCE_STEPS = [
+var GRIEVANCE_STEPS = [
   'Informal',
   'Step I',
   'Step II',
@@ -248,7 +248,7 @@ const GRIEVANCE_STEPS = [
  * Valid issue categories
  * @const {Array<string>}
  */
-const ISSUE_CATEGORIES = [
+var ISSUE_CATEGORIES = [
   'Discipline',
   'Workload',
   'Scheduling',
@@ -270,7 +270,7 @@ const ISSUE_CATEGORIES = [
  * Column mappings for Config sheet
  * @const {Object}
  */
-const CONFIG_COLS = {
+var CONFIG_COLS = {
   JOB_TITLES: 1,           // A
   OFFICE_LOCATIONS: 2,     // B
   UNITS: 3,                // C
@@ -298,7 +298,7 @@ const CONFIG_COLS = {
  * Cache configuration for performance optimization
  * @const {Object}
  */
-const CACHE_CONFIG = {
+var CACHE_CONFIG = {
   MEMORY_TTL: 300,              // 5 minutes (in seconds)
   PROPERTIES_TTL: 3600,         // 1 hour (in seconds)
   DOCUMENT_TTL: 21600,          // 6 hours (in seconds)
@@ -310,7 +310,7 @@ const CACHE_CONFIG = {
  * Cache keys used throughout the application
  * @const {Object}
  */
-const CACHE_KEYS = {
+var CACHE_KEYS = {
   MEMBER_COUNT: 'member_count',
   GRIEVANCE_COUNT: 'grievance_count',
   STEWARD_WORKLOAD: 'steward_workload',
@@ -326,7 +326,7 @@ const CACHE_KEYS = {
  * Error handling and logging configuration
  * @const {Object}
  */
-const ERROR_CONFIG = {
+var ERROR_CONFIG = {
   LOG_SHEET_NAME: 'Error_Log',
   MAX_LOG_ENTRIES: 1000,
   ERROR_LEVELS: {
@@ -345,7 +345,7 @@ const ERROR_CONFIG = {
  * Error categories for classification
  * @const {Object}
  */
-const ERROR_CATEGORIES = {
+var ERROR_CATEGORIES = {
   VALIDATION: 'VALIDATION',
   PERMISSION: 'PERMISSION',
   NETWORK: 'NETWORK',
@@ -362,7 +362,7 @@ const ERROR_CATEGORIES = {
  * User interface configuration
  * @const {Object}
  */
-const UI_CONFIG = {
+var UI_CONFIG = {
   TOAST_DURATION: 3,          // Seconds
   DIALOG_WIDTH: 700,          // Pixels
   DIALOG_HEIGHT: 500,         // Pixels
@@ -377,7 +377,7 @@ const UI_CONFIG = {
  * Email configuration
  * @const {Object}
  */
-const EMAIL_CONFIG = {
+var EMAIL_CONFIG = {
   FROM_NAME: 'SEIU Local 509',
   REPLY_TO: 'info@seiu509.org',
   GRIEVANCE_EMAIL: 'grievances@seiu509.org',
@@ -393,7 +393,7 @@ const EMAIL_CONFIG = {
  * Performance and batch operation settings
  * @const {Object}
  */
-const PERFORMANCE_CONFIG = {
+var PERFORMANCE_CONFIG = {
   BATCH_SIZE: 1000,           // Rows per batch for bulk operations
   MAX_EXECUTION_TIME: 300,    // Max execution time in seconds (5 min)
   LAZY_LOAD_THRESHOLD: 5000,  // Load data lazily after this many rows
@@ -407,7 +407,7 @@ const PERFORMANCE_CONFIG = {
  * Feature flags for enabling/disabling features
  * @const {Object}
  */
-const FEATURE_FLAGS = {
+var FEATURE_FLAGS = {
   ENABLE_DARK_MODE: true,
   ENABLE_KEYBOARD_SHORTCUTS: true,
   ENABLE_MOBILE_OPTIMIZATION: true,
@@ -429,7 +429,7 @@ const FEATURE_FLAGS = {
  * Version information
  * @const {Object}
  */
-const VERSION_INFO = {
+var VERSION_INFO = {
   MAJOR: 2,
   MINOR: 0,
   PATCH: 0,
@@ -466,7 +466,7 @@ function getFullVersionString() {
  * getColumnLetter(27) // Returns "AA"
  */
 function getColumnLetter(columnNumber) {
-  let letter = '';
+  var letter = '';
   while (columnNumber > 0) {
     const remainder = (columnNumber - 1) % 26;
     letter = String.fromCharCode(65 + remainder) + letter;
@@ -485,7 +485,7 @@ function getColumnLetter(columnNumber) {
  * getColumnNumber('AA') // Returns 27
  */
 function getColumnNumber(columnLetter) {
-  let number = 0;
+  var number = 0;
   for (let i = 0; i < columnLetter.length; i++) {
     number = number * 26 + (columnLetter.charCodeAt(i) - 64);
   }
@@ -536,7 +536,7 @@ function validateRequiredSheets() {
   ];
 
   const missing = [];
-  requiredSheets.forEach(sheetName => {
+  requiredSheets.forEach(function(sheetName) {
     if (!ss.getSheetByName(sheetName)) {
       missing.push(sheetName);
     }
@@ -579,7 +579,7 @@ function validateRequiredSheets() {
  * Role definitions for access control
  * @const {Object}
  */
-const SECURITY_ROLES = {
+var SECURITY_ROLES = {
   ADMIN: 'ADMIN',
   STEWARD: 'STEWARD',
   MEMBER: 'MEMBER',
@@ -590,7 +590,7 @@ const SECURITY_ROLES = {
  * Admin email addresses with full system access
  * @const {string[]}
  */
-const ADMIN_EMAILS = [
+var ADMIN_EMAILS = [
   'admin@seiu509.org',
   'president@seiu509.org',
   'techsupport@seiu509.org'
@@ -600,13 +600,13 @@ const ADMIN_EMAILS = [
  * Audit log sheet name
  * @const {string}
  */
-const AUDIT_LOG_SHEET = '🔒 Audit Log';
+var AUDIT_LOG_SHEET = '🔒 Audit Log';
 
 /**
  * Rate limiting configuration
  * @const {Object}
  */
-const RATE_LIMITS = {
+var RATE_LIMITS = {
   EMAIL_MIN_INTERVAL: 5000,        // 5 seconds between emails
   API_CALLS_PER_MINUTE: 60,        // Max API calls per minute
   EXPORT_MIN_INTERVAL: 30000,      // 30 seconds between exports
@@ -650,7 +650,7 @@ function sanitizeArray(arr) {
   if (!Array.isArray(arr)) {
     return [];
   }
-  return arr.map(item => sanitizeHTML(item));
+  return arr.map(function(item) { return sanitizeHTML(item); });
 }
 
 /**
@@ -1047,7 +1047,7 @@ function validateInput(input, type, maxLength = 255) {
 function logAuditEvent(action, details = {}, level = 'INFO') {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
+    var auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
 
     // Create audit log sheet if it doesn't exist
     if (!auditLog) {
@@ -1129,12 +1129,12 @@ function getAuditLog(limit = 100, action = null) {
     const headers = data[0];
     const rows = data.slice(1).reverse(); // Most recent first
 
-    let filtered = rows;
+    var filtered = rows;
     if (action) {
-      filtered = rows.filter(row => row[3] === action);
+      filtered = rows.filter(function(row) { return row[3] === action; });
     }
 
-    const result = filtered.slice(0, limit).map(row => ({
+    const result = filtered.slice(0, limit).map(function(row) { return ({
       timestamp: row[0],
       userEmail: row[1],
       userRole: row[2],
@@ -1382,7 +1382,7 @@ function showSecurityAudit() {
     const report = runSecurityAudit();
     const ui = SpreadsheetApp.getUi();
 
-    let message = '🔒 SECURITY AUDIT REPORT\n\n';
+    var message = '🔒 SECURITY AUDIT REPORT\n\n';
     message += `Total Users: ${report.results.totalUsers}\n`;
     message += `Admins: ${report.results.adminCount}\n`;
     message += `Stewards: ${report.results.stewardCount}\n`;
@@ -1394,7 +1394,7 @@ function showSecurityAudit() {
 
     if (report.recommendations.length > 0) {
       message += 'RECOMMENDATIONS:\n';
-      report.recommendations.forEach(rec => {
+      report.recommendations.forEach(function(rec) {
         message += `${rec}\n`;
       });
     } else {
@@ -1421,7 +1421,7 @@ function showSecurityAudit() {
  ****************************************************/
 
 /* --------------------= CONFIGURATION --------------------= */
-const SHEETS = {
+var SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
   GRIEVANCE_LOG: "Grievance Log",
@@ -1446,7 +1446,7 @@ const SHEETS = {
   DIAGNOSTICS: "🔧 Diagnostics"
 };
 
-const COLORS = {
+var COLORS = {
   // Primary brand colors
   PRIMARY_BLUE: "#7EC8E3",
   PRIMARY_PURPLE: "#7C3AED",
@@ -1475,7 +1475,7 @@ const COLORS = {
 };
 
 // Column positions for Member Directory (1-indexed)
-const MEMBER_COLS = {
+var MEMBER_COLS = {
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -1510,7 +1510,7 @@ const MEMBER_COLS = {
 };
 
 // Column positions for Grievance Log (1-indexed)
-const GRIEVANCE_COLS = {
+var GRIEVANCE_COLS = {
   GRIEVANCE_ID: 1,      // A
   MEMBER_ID: 2,         // B
   FIRST_NAME: 3,        // C
@@ -1545,7 +1545,7 @@ const GRIEVANCE_COLS = {
  * Converts a column number to letter notation (1=A, 27=AA, etc.)
  */
 function getColumnLetter(columnNumber) {
-  let letter = '';
+  var letter = '';
   while (columnNumber > 0) {
     const remainder = (columnNumber - 1) % 26;
     letter = String.fromCharCode(65 + remainder) + letter;
@@ -1633,7 +1633,7 @@ function CREATE_509_DASHBOARD() {
 /* --------------------= CONFIG TAB --------------------= */
 function createConfigTab() {
   const ss = SpreadsheetApp.getActive();
-  let config = ss.getSheetByName(SHEETS.CONFIG);
+  var config = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!config) {
     config = ss.insertSheet(SHEETS.CONFIG);
@@ -1730,7 +1730,7 @@ function createConfigTab() {
 /* --------------------= MEMBER DIRECTORY - ALL CORRECT COLUMNS --------------------= */
 function createMemberDirectory() {
   const ss = SpreadsheetApp.getActive();
-  let memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  var memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
   // Delete existing sheet to remove any column groups or formatting issues
   if (memberDir) {
@@ -1793,7 +1793,7 @@ function createMemberDirectory() {
 /* --------------------= GRIEVANCE LOG - ALL CORRECT COLUMNS --------------------= */
 function createGrievanceLog() {
   const ss = SpreadsheetApp.getActive();
-  let grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  var grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
   if (!grievanceLog) {
     grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
@@ -1852,7 +1852,7 @@ function createGrievanceLog() {
 /* --------------------= DASHBOARD - ONLY REAL DATA --------------------= */
 function createMainDashboard() {
   const ss = SpreadsheetApp.getActive();
-  let dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+  var dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
 
   if (!dashboard) {
     dashboard = ss.insertSheet(SHEETS.DASHBOARD);
@@ -1894,8 +1894,8 @@ function createMainDashboard() {
     ["YTD Vol. Hours", `=SUM('Member Directory'!${volunteerHoursCol}:${volunteerHoursCol})`, "🙋"]
   ];
 
-  let col = 1;
-  memberMetrics.forEach(m => {
+  var col = 1;
+  memberMetrics.forEach(function(m) {
     dashboard.getRange(6, col, 1, 3).merge()
       .setValue(m[2] + " " + m[0])
       .setFontWeight("bold")
@@ -1931,7 +1931,7 @@ function createMainDashboard() {
   ];
 
   col = 1;
-  grievanceMetrics.forEach(m => {
+  grievanceMetrics.forEach(function(m) {
     dashboard.getRange(11, col, 1, 3).merge()
       .setValue(m[2] + " " + m[0])
       .setFontWeight("bold")
@@ -1967,7 +1967,7 @@ function createMainDashboard() {
   ];
 
   col = 1;
-  engagementMetrics.forEach(m => {
+  engagementMetrics.forEach(function(m) {
     dashboard.getRange(16, col, 1, 3).merge()
       .setValue(m[0])
       .setFontWeight("bold")
@@ -2017,7 +2017,7 @@ function createMainDashboard() {
 /* --------------------= ANALYTICS DATA SHEET --------------------= */
 function createAnalyticsDataSheet() {
   const ss = SpreadsheetApp.getActive();
-  let analytics = ss.getSheetByName(SHEETS.ANALYTICS);
+  var analytics = ss.getSheetByName(SHEETS.ANALYTICS);
 
   if (!analytics) {
     analytics = ss.insertSheet(SHEETS.ANALYTICS);
@@ -2062,7 +2062,7 @@ function createAnalyticsDataSheet() {
 /* --------------------= MEMBER SATISFACTION --------------------= */
 function createMemberSatisfactionSheet() {
   const ss = SpreadsheetApp.getActive();
-  let satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
+  var satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
 
   if (!satisfaction) {
     satisfaction = ss.insertSheet(SHEETS.MEMBER_SATISFACTION);
@@ -2115,7 +2115,7 @@ function createMemberSatisfactionSheet() {
 /* --------------------= FEEDBACK & DEVELOPMENT --------------------= */
 function createFeedbackSheet() {
   const ss = SpreadsheetApp.getActive();
-  let feedback = ss.getSheetByName(SHEETS.FEEDBACK);
+  var feedback = ss.getSheetByName(SHEETS.FEEDBACK);
   if (!feedback) feedback = ss.insertSheet(SHEETS.FEEDBACK);
   feedback.clear();
   feedback.getRange("A1:N1").merge().setValue("💡 FEEDBACK, FEATURES & DEVELOPMENT ROADMAP").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
@@ -2138,7 +2138,7 @@ function createFeedbackSheet() {
 /* --------------------= STEWARD WORKLOAD --------------------= */
 function createStewardWorkloadSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
+  var sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
   if (!sheet) sheet = ss.insertSheet(SHEETS.STEWARD_WORKLOAD);
   sheet.clear();
   sheet.getRange("A1:K1").merge().setValue("👨‍⚖️ STEWARD WORKLOAD ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_PURPLE).setFontColor("white");
@@ -2150,7 +2150,7 @@ function createStewardWorkloadSheet() {
 
 function createTrendsSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.TRENDS);
+  var sheet = ss.getSheetByName(SHEETS.TRENDS);
   if (!sheet) sheet = ss.insertSheet(SHEETS.TRENDS);
   sheet.clear();
   sheet.getRange("A1:L1").merge().setValue("📈 TRENDS & TIMELINE ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.UNION_GREEN).setFontColor("white");
@@ -2163,7 +2163,7 @@ function createTrendsSheet() {
 
 function createLocationSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.LOCATION);
+  var sheet = ss.getSheetByName(SHEETS.LOCATION);
   if (!sheet) sheet = ss.insertSheet(SHEETS.LOCATION);
   sheet.clear();
   sheet.getRange("A1:K1").merge().setValue("🗺️ LOCATION ANALYTICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
@@ -2175,7 +2175,7 @@ function createLocationSheet() {
 
 function createTypeAnalysisSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
+  var sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
   if (!sheet) sheet = ss.insertSheet(SHEETS.TYPE_ANALYSIS);
   sheet.clear();
   sheet.getRange("A1:K1").merge().setValue("📊 GRIEVANCE TYPE ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_BLUE).setFontColor("white");
@@ -2188,7 +2188,7 @@ function createTypeAnalysisSheet() {
 /* --------------------= EXECUTIVE DASHBOARD (Merged Summary + Quick Stats) --------------------= */
 function createExecutiveDashboard() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName("💼 Executive Dashboard");
+  var sheet = ss.getSheetByName("💼 Executive Dashboard");
 
   if (!sheet) {
     sheet = ss.insertSheet("💼 Executive Dashboard");
@@ -2287,7 +2287,7 @@ function createExecutiveDashboard() {
 /* --------------------= KPI PERFORMANCE DASHBOARD (Merged Performance + KPI Board) --------------------= */
 function createKPIPerformanceDashboard() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
+  var sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
 
   if (!sheet) {
     sheet = ss.insertSheet("📊 KPI Performance Dashboard");
@@ -2358,7 +2358,7 @@ function createKPIPerformanceDashboard() {
 
 function createMemberEngagementSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
+  var sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
   if (!sheet) sheet = ss.insertSheet(SHEETS.MEMBER_ENGAGEMENT);
   sheet.clear();
   sheet.getRange("A1:L1").merge().setValue("👥 MEMBER ENGAGEMENT").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
@@ -2370,7 +2370,7 @@ function createMemberEngagementSheet() {
 
 function createCostImpactSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
+  var sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
   if (!sheet) sheet = ss.insertSheet(SHEETS.COST_IMPACT);
   sheet.clear();
   sheet.getRange("A1:J1").merge().setValue("💰 COST IMPACT ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.SOLIDARITY_RED).setFontColor("white");
@@ -2383,7 +2383,7 @@ function createCostImpactSheet() {
 
 function createArchiveSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.ARCHIVE);
+  var sheet = ss.getSheetByName(SHEETS.ARCHIVE);
   if (!sheet) sheet = ss.insertSheet(SHEETS.ARCHIVE);
   sheet.clear();
   sheet.getRange("A1:F1").merge().setValue("📦 ARCHIVE").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.TEXT_GRAY).setFontColor("white");
@@ -2395,7 +2395,7 @@ function createArchiveSheet() {
 
 function createDiagnosticsSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  var sheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
   if (!sheet) sheet = ss.insertSheet(SHEETS.DIAGNOSTICS);
   sheet.clear();
   sheet.getRange("A1:G1").merge().setValue("🔧 DIAGNOSTICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.SOLIDARITY_RED).setFontColor("white");
@@ -2444,7 +2444,7 @@ function setupDataValidations() {
     { col: 24, configCol: 15 }   // Comm Methods
   ];
 
-  memberValidations.forEach(v => {
+  memberValidations.forEach(function(v) {
     const configRange = config.getRange(2, v.configCol, 50, 1);
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(configRange, true)
@@ -2483,7 +2483,7 @@ function setupDataValidations() {
     { col: 27, configCol: 10 }  // Assigned Steward (now column J)
   ];
 
-  grievanceValidations.forEach(v => {
+  grievanceValidations.forEach(function(v) {
     const configRange = config.getRange(2, v.configCol, 50, 1);
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(configRange, true)
@@ -2894,7 +2894,7 @@ function seedMembersWithCount(count, toggleName) {
   }
 
   const BATCH_SIZE = 1000;
-  let data = [];
+  var data = [];
   const startingRow = memberDir.getLastRow();
 
   for (let i = 1; i <= count; i++) {
@@ -3042,7 +3042,7 @@ function seedGrievancesWithCount(count, toggleName) {
   }
 
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
-  const memberIDs = allMemberData.map(row => row[0]).filter(String);
+  const memberIDs = allMemberData.map(function(row) { return row[0]).filter(String; });
 
   // Updated config column references for new structure
   const statuses = config.getRange("K2:K8").getValues().flat().filter(String);       // Grievance Status (column K)
@@ -3059,8 +3059,8 @@ function seedGrievancesWithCount(count, toggleName) {
   }
 
   const BATCH_SIZE = 500;
-  let data = [];
-  let successCount = 0;
+  var data = [];
+  var successCount = 0;
   const startingRow = grievanceLog.getLastRow();
 
   for (let i = 1; i <= count; i++) {
@@ -3103,7 +3103,7 @@ function seedGrievancesWithCount(count, toggleName) {
     const step3AppealDue = step2DecisionRcvd ? new Date(step2DecisionRcvd.getTime() + 30 * 24 * 60 * 60 * 1000) : "";
     const step3AppealFiled = (step === "Step III" || step === "Arbitration") && step3AppealDue ? new Date(step2DecisionRcvd.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
     const daysOpen = isClosed && dateClosed ? Math.floor((dateClosed - dateFiled) / (1000 * 60 * 60 * 24)) : Math.floor((Date.now() - dateFiled.getTime()) / (1000 * 60 * 60 * 24));
-    let nextActionDue = "";
+    var nextActionDue = "";
     if (!isClosed) {
       if (step === "Informal" || step === "Step I") nextActionDue = step1DecisionDue;
       else if (step === "Step II") nextActionDue = step2DecisionDue || step2AppealDue;
@@ -3190,7 +3190,7 @@ function updateMemberDirectorySnapshots() {
   const memberIDs = memberDir.getRange(2, 1, memberLastRow - 1, 1).getValues().flat();
   const grievanceData = grievanceLog.getRange(2, 1, grievanceLastRow - 1, 28).getValues();
   const memberSnapshots = {};
-  grievanceData.forEach(row => {
+  grievanceData.forEach(function(row) {
     const memberID = row[1];
     const status = row[4];
     const nextActionDue = row[19];
@@ -3395,11 +3395,11 @@ function populateStewardWorkload() {
     const s = stewards[stewardId];
     const winRate = s.resolvedCases > 0 ? (s.wonCases / s.resolvedCases * 100) : 0;
     const avgDays = s.resolutionDays.length > 0
-      ? s.resolutionDays.reduce((a, b) => a + b, 0) / s.resolutionDays.length
+      ? s.resolutionDays.reducefunction((a, b) { return a + b, 0; }) / s.resolutionDays.length
       : 0;
 
     // Capacity status based on active cases
-    let capacityStatus;
+    var capacityStatus;
     if (s.activeCases === 0) {
       capacityStatus = 'Available';
     } else if (s.activeCases <= 5) {
@@ -3426,7 +3426,7 @@ function populateStewardWorkload() {
   }
 
   // Sort by active cases (descending)
-  outputData.sort((a, b) => b[2] - a[2]);
+  outputData.sortfunction((a, b) { return b[2] - a[2]; });
 
   // Clear existing data (keep headers)
   const lastRow = workloadSheet.getLastRow();
@@ -3865,7 +3865,7 @@ function hideAllGridlines() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     const sheetName = sheet.getName();
 
     // Hide gridlines on all sheets except Config (for editing)
@@ -3886,7 +3886,7 @@ function showAllGridlines() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     sheet.showGridlines();
   });
 
@@ -3931,7 +3931,7 @@ function reorderSheetsLogically() {
   ];
 
   // Move sheets to correct positions
-  sheetOrder.forEach((sheetName, index) => {
+  sheetOrder.forEachfunction((sheetName, index) {
     const sheet = ss.getSheetByName(sheetName);
     if (sheet) {
       ss.setActiveSheet(sheet);
@@ -3990,7 +3990,7 @@ function addStewardWorkloadInstructions() {
   ];
 
   // Create colored instruction boxes
-  instructionData.forEach((instruction, index) => {
+  instructionData.forEachfunction((instruction, index) {
     const row = index + 2;
 
     // Label column (A-B)
@@ -4047,7 +4047,7 @@ function addStewardWorkloadInstructions() {
  */
 function createUserSettingsSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName("⚙️ User Settings");
+  var sheet = ss.getSheetByName("⚙️ User Settings");
 
   if (!sheet) {
     sheet = ss.insertSheet("⚙️ User Settings");
@@ -4164,7 +4164,7 @@ function createUserSettingsSheet() {
     ["🔔", "Set up desktop notifications for overdue items (Future Feature)"]
   ];
 
-  tips.forEach((tip, index) => {
+  tips.forEachfunction((tip, index) {
     const row = 15 + index;
     sheet.getRange(row, 1).setValue(tip[0])
       .setFontSize(18)
@@ -4235,7 +4235,7 @@ function applyUserSettings() {
 
   const targetSize = fontSizeMap[fontSize] || 11;
 
-  [SHEETS.INTERACTIVE_DASHBOARD, SHEETS.DASHBOARD].forEach(sheetName => {
+  [SHEETS.INTERACTIVE_DASHBOARD, SHEETS.DASHBOARD].forEach(function(sheetName) {
     const sheet = ss.getSheetByName(sheetName);
     if (sheet) {
       sheet.getDataRange().setFontSize(targetSize);
@@ -4317,7 +4317,7 @@ function setupADHDDefaults() {
 /**
  * ADHD configuration
  */
-const ADHD_CONFIG = {
+var ADHD_CONFIG = {
   FOCUS_MODE_COLORS: {
     background: '#f5f5f5',
     header: '#4a4a4a',
@@ -4635,11 +4635,11 @@ function createADHDControlPanelHTML() {
   </div>
 
   <script>
-    let selectedTheme = '${currentSettings.theme || 'default'}';
+    var selectedTheme = '${currentSettings.theme || 'default'}';
 
     function selectTheme(theme) {
       selectedTheme = theme;
-      document.querySelectorAll('.theme-card').forEach(card => {
+      document.querySelectorAll('.theme-card').forEach(function(card) {
         card.classList.remove('selected');
       });
       event.target.closest('.theme-card').classList.add('selected');
@@ -4653,22 +4653,22 @@ function createADHDControlPanelHTML() {
 
     function toggleZebraStripes() {
       google.script.run.toggleZebraStripes();
-      setTimeout(() => location.reload(), 1000);
+      setTimeoutfunction(() { return location.reload(), 1000; });
     }
 
     function toggleGridlines() {
       google.script.run.toggleGridlinesADHD();
-      setTimeout(() => location.reload(), 1000);
+      setTimeoutfunction(() { return location.reload(), 1000; });
     }
 
     function toggleReducedMotion() {
       google.script.run.toggleReducedMotion();
-      setTimeout(() => location.reload(), 1000);
+      setTimeoutfunction(() { return location.reload(), 1000; });
     }
 
     function toggleComplexityIndicators() {
       google.script.run.toggleComplexityIndicators();
-      setTimeout(() => location.reload(), 1000);
+      setTimeoutfunction(() { return location.reload(), 1000; });
     }
 
     function activateFocusMode() {
@@ -4698,7 +4698,7 @@ function createADHDControlPanelHTML() {
       };
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Settings saved!');
           google.script.host.close();
         })
@@ -4708,7 +4708,7 @@ function createADHDControlPanelHTML() {
     function resetToDefaults() {
       if (confirm('Reset all ADHD settings to defaults?')) {
         google.script.run
-          .withSuccessHandler(() => {
+          .withSuccessHandlerfunction(() {
             alert('✅ Settings reset!');
             location.reload();
           })
@@ -4770,7 +4770,7 @@ function applyADHDSettings(settings) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     // Font size
     if (settings.fontSize) {
       sheet.getDataRange().setFontSize(parseInt(settings.fontSize));
@@ -4799,7 +4799,7 @@ function toggleZebraStripes() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     if (settings.zebraStripes) {
       applyZebraStripes(sheet);
     } else {
@@ -4839,7 +4839,7 @@ function applyZebraStripes(sheet) {
  */
 function removeZebraStripes(sheet) {
   const bandings = sheet.getBandings();
-  bandings.forEach(banding => banding.remove());
+  bandings.forEach(function(banding) { return banding.remove(); });
 }
 
 /**
@@ -4879,7 +4879,7 @@ function activateFocusMode() {
   const activeSheet = ss.getActiveSheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     if (sheet.getName() !== activeSheet.getName()) {
       sheet.hideSheet();
     }
@@ -4906,7 +4906,7 @@ function deactivateFocusMode() {
   const sheets = ss.getSheets();
 
   // Show all sheets
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     if (sheet.isSheetHidden()) {
       sheet.showSheet();
     }
@@ -4965,7 +4965,7 @@ function showQuickCaptureNotepad() {
     function saveNotes() {
       const notes = document.getElementById('notes').value;
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Notes saved!');
         })
         .saveQuickCaptureNotes(notes);
@@ -4979,7 +4979,7 @@ function showQuickCaptureNotepad() {
     }
 
     // Auto-save every 30 seconds
-    setInterval(() => {
+    setIntervalfunction(() {
       const notes = document.getElementById('notes').value;
       if (notes) {
         google.script.run.saveQuickCaptureNotes(notes);
@@ -5049,11 +5049,11 @@ function startPomodoroTimer() {
   <button onclick="skipSession()">⏭️ Skip</button>
 
   <script>
-    let timeLeft = 25 * 60; // 25 minutes in seconds
-    let totalTime = 25 * 60;
-    let isRunning = false;
-    let interval;
-    let sessionType = 'focus'; // 'focus' or 'break'
+    var timeLeft = 25 * 60; // 25 minutes in seconds
+    var totalTime = 25 * 60;
+    var isRunning = false;
+    var interval;
+    var sessionType = 'focus'; // 'focus' or 'break'
 
     function toggleTimer() {
       if (isRunning) {
@@ -5067,7 +5067,7 @@ function startPomodoroTimer() {
       isRunning = true;
       document.querySelector('button').textContent = '⏸️ Pause';
 
-      interval = setInterval(() => {
+      interval = setIntervalfunction(() {
         if (timeLeft > 0) {
           timeLeft--;
           updateDisplay();
@@ -5149,7 +5149,7 @@ function setBreakReminders(intervalMinutes) {
 
   // Delete existing triggers
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'showBreakReminder') {
       ScriptApp.deleteTrigger(trigger);
     }
@@ -5191,7 +5191,7 @@ function resetADHDSettings() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     sheet.setFontSize(10);
     sheet.setHiddenGridlines(false);
     removeZebraStripes(sheet);
@@ -5390,7 +5390,7 @@ function ADD_RECOMMENDATIONS_TO_FEATURES_TAB() {
 function setupDailyDeadlineNotifications() {
   // Delete existing triggers to avoid duplicates
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'checkDeadlinesAndNotify') {
       ScriptApp.deleteTrigger(trigger);
     }
@@ -5415,9 +5415,9 @@ function setupDailyDeadlineNotifications() {
  */
 function disableDailyDeadlineNotifications() {
   const triggers = ScriptApp.getProjectTriggers();
-  let removed = 0;
+  var removed = 0;
 
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'checkDeadlinesAndNotify') {
       ScriptApp.deleteTrigger(trigger);
       removed++;
@@ -5460,7 +5460,7 @@ function checkDeadlinesAndNotify() {
   };
 
   // Categorize grievances by deadline urgency
-  data.forEach((row, index) => {
+  data.forEachfunction((row, index) {
     const grievanceId = row[0];
     const memberFirstName = row[2];
     const memberLastName = row[3];
@@ -5497,22 +5497,22 @@ function checkDeadlinesAndNotify() {
   });
 
   // Send notifications
-  let emailsSent = 0;
+  var emailsSent = 0;
 
   // Send overdue notifications
-  notifications.overdue.forEach(grievance => {
+  notifications.overdue.forEach(function(grievance) {
     sendDeadlineNotification(grievance, 'OVERDUE');
     emailsSent++;
   });
 
   // Send urgent notifications (escalate to manager)
-  notifications.urgent.forEach(grievance => {
+  notifications.urgent.forEach(function(grievance) {
     sendDeadlineNotification(grievance, 'URGENT');
     emailsSent++;
   });
 
   // Send upcoming notifications
-  notifications.upcoming.forEach(grievance => {
+  notifications.upcoming.forEach(function(grievance) {
     sendDeadlineNotification(grievance, 'UPCOMING');
     emailsSent++;
   });
@@ -5606,7 +5606,7 @@ function createEmailBody(grievance, priority) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const spreadsheetUrl = ss.getUrl();
 
-  let urgencyMessage = '';
+  var urgencyMessage = '';
 
   if (priority === 'OVERDUE') {
     urgencyMessage = `⚠️ THIS GRIEVANCE IS OVERDUE BY ${Math.abs(grievance.daysRemaining)} DAY(S)!\n\nImmediate action is required.`;
@@ -5707,7 +5707,7 @@ function testDeadlineNotifications() {
  */
 function showNotificationSettings() {
   const triggers = ScriptApp.getProjectTriggers();
-  const isEnabled = triggers.some(t => t.getHandlerFunction() === 'checkDeadlinesAndNotify');
+  const isEnabled = triggers.some(function(t) { return t.getHandlerFunction() === 'checkDeadlinesAndNotify'; });
 
   const html = HtmlService.createHtmlOutput(`
 <!DOCTYPE html>
@@ -5816,13 +5816,13 @@ function showNotificationSettings() {
       </ul>
     </div>
 
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).setupDailyDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupDailyDeadlineNotifications()">
       ${isEnabled ? '🔄 Refresh Trigger' : '✅ Enable Notifications'}
     </button>
 
-    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
+    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
 
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).testDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).testDeadlineNotifications()">
       🧪 Test Now
     </button>
   </div>
@@ -5862,7 +5862,7 @@ function showNotificationSettings() {
 function setupMonthlyReports() {
   // Delete existing monthly triggers
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'generateMonthlyReport') {
       ScriptApp.deleteTrigger(trigger);
     }
@@ -5888,14 +5888,14 @@ function setupMonthlyReports() {
 function setupQuarterlyReports() {
   // Delete existing quarterly triggers
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'generateQuarterlyReport') {
       ScriptApp.deleteTrigger(trigger);
     }
   });
 
   // Create triggers for 1st day of Jan, Apr, Jul, Oct
-  [1, 4, 7, 10].forEach(month => {
+  [1, 4, 7, 10].forEach(function(month) {
     ScriptApp.newTrigger('generateQuarterlyReport')
       .timeBased()
       .onMonthDay(1)
@@ -5916,9 +5916,9 @@ function setupQuarterlyReports() {
  */
 function disableAutomatedReports() {
   const triggers = ScriptApp.getProjectTriggers();
-  let removed = 0;
+  var removed = 0;
 
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     const func = trigger.getHandlerFunction();
     if (func === 'generateMonthlyReport' || func === 'generateQuarterlyReport') {
       ScriptApp.deleteTrigger(trigger);
@@ -6002,16 +6002,16 @@ function gatherMonthlyData() {
 
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
-  let totalGrievances = 0;
-  let newGrievances = 0;
-  let closedGrievances = 0;
-  let openGrievances = 0;
-  let resolutionTimes = [];
+  var totalGrievances = 0;
+  var newGrievances = 0;
+  var closedGrievances = 0;
+  var openGrievances = 0;
+  var resolutionTimes = [];
   const byIssueType = {};
   const bySteward = {};
-  let overdueCount = 0;
+  var overdueCount = 0;
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const filedDate = row[6];
     const closedDate = row[18];
     const status = row[4];
@@ -6059,7 +6059,7 @@ function gatherMonthlyData() {
   });
 
   const avgResolutionTime = resolutionTimes.length > 0
-    ? Math.round(resolutionTimes.reduce((a, b) => a + b, 0) / resolutionTimes.length)
+    ? Math.roundfunction(resolutionTimes.reduce((a, b) { return a + b, 0) / resolutionTimes.length; })
     : 0;
 
   return {
@@ -6102,9 +6102,9 @@ function gatherQuarterlyData() {
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   const monthlyTrends = [0, 0, 0]; // Three months in a quarter
-  let totalGrievances = 0;
+  var totalGrievances = 0;
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const filedDate = row[6];
 
     if (filedDate && filedDate >= firstDayOfQuarter && filedDate <= lastDayOfQuarter) {
@@ -6118,7 +6118,7 @@ function gatherQuarterlyData() {
   });
 
   // Determine trend
-  let trend = 'stable';
+  var trend = 'stable';
   if (monthlyTrends[2] > monthlyTrends[0] * 1.2) {
     trend = 'increasing';
   } else if (monthlyTrends[2] < monthlyTrends[0] * 0.8) {
@@ -6181,11 +6181,11 @@ function createMonthlyReportDoc(data) {
     .setHeading(DocumentApp.ParagraphHeading.HEADING2);
 
   const issueTypes = Object.entries(data.byIssueType)
-    .sort((a, b) => b[1] - a[1])
+    .sortfunction((a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const issueTable = [['Issue Type', 'Count']];
-  issueTypes.forEach(([type, count]) => {
+  issueTypes.forEachfunction(([type, count]) {
     issueTable.push([type, count.toString()]);
   });
 
@@ -6199,11 +6199,11 @@ function createMonthlyReportDoc(data) {
     .setHeading(DocumentApp.ParagraphHeading.HEADING2);
 
   const stewards = Object.entries(data.bySteward)
-    .sort((a, b) => b[1] - a[1])
+    .sortfunction((a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const stewardTable = [['Steward', 'Active Grievances']];
-  stewards.forEach(([steward, count]) => {
+  stewards.forEachfunction(([steward, count]) {
     stewardTable.push([steward, count.toString()]);
   });
 
@@ -6235,7 +6235,7 @@ function createMonthlyReportDoc(data) {
   if (insights.length === 0) {
     body.appendParagraph('No significant issues identified. Operations are running smoothly.');
   } else {
-    insights.forEach(insight => {
+    insights.forEach(function(insight) {
       body.appendListItem(insight);
     });
   }
@@ -6298,7 +6298,7 @@ function createQuarterlyReportDoc(data) {
   const monthNames = ['Month 1', 'Month 2', 'Month 3'];
   const monthTable = [['Month', 'Grievances Filed']];
 
-  data.monthlyTrends.forEach((count, index) => {
+  data.monthlyTrends.forEachfunction((count, index) {
     monthTable.push([monthNames[index], count.toString()]);
   });
 
@@ -6397,7 +6397,7 @@ function getReportRecipients(reportType) {
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === `${reportType}_recipients`) {
-      const emails = data[i][1].toString().split(',').map(e => e.trim()).filter(e => e);
+      const emails = data[i][1].toString().split(',').map(function(e) { return e.trim()).filter(function(e) { return e; }));
       return emails;
     }
   }
@@ -6429,8 +6429,8 @@ function showReportAutomationSettings() {
   const ui = SpreadsheetApp.getUi();
 
   const triggers = ScriptApp.getProjectTriggers();
-  const monthlyEnabled = triggers.some(t => t.getHandlerFunction() === 'generateMonthlyReport');
-  const quarterlyEnabled = triggers.some(t => t.getHandlerFunction() === 'generateQuarterlyReport');
+  const monthlyEnabled = triggers.some(function(t) { return t.getHandlerFunction() === 'generateMonthlyReport'; });
+  const quarterlyEnabled = triggers.some(function(t) { return t.getHandlerFunction() === 'generateQuarterlyReport'; });
 
   const html = HtmlService.createHtmlOutput(`
 <!DOCTYPE html>
@@ -6458,7 +6458,7 @@ function showReportAutomationSettings() {
     <div class="status ${monthlyEnabled ? 'enabled' : 'disabled'}">
       ${monthlyEnabled ? '✅ Monthly reports ENABLED (1st of month, 9 AM)' : '🔕 Monthly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).setupMonthlyReports()">
+    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupMonthlyReports()">
       ${monthlyEnabled ? '🔄 Refresh Monthly Trigger' : '✅ Enable Monthly Reports'}
     </button>
 
@@ -6466,21 +6466,21 @@ function showReportAutomationSettings() {
     <div class="status ${quarterlyEnabled ? 'enabled' : 'disabled'}">
       ${quarterlyEnabled ? '✅ Quarterly reports ENABLED (Jan/Apr/Jul/Oct, 10 AM)' : '🔕 Quarterly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).setupQuarterlyReports()">
+    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupQuarterlyReports()">
       ${quarterlyEnabled ? '🔄 Refresh Quarterly Trigger' : '✅ Enable Quarterly Reports'}
     </button>
 
     <hr style="margin: 30px 0;">
 
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).generateMonthlyReport()">
+    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).generateMonthlyReport()">
       🧪 Test Monthly Report
     </button>
 
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).generateQuarterlyReport()">
+    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).generateQuarterlyReport()">
       🧪 Test Quarterly Report
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).disableAutomatedReports()">
+    <button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).disableAutomatedReports()">
       🔕 Disable All Reports
     </button>
   </div>
@@ -6538,8 +6538,8 @@ function recalcAllGrievancesBatched() {
   const updates = [];
   const today = new Date();
 
-  let processed = 0;
-  let errors = 0;
+  var processed = 0;
+  var errors = 0;
 
   // Process all rows in memory
   for (let i = 0; i < data.length; i++) {
@@ -6624,7 +6624,7 @@ function calculateGrievanceTimeline(row, today) {
   const currentStep = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
 
   // Calculate days open
-  let daysOpen = '';
+  var daysOpen = '';
   if (dateFiled) {
     const endDate = dateClosed ? new Date(dateClosed) : today;
     const filed = new Date(dateFiled);
@@ -6633,7 +6633,7 @@ function calculateGrievanceTimeline(row, today) {
 
   // Determine next action due based on current step
   const deadlines = calculateGrievanceDeadlines(row);
-  let nextActionDue = '';
+  var nextActionDue = '';
 
   if (status !== 'Closed' && status !== 'Settled' && status !== 'Withdrawn') {
     switch(currentStep) {
@@ -6656,7 +6656,7 @@ function calculateGrievanceTimeline(row, today) {
   }
 
   // Calculate days to deadline
-  let daysToDeadline = '';
+  var daysToDeadline = '';
   if (nextActionDue && nextActionDue !== '') {
     const deadline = new Date(nextActionDue);
     daysToDeadline = Math.floor((deadline - today) / (1000 * 60 * 60 * 24));
@@ -6891,31 +6891,31 @@ function showBatchOperationsMenu() {
 
   <script>
     function runBatchAssignSteward() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandlerfunction(() {
         google.script.host.close();
       }).batchAssignSteward();
     }
 
     function runBatchUpdateStatus() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandlerfunction(() {
         google.script.host.close();
       }).batchUpdateStatus();
     }
 
     function runBatchExportPDF() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandlerfunction(() {
         google.script.host.close();
       }).batchExportPDF();
     }
 
     function runBatchEmail() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandlerfunction(() {
         google.script.host.close();
       }).batchEmailNotifications();
     }
 
     function runBatchAddNotes() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandlerfunction(() {
         google.script.host.close();
       }).batchAddNotes();
     }
@@ -6962,10 +6962,10 @@ function getSelectedGrievanceRows() {
       );
       return [];
     }
-    return Array.from({ length: numRows - 1 }, (_, i) => startRow + i + 1);
+    return Array.fromfunction({ length: numRows - 1 }, (_, i) { return startRow + i + 1; });
   }
 
-  return Array.from({ length: numRows }, (_, i) => startRow + i);
+  return Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
 }
 
 /**
@@ -6985,9 +6985,9 @@ function batchAssignSteward() {
   const stewardData = memberSheet.getRange(2, 1, memberSheet.getLastRow() - 1, 10).getValues();
 
   const stewards = stewardData
-    .filter(row => row[9] === 'Yes') // Column J: Is Steward?
-    .map(row => `${row[1]} ${row[2]}`) // First + Last Name
-    .filter(name => name.trim() !== '');
+    .filter(function(row) { return row[9] === 'Yes'; }) // Column J: Is Steward?
+    .map(function(row) { return `${row[1]} ${row[2]}`; }) // First + Last Name
+    .filter(function(name) { return name.trim() !== ''; });
 
   if (stewards.length === 0) {
     ui.alert('❌ No stewards found in the Member Directory.');
@@ -7031,9 +7031,9 @@ function batchAssignSteward() {
 
   // Perform bulk assignment
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  let updated = 0;
+  var updated = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     grievanceSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).setValue(stewardName);
     updated++;
   });
@@ -7096,9 +7096,9 @@ function batchUpdateStatus() {
   // Perform bulk status update
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  let updated = 0;
+  var updated = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     grievanceSheet.getRange(row, GRIEVANCE_COLS.STATUS).setValue(newStatus);
 
     // Update closed date if status is Closed or Resolved
@@ -7152,7 +7152,7 @@ function batchExportPDF() {
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const pdfs = [];
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     try {
       const grievanceId = grievanceSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
       const pdf = exportGrievanceToPDF(grievanceId);
@@ -7295,9 +7295,9 @@ function batchEmailNotifications() {
   // Send emails
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  let sent = 0;
+  var sent = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     try {
       const grievanceId = grievanceSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
       const steward = grievanceSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).getValue();
@@ -7375,9 +7375,9 @@ function batchAddNotes() {
   const user = Session.getActiveUser().getEmail() || 'User';
   const formattedNote = `[${timestamp}] ${user}: ${noteText}`;
 
-  let updated = 0;
+  var updated = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     const existingNotes = grievanceSheet.getRange(row, GRIEVANCE_COLS.NOTES).getValue() || '';
     const newNotes = existingNotes ? `${existingNotes}\n${formattedNote}` : formattedNote;
     grievanceSheet.getRange(row, GRIEVANCE_COLS.NOTES).setValue(newNotes);
@@ -7454,10 +7454,10 @@ function syncDeadlinesToCalendar() {
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
     const calendar = CalendarApp.getDefaultCalendar();
-    let eventsCreated = 0;
-    let eventsSkipped = 0;
+    var eventsCreated = 0;
+    var eventsSkipped = 0;
 
-    data.forEach((row, index) => {
+    data.forEachfunction((row, index) {
       const grievanceId = row[0]; // Column A
       const memberName = `${row[2]} ${row[3]}`; // Columns C, D
       const status = row[4]; // Column E
@@ -7478,8 +7478,8 @@ function syncDeadlinesToCalendar() {
       }
 
       // Determine priority and color
-      let color = CalendarApp.EventColor.BLUE; // Default: Due later
-      let priority = 'Normal';
+      var color = CalendarApp.EventColor.BLUE; // Default: Due later
+      var priority = 'Normal';
 
       if (daysToDeadline < 0) {
         color = CalendarApp.EventColor.RED;
@@ -7600,7 +7600,7 @@ function syncSingleDeadlineToCalendar(grievanceId) {
       const existingEvent = checkCalendarEventExists(calendar, grievanceId);
       if (existingEvent) {
         // Update existing event
-        let color = CalendarApp.EventColor.BLUE;
+        var color = CalendarApp.EventColor.BLUE;
         if (daysToDeadline < 0) color = CalendarApp.EventColor.RED;
         else if (daysToDeadline <= 3) color = CalendarApp.EventColor.ORANGE;
         else if (daysToDeadline <= 7) color = CalendarApp.EventColor.YELLOW;
@@ -7609,8 +7609,8 @@ function syncSingleDeadlineToCalendar(grievanceId) {
         existingEvent.setTime(new Date(nextActionDue), new Date(nextActionDue));
       } else {
         // Create new event (same logic as syncDeadlinesToCalendar)
-        let color = CalendarApp.EventColor.BLUE;
-        let priority = 'Normal';
+        var color = CalendarApp.EventColor.BLUE;
+        var priority = 'Normal';
 
         if (daysToDeadline < 0) {
           color = CalendarApp.EventColor.RED;
@@ -7689,9 +7689,9 @@ function clearAllCalendarEvents() {
     const futureDate = new Date(now.getTime() + (365 * 24 * 60 * 60 * 1000));
 
     const events = calendar.getEvents(now, futureDate);
-    let removedCount = 0;
+    var removedCount = 0;
 
-    events.forEach(event => {
+    events.forEach(function(event) {
       const tag = event.getTag('509Dashboard');
       if (tag) {
         event.deleteEvent();
@@ -7720,7 +7720,7 @@ function showUpcomingDeadlinesFromCalendar() {
     const nextWeek = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
 
     const events = calendar.getEvents(now, nextWeek);
-    const dashboardEvents = events.filter(e => e.getTag('509Dashboard'));
+    const dashboardEvents = events.filter(function(e) { return e.getTag('509Dashboard'); });
 
     if (dashboardEvents.length === 0) {
       SpreadsheetApp.getUi().alert(
@@ -7734,7 +7734,7 @@ function showUpcomingDeadlinesFromCalendar() {
 
     const eventList = dashboardEvents
       .slice(0, 10)
-      .map(e => `  • ${e.getTitle()} - ${e.getAllDayStartDate().toLocaleDateString()}`)
+      .map(function(e) { return `  • ${e.getTitle()} - ${e.getAllDayStartDate().toLocaleDateString()}`; })
       .join('\n');
 
     SpreadsheetApp.getUi().alert(
@@ -8088,7 +8088,7 @@ function createReportBuilderHTML() {
       <div class="form-group">
         <label>Fields (hold Ctrl/Cmd to select multiple):</label>
         <select id="fields" multiple class="multi-select">
-          ${grievanceFields.map(f => `<option value="${f.key}">${f.name}</option>`).join('')}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
         </select>
       </div>
       <button class="small secondary" onclick="selectAllFields()">Select All</button>
@@ -8103,7 +8103,7 @@ function createReportBuilderHTML() {
           <div>
             <label>Field:</label>
             <select id="filter0_field">
-              ${grievanceFields.map(f => `<option value="${f.key}">${f.name}</option>`).join('')}
+              ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
             </select>
           </div>
           <div>
@@ -8136,13 +8136,13 @@ function createReportBuilderHTML() {
         <label>Group By (optional):</label>
         <select id="groupBy">
           <option value="">No Grouping</option>
-          ${grievanceFields.map(f => `<option value="${f.key}">${f.name}</option>`).join('')}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
         </select>
       </div>
       <div class="form-group">
         <label>Sort By:</label>
         <select id="sortBy">
-          ${grievanceFields.map(f => `<option value="${f.key}">${f.name}</option>`).join('')}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
         </select>
       </div>
       <div class="form-group">
@@ -8189,7 +8189,7 @@ function createReportBuilderHTML() {
   </div>
 
   <script>
-    let filterCount = 1;
+    var filterCount = 1;
     const grievanceFields = ${JSON.stringify(grievanceFields)};
     const memberFields = ${JSON.stringify(memberFields)};
 
@@ -8201,7 +8201,7 @@ function createReportBuilderHTML() {
 
       const fields = dataSource === 'members' ? memberFields : grievanceFields;
 
-      fields.forEach(f => {
+      fields.forEach(function(f) {
         const option = document.createElement('option');
         option.value = f.key;
         option.textContent = f.name;
@@ -8232,7 +8232,7 @@ function createReportBuilderHTML() {
         <div>
           <label>Field:</label>
           <select id="filter\${filterCount}_field">
-            \${grievanceFields.map(f => '<option value="' + f.key + '">' + f.name + '</option>').join('')}
+            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>').join(''; })}
           </select>
         </div>
         <div>
@@ -8267,7 +8267,7 @@ function createReportBuilderHTML() {
 
     function getReportConfig() {
       const fieldsSelect = document.getElementById('fields');
-      const selectedFields = Array.from(fieldsSelect.selectedOptions).map(opt => opt.value);
+      const selectedFields = Array.from(fieldsSelect.selectedOptions).map(function(opt) { return opt.value; });
 
       const filters = [];
       for (let i = 0; i < filterCount; i++) {
@@ -8317,18 +8317,18 @@ function createReportBuilderHTML() {
         return;
       }
 
-      let html = '<table><thead><tr>';
+      var html = '<table><thead><tr>';
 
       // Headers
-      Object.keys(data[0]).forEach(key => {
+      Object.keys(data[0]).forEach(function(key) {
         html += '<th>' + key + '</th>';
       });
       html += '</tr></thead><tbody>';
 
       // Data rows
-      data.forEach(row => {
+      data.forEach(function(row) {
         html += '<tr>';
-        Object.values(row).forEach(value => {
+        Object.values(row).forEach(function(value) {
           html += '<td>' + (value || '') + '</td>';
         });
         html += '</tr>';
@@ -8356,7 +8356,7 @@ function createReportBuilderHTML() {
       alert('Generating PDF report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ PDF report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -8372,7 +8372,7 @@ function createReportBuilderHTML() {
       }
 
       google.script.run
-        .withSuccessHandler((csvData) => {
+        .withSuccessHandlerfunction((csvData) {
           downloadCSV(csvData);
         })
         .withFailureHandler(onError)
@@ -8390,7 +8390,7 @@ function createReportBuilderHTML() {
       alert('Generating Excel report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Excel report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -8414,7 +8414,7 @@ function createReportBuilderHTML() {
       if (!name) return;
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Template saved: ' + name);
         })
         .withFailureHandler(onError)
@@ -8434,12 +8434,12 @@ function createReportBuilderHTML() {
         return;
       }
 
-      const templateNames = templates.map(t => t.name).join('\\n');
+      const templateNames = templates.map(function(t) { return t.name).join('\\n'; });
       const selected = prompt('Available templates:\\n' + templateNames + '\\n\\nEnter template name to load:');
 
       if (!selected) return;
 
-      const template = templates.find(t => t.name === selected);
+      const template = templates.find(function(t) { return t.name === selected; });
       if (template) {
         applyTemplate(template.config);
       } else {
@@ -8532,8 +8532,8 @@ function getMemberFields() {
 function generateReportData(config, limit = null) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  let sourceData;
-  let fieldMapping;
+  var sourceData;
+  var fieldMapping;
 
   if (config.dataSource === 'grievances') {
     const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -8546,7 +8546,7 @@ function generateReportData(config, limit = null) {
   }
 
   // Apply filters
-  let filteredData = sourceData.filter(row => {
+  var filteredData = sourceData.filter(function(row) {
     return applyFilters(row, config.filters, fieldMapping);
   });
 
@@ -8566,9 +8566,9 @@ function generateReportData(config, limit = null) {
   }
 
   // Select fields and format
-  const reportData = filteredData.map(row => {
+  const reportData = filteredData.map(function(row) {
     const reportRow = {};
-    config.fields.forEach(fieldKey => {
+    config.fields.forEach(function(fieldKey) {
       const field = fieldMapping[fieldKey];
       if (field) {
         reportRow[field.name] = formatValue(row[field.index], field.type);
@@ -8628,7 +8628,7 @@ function getMemberFieldMapping() {
 function applyFilters(row, filters, fieldMapping) {
   if (!filters || filters.length === 0) return true;
 
-  return filters.every(filter => {
+  return filters.every(function(filter) {
     if (!filter.value) return true;
 
     const field = fieldMapping[filter.field];
@@ -8668,7 +8668,7 @@ function applyDateRange(data, dateFrom, dateTo, fieldMapping) {
   const fromDate = dateFrom ? new Date(dateFrom) : null;
   const toDate = dateTo ? new Date(dateTo) : null;
 
-  return data.filter(row => {
+  return data.filter(function(row) {
     const filedDate = row[6]; // Assuming column G is filed date
 
     if (!filedDate) return true;
@@ -8692,11 +8692,11 @@ function sortData(data, sortBy, sortOrder, fieldMapping) {
   const field = fieldMapping[sortBy];
   if (!field) return data;
 
-  return data.sort((a, b) => {
+  return data.sortfunction((a, b) {
     const aVal = a[field.index];
     const bVal = b[field.index];
 
-    let comparison = 0;
+    var comparison = 0;
     if (aVal < bVal) comparison = -1;
     if (aVal > bVal) comparison = 1;
 
@@ -8750,8 +8750,8 @@ function exportReportToPDF(config) {
     const headers = Object.keys(data[0]);
     const tableData = [headers];
 
-    data.forEach(row => {
-      tableData.push(Object.values(row).map(v => v.toString()));
+    data.forEach(function(row) {
+      tableData.push(Object.values(row).map(function(v) { return v.toString()); });
     });
 
     const table = body.appendTable(tableData);
@@ -8784,10 +8784,10 @@ function exportReportToCSV(config) {
   }
 
   const headers = Object.keys(data[0]);
-  let csv = headers.join(',') + '\n';
+  var csv = headers.join(',') + '\n';
 
-  data.forEach(row => {
-    const values = Object.values(row).map(v => {
+  data.forEach(function(row) {
+    const values = Object.values(row).map(function(v) {
       const str = v.toString();
       return str.includes(',') ? `"${str}"` : str;
     });
@@ -8817,7 +8817,7 @@ function exportReportToExcel(config) {
       .setFontColor('#ffffff')
       .setFontWeight('bold');
 
-    const rows = data.map(row => Object.values(row));
+    const rows = data.map(function(row) { return Object.values(row); });
     sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
   }
 
@@ -8834,7 +8834,7 @@ function saveReportTemplate(name, config) {
   const templates = JSON.parse(props.getProperty('reportTemplates') || '[]');
 
   // Remove existing template with same name
-  const filtered = templates.filter(t => t.name !== name);
+  const filtered = templates.filter(function(t) { return t.name !== name; });
 
   // Add new template
   filtered.push({ name: name, config: config });
@@ -8876,7 +8876,7 @@ function getReportTemplates() {
 /**
  * Theme configuration
  */
-const THEME_CONFIG = {
+var THEME_CONFIG = {
   THEMES: {
     LIGHT: {
       name: 'Light',
@@ -9012,8 +9012,8 @@ function createThemeManagerHTML() {
   const currentTheme = getCurrentTheme();
   const autoSwitch = getAutoSwitchSettings();
 
-  let themeCards = '';
-  Object.entries(THEME_CONFIG.THEMES).forEach(([key, theme]) => {
+  var themeCards = '';
+  Object.entries(THEME_CONFIG.THEMES).forEachfunction(([key, theme]) {
     const isActive = currentTheme === key;
     themeCards += `
       <div class="theme-card ${isActive ? 'active' : ''}" onclick="selectTheme('${key}')">
@@ -9271,11 +9271,11 @@ function createThemeManagerHTML() {
   </div>
 
   <script>
-    let selectedTheme = '${currentTheme}';
+    var selectedTheme = '${currentTheme}';
 
     function selectTheme(themeKey) {
       selectedTheme = themeKey;
-      document.querySelectorAll('.theme-card').forEach(card => {
+      document.querySelectorAll('.theme-card').forEach(function(card) {
         card.classList.remove('active');
       });
       event.target.closest('.theme-card').classList.add('active');
@@ -9283,7 +9283,7 @@ function createThemeManagerHTML() {
 
     function applySelectedTheme() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Theme applied successfully!');
           google.script.host.close();
         })
@@ -9292,7 +9292,7 @@ function createThemeManagerHTML() {
 
     function applyToAllSheets() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Theme applied to all sheets!');
           location.reload();
         })
@@ -9301,7 +9301,7 @@ function createThemeManagerHTML() {
 
     function applyToCurrentSheet() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Theme applied to current sheet!');
           location.reload();
         })
@@ -9310,7 +9310,7 @@ function createThemeManagerHTML() {
 
     function previewTheme() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('👁️ Preview applied! This is temporary.');
         })
         .previewTheme(selectedTheme);
@@ -9319,7 +9319,7 @@ function createThemeManagerHTML() {
     function resetTheme() {
       if (confirm('Reset to default light theme?')) {
         google.script.run
-          .withSuccessHandler(() => {
+          .withSuccessHandlerfunction(() {
             alert('✅ Theme reset!');
             location.reload();
           })
@@ -9330,7 +9330,7 @@ function createThemeManagerHTML() {
     function toggleAutoSwitch() {
       const enabled = document.getElementById('autoSwitch').checked;
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert(enabled ? '✅ Auto dark mode enabled!' : '🔕 Auto dark mode disabled!');
         })
         .setAutoSwitch(enabled);
@@ -9383,7 +9383,7 @@ function applyTheme(themeKey, scope = 'all') {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = scope === 'all' ? ss.getSheets() : [ss.getActiveSheet()];
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     applyThemeToSheet(sheet, theme);
   });
 
@@ -9422,7 +9422,7 @@ function applyThemeToSheet(sheet, theme) {
 
     // Remove existing banding
     const bandings = sheet.getBandings();
-    bandings.forEach(banding => banding.remove());
+    bandings.forEach(function(banding) { return banding.remove(); });
 
     // Apply new banding
     const banding = dataRange.applyRowBanding();
@@ -9613,7 +9613,7 @@ function importThemeFromJSON(themeJSON, name) {
 function installAutoThemeTrigger() {
   // Delete existing trigger
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'checkAndApplyAutoTheme') {
       ScriptApp.deleteTrigger(trigger);
     }
@@ -9725,7 +9725,7 @@ function getOrCreateBackupFolder() {
  */
 function logBackup(backupName, fileId, automated) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let backupLog = ss.getSheetByName('💾 Backup Log');
+  var backupLog = ss.getSheetByName('💾 Backup Log');
 
   if (!backupLog) {
     backupLog = createBackupLogSheet();
@@ -9808,13 +9808,13 @@ function cleanOldBackups() {
     }
 
     // Sort by date (oldest first)
-    backupFiles.sort((a, b) => a.created - b.created);
+    backupFiles.sortfunction((a, b) { return a.created - b.created; });
 
     const now = new Date();
     const cutoffDate = new Date(now.getTime() - (RETENTION_DAYS * 24 * 60 * 60 * 1000));
 
     // Delete old backups
-    backupFiles.forEach((backup, index) => {
+    backupFiles.forEachfunction((backup, index) {
       // Keep if:
       // 1. Within retention period
       // 2. One of the most recent MAX_BACKUPS
@@ -9838,7 +9838,7 @@ function cleanOldBackups() {
 function setupAutomatedBackups() {
   // Delete existing triggers
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'runAutomatedBackup') {
       ScriptApp.deleteTrigger(trigger);
     }
@@ -9863,9 +9863,9 @@ function setupAutomatedBackups() {
  */
 function disableAutomatedBackups() {
   const triggers = ScriptApp.getProjectTriggers();
-  let removed = 0;
+  var removed = 0;
 
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'runAutomatedBackup') {
       ScriptApp.deleteTrigger(trigger);
       removed++;
@@ -9924,7 +9924,7 @@ function showBackupManager() {
  */
 function createBackupManagerHTML() {
   const triggers = ScriptApp.getProjectTriggers();
-  const isAutomated = triggers.some(t => t.getHandlerFunction() === 'runAutomatedBackup');
+  const isAutomated = triggers.some(function(t) { return t.getHandlerFunction() === 'runAutomatedBackup'; });
 
   return `
 <!DOCTYPE html>
@@ -9967,10 +9967,10 @@ function createBackupManagerHTML() {
       <div class="status ${isAutomated ? 'enabled' : 'disabled'}">
         ${isAutomated ? '✅ Automated backups are ENABLED (Weekly, Sundays 2 AM)' : '🔕 Automated backups are DISABLED'}
       </div>
-      <button onclick="google.script.run.withSuccessHandler(() => location.reload()).setupAutomatedBackups()">
+      <button onclick="google.script.run.withSuccessHandlerfunction(() { return location.reload()).setupAutomatedBackups(; })">
         ${isAutomated ? '🔄 Refresh Schedule' : '✅ Enable Automated Backups'}
       </button>
-      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(() => location.reload()).disableAutomatedBackups()">🔕 Disable</button>' : ''}
+      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { return location.reload()).disableAutomatedBackups(; })">🔕 Disable</button>' : ''}
     </div>
 
     <div class="section">
@@ -10008,10 +10008,10 @@ function createBackupManagerHTML() {
       alert('Creating backup... This may take a moment.');
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Backup created successfully!');
         })
-        .withFailureHandler((error) => {
+        .withFailureHandlerfunction((error) {
           alert('❌ Backup failed: ' + error.message);
         })
         .createBackup(false);
@@ -10024,7 +10024,7 @@ function createBackupManagerHTML() {
 
     function showBackupLog() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('Opening Backup Log sheet...');
           google.script.host.close();
         })
@@ -10034,7 +10034,7 @@ function createBackupManagerHTML() {
     function exportGrievances() {
       alert('Exporting grievances to CSV...');
       google.script.run
-        .withSuccessHandler((csv) => {
+        .withSuccessHandlerfunction((csv) {
           downloadCSV(csv, 'grievances.csv');
         })
         .exportGrievancesToCSV();
@@ -10043,7 +10043,7 @@ function createBackupManagerHTML() {
     function exportMembers() {
       alert('Exporting members to CSV...');
       google.script.run
-        .withSuccessHandler((csv) => {
+        .withSuccessHandlerfunction((csv) {
           downloadCSV(csv, 'members.csv');
         })
         .exportMembersToCSV();
@@ -10073,7 +10073,7 @@ function createBackupManagerHTML() {
  */
 function navigateToBackupLog() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let backupLog = ss.getSheetByName('💾 Backup Log');
+  var backupLog = ss.getSheetByName('💾 Backup Log');
 
   if (!backupLog) {
     backupLog = createBackupLogSheet();
@@ -10095,9 +10095,9 @@ function exportGrievancesToCSV() {
 
   const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
 
-  let csv = '';
-  data.forEach(row => {
-    const values = row.map(v => {
+  var csv = '';
+  data.forEach(function(row) {
+    const values = row.map(function(v) {
       const str = v.toString();
       return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
     });
@@ -10120,9 +10120,9 @@ function exportMembersToCSV() {
 
   const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
 
-  let csv = '';
-  data.forEach(row => {
-    const values = row.map(v => {
+  var csv = '';
+  data.forEach(function(row) {
+    const values = row.map(function(v) {
       const str = v.toString();
       return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
     });
@@ -10147,13 +10147,13 @@ function verifyBackup(backupFileId) {
     const verification = {
       valid: true,
       sheetCount: sheets.length,
-      sheets: sheets.map(s => s.getName()),
+      sheets: sheets.map(function(s) { return s.getName()); },
       dataRows: {}
     };
 
     // Check key sheets
     const keySheets = [SHEETS.GRIEVANCE_LOG, SHEETS.MEMBER_DIR];
-    keySheets.forEach(sheetName => {
+    keySheets.forEach(function(sheetName) {
       const sheet = backupSS.getSheetByName(sheetName);
       if (sheet) {
         verification.dataRows[sheetName] = sheet.getLastRow() - 1; // Minus header
@@ -10198,7 +10198,7 @@ function verifyBackup(backupFileId) {
 /**
  * Cache configuration
  */
-const CACHE_CONFIG = {
+var CACHE_CONFIG = {
   MEMORY_TTL: 300,        // 5 minutes for memory cache
   PROPERTIES_TTL: 3600,   // 1 hour for properties cache
   ENABLE_LOGGING: true
@@ -10207,7 +10207,7 @@ const CACHE_CONFIG = {
 /**
  * Cache keys
  */
-const CACHE_KEYS = {
+var CACHE_KEYS = {
   ALL_GRIEVANCES: 'all_grievances',
   ALL_MEMBERS: 'all_members',
   ALL_STEWARDS: 'all_stewards',
@@ -10320,7 +10320,7 @@ function invalidateAllCaches() {
     CacheService.getScriptCache().removeAll(Object.values(CACHE_KEYS));
 
     const propsCache = PropertiesService.getScriptProperties();
-    Object.values(CACHE_KEYS).forEach(key => {
+    Object.values(CACHE_KEYS).forEach(function(key) {
       propsCache.deleteProperty(key);
     });
 
@@ -10374,7 +10374,7 @@ function warmUpCaches() {
 function getCachedGrievances() {
   return getCachedData(
     CACHE_KEYS.ALL_GRIEVANCES,
-    () => {
+    function() {
       const ss = SpreadsheetApp.getActiveSpreadsheet();
       const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
       const lastRow = sheet.getLastRow();
@@ -10394,7 +10394,7 @@ function getCachedGrievances() {
 function getCachedMembers() {
   return getCachedData(
     CACHE_KEYS.ALL_MEMBERS,
-    () => {
+    function() {
       const ss = SpreadsheetApp.getActiveSpreadsheet();
       const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
       const lastRow = sheet.getLastRow();
@@ -10414,9 +10414,9 @@ function getCachedMembers() {
 function getCachedStewards() {
   return getCachedData(
     CACHE_KEYS.ALL_STEWARDS,
-    () => {
+    function() {
       const members = getCachedMembers();
-      return members.filter(row => row[9] === 'Yes'); // Column J: Is Steward?
+      return members.filter(function(row) { return row[9] === 'Yes'; }); // Column J: Is Steward?
     },
     600 // 10 minutes
   );
@@ -10429,7 +10429,7 @@ function getCachedStewards() {
 function getCachedDashboardMetrics() {
   return getCachedData(
     CACHE_KEYS.DASHBOARD_METRICS,
-    () => {
+    function() {
       const grievances = getCachedGrievances();
 
       const metrics = {
@@ -10442,7 +10442,7 @@ function getCachedDashboardMetrics() {
         bySteward: {}
       };
 
-      grievances.forEach(row => {
+      grievances.forEach(function(row) {
         const status = row[4];
         const issueType = row[5];
         const steward = row[13];
@@ -10509,11 +10509,11 @@ function showCacheStatusDashboard() {
 
   const cacheStatus = [];
 
-  Object.entries(CACHE_KEYS).forEach(([name, key]) => {
+  Object.entries(CACHE_KEYS).forEachfunction(([name, key]) {
     const inMemory = memoryCache.get(key) !== null;
     const inProps = propsCache.getProperty(key) !== null;
 
-    let age = 'N/A';
+    var age = 'N/A';
     if (inProps) {
       const cached = JSON.parse(propsCache.getProperty(key));
       if (cached.timestamp) {
@@ -10531,7 +10531,7 @@ function showCacheStatusDashboard() {
   });
 
   const statusRows = cacheStatus
-    .map(s => `
+    .map(function(s) { return '
       <tr>
         <td>${s.name}</td>
         <td>${s.inMemory ? '✅ Yes' : '❌ No'}</td>
@@ -10587,11 +10587,11 @@ function showCacheStatusDashboard() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandler(() => { location.reload(); }).warmUpCaches()">
+    <button onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).warmUpCaches()">
       🔥 Warm Up All Caches
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandler(() => { location.reload(); }).invalidateAllCaches()">
+    <button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).invalidateAllCaches()">
       🗑️ Clear All Caches
     </button>
   </div>
@@ -10636,8 +10636,8 @@ function getCachePerformanceStats() {
   const memoryCache = CacheService.getScriptCache();
   const propsCache = PropertiesService.getScriptProperties();
 
-  let cachedKeys = 0;
-  Object.values(CACHE_KEYS).forEach(key => {
+  var cachedKeys = 0;
+  Object.values(CACHE_KEYS).forEach(function(key) {
     if (propsCache.getProperty(key) !== null) {
       cachedKeys++;
     }
@@ -10723,9 +10723,9 @@ function generateNextMemberID() {
 
   // Extract numbers and find max
   const numbers = existingIds
-    .filter(id => id && id.toString().startsWith('M'))
-    .map(id => parseInt(id.toString().substring(1)))
-    .filter(num => !isNaN(num));
+    .filter(function(id) { return id && id.toString().startsWith('M'); })
+    .map(function(id) { return parseInt(id.toString().substring(1)); })
+    .filter(function(num) { return !isNaN(num); });
 
   const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
   const nextNumber = maxNumber + 1;
@@ -10748,9 +10748,9 @@ function generateNextGrievanceID() {
 
   const existingIds = grievanceSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
 
-  let counter = 1;
-  let letter = 'A';
-  let newId;
+  var counter = 1;
+  var letter = 'A';
+  var newId;
 
   do {
     newId = `G-${String(counter).padStart(6, '0')}-${letter}`;
@@ -10822,7 +10822,7 @@ function showDuplicateGrievanceIDWarning(grievanceId) {
  */
 function createChangeLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let changeLog = ss.getSheetByName('📝 Change Log');
+  var changeLog = ss.getSheetByName('📝 Change Log');
 
   if (!changeLog) {
     changeLog = ss.insertSheet('📝 Change Log');
@@ -10953,17 +10953,17 @@ function showDataQualityDashboard() {
 
   // Check email completeness (Column H in Member Directory)
   const emailData = memberSheet.getRange(2, 8, memberLastRow, 1).getValues().flat();
-  const emailsComplete = emailData.filter(email => email && email.toString().trim() !== '').length;
+  const emailsComplete = emailData.filter(function(email) { return email && email.toString().trim() !== ''; }).length;
   const emailCompleteness = memberLastRow > 0 ? ((emailsComplete / memberLastRow) * 100).toFixed(1) : 0;
 
   // Check phone completeness (Column I in Member Directory)
   const phoneData = memberSheet.getRange(2, 9, memberLastRow, 1).getValues().flat();
-  const phonesComplete = phoneData.filter(phone => phone && phone.toString().trim() !== '').length;
+  const phonesComplete = phoneData.filter(function(phone) { return phone && phone.toString().trim() !== ''; }).length;
   const phoneCompleteness = memberLastRow > 0 ? ((phonesComplete / memberLastRow) * 100).toFixed(1) : 0;
 
   // Check steward assignment in grievances (Column AA)
   const stewardData = grievanceSheet.getRange(2, 27, grievanceLastRow, 1).getValues().flat();
-  const stewardsAssigned = stewardData.filter(s => s && s.toString().trim() !== '').length;
+  const stewardsAssigned = stewardData.filter(function(s) { return s && s.toString().trim() !== ''; }).length;
   const stewardCompleteness = grievanceLastRow > 0 ? ((stewardsAssigned / grievanceLastRow) * 100).toFixed(1) : 0;
 
   // Overall quality score (average of all metrics)
@@ -11027,7 +11027,7 @@ function checkReferentialIntegrity() {
       SpreadsheetApp.getUi().ButtonSet.OK
     );
   } else {
-    const orphanedList = orphaned.slice(0, 10).map(o =>
+    const orphanedList = orphaned.slice(0, 10).map(function(o) {
       `  Row ${o.row}: ${o.grievanceId} (Member ID: ${o.memberId})`
     ).join('\n');
 
@@ -11096,7 +11096,7 @@ function showNextGrievanceID() {
 /**
  * Pagination configuration
  */
-const PAGINATION_CONFIG = {
+var PAGINATION_CONFIG = {
   DEFAULT_PAGE_SIZE: 100,
   PAGE_SIZE_OPTIONS: [25, 50, 100, 200, 500],
   MAX_CACHED_PAGES: 10,
@@ -11360,12 +11360,12 @@ function createPaginatedViewerHTML() {
   </div>
 
   <script>
-    let currentPage = 1;
-    let pageSize = ${pageSize};
-    let totalRecords = ${totalRows};
-    let totalPages = ${totalPages};
-    let currentData = [];
-    let allHeaders = [];
+    var currentPage = 1;
+    var pageSize = ${pageSize};
+    var totalRecords = ${totalRows};
+    var totalPages = ${totalPages};
+    var currentData = [];
+    var allHeaders = [];
 
     // Load initial page
     loadPage(1);
@@ -11394,10 +11394,10 @@ function createPaginatedViewerHTML() {
       allHeaders = data.headers;
       currentData = data.rows;
 
-      let html = '<table><thead><tr>';
+      var html = '<table><thead><tr>';
 
       // Headers
-      data.headers.forEach(header => {
+      data.headers.forEach(function(header) {
         html += '<th>' + escapeHtml(header) + '</th>';
       });
 
@@ -11407,10 +11407,10 @@ function createPaginatedViewerHTML() {
       if (data.rows.length === 0) {
         html += '<tr><td colspan="' + data.headers.length + '" class="no-data">No records found</td></tr>';
       } else {
-        data.rows.forEach(row => {
+        data.rows.forEach(function(row) {
           html += '<tr>';
-          row.forEach(cell => {
-            let cellValue = cell;
+          row.forEach(function(cell) {
+            var cellValue = cell;
             if (cell instanceof Date) {
               cellValue = cell.toLocaleDateString();
             }
@@ -11427,7 +11427,7 @@ function createPaginatedViewerHTML() {
     }
 
     function renderPagination() {
-      let html = '';
+      var html = '';
 
       // First and Previous buttons
       html += '<button class="page-button" onclick="loadPage(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>« First</button>';
@@ -11487,8 +11487,8 @@ function createPaginatedViewerHTML() {
         return;
       }
 
-      const filteredRows = currentData.filter(row => {
-        return row.some(cell => {
+      const filteredRows = currentData.filter(function(row) {
+        return row.some(function(cell) {
           return String(cell).toLowerCase().includes(searchTerm);
         });
       });
@@ -11498,7 +11498,7 @@ function createPaginatedViewerHTML() {
 
     function exportCurrentPage() {
       google.script.run
-        .withSuccessHandler((url) => {
+        .withSuccessHandlerfunction((url) {
           alert('✅ Page exported!');
           window.open(url, '_blank');
         })
@@ -11544,7 +11544,7 @@ function getPageData(startRow, numRows) {
   const headers = grievanceSheet.getRange(1, 1, 1, lastCol).getValues()[0];
 
   // Get data
-  let rows = [];
+  var rows = [];
   if (numRows > 0) {
     rows = grievanceSheet.getRange(startRow, 1, numRows, lastCol).getValues();
   }
@@ -11566,15 +11566,15 @@ function exportPageToCSV(page, pageSize) {
   const data = getPageData(startRow, pageSize);
 
   // Create CSV content
-  let csv = '';
+  var csv = '';
 
   // Headers
-  csv += data.headers.map(h => `"${h}"`).join(',') + '\n';
+  csv += data.headers.map(function(h) { return `"${h}"`).join(','; }) + '\n';
 
   // Rows
-  data.rows.forEach(row => {
-    csv += row.map(cell => {
-      let value = String(cell);
+  data.rows.forEach(function(row) {
+    csv += row.map(function(cell) {
+      var value = String(cell);
       if (cell instanceof Date) {
         value = Utilities.formatDate(cell, Session.getScriptTimeZone(), 'yyyy-MM-dd');
       }
@@ -11606,7 +11606,7 @@ function createPaginatedView(sheetName, pageSize = PAGINATION_CONFIG.DEFAULT_PAG
   const totalPages = Math.ceil(totalRows / pageSize);
 
   const viewSheetName = `${sheetName}_Paginated`;
-  let viewSheet = ss.getSheetByName(viewSheetName);
+  var viewSheet = ss.getSheetByName(viewSheetName);
 
   if (viewSheet) {
     viewSheet.clear();
@@ -11756,7 +11756,7 @@ function getPaginationStats() {
  *
  * Usage:
  *   const lock = new DistributedLock('resource-name');
- *   lock.executeWithLock(() => {
+ *   lock.executeWithLockfunction(() {
  *     // Critical section code here
  *   });
  */
@@ -11901,7 +11901,7 @@ class DistributedLock {
 function recalcAllMembersThreadSafe() {
   const lock = new DistributedLock('recalc_members', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     // Call the actual recalculation function
     if (typeof recalcAllMembers === 'function') {
       return recalcAllMembers();
@@ -11917,7 +11917,7 @@ function recalcAllMembersThreadSafe() {
 function recalcAllGrievancesThreadSafe() {
   const lock = new DistributedLock('recalc_grievances', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     // Call the batched recalculation if available
     if (typeof recalcAllGrievancesBatched === 'function') {
       return recalcAllGrievancesBatched();
@@ -11933,7 +11933,7 @@ function recalcAllGrievancesThreadSafe() {
 function rebuildDashboardThreadSafe() {
   const lock = new DistributedLock('rebuild_dashboard', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     // Call the optimized rebuild if available, otherwise standard rebuild
     if (typeof rebuildDashboardOptimized === 'function') {
       return rebuildDashboardOptimized();
@@ -11952,7 +11952,7 @@ function rebuildDashboardThreadSafe() {
 function seedDataThreadSafe() {
   const lock = new DistributedLock('seed_data', 600000); // 10 minute timeout
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     if (typeof seedAllWithRollback === 'function') {
       return seedAllWithRollback();
     } else {
@@ -11974,7 +11974,7 @@ function seedDataThreadSafe() {
 function clearAllDataThreadSafe() {
   const lock = new DistributedLock('clear_data', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     if (typeof NUKE_ALL_DATA === 'function') {
       return NUKE_ALL_DATA();
     }
@@ -11994,7 +11994,7 @@ function makeThreadSafe(fn, resourceName, timeout = 30000) {
   return function(...args) {
     const lock = new DistributedLock(resourceName, timeout);
 
-    return lock.executeWithLock(() => {
+    return lock.executeWithLockfunction(() {
       return fn.apply(this, args);
     });
   };
@@ -12129,7 +12129,7 @@ function showLockStatus() {
   const ui = SpreadsheetApp.getUi();
   const status = checkConcurrentOperations();
 
-  let message;
+  var message;
 
   if (status.active) {
     message = `Active Operations:\n\n`;
@@ -12163,12 +12163,12 @@ function CHECK_LOCK_STATUS() {
 function batchUpdateWithLock(updates) {
   const lock = new DistributedLock('batch_update', 600000); // 10 minutes
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
     // Perform batch updates
-    let updateCount = 0;
+    var updateCount = 0;
 
     for (const update of updates) {
       // Apply each update
@@ -12214,7 +12214,7 @@ function batchUpdateWithLock(updates) {
 /**
  * Error handling configuration
  */
-const ERROR_CONFIG = {
+var ERROR_CONFIG = {
   LOG_SHEET_NAME: 'Error_Log',
   MAX_LOG_ENTRIES: 1000,
   ERROR_LEVELS: {
@@ -12230,7 +12230,7 @@ const ERROR_CONFIG = {
 /**
  * Error categories
  */
-const ERROR_CATEGORIES = {
+var ERROR_CATEGORIES = {
   VALIDATION: 'Data Validation',
   PERMISSION: 'Permission Error',
   NETWORK: 'Network Error',
@@ -12259,11 +12259,11 @@ function createErrorDashboardHTML() {
   const stats = getErrorStats();
   const recentErrors = getRecentErrors(20);
 
-  let errorRows = '';
+  var errorRows = '';
   if (recentErrors.length === 0) {
     errorRows = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #999;">No errors logged</td></tr>';
   } else {
-    recentErrors.forEach(error => {
+    recentErrors.forEach(function(error) {
       const levelClass = error.level.toLowerCase();
       errorRows += `
         <tr>
@@ -12476,7 +12476,7 @@ function createErrorDashboardHTML() {
   <script>
     function runHealthCheck() {
       google.script.run
-        .withSuccessHandler((result) => {
+        .withSuccessHandlerfunction((result) {
           alert('🏥 Health Check Complete:\\n\\n' + result.summary);
           location.reload();
         })
@@ -12485,7 +12485,7 @@ function createErrorDashboardHTML() {
 
     function exportErrorLog() {
       google.script.run
-        .withSuccessHandler((url) => {
+        .withSuccessHandlerfunction((url) {
           alert('✅ Error log exported!');
           window.open(url, '_blank');
         })
@@ -12495,7 +12495,7 @@ function createErrorDashboardHTML() {
     function clearErrorLog() {
       if (confirm('Clear all error logs? This cannot be undone.')) {
         google.script.run
-          .withSuccessHandler(() => {
+          .withSuccessHandlerfunction(() {
             alert('✅ Error log cleared!');
             location.reload();
           })
@@ -12505,7 +12505,7 @@ function createErrorDashboardHTML() {
 
     function testErrorHandling() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Test error logged successfully!');
           location.reload();
         })
@@ -12514,7 +12514,7 @@ function createErrorDashboardHTML() {
 
     function viewErrorTrends() {
       google.script.run
-        .withSuccessHandler((url) => {
+        .withSuccessHandlerfunction((url) {
           window.open(url, '_blank');
         })
         .createErrorTrendReport();
@@ -12537,7 +12537,7 @@ function createErrorDashboardHTML() {
 function logError(level, category, message, context = '', error = null, recovered = false) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let errorSheet = ss.getSheetByName(ERROR_CONFIG.LOG_SHEET_NAME);
+    var errorSheet = ss.getSheetByName(ERROR_CONFIG.LOG_SHEET_NAME);
 
     // Create error log sheet if it doesn't exist
     if (!errorSheet) {
@@ -12658,7 +12658,7 @@ function getErrorStats() {
     critical: 0
   };
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const level = row[1];
     if (level === 'INFO') stats.info++;
     else if (level === 'WARNING') stats.warning++;
@@ -12667,8 +12667,8 @@ function getErrorStats() {
   });
 
   // Determine health
-  let health = 'good';
-  let healthText = '✅ Good';
+  var health = 'good';
+  var healthText = '✅ Good';
 
   if (stats.critical > 0 || stats.error > 10) {
     health = 'poor';
@@ -12703,7 +12703,7 @@ function getRecentErrors(limit = 20) {
 
   const data = errorSheet.getRange(startRow, 1, numRows, 8).getValues();
 
-  return data.map(row => ({
+  return data.map(function(row) { return ({
     timestamp: row[0],
     level: row[1],
     category: row[2],
@@ -12756,7 +12756,7 @@ function withErrorHandling(func, context) {
 function validateRequiredFields(data, requiredFields) {
   const missing = [];
 
-  requiredFields.forEach(field => {
+  requiredFields.forEach(function(field) {
     if (!data[field] || data[field] === '') {
       missing.push(field);
     }
@@ -12809,9 +12809,9 @@ function performSystemHealthCheck() {
   // Check 1: Verify all required sheets exist
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const requiredSheets = Object.values(SHEETS);
-  const existingSheets = ss.getSheets().map(s => s.getName());
+  const existingSheets = ss.getSheets().map(function(s) { return s.getName(); });
 
-  requiredSheets.forEach(sheetName => {
+  requiredSheets.forEach(function(sheetName) {
     const exists = existingSheets.includes(sheetName);
     results.checks.push({
       name: `Sheet: ${sheetName}`,
@@ -12860,7 +12860,7 @@ function performSystemHealthCheck() {
   }
 
   // Generate summary
-  const passCount = results.checks.filter(c => c.status === 'PASS').length;
+  const passCount = results.checks.filter(function(c) { return c.status === 'PASS'; }).length;
   const totalCount = results.checks.length;
   results.summary = `Health Check: ${passCount}/${totalCount} checks passed\nOverall Status: ${results.overall}`;
 
@@ -12951,7 +12951,7 @@ function createErrorTrendReport() {
   }
 
   // Create or get trends sheet
-  let trendsSheet = ss.getSheetByName('Error_Trends');
+  var trendsSheet = ss.getSheetByName('Error_Trends');
   if (trendsSheet) {
     trendsSheet.clear();
   } else {
@@ -12962,7 +12962,7 @@ function createErrorTrendReport() {
   const data = errorSheet.getRange(2, 1, errorSheet.getLastRow() - 1, 2).getValues();
 
   const dailyStats = {};
-  data.forEach(row => {
+  data.forEach(function(row) {
     const date = Utilities.formatDate(new Date(row[0]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
     const level = row[1];
 
@@ -13036,7 +13036,7 @@ function createErrorTrendReport() {
 /**
  * FAQ categories
  */
-const FAQ_CATEGORIES = {
+var FAQ_CATEGORIES = {
   GETTING_STARTED: 'Getting Started',
   GRIEVANCES: 'Grievance Process',
   MEMBERS: 'Member Management',
@@ -13051,7 +13051,7 @@ const FAQ_CATEGORIES = {
  */
 function createFAQSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let faqSheet = ss.getSheetByName('📚 FAQ Database');
+  var faqSheet = ss.getSheetByName('📚 FAQ Database');
 
   if (faqSheet) {
     SpreadsheetApp.getUi().alert('FAQ Database sheet already exists.');
@@ -13389,7 +13389,7 @@ function createFAQSearchHTML() {
 
     <div class="categories">
       <div class="category-badge active" onclick="filterByCategory('')">All Categories</div>
-      ${categories.map(cat => `
+      ${categories.map(function(cat) { return '
         <div class="category-badge" onclick="filterByCategory('${cat}')">${cat}</div>
       `).join('')}
     </div>
@@ -13404,8 +13404,8 @@ function createFAQSearchHTML() {
   </div>
 
   <script>
-    let allFAQs = [];
-    let currentCategory = '';
+    var allFAQs = [];
+    var currentCategory = '';
 
     // Load FAQs on startup
     google.script.run
@@ -13422,7 +13422,7 @@ function createFAQSearchHTML() {
       const stats = document.getElementById('stats');
       stats.innerHTML = \`
         <strong>📊 Knowledge Base Stats:</strong>
-        ${allFAQs.length} articles across ${new Set(allFAQs.map(f => f.category)).size} categories
+        ${allFAQs.length} articles across ${new Set(allFAQs.map(function(f) { return f.category); }).size} categories
       \`;
     }
 
@@ -13434,14 +13434,14 @@ function createFAQSearchHTML() {
         return;
       }
 
-      let filtered = allFAQs;
+      var filtered = allFAQs;
 
       if (currentCategory) {
-        filtered = filtered.filter(faq => faq.category === currentCategory);
+        filtered = filtered.filter(function(faq) { return faq.category === currentCategory; });
       }
 
       if (searchTerm) {
-        filtered = filtered.filter(faq => {
+        filtered = filtered.filter(function(faq) {
           return faq.question.toLowerCase().includes(searchTerm) ||
                  faq.answer.toLowerCase().includes(searchTerm) ||
                  (faq.tags && faq.tags.toLowerCase().includes(searchTerm));
@@ -13455,7 +13455,7 @@ function createFAQSearchHTML() {
       currentCategory = category;
 
       // Update active badge
-      document.querySelectorAll('.category-badge').forEach(badge => {
+      document.querySelectorAll('.category-badge').forEach(function(badge) {
         badge.classList.remove('active');
       });
       event.target.classList.add('active');
@@ -13506,7 +13506,7 @@ function createFAQSearchHTML() {
 
     function markHelpful(faqId, isHelpful) {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           // Reload FAQs to get updated counts
           google.script.run
             .withSuccessHandler(onFAQsLoaded)
@@ -13539,7 +13539,7 @@ function getAllFAQs() {
 
   const data = faqSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
-  return data.map(row => ({
+  return data.map(function(row) { return ({
     id: row[0],
     category: row[1],
     question: row[2],
@@ -13624,7 +13624,7 @@ function createFAQAdminHTML() {
     <div class="form-group">
       <label>Category:</label>
       <select id="category">
-        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+        ${categories.map(function(cat) { return `<option value="${cat}">${cat}</option>`).join(''; })}
       </select>
     </div>
 
@@ -13662,11 +13662,11 @@ function createFAQAdminHTML() {
       }
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ FAQ saved successfully!');
           google.script.host.close();
         })
-        .withFailureHandler((error) => {
+        .withFailureHandlerfunction((error) {
           alert('Error: ' + error.message);
         })
         .addNewFAQ(faq);
@@ -13683,7 +13683,7 @@ function createFAQAdminHTML() {
  */
 function addNewFAQ(faq) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let faqSheet = ss.getSheetByName('📚 FAQ Database');
+  var faqSheet = ss.getSheetByName('📚 FAQ Database');
 
   if (!faqSheet) {
     createFAQSheet();
@@ -13732,7 +13732,7 @@ function addNewFAQ(faq) {
  * Creates the Getting Started sheet
  */
 function createGettingStartedSheet(ss) {
-  let sheet = ss.getSheetByName("📚 Getting Started");
+  var sheet = ss.getSheetByName("📚 Getting Started");
   if (sheet) {
     ss.deleteSheet(sheet);
   }
@@ -13757,7 +13757,7 @@ function createGettingStartedSheet(ss) {
   sheet.setRowHeight(1, 60);
 
   // GitHub Repository Information Section
-  let row = 3;
+  var row = 3;
   sheet.getRange(row, 1, 1, 4).merge()
     .setValue("📦 GitHub Repository")
     .setFontSize(18)
@@ -13951,7 +13951,7 @@ function createGettingStartedSheet(ss) {
  * Creates the FAQ sheet
  */
 function createFAQSheet(ss) {
-  let sheet = ss.getSheetByName("❓ FAQ");
+  var sheet = ss.getSheetByName("❓ FAQ");
   if (sheet) {
     ss.deleteSheet(sheet);
   }
@@ -13977,7 +13977,7 @@ function createFAQSheet(ss) {
   sheet.setRowHeight(1, 60);
 
   // FAQ Categories and Questions
-  let row = 3;
+  var row = 3;
 
   // General Questions
   sheet.getRange(row, 1, 1, 3).merge()
@@ -14135,7 +14135,7 @@ function createFAQSheet(ss) {
  * Helper function to add FAQ section rows
  */
 function addFAQSection(sheet, startRow, faqs) {
-  let row = startRow;
+  var row = startRow;
 
   for (let i = 0; i < faqs.length; i++) {
     const faq = faqs[i];
@@ -14231,7 +14231,7 @@ function composeGrievanceEmail(grievanceId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  let grievanceData = null;
+  var grievanceData = null;
 
   if (grievanceId) {
     const lastRow = grievanceSheet.getLastRow();
@@ -14386,7 +14386,7 @@ function createEmailComposerHTML(grievanceData) {
       <label>Template (optional):</label>
       <select id="templateSelect" onchange="loadTemplate()">
         <option value="">-- Select a template --</option>
-        ${templates.map(t => `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`).join('')}
+        ${templates.map(function(t) { return `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`).join(''; })}
       </select>
     </div>
 
@@ -14436,7 +14436,7 @@ function createEmailComposerHTML(grievanceData) {
       const templateId = document.getElementById('templateSelect').value;
       if (!templateId) return;
 
-      const template = templates.find(t => t.id === templateId);
+      const template = templates.find(function(t) { return t.id === templateId; });
       if (!template) return;
 
       document.getElementById('subject').value = template.subject || '';
@@ -14486,7 +14486,7 @@ function createEmailComposerHTML(grievanceData) {
 
     function onEmailSent(result) {
       showStatus('✅ Email sent successfully!', 'success');
-      setTimeout(() => {
+      setTimeoutfunction(() {
         google.script.host.close();
       }, 2000);
     }
@@ -14648,7 +14648,7 @@ function sendGrievanceEmail(emailData) {
  */
 function logCommunication(grievanceId, type, details) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let commLog = ss.getSheetByName('📞 Communications Log');
+  var commLog = ss.getSheetByName('📞 Communications Log');
 
   if (!commLog) {
     commLog = createCommunicationsLogSheet();
@@ -14833,7 +14833,7 @@ function showEmailTemplateManager() {
       {GRIEVANCE_ID}, {MEMBER_NAME}, {ISSUE_TYPE}, {STATUS}
     </div>
 
-    ${templates.map(t => `
+    ${templates.map(function(t) { return '
       <div class="template">
         <h3>${t.name}</h3>
         <strong>Subject:</strong> ${t.subject}<br><br>
@@ -14873,7 +14873,7 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const data = commLog.getRange(2, 1, lastRow - 1, 5).getValues();
-  const grievanceComms = data.filter(row => row[1] === grievanceId);
+  const grievanceComms = data.filter(function(row) { return row[1] === grievanceId; });
 
   if (grievanceComms.length === 0) {
     SpreadsheetApp.getUi().alert('No communications logged for this grievance.');
@@ -14881,7 +14881,7 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const commsList = grievanceComms
-    .map(row => `
+    .map(function(row) { return '
       <div style="background: #f8f9fa; padding: 12px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #1a73e8;">
         <strong>${row[2]}</strong> - ${row[0].toLocaleString()}<br>
         <em>By: ${row[3]}</em><br><br>
@@ -14968,7 +14968,7 @@ function createGrievanceFolder(grievanceId, grievantName) {
   const rootFolder = createRootFolder();
 
   // Create folder name with grievant name if provided
-  let folderName = `Grievance_${grievanceId}`;
+  var folderName = `Grievance_${grievanceId}`;
   if (grievantName) {
     folderName = `Grievance_${grievanceId}_${grievantName}`;
   }
@@ -15142,7 +15142,7 @@ function showFileUploadDialog() {
   }
 
   // Get or create folder
-  let folder;
+  var folder;
   try {
     folder = createGrievanceFolder(grievanceId);
     linkFolderToGrievance(grievanceId, folder.getId());
@@ -15412,7 +15412,7 @@ function createFileListHTML(grievanceId, folderId, files) {
   const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
 
   const filesList = files
-    .map(file => `
+    .map(function(file) { return '
       <div class="file-item">
         <div class="file-icon">${getFileIcon(file.type)}</div>
         <div class="file-details">
@@ -15573,10 +15573,10 @@ function batchCreateGrievanceFolders() {
     }
 
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 29).getValues();
-    let created = 0;
-    let skipped = 0;
+    var created = 0;
+    var skipped = 0;
 
-    data.forEach((row, index) => {
+    data.forEachfunction((row, index) {
       const grievanceId = row[0];
       const folderId = row[28]; // Column AC
 
@@ -15697,7 +15697,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
         // All functions failed - log critical error
         if (typeof logError === 'function') {
           logError(
-            new Error(`All degradation levels failed: ${errors.map(e => e.error.message).join('; ')}`),
+            new Error(`All degradation levels failed: ${errors.map(function(e) { return e.error.message; }).join('; ')}`),
             'GracefulDegradation.complete_failure',
             'CRITICAL'
           );
@@ -15706,7 +15706,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
         // Throw aggregate error
         throw new Error(
           `Complete failure - all degradation levels failed:\n` +
-          errors.map(e => `${e.level}: ${e.error.message}`).join('\n')
+          errors.map(function(e) { return `${e.level}: ${e.error.message}`).join('\n'; })
         );
       }
     }
@@ -15722,7 +15722,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
 function rebuildDashboardSafe() {
   return withGracefulDegradation(
     // Primary: Full rebuild (optimized if available)
-    () => {
+    function() {
       if (typeof rebuildDashboardOptimized === 'function') {
         return rebuildDashboardOptimized();
       } else if (typeof rebuildDashboard === 'function') {
@@ -15732,12 +15732,12 @@ function rebuildDashboardSafe() {
     },
 
     // Fallback: Minimal rebuild (KPIs only, no charts)
-    () => {
+    function() {
       return rebuildDashboardMinimal();
     },
 
     // Minimal: Show cached dashboard
-    () => {
+    function() {
       return showCachedDashboard();
     }
   );
@@ -15780,7 +15780,7 @@ function rebuildDashboardMinimal() {
     const totalGrievances = grievanceData.length - 1;
 
     // Count open grievances
-    let openGrievances = 0;
+    var openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
       if (grievanceData[i][4] === 'Open') { // Column E (index 4)
         openGrievances++;
@@ -15900,7 +15900,7 @@ function cacheDashboardState() {
     const totalMembers = memberData.length - 1;
     const totalGrievances = grievanceData.length - 1;
 
-    let openGrievances = 0;
+    var openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
       if (grievanceData[i][4] === 'Open') {
         openGrievances++;
@@ -15932,7 +15932,7 @@ function cacheDashboardState() {
 function recalcMembersSafe() {
   return withGracefulDegradation(
     // Primary: Batched recalculation
-    () => {
+    function() {
       if (typeof recalcAllMembers === 'function') {
         return recalcAllMembers();
       }
@@ -15940,12 +15940,12 @@ function recalcMembersSafe() {
     },
 
     // Fallback: Recalculate just grievance status fields
-    () => {
+    function() {
       return recalcMembersGrievanceFieldsOnly();
     },
 
     // Minimal: Skip recalculation, return success
-    () => {
+    function() {
       Logger.log('Skipping member recalculation (minimal mode)');
       return { mode: 'minimal', message: 'Recalculation skipped' };
     }
@@ -15975,9 +15975,9 @@ function recalcMembersGrievanceFieldsOnly() {
   // For each member, find their open grievances
   for (let i = 1; i < memberData.length; i++) {
     const memberID = memberData[i][0];
-    let hasOpen = 'No';
-    let status = '';
-    let deadline = '';
+    var hasOpen = 'No';
+    var status = '';
+    var deadline = '';
 
     // Find grievances for this member
     for (let j = 1; j < grievanceData.length; j++) {
@@ -16012,7 +16012,7 @@ function recalcMembersGrievanceFieldsOnly() {
 function seedDataSafe() {
   return withGracefulDegradation(
     // Primary: Full seed with rollback protection
-    () => {
+    function() {
       if (typeof seedAllWithRollback === 'function') {
         return seedAllWithRollback();
       }
@@ -16020,7 +16020,7 @@ function seedDataSafe() {
     },
 
     // Fallback: Seed without rollback protection
-    () => {
+    function() {
       Logger.log('Seeding without rollback protection...');
       if (typeof SEED_20K_MEMBERS === 'function') {
         SEED_20K_MEMBERS();
@@ -16032,7 +16032,7 @@ function seedDataSafe() {
     },
 
     // Minimal: Skip seeding
-    () => {
+    function() {
       return { mode: 'skipped', message: 'Seeding skipped due to errors' };
     }
   );
@@ -16049,7 +16049,7 @@ function REBUILD_DASHBOARD_SAFE() {
 
     const result = rebuildDashboardSafe();
 
-    let message;
+    var message;
     if (result.mode === 'minimal') {
       message = 'Dashboard rebuilt in MINIMAL mode.\n\n' +
                 'Only basic KPIs are displayed.\n\n' +
@@ -16132,7 +16132,7 @@ function getGrievanceFloatState() {
 function setGrievanceFloatState(enabled) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let settingsSheet = ss.getSheetByName('User Settings');
+    var settingsSheet = ss.getSheetByName('User Settings');
 
     if (!settingsSheet) {
       // Create settings sheet if it doesn't exist
@@ -16146,7 +16146,7 @@ function setGrievanceFloatState(enabled) {
 
     // Find and update or add setting
     const settingsData = settingsSheet.getDataRange().getValues();
-    let found = false;
+    var found = false;
 
     for (let i = 0; i < settingsData.length; i++) {
       if (settingsData[i][0] === 'grievanceFloatEnabled') {
@@ -16251,7 +16251,7 @@ function applyGrievanceFloat() {
  * @returns {Array} Sorted array of data rows
  */
 function sortGrievancesByPriority(dataRows) {
-  return dataRows.sort((a, b) => {
+  return dataRows.sortfunction((a, b) {
     const statusA = String(a[GRIEVANCE_COLS.STATUS - 1] || '').toLowerCase();
     const statusB = String(b[GRIEVANCE_COLS.STATUS - 1] || '').toLowerCase();
     const stepA = String(a[GRIEVANCE_COLS.CURRENT_STEP - 1] || '');
@@ -16261,8 +16261,8 @@ function sortGrievancesByPriority(dataRows) {
 
     // Inactive statuses go to bottom
     const inactiveStatuses = ['closed', 'settled', 'inactive', 'withdrawn', 'denied'];
-    const aIsInactive = inactiveStatuses.some(status => statusA.includes(status));
-    const bIsInactive = inactiveStatuses.some(status => statusB.includes(status));
+    const aIsInactive = inactiveStatuses.some(function(status) { return statusA.includes(status); });
+    const bIsInactive = inactiveStatuses.some(function(status) { return statusB.includes(status); });
 
     if (aIsInactive && !bIsInactive) return 1;
     if (!aIsInactive && bIsInactive) return -1;
@@ -16472,7 +16472,7 @@ function showGrievanceFloatPanel() {
  * Configuration for grievance workflow and Google Form integration
  * @type {Object}
  */
-const GRIEVANCE_FORM_CONFIG = {
+var GRIEVANCE_FORM_CONFIG = {
   // Replace with your actual Google Form URL
   // To find: Create a Google Form, then copy the URL from the browser
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform",
@@ -16560,7 +16560,7 @@ function getMemberList() {
 
     const data = memberSheet.getRange(2, 1, lastRow - 1, numCols).getValues();
 
-    return data.map((row, index) => ({
+    return data.mapfunction((row, index) { return ({
       rowIndex: index + 2,
       memberId: safeArrayGet(row, MEMBER_COLS.MEMBER_ID - 1, ''),
       firstName: safeArrayGet(row, MEMBER_COLS.FIRST_NAME - 1, ''),
@@ -16573,7 +16573,7 @@ function getMemberList() {
       phone: safeArrayGet(row, MEMBER_COLS.PHONE - 1, ''),
       isSteward: safeArrayGet(row, MEMBER_COLS.IS_STEWARD - 1, ''),
       supervisor: safeArrayGet(row, MEMBER_COLS.SUPERVISOR - 1, '')
-    })).filter(member => member.memberId); // Filter out empty rows
+    })).filter(function(member) { return member.memberId; }); // Filter out empty rows
   } catch (error) {
     return handleError(error, 'getMemberList', true, true) || [];
   }
@@ -16586,7 +16586,7 @@ function getMemberList() {
  */
 function createMemberSelectionDialog(members) {
   // Use HTML escaping to prevent XSS
-  const memberOptions = members.map(m =>
+  const memberOptions = members.map(function(m) {
     `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`
   ).join('');
 
@@ -16723,7 +16723,7 @@ function createMemberSelectionDialog(members) {
   </div>
 
   <script>
-    let members = ${JSON.stringify(members)};
+    var members = ${JSON.stringify(members)};
 
     function showMemberDetails() {
       const select = document.getElementById('memberSelect');
@@ -16731,7 +16731,7 @@ function createMemberSelectionDialog(members) {
       const startBtn = document.getElementById('startBtn');
 
       if (select.value) {
-        const member = members.find(m => m.rowIndex == select.value);
+        const member = members.find(function(m) { return m.rowIndex == select.value; });
         if (member) {
           detailsDiv.innerHTML = \`
             <div class="detail-item"><strong>Name:</strong> \${member.firstName} \${member.lastName}</div>
@@ -16891,9 +16891,9 @@ function getGrievanceCoordinators() {
     const coordinatorData = configSheet.getRange(2, 16, 10, 3).getValues();
 
     // Get unique coordinator names
-    const coordinator1List = coordinatorData.map(row => row[0]).filter(String);
-    const coordinator2List = coordinatorData.map(row => row[1]).filter(String);
-    const coordinator3List = coordinatorData.map(row => row[2]).filter(String);
+    const coordinator1List = coordinatorData.map(function(row) { return row[0]).filter(String; });
+    const coordinator2List = coordinatorData.map(function(row) { return row[1]).filter(String; });
+    const coordinator3List = coordinatorData.map(function(row) { return row[2]).filter(String; });
 
     return {
       coordinator1: coordinator1List.length > 0 ? coordinator1List[0] : '',
@@ -16911,7 +16911,7 @@ function getGrievanceCoordinators() {
  */
 function addStewardContactInfoToConfig() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let configSheet = ss.getSheetByName(SHEETS.CONFIG);
+  var configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
     SpreadsheetApp.getUi().alert('❌ Config sheet not found!');
@@ -17015,7 +17015,7 @@ function createGrievanceFolder(grievanceId, formData) {
   try {
     // Get or create main Grievances folder
     const mainFolderName = 'SEIU 509 - Grievances';
-    let mainFolder;
+    var mainFolder;
 
     const folders = DriveApp.getFoldersByName(mainFolderName);
     if (folders.hasNext()) {
@@ -17050,7 +17050,7 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
 
   // Get grievance data
   const grievanceData = grievanceLog.getDataRange().getValues();
-  let grievanceRow = grievanceData.find(row => row[0] === grievanceId);
+  var grievanceRow = grievanceData.find(function(row) { return row[0] === grievanceId; });
 
   if (!grievanceRow) {
     SpreadsheetApp.getUi().alert('❌ Grievance not found');
@@ -17242,7 +17242,7 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
   <script>
     function shareWithSelected() {
       const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-      const recipients = Array.from(checkboxes).map(cb => cb.value);
+      const recipients = Array.from(checkboxes).map(function(cb) { return cb.value; });
 
       if (recipients.length === 0) {
         alert('Please select at least one recipient.');
@@ -17252,11 +17252,11 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
       const folderUrl = '${folderUrl}';
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Sharing invitations sent successfully!');
           google.script.host.close();
         })
-        .withFailureHandler(error => {
+        .withFailureHandler(function(error) {
           alert('❌ Error: ' + error.message);
         })
         .shareGrievanceWithRecipients('${grievanceId}', recipients, folderUrl);
@@ -17277,7 +17277,7 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
     const pdfBlob = generateGrievancePDF(grievanceId);
 
     // Get folder by URL
-    let folder = null;
+    var folder = null;
     if (folderUrl) {
       const folderId = folderUrl.match(/[-\w]{25,}/);
       if (folderId) {
@@ -17288,7 +17288,7 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
     // Share folder with each recipient
     // Note: Requires valid email addresses. Configure coordinator emails in Config sheet.
     if (folder && recipients && recipients.length > 0) {
-      recipients.forEach(email => {
+      recipients.forEach(function(email) {
         try {
           // Validate email before sharing
           const validEmail = sanitizeEmail(email);
@@ -17314,7 +17314,7 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
 
     // Send email notification with grievance PDF
     // Note: Requires valid email addresses and Gmail permissions
-    recipients.forEach(email => {
+    recipients.forEach(function(email) {
       try {
         const validEmail = sanitizeEmail(email);
         if (validEmail) {
@@ -17528,9 +17528,9 @@ function generateUniqueGrievanceId() {
   const existingIds = grievanceSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
 
   // Generate new ID
-  let counter = 1;
-  let letter = 'A';
-  let newId;
+  var counter = 1;
+  var letter = 'A';
+  var newId;
 
   do {
     newId = `GRV-${String(counter).padStart(3, '0')}-${letter}`;
@@ -17585,7 +17585,7 @@ function generateGrievancePDF(grievanceId) {
 
   // Find grievance row
   const data = grievanceSheet.getDataRange().getValues();
-  let grievanceRow = -1;
+  var grievanceRow = -1;
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === grievanceId) {
@@ -17652,7 +17652,7 @@ function formatGrievancePDFSheet(sheet, data) {
     .setBackground('#7EC8E3')
     .setFontColor('white');
 
-  let row = 3;
+  var row = 3;
 
   // Member Information
   sheet.getRange(row, 1, 1, 4).merge()
@@ -17791,22 +17791,22 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
       }
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Email sent successfully!');
           google.script.host.close();
         })
-        .withFailureHandler(e => alert('❌ Error: ' + e.message))
+        .withFailureHandler(function(e) { return alert('❌ Error: ' + e.message); })
         .emailGrievancePDF('${grievanceId}', emails);
     }
 
     function downloadPDF() {
       alert('PDF download will start automatically.\\n\\nPlease check your Downloads folder.');
       google.script.run
-        .withSuccessHandler(url => {
+        .withSuccessHandler(function(url) {
           window.open(url, '_blank');
           google.script.host.close();
         })
-        .withFailureHandler(e => alert('❌ Error: ' + e.message))
+        .withFailureHandler(function(e) { return alert('❌ Error: ' + e.message); })
         .getGrievancePDFUrl('${grievanceId}');
     }
   </script>
@@ -17822,14 +17822,14 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
  */
 function emailGrievancePDF(grievanceId, emailAddresses) {
   const pdfBlob = generateGrievancePDF(grievanceId);
-  const emails = emailAddresses.split(',').map(e => e.trim());
+  const emails = emailAddresses.split(',').map(function(e) { return e.trim(); });
 
   const subject = 'SEIU Local 509 - Grievance ' + grievanceId;
   const body = 'Please find attached the grievance form for ' + grievanceId + '.\n\n' +
                'This grievance was automatically generated from the SEIU Local 509 Dashboard.\n\n' +
                'For questions, please contact your steward.';
 
-  emails.forEach(email => {
+  emails.forEach(function(email) {
     if (email) {
       GmailApp.sendEmail(email, subject, body, {
         attachments: [pdfBlob]
@@ -17945,7 +17945,7 @@ function makeIdempotent(operation, keyGenerator, ttl = 600) {
  * Idempotent member addition
  * Safe to retry - won't create duplicates
  */
-const addMemberIdempotent = makeIdempotent(
+var addMemberIdempotent = makeIdempotent(
   function(memberData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -17958,7 +17958,7 @@ const addMemberIdempotent = makeIdempotent(
 
     // Check if member already exists
     const data = memberSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(row => row[0] === memberID);
+    const existingRow = data.findIndex(function(row) { return row[0] === memberID; });
 
     if (existingRow > 0) {
       // Update existing member
@@ -17983,13 +17983,13 @@ const addMemberIdempotent = makeIdempotent(
       };
     }
   },
-  (memberData) => `add_member_${memberData[0]}` // Use Member ID as key
+  function(memberData) { return 'add_member_${memberData[0]}` // Use Member ID as key
 );
 
 /**
  * Idempotent grievance addition
  */
-const addGrievanceIdempotent = makeIdempotent(
+var addGrievanceIdempotent = makeIdempotent(
   function(grievanceData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -18002,7 +18002,7 @@ const addGrievanceIdempotent = makeIdempotent(
 
     // Check if grievance already exists
     const data = grievanceSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(row => row[0] === grievanceID);
+    const existingRow = data.findIndex(function(row) { return row[0] === grievanceID; });
 
     if (existingRow > 0) {
       // Update existing grievance
@@ -18027,14 +18027,14 @@ const addGrievanceIdempotent = makeIdempotent(
       };
     }
   },
-  (grievanceData) => `add_grievance_${grievanceData[0]}` // Use Grievance ID as key
+  function(grievanceData) { return 'add_grievance_${grievanceData[0]}` // Use Grievance ID as key
 );
 
 /**
  * Idempotent backup creation
  * Won't create duplicate backups if retried within TTL
  */
-const createBackupIdempotent = makeIdempotent(
+var createBackupIdempotent = makeIdempotent(
   function() {
     if (typeof createIncrementalBackup === 'function') {
       return createIncrementalBackup();
@@ -18042,7 +18042,7 @@ const createBackupIdempotent = makeIdempotent(
 
     throw new Error('createIncrementalBackup function not available');
   },
-  () => {
+  function() {
     // Key is based on current hour - allows one backup per hour
     const now = new Date();
     const hourKey = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy-MM-dd-HH');
@@ -18055,7 +18055,7 @@ const createBackupIdempotent = makeIdempotent(
  * Idempotent recalculation wrapper
  * Prevents multiple simultaneous recalculations
  */
-const recalcAllIdempotent = makeIdempotent(
+var recalcAllIdempotent = makeIdempotent(
   function() {
     // Run both member and grievance recalculations
     const results = {};
@@ -18070,7 +18070,7 @@ const recalcAllIdempotent = makeIdempotent(
 
     return results;
   },
-  () => {
+  function() {
     // Key is based on current 5-minute window
     const now = new Date();
     const minutes = Math.floor(now.getMinutes() / 5) * 5;
@@ -18083,7 +18083,7 @@ const recalcAllIdempotent = makeIdempotent(
 /**
  * Idempotent dashboard rebuild
  */
-const rebuildDashboardIdempotent = makeIdempotent(
+var rebuildDashboardIdempotent = makeIdempotent(
   function() {
     if (typeof rebuildDashboardOptimized === 'function') {
       return rebuildDashboardOptimized();
@@ -18093,7 +18093,7 @@ const rebuildDashboardIdempotent = makeIdempotent(
 
     throw new Error('No dashboard rebuild function available');
   },
-  () => {
+  function() {
     // Key is based on current 5-minute window
     const now = new Date();
     const minutes = Math.floor(now.getMinutes() / 5) * 5;
@@ -18175,7 +18175,7 @@ function showIdempotentStatus() {
 
   const keys = JSON.parse(activeKeys);
 
-  let message = `Active Idempotent Operations: ${keys.length}\n\n`;
+  var message = `Active Idempotent Operations: ${keys.length}\n\n`;
 
   for (const key of keys) {
     const hasResult = cache.get(`result_${key}`) !== null;
@@ -18202,7 +18202,7 @@ function trackIdempotentKey(key) {
   const props = PropertiesService.getScriptProperties();
   const activeKeys = props.getProperty('IDEMPOTENT_KEYS');
 
-  let keys = activeKeys ? JSON.parse(activeKeys) : [];
+  var keys = activeKeys ? JSON.parse(activeKeys) : [];
 
   if (!keys.includes(key)) {
     keys.push(key);
@@ -18248,7 +18248,7 @@ function createIncrementalBackup() {
   const props = PropertiesService.getScriptProperties();
 
   // Get or create backup folder ID
-  let backupFolderId = props.getProperty('BACKUP_FOLDER_ID');
+  var backupFolderId = props.getProperty('BACKUP_FOLDER_ID');
 
   if (!backupFolderId) {
     // Create backup folder if it doesn't exist
@@ -18348,7 +18348,7 @@ function createBackupFolder() {
  */
 function cleanupOldBackups(folder) {
   const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000));
-  let deletedCount = 0;
+  var deletedCount = 0;
 
   try {
     const files = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
@@ -18461,7 +18461,7 @@ function listBackups() {
     }
 
     // Sort by creation date (newest first)
-    backups.sort((a, b) => b.created - a.created);
+    backups.sortfunction((a, b) { return b.created - a.created; });
 
     return backups;
 
@@ -18489,7 +18489,7 @@ function showBackupInfo() {
     return;
   }
 
-  let message = `Total Backups: ${backups.length}\n\n`;
+  var message = `Total Backups: ${backups.length}\n\n`;
   message += 'Recent Backups:\n';
   message += '─────────────────────────────────────\n';
 
@@ -18713,7 +18713,7 @@ function setupDailyBackupTrigger() {
  * Creates the Interactive Dashboard sheet with user-selectable controls
  */
 function createInteractiveDashboardSheet(ss) {
-  let sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
+  var sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
   if (!sheet) sheet = ss.insertSheet(SHEETS.INTERACTIVE_DASHBOARD);
 
   sheet.clear();
@@ -18819,7 +18819,7 @@ function createInteractiveDashboardSheet(ss) {
     {col: "P", endCol: "T", title: "⏰ Needs Attention", color: COLORS.SOLIDARITY_RED}
   ];
 
-  cardPositions.forEach((card, idx) => {
+  cardPositions.forEachfunction((card, idx) {
     const startRow = 12;
     const endRow = 18;
 
@@ -19175,31 +19175,31 @@ function calculateAllMetrics(memberData, grievanceData) {
 
   // Member metrics
   metrics.totalMembers = memberData.length - 1;
-  metrics.activeMembers = memberData.slice(1).filter(row => row[10] === 'Active').length;
-  metrics.totalStewards = memberData.slice(1).filter(row => row[9] === 'Yes').length;
-  metrics.unit8Members = memberData.slice(1).filter(row => row[5] === 'Unit 8').length;
-  metrics.unit10Members = memberData.slice(1).filter(row => row[5] === 'Unit 10').length;
+  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row[10] === 'Active'; }).length;
+  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row[9] === 'Yes'; }).length;
+  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
+  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
 
   // Grievance metrics
   metrics.totalGrievances = grievanceData.length - 1;
-  metrics.activeGrievances = grievanceData.slice(1).filter(row =>
+  metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
     row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision')).length;
-  metrics.resolvedGrievances = grievanceData.slice(1).filter(row =>
+  metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
     row[4] && row[4].startsWith('Resolved')).length;
 
-  const resolvedData = grievanceData.slice(1).filter(row => row[4] && row[4].startsWith('Resolved'));
-  metrics.grievancesWon = resolvedData.filter(row => row[24] && row[24].includes('Won')).length;
-  metrics.grievancesLost = resolvedData.filter(row => row[24] && row[24].includes('Lost')).length;
+  const resolvedData = grievanceData.slice(1).filter(function(row) { return row[4] && row[4].startsWith('Resolved'); });
+  metrics.grievancesWon = resolvedData.filter(function(row) { return row[24] && row[24].includes('Won'); }).length;
+  metrics.grievancesLost = resolvedData.filter(function(row) { return row[24] && row[24].includes('Lost'); }).length;
 
   metrics.winRate = metrics.resolvedGrievances > 0
     ? ((metrics.grievancesWon / metrics.resolvedGrievances) * 100).toFixed(1)
     : 0;
 
-  metrics.overdueGrievances = grievanceData.slice(1).filter(row => row[28] === 'YES').length;
+  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) { return row[28] === 'YES'; }).length;
 
   // Additional metrics
-  metrics.inMediation = grievanceData.slice(1).filter(row => row[4] === 'In Mediation').length;
-  metrics.inArbitration = grievanceData.slice(1).filter(row => row[4] === 'In Arbitration').length;
+  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Mediation'; }).length;
+  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Arbitration'; }).length;
 
   return metrics;
 }
@@ -19363,7 +19363,7 @@ function createDynamicChart(sheet, metricName, chartType, metrics, startCell, wi
   try {
     // Remove existing charts in this area first
     const charts = sheet.getCharts();
-    charts.forEach(chart => {
+    charts.forEach(function(chart) {
       const anchor = chart.getContainerInfo().getAnchorRow();
       // Extract row number correctly (handles cells like "AA22" not just "A22")
       if (anchor >= parseInt(startCell.match(/\d+/)[0])) {
@@ -19377,7 +19377,7 @@ function createDynamicChart(sheet, metricName, chartType, metrics, startCell, wi
   if (!chartData || chartData.length === 0) return;
 
   // Create chart based on type
-  let chartBuilder;
+  var chartBuilder;
   const range = sheet.getRange(startCell);
 
   if (chartType === "Donut Chart") {
@@ -19500,7 +19500,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
     case "Active Grievances":
       // Count actual grievances by step from Grievance Log
       const stepCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const status = row[4]; // Status column (E)
         const step = row[5];    // Current Step column (F)
         if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
@@ -19509,8 +19509,8 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const stepData = Object.entries(stepCounts)
-        .filter(([step]) => step && step !== 'Current Step')
-        .map(([step, count]) => [step, count]);
+        .filterfunction(([step]) { return step && step !== 'Current Step'; })
+        .mapfunction(([step, count]) { return [step, count]; });
 
       return stepData.length > 0 ? stepData : [["No Active Grievances", 0]];
 
@@ -19523,7 +19523,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
     case "Grievances by Type":
       // Count grievances by type/category
       const typeCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const type = row[22]; // Issue Category column (W)
         if (type && type !== 'Issue Category') {
           typeCounts[type] = (typeCounts[type] || 0) + 1;
@@ -19531,16 +19531,16 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const typeData = Object.entries(typeCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sortfunction((a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(([type, count]) => [type, count]);
+        .mapfunction(([type, count]) { return [type, count]; });
 
       return typeData.length > 0 ? typeData : [["No Data", 0]];
 
     case "Grievances by Location":
       // Count grievances by location
       const locationCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const location = row[25]; // Work Location column (Z)
         if (location && location !== 'Work Location (Site)') {
           locationCounts[location] = (locationCounts[location] || 0) + 1;
@@ -19548,16 +19548,16 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const locationData = Object.entries(locationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sortfunction((a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(([location, count]) => [location, count]);
+        .mapfunction(([location, count]) { return [location, count]; });
 
       return locationData.length > 0 ? locationData : [["No Data", 0]];
 
     case "Grievances by Step":
       // Count all grievances by step
       const allStepCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const step = row[5]; // Current Step column (F)
         if (step && step !== 'Current Step') {
           allStepCounts[step] = (allStepCounts[step] || 0) + 1;
@@ -19565,16 +19565,16 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const allStepData = Object.entries(allStepCounts)
-        .map(([step, count]) => [step, count]);
+        .mapfunction(([step, count]) { return [step, count]; });
 
       return allStepData.length > 0 ? allStepData : [["No Data", 0]];
 
     case "Unit 8 Members":
-      const unit8Count = memberData.slice(1).filter(row => row[5] === 'Unit 8').length;
+      const unit8Count = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
       return [["Unit 8", unit8Count]];
 
     case "Unit 10 Members":
-      const unit10Count = memberData.slice(1).filter(row => row[5] === 'Unit 10').length;
+      const unit10Count = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
       return [["Unit 10", unit10Count]];
 
     case "Total Stewards":
@@ -19594,12 +19594,12 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
 function createGrievanceStatusDonut(sheet, grievanceData) {
   // Count by status
   const statusCounts = {};
-  grievanceData.slice(1).forEach(row => {
+  grievanceData.slice(1).forEach(function(row) {
     const status = row[4] || 'Unknown';
     statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
 
-  const data = Object.entries(statusCounts).map(([status, count]) => [status, count]);
+  const data = Object.entries(statusCounts).mapfunction(([status, count]) { return [status, count]; });
 
   const chart = sheet.newChart()
     .setChartType(Charts.ChartType.PIE)
@@ -19625,14 +19625,14 @@ function createGrievanceStatusDonut(sheet, grievanceData) {
 function createLocationPieChart(sheet, grievanceData) {
   // Count by location (from member data)
   const locationCounts = {};
-  grievanceData.slice(1).forEach(row => {
+  grievanceData.slice(1).forEach(function(row) {
     const location = row[4] || 'Unknown';  // Adjust column as needed
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
   // Get top 10
   const topLocations = Object.entries(locationCounts)
-    .sort((a, b) => b[1] - a[1])
+    .sortfunction((a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const chart = sheet.newChart()
@@ -19658,13 +19658,13 @@ function createLocationPieChart(sheet, grievanceData) {
 function createWarehouseLocationChart(sheet, grievanceData) {
   // This would create a horizontal bar chart similar to warehouse dashboard
   const locationCounts = {};
-  grievanceData.slice(1).forEach(row => {
+  grievanceData.slice(1).forEach(function(row) {
     const location = row[4] || 'Unknown';
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
   const topLocations = Object.entries(locationCounts)
-    .sort((a, b) => b[1] - a[1])
+    .sortfunction((a, b) { return b[1] - a[1]; })
     .slice(0, 15);
 
   const chart = sheet.newChart()
@@ -19689,7 +19689,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
   // Clear existing data
   sheet.getRange("A94:G110").clearContent();
 
-  let tableData = [];
+  var tableData = [];
 
   // Generate table based on selected metric
   switch (metricName) {
@@ -19701,7 +19701,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const typeResolved = {};
       const typeWon = {};
 
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const type = row[22]; // Issue Category column (W)
         const status = row[4]; // Status column (E)
 
@@ -19720,9 +19720,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(typeCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sortfunction((a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([type, total], index) => {
+        .mapfunction(([type, total], index) {
           const active = typeActive[type] || 0;
           const resolved = typeResolved[type] || 0;
           const won = typeWon[type] || 0;
@@ -19740,7 +19740,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const locationResolved = {};
       const locationWon = {};
 
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const location = row[25]; // Work Location column (Z)
         const status = row[4]; // Status column (E)
 
@@ -19759,9 +19759,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(locationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sortfunction((a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([location, total], index) => {
+        .mapfunction(([location, total], index) {
           const active = locationActive[location] || 0;
           const resolved = locationResolved[location] || 0;
           const won = locationWon[location] || 0;
@@ -19779,7 +19779,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const stewardResolved = {};
       const stewardWon = {};
 
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const steward = row[26]; // Assigned Steward column (AA)
         const status = row[4]; // Status column (E)
 
@@ -19798,9 +19798,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(stewardCounts)
-        .sort((a, b) => (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0))
+        .sortfunction((a, b) { return (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0); })
         .slice(0, 15)
-        .map(([steward, total], index) => {
+        .mapfunction(([steward, total], index) {
           const active = stewardActive[steward] || 0;
           const resolved = stewardResolved[steward] || 0;
           const won = stewardWon[steward] || 0;
@@ -19814,7 +19814,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
     default:
       // For other metrics, show top locations by default
       const defaultLocationCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const location = row[25];
         if (location && location !== 'Work Location (Site)') {
           defaultLocationCounts[location] = (defaultLocationCounts[location] || 0) + 1;
@@ -19822,9 +19822,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(defaultLocationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sortfunction((a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([location, count], index) => {
+        .mapfunction(([location, count], index) {
           return [index + 1, location, count, "-", "-", "-", "📊 Data"];
         });
       break;
@@ -19855,7 +19855,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
  * Apply theme to dashboard
  */
 function applyDashboardTheme(sheet, themeName) {
-  let primaryColor, accentColor;
+  var primaryColor, accentColor;
 
   switch (themeName) {
     case "Union Blue":
@@ -20269,7 +20269,7 @@ function quickRefresh() {
 /**
  * Keyboard shortcut registry and handler
  */
-const KEYBOARD_SHORTCUTS = {
+var KEYBOARD_SHORTCUTS = {
   // Navigation
   'Ctrl+G': 'navigateToGrievanceLog',
   'Ctrl+M': 'navigateToMemberDirectory',
@@ -20475,7 +20475,7 @@ function showKeyboardShortcutsConfig() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandler(() => google.script.host.close()).showKeyboardShortcuts()">
+    <button onclick="google.script.run.withSuccessHandlerfunction(() { return google.script.host.close()).showKeyboardShortcuts(; })">
       📖 View Shortcuts Guide
     </button>
   </div>
@@ -20498,7 +20498,7 @@ function showContextHelp() {
   const activeSheet = ss.getActiveSheet();
   const sheetName = activeSheet.getName();
 
-  let helpContent = '';
+  var helpContent = '';
 
   switch (sheetName) {
     case SHEETS.GRIEVANCE_LOG:
@@ -21094,7 +21094,7 @@ function showChartBuildStatus() {
     SHEETS.TYPE_ANALYSIS
   ];
 
-  let message = 'CHART BUILD STATUS\n\n';
+  var message = 'CHART BUILD STATUS\n\n';
 
   for (const sheet of sheets) {
     const key = `CHARTS_LAST_BUILD_${sheet}`;
@@ -21404,9 +21404,9 @@ function getStewardsList() {
     const data = memberSheet.getRange(2, 1, lastRow - 1, 10).getValues();
 
     const stewards = data
-      .filter(row => row[9] === 'Yes' || row[9] === 'Y') // Column J (index 9) = Is Steward
-      .map(row => `${row[1]} ${row[2]}`) // First Name + Last Name
-      .filter(name => name.trim() !== ' ');
+      .filter(function(row) { return row[9] === 'Yes' || row[9] === 'Y') // Column J (index 9; }) = Is Steward
+      .map(function(row) { return `${row[1]} ${row[2]}`; }) // First Name + Last Name
+      .filter(function(name) { return name.trim() !== ' '; });
 
     // Add a few default stewards if none found
     if (stewards.length === 0) {
@@ -21478,7 +21478,7 @@ function removeEmergencyContactColumns() {
     const columnsToDelete = [];
 
     // Find columns with "Emergency Contact" in the header
-    headers.forEach((header, index) => {
+    headers.forEachfunction((header, index) {
       const headerStr = String(header).toLowerCase();
       if (headerStr.includes('emergency contact') || headerStr.includes('emergency phone')) {
         columnsToDelete.push(index + 1); // +1 because columns are 1-indexed
@@ -21491,7 +21491,7 @@ function removeEmergencyContactColumns() {
     }
 
     // Delete columns in reverse order to maintain correct indices
-    columnsToDelete.reverse().forEach(colIndex => {
+    columnsToDelete.reverse().forEach(function(colIndex) {
       memberSheet.deleteColumn(colIndex);
       Logger.log(`Deleted column ${colIndex}`);
     });
@@ -21531,7 +21531,7 @@ function removeEmergencyContactColumns() {
  */
 
 // Configuration for the member info Google Form
-const MEMBER_FORM_CONFIG = {
+var MEMBER_FORM_CONFIG = {
   // Replace with your actual Google Form URL
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_MEMBER_FORM_ID/viewform",
 
@@ -22016,8 +22016,8 @@ function createMemberSearchHTML() {
   </div>
 
   <script>
-    let allMembers = [];
-    let filteredMembers = [];
+    var allMembers = [];
+    var filteredMembers = [];
 
     // Load members on page load
     window.onload = function() {
@@ -22046,9 +22046,9 @@ function createMemberSearchHTML() {
 
     function populateFilters() {
       // Get unique locations
-      const locations = [...new Set(allMembers.map(m => m.location).filter(l => l))];
+      const locations = [...new Set(allMembers.map(function(m) { return m.location).filter(function(l) { return l; }); })];
       const locationFilter = document.getElementById('locationFilter');
-      locations.forEach(loc => {
+      locations.forEach(function(loc) {
         const option = document.createElement('option');
         option.value = loc;
         option.textContent = loc;
@@ -22056,9 +22056,9 @@ function createMemberSearchHTML() {
       });
 
       // Get unique units
-      const units = [...new Set(allMembers.map(m => m.unit).filter(u => u))];
+      const units = [...new Set(allMembers.map(function(m) { return m.unit).filter(function(u) { return u; }); })];
       const unitFilter = document.getElementById('unitFilter');
-      units.forEach(unit => {
+      units.forEach(function(unit) {
         const option = document.createElement('option');
         option.value = unit;
         option.textContent = unit;
@@ -22072,7 +22072,7 @@ function createMemberSearchHTML() {
       const unitFilter = document.getElementById('unitFilter').value;
       const stewardFilter = document.getElementById('stewardFilter').value;
 
-      filteredMembers = allMembers.filter(member => {
+      filteredMembers = allMembers.filter(function(member) {
         // Text search
         const matchesSearch = !searchTerm ||
           member.name.toLowerCase().includes(searchTerm) ||
@@ -22121,7 +22121,7 @@ function createMemberSearchHTML() {
 
     function selectMember(row, memberId) {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           google.script.host.close();
         })
         .navigateToMember(parseInt(row));
@@ -22152,7 +22152,7 @@ function getAllMembers() {
 
   const data = memberSheet.getRange(2, 1, lastRow - 1, 13).getValues();
 
-  return data.map((row, index) => ({
+  return data.mapfunction((row, index) { return ({
     row: index + 2,
     id: row[0] || '',
     name: `${row[1]} ${row[2]}`.trim(),
@@ -22167,7 +22167,7 @@ function getAllMembers() {
     supervisor: row[10] || '',
     manager: row[11] || '',
     assignedSteward: row[12] || ''
-  })).filter(m => m.id); // Filter out empty rows
+  })).filter(function(m) { return m.id; }); // Filter out empty rows
 }
 
 /**
@@ -22227,7 +22227,7 @@ function quickMemberSearch() {
 /**
  * Mobile configuration
  */
-const MOBILE_CONFIG = {
+var MOBILE_CONFIG = {
   MAX_COLUMNS_MOBILE: 8,  // Show max 8 columns on mobile
   CARD_LAYOUT_ENABLED: true,
   TOUCH_TARGET_SIZE: '44px',
@@ -22550,8 +22550,8 @@ function createMobileDashboardHTML() {
         return;
       }
 
-      let html = '';
-      grievances.forEach(g => {
+      var html = '';
+      grievances.forEach(function(g) {
         const statusClass = 'status-' + (g.status || 'filed').toLowerCase().replace(/\s+/g, '-');
         html += \`
           <div class="recent-card" onclick="viewGrievanceDetail('\${g.id}')">
@@ -22589,15 +22589,15 @@ function createMobileDashboardHTML() {
 
     function addSwipeSupport() {
       const cards = document.querySelectorAll('.recent-card');
-      cards.forEach(card => {
-        let startX = 0;
-        let currentX = 0;
+      cards.forEach(function(card) {
+        var startX = 0;
+        var currentX = 0;
 
-        card.addEventListener('touchstart', (e) => {
+        card.addEventListenerfunction('touchstart', (e) {
           startX = e.touches[0].clientX;
         });
 
-        card.addEventListener('touchmove', (e) => {
+        card.addEventListenerfunction('touchmove', (e) {
           currentX = e.touches[0].clientX;
           const diff = currentX - startX;
           if (Math.abs(diff) > 10) {
@@ -22605,12 +22605,12 @@ function createMobileDashboardHTML() {
           }
         });
 
-        card.addEventListener('touchend', () => {
+        card.addEventListenerfunction('touchend', () {
           const diff = currentX - startX;
           if (Math.abs(diff) > 100) {
             // Swipe action
             card.style.opacity = '0.5';
-            setTimeout(() => card.style.display = 'none', 200);
+            setTimeoutfunction(() { return card.style.display = 'none', 200; });
           } else {
             card.style.transform = '';
           }
@@ -22644,7 +22644,7 @@ function createMobileDashboardHTML() {
 
       loadRecentGrievances();
 
-      setTimeout(() => {
+      setTimeoutfunction(() {
         indicator.style.display = 'none';
       }, 2000);
     }
@@ -22654,12 +22654,12 @@ function createMobileDashboardHTML() {
     }
 
     // Pull-to-refresh
-    let touchStartY = 0;
-    document.addEventListener('touchstart', (e) => {
+    var touchStartY = 0;
+    document.addEventListenerfunction('touchstart', (e) {
       touchStartY = e.touches[0].clientY;
     });
 
-    document.addEventListener('touchmove', (e) => {
+    document.addEventListenerfunction('touchmove', (e) {
       const touchY = e.touches[0].clientY;
       if (touchY - touchStartY > 150 && window.scrollY === 0) {
         refreshDashboard();
@@ -22700,7 +22700,7 @@ function getMobileDashboardStats() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const status = row[GRIEVANCE_COLS.STATUS - 1];
     const deadline = row[GRIEVANCE_COLS.DEADLINE - 1];
 
@@ -22740,7 +22740,7 @@ function getRecentGrievancesForMobile(limit = 5) {
 
   // Get most recent grievances
   const grievances = data
-    .map((row, index) => {
+    .mapfunction((row, index) {
       const filedDate = row[GRIEVANCE_COLS.FILED_DATE - 1];
       return {
         id: row[GRIEVANCE_COLS.GRIEVANCE_ID - 1],
@@ -22753,7 +22753,7 @@ function getRecentGrievancesForMobile(limit = 5) {
         filedDateObj: filedDate
       };
     })
-    .sort((a, b) => {
+    .sortfunction((a, b) {
       const dateA = a.filedDateObj instanceof Date ? a.filedDateObj : new Date(0);
       const dateB = b.filedDateObj instanceof Date ? b.filedDateObj : new Date(0);
       return dateB - dateA;
@@ -22878,7 +22878,7 @@ function createMobileGrievanceListHTML() {
   </div>
 
   <script>
-    let allGrievances = [];
+    var allGrievances = [];
 
     // Load data
     google.script.run
@@ -22898,8 +22898,8 @@ function createMobileGrievanceListHTML() {
         return;
       }
 
-      let html = '';
-      grievances.forEach(g => {
+      var html = '';
+      grievances.forEach(function(g) {
         html += \`
           <div class="grievance-card">
             <div class="card-header">
@@ -22918,19 +22918,19 @@ function createMobileGrievanceListHTML() {
 
     function filterByStatus(status) {
       // Update active tab
-      document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.filter-tab').forEach(function(tab) { return tab.classList.remove('active'); });
       event.target.classList.add('active');
 
       // Filter grievances
       const filtered = status === 'all'
         ? allGrievances
-        : allGrievances.filter(g => g.status === status);
+        : allGrievances.filter(function(g) { return g.status === status; });
 
       renderGrievances(filtered);
     }
 
     function filterList(searchTerm) {
-      const filtered = allGrievances.filter(g => {
+      const filtered = allGrievances.filter(function(g) {
         return g.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                g.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                g.issueType.toLowerCase().includes(searchTerm.toLowerCase());
@@ -22955,7 +22955,7 @@ function showGrievanceDetail(grievanceId) {
   if (!grievanceSheet) return;
 
   const data = grievanceSheet.getDataRange().getValues();
-  const grievanceRow = data.find(row => row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId);
+  const grievanceRow = data.find(function(row) { return row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId; });
 
   if (!grievanceRow) {
     SpreadsheetApp.getUi().alert('Grievance not found');
@@ -22994,7 +22994,7 @@ function showMyAssignedGrievances() {
 
   const data = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, 28).getValues();
 
-  const myGrievances = data.filter(row => {
+  const myGrievances = data.filter(function(row) {
     const assignedSteward = row[GRIEVANCE_COLS.ASSIGNED_STEWARD - 1];
     return assignedSteward && assignedSteward.includes(userEmail);
   });
@@ -23004,9 +23004,9 @@ function showMyAssignedGrievances() {
     return;
   }
 
-  let message = `You have ${myGrievances.length} assigned grievance(s):\n\n`;
+  var message = `You have ${myGrievances.length} assigned grievance(s):\n\n`;
 
-  myGrievances.slice(0, 10).forEach(row => {
+  myGrievances.slice(0, 10).forEach(function(row) {
     message += `#${row[GRIEVANCE_COLS.GRIEVANCE_ID - 1]} - ${row[GRIEVANCE_COLS.MEMBER_NAME - 1]} (${row[GRIEVANCE_COLS.STATUS - 1]})\n`;
   });
 
@@ -23191,8 +23191,8 @@ function calculateAllMetricsOptimized(dataCache) {
   // Calculate member metrics (skip header row)
   metrics.totalMembers = memberData.length - 1;
 
-  let openRateSum = 0;
-  let openRateCount = 0;
+  var openRateSum = 0;
+  var openRateCount = 0;
 
   for (let i = 1; i < memberData.length; i++) {
     const row = memberData[i];
@@ -23234,8 +23234,8 @@ function calculateAllMetricsOptimized(dataCache) {
   const thisYear = now.getFullYear();
   const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
 
-  let daysOpenSum = 0;
-  let daysOpenCount = 0;
+  var daysOpenSum = 0;
+  var daysOpenCount = 0;
 
   for (let i = 1; i < grievanceData.length; i++) {
     const row = grievanceData[i];
@@ -23289,7 +23289,7 @@ function calculateAllMetricsOptimized(dataCache) {
   metrics.avgDaysOpen = daysOpenCount > 0 ? (daysOpenSum / daysOpenCount) : 0;
 
   // Sort upcoming deadlines by date
-  metrics.upcomingDeadlines.sort((a, b) => a.deadline - b.deadline);
+  metrics.upcomingDeadlines.sortfunction((a, b) { return a.deadline - b.deadline; });
 
   Logger.log('✅ Metrics calculated');
 
@@ -23545,7 +23545,7 @@ function logPerformanceMetric(funcName, duration, error = false) {
   const keys = Object.keys(perfLog);
   if (keys.length > 100) {
     // Remove oldest entries
-    const sorted = keys.sort((a, b) => (perfLog[a].lastRun || 0) - (perfLog[b].lastRun || 0));
+    const sorted = keys.sortfunction((a, b) { return (perfLog[a].lastRun || 0) - (perfLog[b].lastRun || 0); });
     delete perfLog[sorted[0]];
   }
 
@@ -23557,7 +23557,7 @@ function logPerformanceMetric(funcName, duration, error = false) {
  */
 function createPerformanceMonitoringSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let perfSheet = ss.getSheetByName('⚡ Performance Monitor');
+  var perfSheet = ss.getSheetByName('⚡ Performance Monitor');
 
   if (!perfSheet) {
     perfSheet = ss.insertSheet('⚡ Performance Monitor');
@@ -23601,7 +23601,7 @@ function createPerformanceMonitoringSheet() {
   }
 
   // Sort by average time (descending) to show slowest functions first
-  rows.sort((a, b) => b[1] - a[1]);
+  rows.sortfunction((a, b) { return b[1] - a[1]; });
 
   if (rows.length > 0) {
     perfSheet.getRange(2, 1, rows.length, 7).setValues(rows);
@@ -23663,7 +23663,7 @@ function createPerformanceMonitoringSheet() {
 
   perfSheet.getRange(summaryRow + 2, 1).setValue('Total Calls:');
   perfSheet.getRange(summaryRow + 2, 2).setValue(
-    rows.reduce((sum, row) => sum + row[4], 0)
+    rows.reducefunction((sum, row) { return sum + row[4], 0; })
   );
 
   perfSheet.getRange(summaryRow + 3, 1).setValue('Last Updated:');
@@ -23773,7 +23773,7 @@ function exportPerformanceDataCSV() {
   const props = PropertiesService.getScriptProperties();
   const perfLog = JSON.parse(props.getProperty('PERFORMANCE_LOG') || '{}');
 
-  let csv = 'Function,Avg Time (ms),Min Time (ms),Max Time (ms),Call Count,Error Rate (%),Last Run\n';
+  var csv = 'Function,Avg Time (ms),Min Time (ms),Max Time (ms),Call Count,Error Rate (%),Last Run\n';
 
   for (const [funcName, data] of Object.entries(perfLog)) {
     const lastRun = data.lastRun ? new Date(data.lastRun).toISOString() : '';
@@ -23808,10 +23808,10 @@ function getPerformanceSummary() {
     mostCalledFunction: null
   };
 
-  let slowestTime = 0;
-  let fastestTime = Infinity;
-  let mostCalls = 0;
-  let totalTime = 0;
+  var slowestTime = 0;
+  var fastestTime = Infinity;
+  var mostCalls = 0;
+  var totalTime = 0;
 
   for (const [funcName, data] of Object.entries(perfLog)) {
     summary.totalFunctions++;
@@ -23850,7 +23850,7 @@ function showPerformanceSummary() {
   const ui = SpreadsheetApp.getUi();
   const summary = getPerformanceSummary();
 
-  let message = 'PERFORMANCE SUMMARY\n\n';
+  var message = 'PERFORMANCE SUMMARY\n\n';
   message += `Total Functions Tracked: ${summary.totalFunctions}\n`;
   message += `Total Function Calls: ${summary.totalCalls}\n`;
   message += `Total Errors: ${summary.totalErrors}\n`;
@@ -23874,9 +23874,9 @@ function showPerformanceSummary() {
 // Create tracked versions of critical functions
 // These can be used instead of the original functions to automatically track performance
 
-const recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
-const recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
-const rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);
+var recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
+var recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
+var rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);
 
 
 
@@ -24126,7 +24126,7 @@ function showPhase6Status() {
   const ui = SpreadsheetApp.getUi();
   const status = getPhase6Status();
 
-  let message = 'PHASE 6 FEATURE STATUS\n\n';
+  var message = 'PHASE 6 FEATURE STATUS\n\n';
   message += `Active Features: ${status.activeFeatures} / ${status.totalFeatures}\n\n`;
 
   message += '✅ Batch Grievance Recalculation\n';
@@ -24232,7 +24232,7 @@ function runPhase6HealthCheck() {
     }
 
     // Display results
-    let message = 'PHASE 6 HEALTH CHECK RESULTS\n\n';
+    var message = 'PHASE 6 HEALTH CHECK RESULTS\n\n';
 
     message += `Passed: ${results.passed.length}\n`;
     message += `Failed: ${results.failed.length}\n`;
@@ -24355,7 +24355,7 @@ function analyzeVolumeTrend(data) {
     // Group by month
     const monthlyVolumes = {};
 
-    data.forEach(row => {
+    data.forEach(function(row) {
       const filedDate = row[6]; // Column G: Filed Date
 
       if (!filedDate) return;
@@ -24367,7 +24367,7 @@ function analyzeVolumeTrend(data) {
 
     // Convert to array and sort
     const months = Object.keys(monthlyVolumes).sort();
-    const volumes = months.map(m => monthlyVolumes[m]);
+    const volumes = months.map(function(m) { return monthlyVolumes[m]; });
 
     // Calculate trend (simple linear regression)
     const trend = calculateLinearTrend(volumes);
@@ -24409,7 +24409,7 @@ function analyzeIssueTypeTrends(data) {
   try {
     const issueTypesByMonth = {};
 
-    data.forEach(row => {
+    data.forEach(function(row) {
       const filedDate = row[6];
       const issueType = row[5];
 
@@ -24435,19 +24435,19 @@ function analyzeIssueTypeTrends(data) {
       const recentCounts = {};
       const olderCounts = {};
 
-      recentMonths.forEach(month => {
-        Object.entries(issueTypesByMonth[month]).forEach(([type, count]) => {
+      recentMonths.forEach(function(month) {
+        Object.entries(issueTypesByMonth[month]).forEachfunction(([type, count]) {
           recentCounts[type] = (recentCounts[type] || 0) + count;
         });
       });
 
-      olderMonths.forEach(month => {
-        Object.entries(issueTypesByMonth[month]).forEach(([type, count]) => {
+      olderMonths.forEach(function(month) {
+        Object.entries(issueTypesByMonth[month]).forEachfunction(([type, count]) {
           olderCounts[type] = (olderCounts[type] || 0) + count;
         });
       });
 
-      Object.keys(recentCounts).forEach(type => {
+      Object.keys(recentCounts).forEach(function(type) {
         const recentAvg = recentCounts[type] / recentMonths.length;
         const olderAvg = olderCounts[type] ? olderCounts[type] / olderMonths.length : 0;
 
@@ -24483,7 +24483,7 @@ function analyzeIssueTypeTrends(data) {
 function detectSeasonalPatterns(data) {
   const quarterlyVolumes = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const filedDate = row[6];
 
     if (!filedDate) return;
@@ -24493,10 +24493,10 @@ function detectSeasonalPatterns(data) {
   });
 
   // Find peak quarter
-  let peakQuarter = 'Q1';
-  let peakVolume = 0;
+  var peakQuarter = 'Q1';
+  var peakVolume = 0;
 
-  Object.entries(quarterlyVolumes).forEach(([quarter, volume]) => {
+  Object.entries(quarterlyVolumes).forEachfunction(([quarter, volume]) {
     if (volume > peakVolume) {
       peakQuarter = quarter;
       peakVolume = volume;
@@ -24519,7 +24519,7 @@ function detectSeasonalPatterns(data) {
 function analyzeResolutionTimeTrend(data) {
   const resolutionTimes = [];
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const filedDate = row[6];
     const closedDate = row[18];
 
@@ -24538,17 +24538,17 @@ function analyzeResolutionTimeTrend(data) {
   }
 
   // Sort for median
-  resolutionTimes.sort((a, b) => a - b);
+  resolutionTimes.sortfunction((a, b) { return a - b; });
 
-  const average = resolutionTimes.reduce((sum, val) => sum + val, 0) / resolutionTimes.length;
+  const average = resolutionTimes.reducefunction((sum, val) { return sum + val, 0; }) / resolutionTimes.length;
   const median = resolutionTimes[Math.floor(resolutionTimes.length / 2)];
 
   // Recent vs older comparison
   const recent = resolutionTimes.slice(-10);
   const older = resolutionTimes.slice(0, -10);
 
-  const recentAvg = recent.reduce((sum, val) => sum + val, 0) / recent.length;
-  const olderAvg = older.length > 0 ? older.reduce((sum, val) => sum + val, 0) / older.length : recentAvg;
+  const recentAvg = recent.reducefunction((sum, val) { return sum + val, 0; }) / recent.length;
+  const olderAvg = older.length > 0 ? older.reducefunction((sum, val) { return sum + val, 0; }) / older.length : recentAvg;
 
   return {
     average: Math.round(average),
@@ -24567,7 +24567,7 @@ function analyzeResolutionTimeTrend(data) {
 function forecastStewardWorkload(data) {
   const stewardCases = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const steward = row[13];
     const status = row[4];
 
@@ -24580,7 +24580,7 @@ function forecastStewardWorkload(data) {
   const overloaded = [];
   const underutilized = [];
 
-  Object.entries(stewardCases).forEach(([steward, count]) => {
+  Object.entries(stewardCases).forEachfunction(([steward, count]) {
     if (count > 15) {
       overloaded.push({ steward, caseload: count });
     } else if (count < 3) {
@@ -24606,8 +24606,8 @@ function identifyRiskFactors(data) {
   const risks = [];
 
   // Check for overdue cases
-  let overdueCount = 0;
-  data.forEach(row => {
+  var overdueCount = 0;
+  data.forEach(function(row) {
     const daysToDeadline = row[20];
     if (daysToDeadline < 0) overdueCount++;
   });
@@ -24622,8 +24622,8 @@ function identifyRiskFactors(data) {
   }
 
   // Check for cases with no steward assigned
-  let unassignedCount = 0;
-  data.forEach(row => {
+  var unassignedCount = 0;
+  data.forEach(function(row) {
     const steward = row[13];
     const status = row[4];
     if (!steward && status === 'Open') unassignedCount++;
@@ -24662,7 +24662,7 @@ function detectAnomalies(data) {
 
   // Check for unusual spike in last month
   const monthlyVolumes = {};
-  data.forEach(row => {
+  data.forEach(function(row) {
     const filedDate = row[6];
     if (!filedDate) return;
 
@@ -24672,7 +24672,7 @@ function detectAnomalies(data) {
 
   const volumes = Object.values(monthlyVolumes);
   if (volumes.length >= 3) {
-    const average = volumes.slice(0, -1).reduce((sum, val) => sum + val, 0) / (volumes.length - 1);
+    const average = volumes.slice(0, -1).reducefunction((sum, val) { return sum + val, 0) / (volumes.length - 1; });
     const latest = volumes[volumes.length - 1];
 
     if (latest > average * 1.5) {
@@ -24686,15 +24686,15 @@ function detectAnomalies(data) {
 
   // Check for concentration of cases in one location
   const locationCounts = {};
-  data.forEach(row => {
+  data.forEach(function(row) {
     const location = row[9];
     if (location) {
       locationCounts[location] = (locationCounts[location] || 0) + 1;
     }
   });
 
-  const totalCases = Object.values(locationCounts).reduce((sum, val) => sum + val, 0);
-  Object.entries(locationCounts).forEach(([location, count]) => {
+  const totalCases = Object.values(locationCounts).reducefunction((sum, val) { return sum + val, 0; });
+  Object.entries(locationCounts).forEachfunction(([location, count]) {
     if (count > totalCases * 0.4) {
       anomalies.push({
         type: 'Location Concentration',
@@ -24773,7 +24773,7 @@ function calculateLinearTrend(values) {
   const n = values.length;
   if (n < 2) return { slope: 0, intercept: values[0] || 0 };
 
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
 
   for (let i = 0; i < n; i++) {
     sumX += i;
@@ -24827,7 +24827,7 @@ function showPredictiveAnalyticsDashboard() {
  */
 function createAnalyticsDashboardHTML(analytics) {
   const risksHTML = analytics.riskFactors.length > 0
-    ? analytics.riskFactors.map(risk => `
+    ? analytics.riskFactors.map(function(risk) { return '
         <div class="risk-item severity-${risk.severity.toLowerCase()}">
           <div class="risk-header">
             <span class="risk-type">${risk.type}</span>
@@ -24840,7 +24840,7 @@ function createAnalyticsDashboardHTML(analytics) {
     : '<p>No significant risks identified. ✅</p>';
 
   const recommendationsHTML = analytics.recommendations.length > 0
-    ? analytics.recommendations.map(rec => `
+    ? analytics.recommendations.map(function(rec) { return '
         <div class="recommendation priority-${rec.priority.toLowerCase()}">
           <div class="rec-header">
             <span class="rec-category">${rec.category}</span>
@@ -24853,7 +24853,7 @@ function createAnalyticsDashboardHTML(analytics) {
     : '<p>No specific recommendations at this time.</p>';
 
   const anomaliesHTML = analytics.anomalies.length > 0
-    ? analytics.anomalies.map(anomaly => `
+    ? analytics.anomalies.map(function(anomaly) { return '
         <div class="anomaly-item">
           <div class="anomaly-type">${anomaly.type}</div>
           <div class="anomaly-desc">${anomaly.description}</div>
@@ -25258,7 +25258,7 @@ function performRootCauseAnalysis() {
 function analyzeLocationClusters(data) {
   const locationStats = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const location = row[9]; // Column J: Work Location
     if (!location) return;
 
@@ -25300,16 +25300,16 @@ function analyzeLocationClusters(data) {
   const totalGrievances = data.length;
   const hotspots = [];
 
-  Object.entries(locationStats).forEach(([location, stats]) => {
+  Object.entries(locationStats).forEachfunction(([location, stats]) {
     const percentage = (stats.count / totalGrievances) * 100;
 
     if (percentage > 15) {
       // If a location has >15% of all grievances, it's a hotspot
       const topIssue = Object.entries(stats.issueTypes)
-        .sort((a, b) => b[1] - a[1])[0];
+        .sortfunction((a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce((sum, val) => sum + val, 0) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reducefunction((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       hotspots.push({
@@ -25326,7 +25326,7 @@ function analyzeLocationClusters(data) {
 
   return {
     totalLocations: Object.keys(locationStats).length,
-    hotspots: hotspots.sort((a, b) => b.count - a.count),
+    hotspots: hotspots.sortfunction((a, b) { return b.count - a.count); },
     allStats: locationStats
   };
 }
@@ -25339,7 +25339,7 @@ function analyzeLocationClusters(data) {
 function analyzeManagerPatterns(data) {
   const managerStats = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const manager = row[11]; // Column L: Manager
     if (!manager) return;
 
@@ -25381,13 +25381,13 @@ function analyzeManagerPatterns(data) {
   const avgGrievancesPerManager = data.length / Object.keys(managerStats).length;
   const concerningManagers = [];
 
-  Object.entries(managerStats).forEach(([manager, stats]) => {
+  Object.entries(managerStats).forEachfunction(([manager, stats]) {
     if (stats.count > avgGrievancesPerManager * 2) {
       const topIssue = Object.entries(stats.issueTypes)
-        .sort((a, b) => b[1] - a[1])[0];
+        .sortfunction((a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce((sum, val) => sum + val, 0) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reducefunction((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       concerningManagers.push({
@@ -25404,7 +25404,7 @@ function analyzeManagerPatterns(data) {
   return {
     totalManagers: Object.keys(managerStats).length,
     avgPerManager: avgGrievancesPerManager.toFixed(1),
-    concerningManagers: concerningManagers.sort((a, b) => b.count - a.count),
+    concerningManagers: concerningManagers.sortfunction((a, b) { return b.count - a.count); },
     allStats: managerStats
   };
 }
@@ -25417,7 +25417,7 @@ function analyzeManagerPatterns(data) {
 function analyzeIssueTypePatterns(data) {
   const issueTypeStats = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const issueType = row[5];
     if (!issueType) return;
 
@@ -25466,10 +25466,10 @@ function analyzeIssueTypePatterns(data) {
   // Identify systemic issues
   const systemicIssues = [];
 
-  Object.entries(issueTypeStats).forEach(([issueType, stats]) => {
+  Object.entries(issueTypeStats).forEachfunction(([issueType, stats]) {
     // Check if concentrated in specific locations (>60% in one location)
     const topLocation = Object.entries(stats.locations)
-      .sort((a, b) => b[1] - a[1])[0];
+      .sortfunction((a, b) { return b[1] - a[1]; })[0];
 
     const locationConcentration = topLocation
       ? (topLocation[1] / stats.count) * 100
@@ -25477,7 +25477,7 @@ function analyzeIssueTypePatterns(data) {
 
     if (locationConcentration > 60 || stats.count > data.length * 0.15) {
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce((sum, val) => sum + val, 0) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reducefunction((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       systemicIssues.push({
@@ -25494,7 +25494,7 @@ function analyzeIssueTypePatterns(data) {
 
   return {
     totalIssueTypes: Object.keys(issueTypeStats).length,
-    systemicIssues: systemicIssues.sort((a, b) => b.count - a.count),
+    systemicIssues: systemicIssues.sortfunction((a, b) { return b.count - a.count); },
     allStats: issueTypeStats
   };
 }
@@ -25508,7 +25508,7 @@ function analyzeTemporalPatterns(data) {
   const monthlyPatterns = {};
   const dayOfWeekPatterns = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const filedDate = row[6];
     if (!filedDate) return;
 
@@ -25523,7 +25523,7 @@ function analyzeTemporalPatterns(data) {
 
   // Find peak days
   const peakDay = Object.entries(dayOfWeekPatterns)
-    .sort((a, b) => b[1] - a[1])[0];
+    .sortfunction((a, b) { return b[1] - a[1]; })[0];
 
   return {
     monthlyPatterns: monthlyPatterns,
@@ -25544,7 +25544,7 @@ function findCorrelations(data) {
   // Check: Specific manager + specific issue type
   const managerIssueMatrix = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const manager = row[11];
     const issueType = row[5];
 
@@ -25554,7 +25554,7 @@ function findCorrelations(data) {
     }
   });
 
-  Object.entries(managerIssueMatrix).forEach(([key, count]) => {
+  Object.entries(managerIssueMatrix).forEachfunction(([key, count]) {
     if (count >= 5) {
       const [manager, issueType] = key.split('|||');
       correlations.push({
@@ -25566,7 +25566,7 @@ function findCorrelations(data) {
     }
   });
 
-  return correlations.sort((a, b) => b.count - a.count);
+  return correlations.sortfunction((a, b) { return b.count - a.count; });
 }
 
 /**
@@ -25582,7 +25582,7 @@ function generateRCARecommendations(data) {
   const issueAnalysis = analyzeIssueTypePatterns(data);
 
   // Location-based recommendations
-  locationAnalysis.hotspots.forEach(hotspot => {
+  locationAnalysis.hotspots.forEach(function(hotspot) {
     recommendations.push({
       category: 'Location Hotspot',
       priority: hotspot.severity,
@@ -25593,7 +25593,7 @@ function generateRCARecommendations(data) {
   });
 
   // Manager-based recommendations
-  managerAnalysis.concerningManagers.forEach(manager => {
+  managerAnalysis.concerningManagers.forEach(function(manager) {
     recommendations.push({
       category: 'Management Pattern',
       priority: manager.severity,
@@ -25604,7 +25604,7 @@ function generateRCARecommendations(data) {
   });
 
   // Systemic issue recommendations
-  issueAnalysis.systemicIssues.forEach(issue => {
+  issueAnalysis.systemicIssues.forEach(function(issue) {
     if (issue.isSystemic) {
       recommendations.push({
         category: 'Systemic Issue',
@@ -25616,7 +25616,7 @@ function generateRCARecommendations(data) {
     }
   });
 
-  return recommendations.sort((a, b) => {
+  return recommendations.sortfunction((a, b) {
     const priorityOrder = { 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
     return priorityOrder[b.priority] - priorityOrder[a.priority];
   });
@@ -25661,7 +25661,7 @@ function showRootCauseAnalysisDashboard() {
  */
 function createRCADashboardHTML(analysis) {
   const hotspotsHTML = analysis.locationClusters.hotspots.length > 0
-    ? analysis.locationClusters.hotspots.map(h => `
+    ? analysis.locationClusters.hotspots.map(function(h) { return '
         <div class="finding severity-${h.severity.toLowerCase()}">
           <div class="finding-header">
             <span class="finding-title">${h.location}</span>
@@ -25677,7 +25677,7 @@ function createRCADashboardHTML(analysis) {
     : '<p>No significant location hotspots identified.</p>';
 
   const concerningManagersHTML = analysis.managerPatterns.concerningManagers.length > 0
-    ? analysis.managerPatterns.concerningManagers.map(m => `
+    ? analysis.managerPatterns.concerningManagers.map(function(m) { return '
         <div class="finding severity-${m.severity.toLowerCase()}">
           <div class="finding-header">
             <span class="finding-title">${m.manager}</span>
@@ -25693,7 +25693,7 @@ function createRCADashboardHTML(analysis) {
     : '<p>No concerning manager patterns identified.</p>';
 
   const systemicIssuesHTML = analysis.issueTypePatterns.systemicIssues.length > 0
-    ? analysis.issueTypePatterns.systemicIssues.map(i => `
+    ? analysis.issueTypePatterns.systemicIssues.map(function(i) { return '
         <div class="finding ${i.isSystemic ? 'severity-high' : 'severity-medium'}">
           <div class="finding-header">
             <span class="finding-title">${i.issueType}</span>
@@ -25709,7 +25709,7 @@ function createRCADashboardHTML(analysis) {
     : '<p>No systemic issues identified.</p>';
 
   const recommendationsHTML = analysis.recommendations.length > 0
-    ? analysis.recommendations.map(r => `
+    ? analysis.recommendations.map(function(r) { return '
         <div class="recommendation priority-${r.priority.toLowerCase()}">
           <div class="rec-header">
             <span class="rec-category">${r.category}</span>
@@ -26344,7 +26344,7 @@ function rebuildDashboard() {
 /**
  * Assignment algorithm weights
  */
-const ASSIGNMENT_WEIGHTS = {
+var ASSIGNMENT_WEIGHTS = {
   WORKLOAD: 0.4,        // 40% - Balance caseload
   LOCATION: 0.3,        // 30% - Same location preference
   EXPERTISE: 0.2,       // 20% - Issue type experience
@@ -26383,13 +26383,13 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   }
 
   // Score each steward
-  const scoredStewards = stewards.map(steward => ({
+  const scoredStewards = stewards.map(function(steward) { return ({
     ...steward,
     score: calculateAssignmentScore(steward, grievance, preferences)
   }));
 
   // Sort by score (descending)
-  scoredStewards.sort((a, b) => b.score - a.score);
+  scoredStewards.sortfunction((a, b) { return b.score - a.score; });
 
   // Get top candidate
   const selectedSteward = scoredStewards[0];
@@ -26405,7 +26405,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
     assignedSteward: selectedSteward.name,
     score: selectedSteward.score,
     reasoning: generateAssignmentReasoning(selectedSteward, grievance),
-    alternates: scoredStewards.slice(1, 4).map(s => ({
+    alternates: scoredStewards.slice(1, 4).map(function(s) { return ({
       name: s.name,
       score: s.score
     }))
@@ -26459,7 +26459,7 @@ function getAllStewards() {
 
   const stewards = [];
 
-  data.forEach((row, index) => {
+  data.forEachfunction((row, index) {
     const isSteward = row[9]; // Column J: Is Steward?
 
     if (isSteward === 'Yes') {
@@ -26493,9 +26493,9 @@ function getCurrentCaseload(memberId) {
 
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
-  let count = 0;
+  var count = 0;
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const assignedSteward = row[13]; // Column N: Assigned Steward
     const status = row[4]; // Column E: Status
 
@@ -26523,7 +26523,7 @@ function getStewardExpertise(memberId) {
 
   const expertise = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const assignedSteward = row[13]; // Column N: Assigned Steward
     const issueType = row[5]; // Column F: Issue Type
 
@@ -26634,7 +26634,7 @@ function generateAssignmentReasoning(steward, grievance) {
  */
 function logAssignment(grievanceId, selectedSteward, topCandidates) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let assignmentLog = ss.getSheetByName('🤖 Auto-Assignment Log');
+  var assignmentLog = ss.getSheetByName('🤖 Auto-Assignment Log');
 
   if (!assignmentLog) {
     assignmentLog = createAutoAssignmentLogSheet();
@@ -26650,7 +26650,7 @@ function logAssignment(grievanceId, selectedSteward, topCandidates) {
     selectedSteward.name,
     selectedSteward.score,
     selectedSteward.currentCaseload,
-    topCandidates.map(s => `${s.name} (${s.score})`).join(', '),
+    topCandidates.map(function(s) { return `${s.name} (${s.score})`).join(', '); },
     user
   ];
 
@@ -26757,7 +26757,7 @@ function showAutoAssignDialog() {
     }
 
     const alternatesText = result.alternates
-      .map(a => `  ${a.name} (score: ${a.score})`)
+      .map(function(a) { return `  ${a.name} (score: ${a.score})`; })
       .join('\n');
 
     ui.alert(
@@ -26796,11 +26796,11 @@ function batchAutoAssign() {
     return;
   }
 
-  const rows = Array.from({ length: numRows }, (_, i) => startRow + i);
+  const rows = Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
 
   // Count unassigned
-  let unassigned = 0;
-  rows.forEach(row => {
+  var unassigned = 0;
+  rows.forEach(function(row) {
     const assigned = activeSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).getValue();
     if (!assigned) {
       unassigned++;
@@ -26821,11 +26821,11 @@ function batchAutoAssign() {
 
   SpreadsheetApp.getActiveSpreadsheet().toast('🤖 Auto-assigning...', 'Please wait', -1);
 
-  let assigned = 0;
-  let skipped = 0;
-  let errors = 0;
+  var assigned = 0;
+  var skipped = 0;
+  var errors = 0;
 
-  rows.forEach(row => {
+  rows.forEach(function(row) {
     const grievanceId = activeSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
     const currentAssignment = activeSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).getValue();
 
@@ -26876,10 +26876,10 @@ function showStewardWorkloadDashboard() {
   }
 
   // Sort by caseload (descending)
-  stewards.sort((a, b) => b.currentCaseload - a.currentCaseload);
+  stewards.sortfunction((a, b) { return b.currentCaseload - a.currentCaseload; });
 
   const stewardsList = stewards
-    .map(s => `
+    .map(function(s) { return '
       <div class="steward-item" style="border-left-color: ${getCaseloadColor(s.currentCaseload)}">
         <div class="steward-name">${s.name}</div>
         <div class="steward-details">
@@ -26890,9 +26890,9 @@ function showStewardWorkloadDashboard() {
         <div class="steward-expertise">
           <strong>Expertise:</strong> ${Object.keys(s.expertise).length > 0
             ? Object.entries(s.expertise)
-                .sort((a, b) => b[1] - a[1])
+                .sortfunction((a, b) { return b[1] - a[1]; })
                 .slice(0, 3)
-                .map(([type, count]) => `${type} (${count})`)
+                .mapfunction(([type, count]) { return `${type} (${count})`; })
                 .join(', ')
             : 'No cases yet'}
         </div>
@@ -26900,7 +26900,7 @@ function showStewardWorkloadDashboard() {
     `)
     .join('');
 
-  const avgCaseload = stewards.reduce((sum, s) => sum + s.currentCaseload, 0) / stewards.length;
+  const avgCaseload = stewards.reducefunction((sum, s) { return sum + s.currentCaseload, 0; }) / stewards.length;
 
   const html = `
 <!DOCTYPE html>
@@ -26925,7 +26925,7 @@ function showStewardWorkloadDashboard() {
     <div class="summary">
       <strong>Total Stewards:</strong> ${stewards.length}<br>
       <strong>Average Caseload:</strong> ${avgCaseload.toFixed(1)} cases/steward<br>
-      <strong>Total Open Cases:</strong> ${stewards.reduce((sum, s) => sum + s.currentCaseload, 0)}
+      <strong>Total Open Cases:</strong> ${stewards.reducefunction((sum, s) { return sum + s.currentCaseload, 0; })}
     </div>
 
     <div style="max-height: 500px; overflow-y: auto;">
@@ -27055,7 +27055,7 @@ class Transaction {
    * @returns {number} Number of successful snapshots
    */
   snapshotMultiple(sheetNames) {
-    let successCount = 0;
+    var successCount = 0;
 
     for (const sheetName of sheetNames) {
       if (this.snapshot(sheetName)) {
@@ -27116,8 +27116,8 @@ class Transaction {
     }
 
     const duration = new Date() - this.startTime;
-    let sheetsRestored = 0;
-    let errors = [];
+    var sheetsRestored = 0;
+    var errors = [];
 
     Logger.log(`Transaction ${this.transactionId}: Starting rollback of ${this.snapshots.size} sheets...`);
 
@@ -27411,7 +27411,7 @@ function manualRollback() {
 /**
  * Undo/Redo configuration
  */
-const UNDO_CONFIG = {
+var UNDO_CONFIG = {
   MAX_HISTORY: 50,  // Maximum actions to keep
   STORAGE_KEY: 'undoRedoHistory',
   SUPPORTED_ACTIONS: [
@@ -27442,11 +27442,11 @@ function showUndoRedoPanel() {
 function createUndoRedoPanelHTML() {
   const history = getUndoHistory();
 
-  let historyRows = '';
+  var historyRows = '';
   if (history.actions.length === 0) {
     historyRows = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #999;">No actions recorded yet</td></tr>';
   } else {
-    history.actions.slice().reverse().forEach((action, index) => {
+    history.actions.slice().reverse().forEachfunction((action, index) {
       const timestamp = new Date(action.timestamp).toLocaleString();
       const canUndo = index < history.actions.length - history.currentIndex;
       const canRedo = index >= history.actions.length - history.currentIndex;
@@ -27648,11 +27648,11 @@ function createUndoRedoPanelHTML() {
   <script>
     function performUndo() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Action undone!');
           location.reload();
         })
-        .withFailureHandler((error) => {
+        .withFailureHandlerfunction((error) {
           alert('❌ Cannot undo: ' + error.message);
         })
         .undoLastAction();
@@ -27660,11 +27660,11 @@ function createUndoRedoPanelHTML() {
 
     function performRedo() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Action redone!');
           location.reload();
         })
-        .withFailureHandler((error) => {
+        .withFailureHandlerfunction((error) {
           alert('❌ Cannot redo: ' + error.message);
         })
         .redoLastAction();
@@ -27672,7 +27672,7 @@ function createUndoRedoPanelHTML() {
 
     function undoToAction(index) {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Undo complete!');
           location.reload();
         })
@@ -27681,7 +27681,7 @@ function createUndoRedoPanelHTML() {
 
     function redoToAction(index) {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Redo complete!');
           location.reload();
         })
@@ -27691,7 +27691,7 @@ function createUndoRedoPanelHTML() {
     function clearHistory() {
       if (confirm('Clear all undo/redo history? This cannot be undone.')) {
         google.script.run
-          .withSuccessHandler(() => {
+          .withSuccessHandlerfunction(() {
             alert('✅ History cleared!');
             location.reload();
           })
@@ -27701,7 +27701,7 @@ function createUndoRedoPanelHTML() {
 
     function exportHistory() {
       google.script.run
-        .withSuccessHandler((url) => {
+        .withSuccessHandlerfunction((url) {
           alert('✅ History exported!');
           window.open(url, '_blank');
         })
@@ -27952,7 +27952,7 @@ function applyState(state, actionType) {
     case 'BATCH_UPDATE':
       // Restore batch changes
       if (state.changes) {
-        state.changes.forEach(change => {
+        state.changes.forEach(function(change) {
           sheet.getRange(change.row, change.col).setValue(change.oldValue);
         });
       }
@@ -27983,7 +27983,7 @@ function exportUndoHistoryToSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   // Create or get history sheet
-  let historySheet = ss.getSheetByName('Undo_History_Export');
+  var historySheet = ss.getSheetByName('Undo_History_Export');
   if (historySheet) {
     historySheet.clear();
   } else {
@@ -27997,7 +27997,7 @@ function exportUndoHistoryToSheet() {
 
   // Data
   if (history.actions.length > 0) {
-    const rows = history.actions.map((action, index) => {
+    const rows = history.actions.mapfunction((action, index) {
       const status = index < history.currentIndex ? 'Applied' : 'Undone';
       return [
         index + 1,
@@ -28162,7 +28162,7 @@ function getUnifiedDashboardData() {
     steps: calculateStepEfficiency(grievances),
 
     // Section 3: Network Health
-    totalMembers: members.filter(m => m[MEMBER_COLS.MEMBER_ID - 1]).length,
+    totalMembers: members.filter(function(m) { return m[MEMBER_COLS.MEMBER_ID - 1]).length; },
     engagementRate: calculateEngagementRate(grievances, members),
     noContactCount: calculateNoContact(members, today),
     stewardCount: calculateActiveStewards(grievances),
@@ -28247,14 +28247,14 @@ function getUnifiedDashboardData() {
 // ------------------------------------------------------------------------====
 
 function calculateActiveCases(grievances) {
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const status = g[GRIEVANCE_COLS.STATUS - 1];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   }).length;
 }
 
 function calculateOverdue(grievances, today) {
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const status = g[GRIEVANCE_COLS.STATUS - 1];
     const nextDeadline = g[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
     if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
@@ -28272,7 +28272,7 @@ function calculateDueThisWeek(grievances, today) {
   const oneWeekFromNow = new Date(today);
   oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
 
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const status = g[GRIEVANCE_COLS.STATUS - 1];
     const nextDeadline = g[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
     if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
@@ -28287,14 +28287,14 @@ function calculateDueThisWeek(grievances, today) {
 }
 
 function calculateWinRate(grievances) {
-  const closed = grievances.filter(g => g[GRIEVANCE_COLS.STATUS - 1] === 'Settled' || g[GRIEVANCE_COLS.STATUS - 1] === 'Closed' || g[GRIEVANCE_COLS.STATUS - 1] === 'Withdrawn');
+  const closed = grievances.filter(function(g) { return g[GRIEVANCE_COLS.STATUS - 1] === 'Settled' || g[GRIEVANCE_COLS.STATUS - 1] === 'Closed' || g[GRIEVANCE_COLS.STATUS - 1] === 'Withdrawn'; });
   if (closed.length === 0) return 0;
-  const won = closed.filter(g => g[GRIEVANCE_COLS.STATUS - 1] === 'Settled').length;
+  const won = closed.filter(function(g) { return g[GRIEVANCE_COLS.STATUS - 1] === 'Settled'; }).length;
   return (won / closed.length) * 100;
 }
 
 function calculateAvgDays(grievances) {
-  const closed = grievances.filter(g => {
+  const closed = grievances.filter(function(g) {
     const status = g[GRIEVANCE_COLS.STATUS - 1];
     const filedDate = g[GRIEVANCE_COLS.DATE_FILED - 1];
     const closedDate = g[GRIEVANCE_COLS.DATE_CLOSED - 1];
@@ -28304,7 +28304,7 @@ function calculateAvgDays(grievances) {
 
   if (closed.length === 0) return 0;
 
-  const totalDays = closed.reduce((sum, g) => {
+  const totalDays = closed.reducefunction((sum, g) {
     const days = Math.floor((g[GRIEVANCE_COLS.DATE_CLOSED - 1] - g[GRIEVANCE_COLS.DATE_FILED - 1]) / (1000 * 60 * 60 * 24));
     return sum + days;
   }, 0);
@@ -28313,21 +28313,21 @@ function calculateAvgDays(grievances) {
 }
 
 function calculateEscalations(grievances) {
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const step = g[GRIEVANCE_COLS.CURRENT_STEP - 1]; // Current Step column
     return step && (step.includes('III') || step.includes('3'));
   }).length;
 }
 
 function calculateArbitrations(grievances) {
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const step = g[GRIEVANCE_COLS.CURRENT_STEP - 1];
     return step && (step.includes('Arbitration') || step.includes('Mediation'));
   }).length;
 }
 
 function calculateHighRisk(grievances) {
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const issueCategory = g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
     return issueCategory && (issueCategory.includes('Discipline') || issueCategory.includes('Discrimination'));
   }).length;
@@ -28335,12 +28335,12 @@ function calculateHighRisk(grievances) {
 
 function calculateStepEfficiency(grievances) {
   const stepData = {};
-  const active = grievances.filter(g => {
+  const active = grievances.filter(function(g) {
     const status = g[GRIEVANCE_COLS.STATUS - 1];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
-  active.forEach(g => {
+  active.forEach(function(g) {
     const step = g[GRIEVANCE_COLS.CURRENT_STEP - 1] || 'Unassigned';
     stepData[step] = (stepData[step] || 0) + 1;
   });
@@ -28353,7 +28353,7 @@ function calculateStepEfficiency(grievances) {
     { name: 'Step III', team: 'ESCALATION', status: 'red' }
   ];
 
-  return steps.map(s => ({
+  return steps.map(function(s) { return ({
     ...s,
     cases: stepData[s.name] || 0,
     caseload: Math.round(((stepData[s.name] || 0) / total) * 100)
@@ -28362,15 +28362,15 @@ function calculateStepEfficiency(grievances) {
 
 function calculateEngagementRate(grievances, members) {
   const membersWithGrievances = new Set();
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     if (g[GRIEVANCE_COLS.MEMBER_ID - 1]) membersWithGrievances.add(g[GRIEVANCE_COLS.MEMBER_ID - 1]);
   });
-  const totalMembers = members.filter(m => m[MEMBER_COLS.MEMBER_ID - 1]).length;
+  const totalMembers = members.filter(function(m) { return m[MEMBER_COLS.MEMBER_ID - 1]; }).length;
   return totalMembers > 0 ? (membersWithGrievances.size / totalMembers) * 100 : 0;
 }
 
 function calculateNoContact(members, today) {
-  return members.filter(m => {
+  return members.filter(function(m) {
     const lastContact = m[MEMBER_COLS.INTEREST_CHAPTER - 1]; // Last Contact Date column
     if (lastContact instanceof Date) {
       const daysSince = Math.floor((today - lastContact) / (1000 * 60 * 60 * 24));
@@ -28382,7 +28382,7 @@ function calculateNoContact(members, today) {
 
 function calculateActiveStewards(grievances) {
   const stewards = new Set();
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     const steward = g[GRIEVANCE_COLS.STEWARD - 1];
     if (steward) stewards.add(steward);
   });
@@ -28391,7 +28391,7 @@ function calculateActiveStewards(grievances) {
 
 function calculateAvgLoad(grievances) {
   const stewardLoad = {};
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     const status = g[GRIEVANCE_COLS.STATUS - 1];
     const steward = g[GRIEVANCE_COLS.STEWARD - 1];
     if (steward && status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
@@ -28402,13 +28402,13 @@ function calculateAvgLoad(grievances) {
   const stewardCount = Object.keys(stewardLoad).length;
   if (stewardCount === 0) return 0;
 
-  const totalLoad = Object.values(stewardLoad).reduce((sum, load) => sum + load, 0);
+  const totalLoad = Object.values(stewardLoad).reducefunction((sum, load) { return sum + load, 0; });
   return totalLoad / stewardCount;
 }
 
 function calculateOverloadedStewards(grievances) {
   const stewardLoad = {};
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     const status = g[GRIEVANCE_COLS.STATUS - 1];
     const steward = g[GRIEVANCE_COLS.STEWARD - 1];
     if (steward && status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
@@ -28416,31 +28416,31 @@ function calculateOverloadedStewards(grievances) {
     }
   });
 
-  return Object.values(stewardLoad).filter(load => load > 7).length;
+  return Object.values(stewardLoad).filter(function(load) { return load > 7; }).length;
 }
 
 function calculateIssueDistribution(grievances) {
-  const active = grievances.filter(g => {
+  const active = grievances.filter(function(g) {
     const status = g[GRIEVANCE_COLS.STATUS - 1];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
   return {
-    disciplinary: active.filter(g => (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Discipline')).length,
-    contract: active.filter(g => (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Pay') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Workload')).length,
-    work: active.filter(g => (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Safety') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Scheduling')).length
+    disciplinary: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Discipline')).length; },
+    contract: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Pay') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Workload')).length; },
+    work: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Safety') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Scheduling'); }).length
   };
 }
 
 function getTopProcesses(grievances, today, limit) {
   return grievances
-    .filter(g => {
+    .filter(function(g) {
       const status = g[GRIEVANCE_COLS.STATUS - 1];
       return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
     })
-    .map(g => {
+    .map(function(g) {
       const nextDeadline = g[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-      let daysUntilDue = null;
+      var daysUntilDue = null;
 
       if (nextDeadline instanceof Date) {
         const deadline = new Date(nextDeadline);
@@ -28459,7 +28459,7 @@ function getTopProcesses(grievances, today, limit) {
                 daysUntilDue !== null && daysUntilDue <= 3 ? 'ALERT' : 'NORMAL'
       };
     })
-    .sort((a, b) => a.due - b.due)
+    .sortfunction((a, b) { return a.due - b.due; })
     .slice(0, limit);
 }
 
@@ -28468,7 +28468,7 @@ function getFollowUpTasks(grievances, today) {
   const oneWeekFromNow = new Date(today);
   oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
 
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     const status = g[GRIEVANCE_COLS.STATUS - 1];
     const nextDeadline = g[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
 
@@ -28495,7 +28495,7 @@ function getFollowUpTasks(grievances, today) {
 function getPredictiveAlerts(members, grievances, today) {
   const alerts = [];
 
-  members.forEach(m => {
+  members.forEach(function(m) {
     const memberID = m[MEMBER_COLS.MEMBER_ID - 1];
     const lastContact = m[MEMBER_COLS.INTEREST_CHAPTER - 1];
 
@@ -28525,12 +28525,12 @@ function getPredictiveAlerts(members, grievances, today) {
 
 function getSystemicRisks(grievances) {
   const locationRisks = {};
-  const active = grievances.filter(g => {
+  const active = grievances.filter(function(g) {
     const status = g[GRIEVANCE_COLS.STATUS - 1];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
-  active.forEach(g => {
+  active.forEach(function(g) {
     const location = g[GRIEVANCE_COLS.LOCATION - 1] || 'Unknown';
     if (!locationRisks[location]) {
       locationRisks[location] = { total: 0, lost: 0 };
@@ -28539,14 +28539,14 @@ function getSystemicRisks(grievances) {
   });
 
   return Object.entries(locationRisks)
-    .map(([location, data]) => ({
+    .mapfunction(([location, data]) { return ({
       entity: location,
       type: 'LOCATION',
       cases: data.total,
       lossRate: 0, // Would need historical data
       severity: data.total > 10 ? 'CRITICAL' : data.total > 5 ? 'WARNING' : 'NORMAL'
     }))
-    .sort((a, b) => b.cases - a.cases)
+    .sortfunction((a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
 
@@ -28564,7 +28564,7 @@ function getOutreachScorecard(members) {
 }
 
 function getArbitrationTracker(grievances) {
-  const arbs = grievances.filter(g => {
+  const arbs = grievances.filter(function(g) {
     const step = g[GRIEVANCE_COLS.CURRENT_STEP - 1];
     return step && (step.includes('Arbitration') || step.includes('Mediation'));
   });
@@ -28576,7 +28576,7 @@ function getArbitrationTracker(grievances) {
     maxFinancialImpact: 125000,
     docCompliance: 78.5,
     pendingWitness: 3,
-    step3Cases: grievances.filter(g => (g[GRIEVANCE_COLS.CURRENT_STEP - 1] || '').includes('III')).length,
+    step3Cases: grievances.filter(function(g) { return (g[GRIEVANCE_COLS.CURRENT_STEP - 1] || '').includes('III')).length; },
     highRiskCases: 2
   };
 }
@@ -28584,7 +28584,7 @@ function getArbitrationTracker(grievances) {
 function getContractTrends(grievances) {
   const articleCounts = {};
 
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     const article = g[GRIEVANCE_COLS.ARTICLES - 1]; // Articles Violated column
     if (article) {
       articleCounts[article] = (articleCounts[article] || 0) + 1;
@@ -28592,11 +28592,11 @@ function getContractTrends(grievances) {
   });
 
   return Object.entries(articleCounts)
-    .map(([article, count]) => {
+    .mapfunction(([article, count]) {
       // Calculate real win/loss rates for this article
-      const articleGrievances = grievances.filter(g => g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] === article);  // Column W: Articles Violated
-      const resolvedArticle = articleGrievances.filter(g => g[GRIEVANCE_COLS.STATUS - 1] && g[GRIEVANCE_COLS.STATUS - 1].toString().includes('Resolved'));
-      const won = resolvedArticle.filter(g => g[GRIEVANCE_COLS.RESOLUTION - 1] && g[GRIEVANCE_COLS.RESOLUTION - 1].toString().includes('Won')).length;
+      const articleGrievances = grievances.filter(function(g) { return g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] === article; });  // Column W: Articles Violated
+      const resolvedArticle = articleGrievances.filter(function(g) { return g[GRIEVANCE_COLS.STATUS - 1] && g[GRIEVANCE_COLS.STATUS - 1].toString().includes('Resolved'); });
+      const won = resolvedArticle.filter(function(g) { return g[GRIEVANCE_COLS.RESOLUTION - 1] && g[GRIEVANCE_COLS.RESOLUTION - 1].toString().includes('Won'); }).length;
       const total = resolvedArticle.length;
 
       return {
@@ -28607,12 +28607,12 @@ function getContractTrends(grievances) {
         severity: count > 10 ? 'HIGH' : 'NORMAL'
       };
     })
-    .sort((a, b) => b.cases - a.cases)
+    .sortfunction((a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
 
 function getTrainingMatrix(members) {
-  const stewards = members.filter(m => m[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'); // Is Steward column
+  const stewards = members.filter(function(m) { return m[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'; }); // Is Steward column
   return {
     complianceRate: 82.3,
     missingGrievance: 5,
@@ -28625,23 +28625,23 @@ function getTrainingMatrix(members) {
 
 function getLocationCaseload(grievances) {
   const locationData = {};
-  const active = grievances.filter(g => {
+  const active = grievances.filter(function(g) {
     const status = g[GRIEVANCE_COLS.STATUS - 1];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
-  active.forEach(g => {
+  active.forEach(function(g) {
     const location = g[GRIEVANCE_COLS.LOCATION - 1] || 'Unknown';
     locationData[location] = (locationData[location] || 0) + 1;
   });
 
   return Object.entries(locationData)
-    .map(([site, cases]) => ({
+    .mapfunction(([site, cases]) { return ({
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
     }))
-    .sort((a, b) => b.cases - a.cases)
+    .sortfunction((a, b) { return b.cases - a.cases; })
     .slice(0, 10);
 }
 
@@ -28743,7 +28743,7 @@ function getRecruitmentTracker(members, today) {
   const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const newMembers = members.filter(m => {
+  const newMembers = members.filter(function(m) {
     const hireDate = m[MEMBER_COLS.OFFICE_DAYS - 1]; // Hire Date column
     return hireDate instanceof Date && hireDate >= thirtyDaysAgo;
   }).length;
@@ -29126,7 +29126,7 @@ function getUnifiedOperationsMonitorHTML() {
 
             // 4. Action Log
             const logContainer = document.getElementById('process-list');
-            logContainer.innerHTML = data.processes.map(proc => {
+            logContainer.innerHTML = data.processes.map(function(proc) {
                 const statusColor = getStatusColorClass(proc.status);
                 const dueText = proc.due < 0 ? \`<span class="text-red-term">\${Math.abs(proc.due)} OVERDUE</span>\` : \`\${proc.due}d\`;
                 return \`
@@ -29142,7 +29142,7 @@ function getUnifiedOperationsMonitorHTML() {
             }).join('');
 
             // 5. Follow-Up Radar
-            document.getElementById('follow-up-radar').innerHTML = data.followUpTasks.map(task => {
+            document.getElementById('follow-up-radar').innerHTML = data.followUpTasks.map(function(task) {
                 const priorityColor = getStatusColorClass(task.priority);
                 return \`
                     <div class="p-3 border border-gray-700">
@@ -29155,7 +29155,7 @@ function getUnifiedOperationsMonitorHTML() {
             }).join('');
 
             // 6. Predictive Alerts
-            document.getElementById('predictive-alerts').innerHTML = data.predictiveAlerts.map(alert => {
+            document.getElementById('predictive-alerts').innerHTML = data.predictiveAlerts.map(function(alert) {
                 const strengthColor = getStatusColorClass(alert.strength);
                 return \`
                     <div class="process-row grid grid-cols-12 py-1 text-xs">
@@ -29168,7 +29168,7 @@ function getUnifiedOperationsMonitorHTML() {
             }).join('');
 
             // 7. Systemic Risk
-            document.getElementById('systemic-risk').innerHTML = data.systemicRisk.map(risk => {
+            document.getElementById('systemic-risk').innerHTML = data.systemicRisk.map(function(risk) {
                 const severityColor = getStatusColorClass(risk.severity);
                 return \`
                     <div class="process-row grid grid-cols-12 py-1 text-xs">
@@ -29190,7 +29190,7 @@ function getUnifiedOperationsMonitorHTML() {
             if (typeof google === 'object' && google.script && google.script.run) {
                 google.script.run
                     .withSuccessHandler(renderDashboard)
-                    .withFailureHandler(error => {
+                    .withFailureHandler(function(error) {
                         document.getElementById('loading-overlay').innerHTML = \`<div class="text-red-term">CONNECTION ERROR: \${error.message}<br>ENSURE WEB APP IS DEPLOYED.</div>\`;
                     })
                     .getUnifiedDashboardData();
@@ -29232,7 +29232,7 @@ function getUnifiedOperationsMonitorHTML() {
 /**
  * Workflow state definitions
  */
-const WORKFLOW_STATES = {
+var WORKFLOW_STATES = {
   FILED: {
     name: 'Filed',
     description: 'Grievance has been filed and is awaiting initial review',
@@ -29465,11 +29465,11 @@ function createWorkflowVisualizerHTML() {
           </div>
           <div class="stage-desc">${state.description}</div>
           <div class="stage-actions">
-            ${state.actions.map(action => `<span class="action-tag">✓ ${action}</span>`).join('')}
+            ${state.actions.map(function(action) { return `<span class="action-tag">✓ ${action}</span>`).join(''; })}
           </div>
           ${state.allowedNextStates.length > 0
             ? `<div class="next-states">
-                <strong>Can transition to:</strong> ${state.allowedNextStates.map(s => WORKFLOW_STATES[s].name).join(', ')}
+                <strong>Can transition to:</strong> ${state.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name).join(', '; })}
               </div>`
             : ''}
         </div>
@@ -29518,7 +29518,7 @@ function validateStateTransition(currentState, newState) {
   if (!current.allowedNextStates.includes(newState)) {
     return {
       valid: false,
-      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(s => WORKFLOW_STATES[s].name).join(', ')}`
+      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name).join(', '; })}`
     };
   }
 
@@ -29588,7 +29588,7 @@ function changeWorkflowState() {
   }
 
   const stateOptions = allowedStates
-    .map(s => WORKFLOW_STATES[s].name)
+    .map(function(s) { return WORKFLOW_STATES[s].name; })
     .join('\n');
 
   const response = ui.prompt(
@@ -29605,7 +29605,7 @@ function changeWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    key => WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName
   );
 
   if (!newStateKey) {
@@ -29676,7 +29676,7 @@ function mapStatusToState(status) {
  */
 function logStateChange(grievanceId, fromState, toState) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let stateLog = ss.getSheetByName('🔄 State Change Log');
+  var stateLog = ss.getSheetByName('🔄 State Change Log');
 
   if (!stateLog) {
     stateLog = createStateChangeLogSheet();
@@ -29773,7 +29773,7 @@ function showCurrentWorkflowState() {
 
   const state = WORKFLOW_STATES[currentState];
   const allowedTransitions = state.allowedNextStates
-    .map(s => WORKFLOW_STATES[s].name)
+    .map(function(s) { return WORKFLOW_STATES[s].name; })
     .join('\n• ');
 
   const message = `
@@ -29816,7 +29816,7 @@ function batchUpdateWorkflowState() {
     return;
   }
 
-  const rows = Array.from({ length: numRows }, (_, i) => startRow + i);
+  const rows = Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
 
   const response = ui.prompt(
     '🔄 Batch Update Workflow State',
@@ -29831,7 +29831,7 @@ function batchUpdateWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    key => WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName
   );
 
   if (!newStateKey) {
@@ -29850,10 +29850,10 @@ function batchUpdateWorkflowState() {
   }
 
   const newState = WORKFLOW_STATES[newStateKey];
-  let updated = 0;
-  let errors = 0;
+  var updated = 0;
+  var errors = 0;
 
-  rows.forEach(row => {
+  rows.forEach(function(row) {
     const grievanceId = activeSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
     const currentStatus = activeSheet.getRange(row, GRIEVANCE_COLS.STATUS).getValue();
     const currentState = mapStatusToState(currentStatus);
@@ -29918,7 +29918,7 @@ function batchUpdateWorkflowState() {
  */
 
 // Test results storage
-const TEST_RESULTS = {
+var TEST_RESULTS = {
   passed: [],
   failed: [],
   skipped: []
@@ -29927,7 +29927,7 @@ const TEST_RESULTS = {
 /**
  * Assertion library
  */
-const Assert = {
+var Assert = {
   /**
    * Assert that two values are equal
    */
@@ -30022,7 +30022,7 @@ const Assert = {
    * Assert that function throws an error
    */
   assertThrows: function(fn, message) {
-    let threw = false;
+    var threw = false;
     try {
       fn();
     } catch (e) {
@@ -30127,7 +30127,7 @@ function runAllTests() {
   ];
 
   // Run each test
-  testFunctions.forEach(testName => {
+  testFunctions.forEach(function(testName) {
     try {
       const testFn = this[testName];
       if (typeof testFn === 'function') {
@@ -30189,7 +30189,7 @@ function generateTestReport(duration) {
   const ss = SpreadsheetApp.getActive();
 
   // Create or clear Test Results sheet
-  let reportSheet = ss.getSheetByName('Test Results');
+  var reportSheet = ss.getSheetByName('Test Results');
   if (!reportSheet) {
     reportSheet = ss.insertSheet('Test Results');
   }
@@ -30221,7 +30221,7 @@ function generateTestReport(duration) {
   reportSheet.getRange(3, 1, summary.length, 2).setValues(summary);
   reportSheet.getRange(3, 1, summary.length, 1).setFontWeight('bold');
 
-  let currentRow = 3 + summary.length + 2;
+  var currentRow = 3 + summary.length + 2;
 
   // Passed tests
   if (TEST_RESULTS.passed.length > 0) {
@@ -30237,7 +30237,7 @@ function generateTestReport(duration) {
       .setBackground('#F3F4F6');
 
     currentRow++;
-    TEST_RESULTS.passed.forEach(test => {
+    TEST_RESULTS.passed.forEach(function(test) {
       reportSheet.getRange(currentRow, 1, 1, 3).setValues([[test.name, '✅ PASS', test.time]]);
       currentRow++;
     });
@@ -30258,7 +30258,7 @@ function generateTestReport(duration) {
       .setBackground('#F3F4F6');
 
     currentRow++;
-    TEST_RESULTS.failed.forEach(test => {
+    TEST_RESULTS.failed.forEach(function(test) {
       reportSheet.getRange(currentRow, 1, 1, 4).setValues([[
         test.name,
         '❌ FAIL',
@@ -30285,7 +30285,7 @@ function generateTestReport(duration) {
       .setBackground('#F3F4F6');
 
     currentRow++;
-    TEST_RESULTS.skipped.forEach(test => {
+    TEST_RESULTS.skipped.forEach(function(test) {
       reportSheet.getRange(currentRow, 1, 1, 3).setValues([[test.name, '⏭️ SKIP', test.reason]]);
       currentRow++;
     });
@@ -30551,8 +30551,8 @@ function testNextActionDueLogic() {
     }
   ];
 
-  testCases.forEach((testCase, index) => {
-    let nextAction;
+  testCases.forEachfunction((testCase, index) {
+    var nextAction;
     if (testCase.status === 'Open') {
       if (testCase.step === 'Step I') {
         nextAction = testCase.stepIDeadline;
@@ -30628,7 +30628,7 @@ function testMemberDirectoryFormulas() {
 
     // Find the test member row
     const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
-    const testMemberRow = memberData.findIndex(row => row[0] === testMemberId);
+    const testMemberRow = memberData.findIndex(function(row) { return row[0] === testMemberId; });
 
     Assert.assertTrue(
       testMemberRow >= 0,
@@ -30740,7 +30740,7 @@ function testMemberValidationRules() {
     { col: 10, name: 'Is Steward' }
   ];
 
-  columnsToCheck.forEach(item => {
+  columnsToCheck.forEach(function(item) {
     const cell = memberDir.getRange(2, item.col);
     const validation = cell.getDataValidation();
 
@@ -30768,7 +30768,7 @@ function testGrievanceValidationRules() {
     { col: 22, name: 'Articles Violated' }
   ];
 
-  columnsToCheck.forEach(item => {
+  columnsToCheck.forEach(function(item) {
     const cell = grievanceLog.getRange(2, item.col);
     const validation = cell.getDataValidation();
 
@@ -30874,7 +30874,7 @@ function testMemberEmailFormat() {
 
   const emailRegex = /^[a-z]+\.[a-z]+\d+@union\.org$/;
 
-  testEmails.forEach(email => {
+  testEmails.forEach(function(email) {
     Assert.assertTrue(
       emailRegex.test(email),
       `Email ${email} should match format firstname.lastnameNNN@union.org`
@@ -30956,7 +30956,7 @@ function testGrievanceMemberLinking() {
 
     // Verify it was created
     const grievanceData = grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, 2).getValues();
-    const testGrievance = grievanceData.find(row => row[0] === 'TEST-G-LINK-001');
+    const testGrievance = grievanceData.find(function(row) { return row[0] === 'TEST-G-LINK-001'; });
 
     Assert.assertNotNull(
       testGrievance,
@@ -31163,7 +31163,7 @@ function testCompleteGrievanceWorkflow() {
 
     // Step 3: Verify Member Directory snapshot updates
     const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
-    const memberRow = memberData.find(row => row[0] === testMemberId);
+    const memberRow = memberData.find(function(row) { return row[0] === testMemberId; });
 
     Assert.assertNotNull(memberRow, 'Member should exist');
 
@@ -31206,7 +31206,7 @@ function testCompleteGrievanceWorkflow() {
 
     // Step 6: Verify Member Directory snapshot updates to Settled
     const updatedMemberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
-    const updatedMemberRow = updatedMemberData.find(row => row[0] === testMemberId);
+    const updatedMemberRow = updatedMemberData.find(function(row) { return row[0] === testMemberId; });
 
     const updatedStatus = updatedMemberRow[26]; // Column AA (index 26)
     Assert.assertEquals(
@@ -31307,7 +31307,7 @@ function testMemberGrievanceSnapshot() {
 
     // Check member snapshot
     const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
-    const memberRow = memberData.find(row => row[0] === testMemberId);
+    const memberRow = memberData.find(function(row) { return row[0] === testMemberId; });
 
     Assert.assertNotNull(memberRow, 'Member should exist');
 
@@ -31321,7 +31321,7 @@ function testMemberGrievanceSnapshot() {
 
     // Update grievance status
     const grievanceRow = grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, 5).getValues()
-      .findIndex(row => row[0] === 'TEST-G-SNAPSHOT-001') + 2;
+      .findIndex(function(row) { return row[0] === 'TEST-G-SNAPSHOT-001'; }) + 2;
 
     grievanceLog.getRange(grievanceRow, 5).setValue('Open');
 
@@ -31330,7 +31330,7 @@ function testMemberGrievanceSnapshot() {
 
     // Check snapshot updated
     const updatedMemberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
-    const updatedMemberRow = updatedMemberData.find(row => row[0] === testMemberId);
+    const updatedMemberRow = updatedMemberData.find(function(row) { return row[0] === testMemberId; });
 
     const updatedStatusSnapshot = updatedMemberRow[26];
     Assert.assertEquals(
@@ -31443,7 +31443,7 @@ function testMultipleGrievancesSameMember() {
 
     // Verify all grievances created
     const grievances = grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, 2).getValues()
-      .filter(row => row[1] === testMemberId);
+      .filter(function(row) { return row[1] === testMemberId; });
 
     Assert.assertEquals(
       3,
@@ -31454,7 +31454,7 @@ function testMultipleGrievancesSameMember() {
     // Verify member shows as having open grievance (from first one)
     const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
     const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
-    const memberRow = memberData.find(row => row[0] === testMemberId);
+    const memberRow = memberData.find(function(row) { return row[0] === testMemberId; });
 
     const hasOpenGrievance = memberRow[25];
     Assert.assertTrue(
@@ -31667,7 +31667,7 @@ function testGrievanceUpdatesTriggersRecalculation() {
 
     // Check initial state
     const memberData1 = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
-    const memberRow1 = memberData1.find(row => row[0] === testMemberId);
+    const memberRow1 = memberData1.find(function(row) { return row[0] === testMemberId; });
     const status1 = memberRow1[26];
 
     Assert.assertEquals('Open', status1, 'Initial status should be Open');
@@ -31680,7 +31680,7 @@ function testGrievanceUpdatesTriggersRecalculation() {
 
     // Check updated state
     const memberData2 = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
-    const memberRow2 = memberData2.find(row => row[0] === testMemberId);
+    const memberRow2 = memberData2.find(function(row) { return row[0] === testMemberId; });
     const status2 = memberRow2[26];
 
     Assert.assertEquals(

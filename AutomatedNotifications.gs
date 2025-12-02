@@ -18,7 +18,7 @@
 function setupDailyDeadlineNotifications() {
   // Delete existing triggers to avoid duplicates
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'checkDeadlinesAndNotify') {
       ScriptApp.deleteTrigger(trigger);
     }
@@ -43,9 +43,9 @@ function setupDailyDeadlineNotifications() {
  */
 function disableDailyDeadlineNotifications() {
   const triggers = ScriptApp.getProjectTriggers();
-  let removed = 0;
+  var removed = 0;
 
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'checkDeadlinesAndNotify') {
       ScriptApp.deleteTrigger(trigger);
       removed++;
@@ -88,7 +88,7 @@ function checkDeadlinesAndNotify() {
   };
 
   // Categorize grievances by deadline urgency
-  data.forEach((row, index) => {
+  data.forEachfunction((row, index) {
     const grievanceId = row[0];
     const memberFirstName = row[2];
     const memberLastName = row[3];
@@ -125,22 +125,22 @@ function checkDeadlinesAndNotify() {
   });
 
   // Send notifications
-  let emailsSent = 0;
+  var emailsSent = 0;
 
   // Send overdue notifications
-  notifications.overdue.forEach(grievance => {
+  notifications.overdue.forEach(function(grievance) {
     sendDeadlineNotification(grievance, 'OVERDUE');
     emailsSent++;
   });
 
   // Send urgent notifications (escalate to manager)
-  notifications.urgent.forEach(grievance => {
+  notifications.urgent.forEach(function(grievance) {
     sendDeadlineNotification(grievance, 'URGENT');
     emailsSent++;
   });
 
   // Send upcoming notifications
-  notifications.upcoming.forEach(grievance => {
+  notifications.upcoming.forEach(function(grievance) {
     sendDeadlineNotification(grievance, 'UPCOMING');
     emailsSent++;
   });
@@ -234,7 +234,7 @@ function createEmailBody(grievance, priority) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const spreadsheetUrl = ss.getUrl();
 
-  let urgencyMessage = '';
+  var urgencyMessage = '';
 
   if (priority === 'OVERDUE') {
     urgencyMessage = `⚠️ THIS GRIEVANCE IS OVERDUE BY ${Math.abs(grievance.daysRemaining)} DAY(S)!\n\nImmediate action is required.`;
@@ -335,7 +335,7 @@ function testDeadlineNotifications() {
  */
 function showNotificationSettings() {
   const triggers = ScriptApp.getProjectTriggers();
-  const isEnabled = triggers.some(t => t.getHandlerFunction() === 'checkDeadlinesAndNotify');
+  const isEnabled = triggers.some(function(t) { return t.getHandlerFunction() === 'checkDeadlinesAndNotify'; });
 
   const html = HtmlService.createHtmlOutput(`
 <!DOCTYPE html>
@@ -444,13 +444,13 @@ function showNotificationSettings() {
       </ul>
     </div>
 
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).setupDailyDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupDailyDeadlineNotifications()">
       ${isEnabled ? '🔄 Refresh Trigger' : '✅ Enable Notifications'}
     </button>
 
-    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
+    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
 
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).testDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).testDeadlineNotifications()">
       🧪 Test Now
     </button>
   </div>

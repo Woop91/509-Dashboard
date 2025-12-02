@@ -42,7 +42,7 @@ function createGrievanceFolder(grievanceId, grievantName) {
   const rootFolder = createRootFolder();
 
   // Create folder name with grievant name if provided
-  let folderName = `Grievance_${grievanceId}`;
+  var folderName = `Grievance_${grievanceId}`;
   if (grievantName) {
     folderName = `Grievance_${grievanceId}_${grievantName}`;
   }
@@ -216,7 +216,7 @@ function showFileUploadDialog() {
   }
 
   // Get or create folder
-  let folder;
+  var folder;
   try {
     folder = createGrievanceFolder(grievanceId);
     linkFolderToGrievance(grievanceId, folder.getId());
@@ -486,7 +486,7 @@ function createFileListHTML(grievanceId, folderId, files) {
   const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
 
   const filesList = files
-    .map(file => `
+    .map(function(file) { return '
       <div class="file-item">
         <div class="file-icon">${getFileIcon(file.type)}</div>
         <div class="file-details">
@@ -647,10 +647,10 @@ function batchCreateGrievanceFolders() {
     }
 
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 29).getValues();
-    let created = 0;
-    let skipped = 0;
+    var created = 0;
+    var skipped = 0;
 
-    data.forEach((row, index) => {
+    data.forEachfunction((row, index) {
       const grievanceId = row[0];
       const folderId = row[28]; // Column AC
 

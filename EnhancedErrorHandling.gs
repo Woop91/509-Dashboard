@@ -17,7 +17,7 @@
 /**
  * Error handling configuration
  */
-const ERROR_CONFIG = {
+var ERROR_CONFIG = {
   LOG_SHEET_NAME: 'Error_Log',
   MAX_LOG_ENTRIES: 1000,
   ERROR_LEVELS: {
@@ -33,7 +33,7 @@ const ERROR_CONFIG = {
 /**
  * Error categories
  */
-const ERROR_CATEGORIES = {
+var ERROR_CATEGORIES = {
   VALIDATION: 'Data Validation',
   PERMISSION: 'Permission Error',
   NETWORK: 'Network Error',
@@ -62,11 +62,11 @@ function createErrorDashboardHTML() {
   const stats = getErrorStats();
   const recentErrors = getRecentErrors(20);
 
-  let errorRows = '';
+  var errorRows = '';
   if (recentErrors.length === 0) {
     errorRows = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #999;">No errors logged</td></tr>';
   } else {
-    recentErrors.forEach(error => {
+    recentErrors.forEach(function(error) {
       const levelClass = error.level.toLowerCase();
       errorRows += `
         <tr>
@@ -279,7 +279,7 @@ function createErrorDashboardHTML() {
   <script>
     function runHealthCheck() {
       google.script.run
-        .withSuccessHandler((result) => {
+        .withSuccessHandlerfunction((result) {
           alert('🏥 Health Check Complete:\\n\\n' + result.summary);
           location.reload();
         })
@@ -288,7 +288,7 @@ function createErrorDashboardHTML() {
 
     function exportErrorLog() {
       google.script.run
-        .withSuccessHandler((url) => {
+        .withSuccessHandlerfunction((url) {
           alert('✅ Error log exported!');
           window.open(url, '_blank');
         })
@@ -298,7 +298,7 @@ function createErrorDashboardHTML() {
     function clearErrorLog() {
       if (confirm('Clear all error logs? This cannot be undone.')) {
         google.script.run
-          .withSuccessHandler(() => {
+          .withSuccessHandlerfunction(() {
             alert('✅ Error log cleared!');
             location.reload();
           })
@@ -308,7 +308,7 @@ function createErrorDashboardHTML() {
 
     function testErrorHandling() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Test error logged successfully!');
           location.reload();
         })
@@ -317,7 +317,7 @@ function createErrorDashboardHTML() {
 
     function viewErrorTrends() {
       google.script.run
-        .withSuccessHandler((url) => {
+        .withSuccessHandlerfunction((url) {
           window.open(url, '_blank');
         })
         .createErrorTrendReport();
@@ -340,7 +340,7 @@ function createErrorDashboardHTML() {
 function logError(level, category, message, context = '', error = null, recovered = false) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let errorSheet = ss.getSheetByName(ERROR_CONFIG.LOG_SHEET_NAME);
+    var errorSheet = ss.getSheetByName(ERROR_CONFIG.LOG_SHEET_NAME);
 
     // Create error log sheet if it doesn't exist
     if (!errorSheet) {
@@ -461,7 +461,7 @@ function getErrorStats() {
     critical: 0
   };
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const level = row[1];
     if (level === 'INFO') stats.info++;
     else if (level === 'WARNING') stats.warning++;
@@ -470,8 +470,8 @@ function getErrorStats() {
   });
 
   // Determine health
-  let health = 'good';
-  let healthText = '✅ Good';
+  var health = 'good';
+  var healthText = '✅ Good';
 
   if (stats.critical > 0 || stats.error > 10) {
     health = 'poor';
@@ -506,7 +506,7 @@ function getRecentErrors(limit = 20) {
 
   const data = errorSheet.getRange(startRow, 1, numRows, 8).getValues();
 
-  return data.map(row => ({
+  return data.map(function(row) { return ({
     timestamp: row[0],
     level: row[1],
     category: row[2],
@@ -559,7 +559,7 @@ function withErrorHandling(func, context) {
 function validateRequiredFields(data, requiredFields) {
   const missing = [];
 
-  requiredFields.forEach(field => {
+  requiredFields.forEach(function(field) {
     if (!data[field] || data[field] === '') {
       missing.push(field);
     }
@@ -612,9 +612,9 @@ function performSystemHealthCheck() {
   // Check 1: Verify all required sheets exist
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const requiredSheets = Object.values(SHEETS);
-  const existingSheets = ss.getSheets().map(s => s.getName());
+  const existingSheets = ss.getSheets().map(function(s) { return s.getName(); });
 
-  requiredSheets.forEach(sheetName => {
+  requiredSheets.forEach(function(sheetName) {
     const exists = existingSheets.includes(sheetName);
     results.checks.push({
       name: `Sheet: ${sheetName}`,
@@ -663,7 +663,7 @@ function performSystemHealthCheck() {
   }
 
   // Generate summary
-  const passCount = results.checks.filter(c => c.status === 'PASS').length;
+  const passCount = results.checks.filter(function(c) { return c.status === 'PASS'; }).length;
   const totalCount = results.checks.length;
   results.summary = `Health Check: ${passCount}/${totalCount} checks passed\nOverall Status: ${results.overall}`;
 
@@ -754,7 +754,7 @@ function createErrorTrendReport() {
   }
 
   // Create or get trends sheet
-  let trendsSheet = ss.getSheetByName('Error_Trends');
+  var trendsSheet = ss.getSheetByName('Error_Trends');
   if (trendsSheet) {
     trendsSheet.clear();
   } else {
@@ -765,7 +765,7 @@ function createErrorTrendReport() {
   const data = errorSheet.getRange(2, 1, errorSheet.getLastRow() - 1, 2).getValues();
 
   const dailyStats = {};
-  data.forEach(row => {
+  data.forEach(function(row) {
     const date = Utilities.formatDate(new Date(row[0]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
     const level = row[1];
 

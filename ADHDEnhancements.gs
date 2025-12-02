@@ -19,7 +19,7 @@ function hideAllGridlines() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     const sheetName = sheet.getName();
 
     // Hide gridlines on all sheets except Config (for editing)
@@ -40,7 +40,7 @@ function showAllGridlines() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     sheet.showGridlines();
   });
 
@@ -85,7 +85,7 @@ function reorderSheetsLogically() {
   ];
 
   // Move sheets to correct positions
-  sheetOrder.forEach((sheetName, index) => {
+  sheetOrder.forEachfunction((sheetName, index) {
     const sheet = ss.getSheetByName(sheetName);
     if (sheet) {
       ss.setActiveSheet(sheet);
@@ -144,7 +144,7 @@ function addStewardWorkloadInstructions() {
   ];
 
   // Create colored instruction boxes
-  instructionData.forEach((instruction, index) => {
+  instructionData.forEachfunction((instruction, index) {
     const row = index + 2;
 
     // Label column (A-B)
@@ -201,7 +201,7 @@ function addStewardWorkloadInstructions() {
  */
 function createUserSettingsSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName("⚙️ User Settings");
+  var sheet = ss.getSheetByName("⚙️ User Settings");
 
   if (!sheet) {
     sheet = ss.insertSheet("⚙️ User Settings");
@@ -318,7 +318,7 @@ function createUserSettingsSheet() {
     ["🔔", "Set up desktop notifications for overdue items (Future Feature)"]
   ];
 
-  tips.forEach((tip, index) => {
+  tips.forEachfunction((tip, index) {
     const row = 15 + index;
     sheet.getRange(row, 1).setValue(tip[0])
       .setFontSize(18)
@@ -389,7 +389,7 @@ function applyUserSettings() {
 
   const targetSize = fontSizeMap[fontSize] || 11;
 
-  [SHEETS.INTERACTIVE_DASHBOARD, SHEETS.DASHBOARD].forEach(sheetName => {
+  [SHEETS.INTERACTIVE_DASHBOARD, SHEETS.DASHBOARD].forEach(function(sheetName) {
     const sheet = ss.getSheetByName(sheetName);
     if (sheet) {
       sheet.getDataRange().setFontSize(targetSize);

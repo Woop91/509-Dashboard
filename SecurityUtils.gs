@@ -22,7 +22,7 @@
  * Role definitions for access control
  * @const {Object}
  */
-const SECURITY_ROLES = {
+var SECURITY_ROLES = {
   ADMIN: 'ADMIN',
   STEWARD: 'STEWARD',
   MEMBER: 'MEMBER',
@@ -33,7 +33,7 @@ const SECURITY_ROLES = {
  * Admin email addresses with full system access
  * @const {string[]}
  */
-const ADMIN_EMAILS = [
+var ADMIN_EMAILS = [
   'admin@seiu509.org',
   'president@seiu509.org',
   'techsupport@seiu509.org'
@@ -43,13 +43,13 @@ const ADMIN_EMAILS = [
  * Audit log sheet name
  * @const {string}
  */
-const AUDIT_LOG_SHEET = '🔒 Audit Log';
+var AUDIT_LOG_SHEET = '🔒 Audit Log';
 
 /**
  * Rate limiting configuration
  * @const {Object}
  */
-const RATE_LIMITS = {
+var RATE_LIMITS = {
   EMAIL_MIN_INTERVAL: 5000,        // 5 seconds between emails
   API_CALLS_PER_MINUTE: 60,        // Max API calls per minute
   EXPORT_MIN_INTERVAL: 30000,      // 30 seconds between exports
@@ -93,7 +93,7 @@ function sanitizeArray(arr) {
   if (!Array.isArray(arr)) {
     return [];
   }
-  return arr.map(item => sanitizeHTML(item));
+  return arr.map(function(item) { return sanitizeHTML(item); });
 }
 
 /**
@@ -490,7 +490,7 @@ function validateInput(input, type, maxLength = 255) {
 function logAuditEvent(action, details = {}, level = 'INFO') {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
+    var auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
 
     // Create audit log sheet if it doesn't exist
     if (!auditLog) {
@@ -572,12 +572,12 @@ function getAuditLog(limit = 100, action = null) {
     const headers = data[0];
     const rows = data.slice(1).reverse(); // Most recent first
 
-    let filtered = rows;
+    var filtered = rows;
     if (action) {
-      filtered = rows.filter(row => row[3] === action);
+      filtered = rows.filter(function(row) { return row[3] === action; });
     }
 
-    const result = filtered.slice(0, limit).map(row => ({
+    const result = filtered.slice(0, limit).map(function(row) { return ({
       timestamp: row[0],
       userEmail: row[1],
       userRole: row[2],
@@ -825,7 +825,7 @@ function showSecurityAudit() {
     const report = runSecurityAudit();
     const ui = SpreadsheetApp.getUi();
 
-    let message = '🔒 SECURITY AUDIT REPORT\n\n';
+    var message = '🔒 SECURITY AUDIT REPORT\n\n';
     message += `Total Users: ${report.results.totalUsers}\n`;
     message += `Admins: ${report.results.adminCount}\n`;
     message += `Stewards: ${report.results.stewardCount}\n`;
@@ -837,7 +837,7 @@ function showSecurityAudit() {
 
     if (report.recommendations.length > 0) {
       message += 'RECOMMENDATIONS:\n';
-      report.recommendations.forEach(rec => {
+      report.recommendations.forEach(function(rec) {
         message += `${rec}\n`;
       });
     } else {

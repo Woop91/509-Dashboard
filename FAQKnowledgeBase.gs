@@ -17,7 +17,7 @@
 /**
  * FAQ categories
  */
-const FAQ_CATEGORIES = {
+var FAQ_CATEGORIES = {
   GETTING_STARTED: 'Getting Started',
   GRIEVANCES: 'Grievance Process',
   MEMBERS: 'Member Management',
@@ -32,7 +32,7 @@ const FAQ_CATEGORIES = {
  */
 function createFAQSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let faqSheet = ss.getSheetByName('📚 FAQ Database');
+  var faqSheet = ss.getSheetByName('📚 FAQ Database');
 
   if (faqSheet) {
     SpreadsheetApp.getUi().alert('FAQ Database sheet already exists.');
@@ -370,7 +370,7 @@ function createFAQSearchHTML() {
 
     <div class="categories">
       <div class="category-badge active" onclick="filterByCategory('')">All Categories</div>
-      ${categories.map(cat => `
+      ${categories.map(function(cat) { return '
         <div class="category-badge" onclick="filterByCategory('${cat}')">${cat}</div>
       `).join('')}
     </div>
@@ -385,8 +385,8 @@ function createFAQSearchHTML() {
   </div>
 
   <script>
-    let allFAQs = [];
-    let currentCategory = '';
+    var allFAQs = [];
+    var currentCategory = '';
 
     // Load FAQs on startup
     google.script.run
@@ -403,7 +403,7 @@ function createFAQSearchHTML() {
       const stats = document.getElementById('stats');
       stats.innerHTML = \`
         <strong>📊 Knowledge Base Stats:</strong>
-        ${allFAQs.length} articles across ${new Set(allFAQs.map(f => f.category)).size} categories
+        ${allFAQs.length} articles across ${new Set(allFAQs.map(function(f) { return f.category); }).size} categories
       \`;
     }
 
@@ -415,14 +415,14 @@ function createFAQSearchHTML() {
         return;
       }
 
-      let filtered = allFAQs;
+      var filtered = allFAQs;
 
       if (currentCategory) {
-        filtered = filtered.filter(faq => faq.category === currentCategory);
+        filtered = filtered.filter(function(faq) { return faq.category === currentCategory; });
       }
 
       if (searchTerm) {
-        filtered = filtered.filter(faq => {
+        filtered = filtered.filter(function(faq) {
           return faq.question.toLowerCase().includes(searchTerm) ||
                  faq.answer.toLowerCase().includes(searchTerm) ||
                  (faq.tags && faq.tags.toLowerCase().includes(searchTerm));
@@ -436,7 +436,7 @@ function createFAQSearchHTML() {
       currentCategory = category;
 
       // Update active badge
-      document.querySelectorAll('.category-badge').forEach(badge => {
+      document.querySelectorAll('.category-badge').forEach(function(badge) {
         badge.classList.remove('active');
       });
       event.target.classList.add('active');
@@ -487,7 +487,7 @@ function createFAQSearchHTML() {
 
     function markHelpful(faqId, isHelpful) {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           // Reload FAQs to get updated counts
           google.script.run
             .withSuccessHandler(onFAQsLoaded)
@@ -520,7 +520,7 @@ function getAllFAQs() {
 
   const data = faqSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
-  return data.map(row => ({
+  return data.map(function(row) { return ({
     id: row[0],
     category: row[1],
     question: row[2],
@@ -605,7 +605,7 @@ function createFAQAdminHTML() {
     <div class="form-group">
       <label>Category:</label>
       <select id="category">
-        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+        ${categories.map(function(cat) { return `<option value="${cat}">${cat}</option>`).join(''; })}
       </select>
     </div>
 
@@ -643,11 +643,11 @@ function createFAQAdminHTML() {
       }
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ FAQ saved successfully!');
           google.script.host.close();
         })
-        .withFailureHandler((error) => {
+        .withFailureHandlerfunction((error) {
           alert('Error: ' + error.message);
         })
         .addNewFAQ(faq);
@@ -664,7 +664,7 @@ function createFAQAdminHTML() {
  */
 function addNewFAQ(faq) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let faqSheet = ss.getSheetByName('📚 FAQ Database');
+  var faqSheet = ss.getSheetByName('📚 FAQ Database');
 
   if (!faqSheet) {
     createFAQSheet();

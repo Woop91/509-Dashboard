@@ -113,31 +113,31 @@ function showBatchOperationsMenu() {
 
   <script>
     function runBatchAssignSteward() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandlerfunction(() {
         google.script.host.close();
       }).batchAssignSteward();
     }
 
     function runBatchUpdateStatus() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandlerfunction(() {
         google.script.host.close();
       }).batchUpdateStatus();
     }
 
     function runBatchExportPDF() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandlerfunction(() {
         google.script.host.close();
       }).batchExportPDF();
     }
 
     function runBatchEmail() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandlerfunction(() {
         google.script.host.close();
       }).batchEmailNotifications();
     }
 
     function runBatchAddNotes() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandlerfunction(() {
         google.script.host.close();
       }).batchAddNotes();
     }
@@ -184,10 +184,10 @@ function getSelectedGrievanceRows() {
       );
       return [];
     }
-    return Array.from({ length: numRows - 1 }, (_, i) => startRow + i + 1);
+    return Array.fromfunction({ length: numRows - 1 }, (_, i) { return startRow + i + 1; });
   }
 
-  return Array.from({ length: numRows }, (_, i) => startRow + i);
+  return Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
 }
 
 /**
@@ -207,9 +207,9 @@ function batchAssignSteward() {
   const stewardData = memberSheet.getRange(2, 1, memberSheet.getLastRow() - 1, 10).getValues();
 
   const stewards = stewardData
-    .filter(row => row[9] === 'Yes') // Column J: Is Steward?
-    .map(row => `${row[1]} ${row[2]}`) // First + Last Name
-    .filter(name => name.trim() !== '');
+    .filter(function(row) { return row[9] === 'Yes'; }) // Column J: Is Steward?
+    .map(function(row) { return `${row[1]} ${row[2]}`; }) // First + Last Name
+    .filter(function(name) { return name.trim() !== ''; });
 
   if (stewards.length === 0) {
     ui.alert('❌ No stewards found in the Member Directory.');
@@ -253,9 +253,9 @@ function batchAssignSteward() {
 
   // Perform bulk assignment
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  let updated = 0;
+  var updated = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     grievanceSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).setValue(stewardName);
     updated++;
   });
@@ -318,9 +318,9 @@ function batchUpdateStatus() {
   // Perform bulk status update
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  let updated = 0;
+  var updated = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     grievanceSheet.getRange(row, GRIEVANCE_COLS.STATUS).setValue(newStatus);
 
     // Update closed date if status is Closed or Resolved
@@ -374,7 +374,7 @@ function batchExportPDF() {
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const pdfs = [];
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     try {
       const grievanceId = grievanceSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
       const pdf = exportGrievanceToPDF(grievanceId);
@@ -517,9 +517,9 @@ function batchEmailNotifications() {
   // Send emails
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  let sent = 0;
+  var sent = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     try {
       const grievanceId = grievanceSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
       const steward = grievanceSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).getValue();
@@ -597,9 +597,9 @@ function batchAddNotes() {
   const user = Session.getActiveUser().getEmail() || 'User';
   const formattedNote = `[${timestamp}] ${user}: ${noteText}`;
 
-  let updated = 0;
+  var updated = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     const existingNotes = grievanceSheet.getRange(row, GRIEVANCE_COLS.NOTES).getValue() || '';
     const newNotes = existingNotes ? `${existingNotes}\n${formattedNote}` : formattedNote;
     grievanceSheet.getRange(row, GRIEVANCE_COLS.NOTES).setValue(newNotes);

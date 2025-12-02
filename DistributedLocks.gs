@@ -14,7 +14,7 @@
  *
  * Usage:
  *   const lock = new DistributedLock('resource-name');
- *   lock.executeWithLock(() => {
+ *   lock.executeWithLockfunction(() {
  *     // Critical section code here
  *   });
  */
@@ -159,7 +159,7 @@ class DistributedLock {
 function recalcAllMembersThreadSafe() {
   const lock = new DistributedLock('recalc_members', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     // Call the actual recalculation function
     if (typeof recalcAllMembers === 'function') {
       return recalcAllMembers();
@@ -175,7 +175,7 @@ function recalcAllMembersThreadSafe() {
 function recalcAllGrievancesThreadSafe() {
   const lock = new DistributedLock('recalc_grievances', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     // Call the batched recalculation if available
     if (typeof recalcAllGrievancesBatched === 'function') {
       return recalcAllGrievancesBatched();
@@ -191,7 +191,7 @@ function recalcAllGrievancesThreadSafe() {
 function rebuildDashboardThreadSafe() {
   const lock = new DistributedLock('rebuild_dashboard', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     // Call the optimized rebuild if available, otherwise standard rebuild
     if (typeof rebuildDashboardOptimized === 'function') {
       return rebuildDashboardOptimized();
@@ -210,7 +210,7 @@ function rebuildDashboardThreadSafe() {
 function seedDataThreadSafe() {
   const lock = new DistributedLock('seed_data', 600000); // 10 minute timeout
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     if (typeof seedAllWithRollback === 'function') {
       return seedAllWithRollback();
     } else {
@@ -232,7 +232,7 @@ function seedDataThreadSafe() {
 function clearAllDataThreadSafe() {
   const lock = new DistributedLock('clear_data', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     if (typeof NUKE_ALL_DATA === 'function') {
       return NUKE_ALL_DATA();
     }
@@ -252,7 +252,7 @@ function makeThreadSafe(fn, resourceName, timeout = 30000) {
   return function(...args) {
     const lock = new DistributedLock(resourceName, timeout);
 
-    return lock.executeWithLock(() => {
+    return lock.executeWithLockfunction(() {
       return fn.apply(this, args);
     });
   };
@@ -387,7 +387,7 @@ function showLockStatus() {
   const ui = SpreadsheetApp.getUi();
   const status = checkConcurrentOperations();
 
-  let message;
+  var message;
 
   if (status.active) {
     message = `Active Operations:\n\n`;
@@ -421,12 +421,12 @@ function CHECK_LOCK_STATUS() {
 function batchUpdateWithLock(updates) {
   const lock = new DistributedLock('batch_update', 600000); // 10 minutes
 
-  return lock.executeWithLock(() => {
+  return lock.executeWithLockfunction(() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
     // Perform batch updates
-    let updateCount = 0;
+    var updateCount = 0;
 
     for (const update of updates) {
       // Apply each update

@@ -22,7 +22,7 @@
  * Role definitions with permissions
  * @type {Object}
  */
-const ROLES = {
+var ROLES = {
   ADMIN: {
     name: 'Admin',
     permissions: [
@@ -77,7 +77,7 @@ function getUserRole(userEmail) {
 
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let userRolesSheet = ss.getSheetByName('User Roles');
+    var userRolesSheet = ss.getSheetByName('User Roles');
 
     if (!userRolesSheet) {
       // If sheet doesn't exist, create it and assign current user as admin
@@ -115,7 +115,7 @@ function assignRole(userEmail, role) {
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let userRolesSheet = ss.getSheetByName('User Roles');
+    var userRolesSheet = ss.getSheetByName('User Roles');
 
     if (!userRolesSheet) {
       userRolesSheet = createUserRolesSheet();
@@ -123,7 +123,7 @@ function assignRole(userEmail, role) {
 
     // Check if user already exists
     const data = userRolesSheet.getDataRange().getValues();
-    let userRow = -1;
+    var userRow = -1;
 
     for (let i = 1; i < data.length; i++) {
       if (data[i][0].toLowerCase() === userEmail.toLowerCase()) {
@@ -250,7 +250,7 @@ function withPermission(fn, requiredPermission, actionDescription) {
 function logAudit(eventType, description, metadata) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let auditSheet = ss.getSheetByName('Audit Log');
+    var auditSheet = ss.getSheetByName('Audit Log');
 
     if (!auditSheet) {
       auditSheet = createAuditLogSheet();
@@ -357,7 +357,7 @@ function filterMemberDataByPermission(memberData, userEmail) {
 
   // Members can only see their own data
   if (role === 'MEMBER') {
-    return memberData.filter((row, index) => {
+    return memberData.filterfunction((row, index) {
       if (index === 0) return true; // Keep header
       return row[7] && row[7].toLowerCase() === userEmail.toLowerCase(); // Email column
     });
@@ -365,11 +365,11 @@ function filterMemberDataByPermission(memberData, userEmail) {
 
   // Viewers see anonymized data (remove PII)
   if (role === 'VIEWER') {
-    return memberData.map((row, index) => {
+    return memberData.mapfunction((row, index) {
       if (index === 0) return row; // Keep header
 
       // Anonymize PII
-      return row.map((cell, colIndex) => {
+      return row.mapfunction((cell, colIndex) {
         // Hide email (column 8) and phone (column 9)
         if (colIndex === 7 || colIndex === 8) {
           return '[REDACTED]';
@@ -404,10 +404,10 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
   if (role === 'STEWARD') {
     // First, get steward name from member directory
     const memberData = getSheetDataSafely(SHEETS.MEMBER_DIR);
-    let stewardName = '';
+    var stewardName = '';
 
     if (memberData) {
-      const stewardRow = memberData.find(row =>
+      const stewardRow = memberData.find(function(row) {
         row[7] && row[7].toLowerCase() === userEmail.toLowerCase()
       );
       if (stewardRow) {
@@ -415,7 +415,7 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
       }
     }
 
-    return grievanceData.filter((row, index) => {
+    return grievanceData.filterfunction((row, index) {
       if (index === 0) return true; // Keep header
       const assignedSteward = row[26]; // Assigned Steward column
       return assignedSteward && assignedSteward.includes(stewardName);
@@ -424,7 +424,7 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
 
   // Members can only see their own grievances
   if (role === 'MEMBER') {
-    return grievanceData.filter((row, index) => {
+    return grievanceData.filterfunction((row, index) {
       if (index === 0) return true; // Keep header
       const memberEmail = row[23]; // Member Email column
       return memberEmail && memberEmail.toLowerCase() === userEmail.toLowerCase();
@@ -433,11 +433,11 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
 
   // Viewers see anonymized data
   if (role === 'VIEWER') {
-    return grievanceData.map((row, index) => {
+    return grievanceData.mapfunction((row, index) {
       if (index === 0) return row; // Keep header
 
       // Anonymize PII
-      return row.map((cell, colIndex) => {
+      return row.mapfunction((cell, colIndex) {
         // Hide names (2,3), email (23)
         if ([2, 3, 23].includes(colIndex)) {
           return '[REDACTED]';
@@ -496,7 +496,7 @@ function showUserManagement() {
   requirePermission('manage_users', 'manage user roles');
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let userRolesSheet = ss.getSheetByName('User Roles');
+  var userRolesSheet = ss.getSheetByName('User Roles');
 
   if (!userRolesSheet) {
     userRolesSheet = createUserRolesSheet();
@@ -525,7 +525,7 @@ function showAuditLog() {
   requirePermission('view_audit_log', 'view audit log');
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let auditSheet = ss.getSheetByName('Audit Log');
+  var auditSheet = ss.getSheetByName('Audit Log');
 
   if (!auditSheet) {
     SpreadsheetApp.getUi().alert('No audit log found.');
@@ -564,7 +564,7 @@ function exportAuditLog() {
 
   // This would create a CSV file in Google Drive
   const data = auditSheet.getDataRange().getValues();
-  const csv = data.map(row => row.join(',')).join('\n');
+  const csv = data.map(function(row) { return row.join(',')).join('\n'; });
 
   const folder = DriveApp.getRootFolder();
   const file = folder.createFile(

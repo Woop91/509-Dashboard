@@ -17,7 +17,7 @@
 /**
  * Pagination configuration
  */
-const PAGINATION_CONFIG = {
+var PAGINATION_CONFIG = {
   DEFAULT_PAGE_SIZE: 100,
   PAGE_SIZE_OPTIONS: [25, 50, 100, 200, 500],
   MAX_CACHED_PAGES: 10,
@@ -281,12 +281,12 @@ function createPaginatedViewerHTML() {
   </div>
 
   <script>
-    let currentPage = 1;
-    let pageSize = ${pageSize};
-    let totalRecords = ${totalRows};
-    let totalPages = ${totalPages};
-    let currentData = [];
-    let allHeaders = [];
+    var currentPage = 1;
+    var pageSize = ${pageSize};
+    var totalRecords = ${totalRows};
+    var totalPages = ${totalPages};
+    var currentData = [];
+    var allHeaders = [];
 
     // Load initial page
     loadPage(1);
@@ -315,10 +315,10 @@ function createPaginatedViewerHTML() {
       allHeaders = data.headers;
       currentData = data.rows;
 
-      let html = '<table><thead><tr>';
+      var html = '<table><thead><tr>';
 
       // Headers
-      data.headers.forEach(header => {
+      data.headers.forEach(function(header) {
         html += '<th>' + escapeHtml(header) + '</th>';
       });
 
@@ -328,10 +328,10 @@ function createPaginatedViewerHTML() {
       if (data.rows.length === 0) {
         html += '<tr><td colspan="' + data.headers.length + '" class="no-data">No records found</td></tr>';
       } else {
-        data.rows.forEach(row => {
+        data.rows.forEach(function(row) {
           html += '<tr>';
-          row.forEach(cell => {
-            let cellValue = cell;
+          row.forEach(function(cell) {
+            var cellValue = cell;
             if (cell instanceof Date) {
               cellValue = cell.toLocaleDateString();
             }
@@ -348,7 +348,7 @@ function createPaginatedViewerHTML() {
     }
 
     function renderPagination() {
-      let html = '';
+      var html = '';
 
       // First and Previous buttons
       html += '<button class="page-button" onclick="loadPage(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>« First</button>';
@@ -408,8 +408,8 @@ function createPaginatedViewerHTML() {
         return;
       }
 
-      const filteredRows = currentData.filter(row => {
-        return row.some(cell => {
+      const filteredRows = currentData.filter(function(row) {
+        return row.some(function(cell) {
           return String(cell).toLowerCase().includes(searchTerm);
         });
       });
@@ -419,7 +419,7 @@ function createPaginatedViewerHTML() {
 
     function exportCurrentPage() {
       google.script.run
-        .withSuccessHandler((url) => {
+        .withSuccessHandlerfunction((url) {
           alert('✅ Page exported!');
           window.open(url, '_blank');
         })
@@ -465,7 +465,7 @@ function getPageData(startRow, numRows) {
   const headers = grievanceSheet.getRange(1, 1, 1, lastCol).getValues()[0];
 
   // Get data
-  let rows = [];
+  var rows = [];
   if (numRows > 0) {
     rows = grievanceSheet.getRange(startRow, 1, numRows, lastCol).getValues();
   }
@@ -487,15 +487,15 @@ function exportPageToCSV(page, pageSize) {
   const data = getPageData(startRow, pageSize);
 
   // Create CSV content
-  let csv = '';
+  var csv = '';
 
   // Headers
-  csv += data.headers.map(h => `"${h}"`).join(',') + '\n';
+  csv += data.headers.map(function(h) { return `"${h}"`).join(','; }) + '\n';
 
   // Rows
-  data.rows.forEach(row => {
-    csv += row.map(cell => {
-      let value = String(cell);
+  data.rows.forEach(function(row) {
+    csv += row.map(function(cell) {
+      var value = String(cell);
       if (cell instanceof Date) {
         value = Utilities.formatDate(cell, Session.getScriptTimeZone(), 'yyyy-MM-dd');
       }
@@ -527,7 +527,7 @@ function createPaginatedView(sheetName, pageSize = PAGINATION_CONFIG.DEFAULT_PAG
   const totalPages = Math.ceil(totalRows / pageSize);
 
   const viewSheetName = `${sheetName}_Paginated`;
-  let viewSheet = ss.getSheetByName(viewSheetName);
+  var viewSheet = ss.getSheetByName(viewSheetName);
 
   if (viewSheet) {
     viewSheet.clear();

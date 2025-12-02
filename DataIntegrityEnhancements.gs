@@ -62,9 +62,9 @@ function generateNextMemberID() {
 
   // Extract numbers and find max
   const numbers = existingIds
-    .filter(id => id && id.toString().startsWith('M'))
-    .map(id => parseInt(id.toString().substring(1)))
-    .filter(num => !isNaN(num));
+    .filter(function(id) { return id && id.toString().startsWith('M'); })
+    .map(function(id) { return parseInt(id.toString().substring(1)); })
+    .filter(function(num) { return !isNaN(num); });
 
   const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
   const nextNumber = maxNumber + 1;
@@ -87,9 +87,9 @@ function generateNextGrievanceID() {
 
   const existingIds = grievanceSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
 
-  let counter = 1;
-  let letter = 'A';
-  let newId;
+  var counter = 1;
+  var letter = 'A';
+  var newId;
 
   do {
     newId = `G-${String(counter).padStart(6, '0')}-${letter}`;
@@ -161,7 +161,7 @@ function showDuplicateGrievanceIDWarning(grievanceId) {
  */
 function createChangeLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let changeLog = ss.getSheetByName('📝 Change Log');
+  var changeLog = ss.getSheetByName('📝 Change Log');
 
   if (!changeLog) {
     changeLog = ss.insertSheet('📝 Change Log');
@@ -292,17 +292,17 @@ function showDataQualityDashboard() {
 
   // Check email completeness (Column H in Member Directory)
   const emailData = memberSheet.getRange(2, 8, memberLastRow, 1).getValues().flat();
-  const emailsComplete = emailData.filter(email => email && email.toString().trim() !== '').length;
+  const emailsComplete = emailData.filter(function(email) { return email && email.toString().trim() !== ''; }).length;
   const emailCompleteness = memberLastRow > 0 ? ((emailsComplete / memberLastRow) * 100).toFixed(1) : 0;
 
   // Check phone completeness (Column I in Member Directory)
   const phoneData = memberSheet.getRange(2, 9, memberLastRow, 1).getValues().flat();
-  const phonesComplete = phoneData.filter(phone => phone && phone.toString().trim() !== '').length;
+  const phonesComplete = phoneData.filter(function(phone) { return phone && phone.toString().trim() !== ''; }).length;
   const phoneCompleteness = memberLastRow > 0 ? ((phonesComplete / memberLastRow) * 100).toFixed(1) : 0;
 
   // Check steward assignment in grievances (Column AA)
   const stewardData = grievanceSheet.getRange(2, 27, grievanceLastRow, 1).getValues().flat();
-  const stewardsAssigned = stewardData.filter(s => s && s.toString().trim() !== '').length;
+  const stewardsAssigned = stewardData.filter(function(s) { return s && s.toString().trim() !== ''; }).length;
   const stewardCompleteness = grievanceLastRow > 0 ? ((stewardsAssigned / grievanceLastRow) * 100).toFixed(1) : 0;
 
   // Overall quality score (average of all metrics)
@@ -366,7 +366,7 @@ function checkReferentialIntegrity() {
       SpreadsheetApp.getUi().ButtonSet.OK
     );
   } else {
-    const orphanedList = orphaned.slice(0, 10).map(o =>
+    const orphanedList = orphaned.slice(0, 10).map(function(o) {
       `  Row ${o.row}: ${o.grievanceId} (Member ID: ${o.memberId})`
     ).join('\n');
 

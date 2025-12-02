@@ -153,8 +153,8 @@ function testNextActionDueLogic() {
     }
   ];
 
-  testCases.forEach((testCase, index) => {
-    let nextAction;
+  testCases.forEachfunction((testCase, index) {
+    var nextAction;
     if (testCase.status === 'Open') {
       if (testCase.step === 'Step I') {
         nextAction = testCase.stepIDeadline;
@@ -230,7 +230,7 @@ function testMemberDirectoryFormulas() {
 
     // Find the test member row
     const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
-    const testMemberRow = memberData.findIndex(row => row[0] === testMemberId);
+    const testMemberRow = memberData.findIndex(function(row) { return row[0] === testMemberId; });
 
     Assert.assertTrue(
       testMemberRow >= 0,
@@ -342,7 +342,7 @@ function testMemberValidationRules() {
     { col: 10, name: 'Is Steward' }
   ];
 
-  columnsToCheck.forEach(item => {
+  columnsToCheck.forEach(function(item) {
     const cell = memberDir.getRange(2, item.col);
     const validation = cell.getDataValidation();
 
@@ -370,7 +370,7 @@ function testGrievanceValidationRules() {
     { col: 22, name: 'Articles Violated' }
   ];
 
-  columnsToCheck.forEach(item => {
+  columnsToCheck.forEach(function(item) {
     const cell = grievanceLog.getRange(2, item.col);
     const validation = cell.getDataValidation();
 
@@ -476,7 +476,7 @@ function testMemberEmailFormat() {
 
   const emailRegex = /^[a-z]+\.[a-z]+\d+@union\.org$/;
 
-  testEmails.forEach(email => {
+  testEmails.forEach(function(email) {
     Assert.assertTrue(
       emailRegex.test(email),
       `Email ${email} should match format firstname.lastnameNNN@union.org`
@@ -558,7 +558,7 @@ function testGrievanceMemberLinking() {
 
     // Verify it was created
     const grievanceData = grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, 2).getValues();
-    const testGrievance = grievanceData.find(row => row[0] === 'TEST-G-LINK-001');
+    const testGrievance = grievanceData.find(function(row) { return row[0] === 'TEST-G-LINK-001'; });
 
     Assert.assertNotNull(
       testGrievance,

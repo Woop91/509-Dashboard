@@ -49,7 +49,7 @@ function logPerformanceMetric(funcName, duration, error = false) {
   const keys = Object.keys(perfLog);
   if (keys.length > 100) {
     // Remove oldest entries
-    const sorted = keys.sort((a, b) => (perfLog[a].lastRun || 0) - (perfLog[b].lastRun || 0));
+    const sorted = keys.sortfunction((a, b) { return (perfLog[a].lastRun || 0) - (perfLog[b].lastRun || 0); });
     delete perfLog[sorted[0]];
   }
 
@@ -61,7 +61,7 @@ function logPerformanceMetric(funcName, duration, error = false) {
  */
 function createPerformanceMonitoringSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let perfSheet = ss.getSheetByName('⚡ Performance Monitor');
+  var perfSheet = ss.getSheetByName('⚡ Performance Monitor');
 
   if (!perfSheet) {
     perfSheet = ss.insertSheet('⚡ Performance Monitor');
@@ -105,7 +105,7 @@ function createPerformanceMonitoringSheet() {
   }
 
   // Sort by average time (descending) to show slowest functions first
-  rows.sort((a, b) => b[1] - a[1]);
+  rows.sortfunction((a, b) { return b[1] - a[1]; });
 
   if (rows.length > 0) {
     perfSheet.getRange(2, 1, rows.length, 7).setValues(rows);
@@ -167,7 +167,7 @@ function createPerformanceMonitoringSheet() {
 
   perfSheet.getRange(summaryRow + 2, 1).setValue('Total Calls:');
   perfSheet.getRange(summaryRow + 2, 2).setValue(
-    rows.reduce((sum, row) => sum + row[4], 0)
+    rows.reducefunction((sum, row) { return sum + row[4], 0; })
   );
 
   perfSheet.getRange(summaryRow + 3, 1).setValue('Last Updated:');
@@ -277,7 +277,7 @@ function exportPerformanceDataCSV() {
   const props = PropertiesService.getScriptProperties();
   const perfLog = JSON.parse(props.getProperty('PERFORMANCE_LOG') || '{}');
 
-  let csv = 'Function,Avg Time (ms),Min Time (ms),Max Time (ms),Call Count,Error Rate (%),Last Run\n';
+  var csv = 'Function,Avg Time (ms),Min Time (ms),Max Time (ms),Call Count,Error Rate (%),Last Run\n';
 
   for (const [funcName, data] of Object.entries(perfLog)) {
     const lastRun = data.lastRun ? new Date(data.lastRun).toISOString() : '';
@@ -312,10 +312,10 @@ function getPerformanceSummary() {
     mostCalledFunction: null
   };
 
-  let slowestTime = 0;
-  let fastestTime = Infinity;
-  let mostCalls = 0;
-  let totalTime = 0;
+  var slowestTime = 0;
+  var fastestTime = Infinity;
+  var mostCalls = 0;
+  var totalTime = 0;
 
   for (const [funcName, data] of Object.entries(perfLog)) {
     summary.totalFunctions++;
@@ -354,7 +354,7 @@ function showPerformanceSummary() {
   const ui = SpreadsheetApp.getUi();
   const summary = getPerformanceSummary();
 
-  let message = 'PERFORMANCE SUMMARY\n\n';
+  var message = 'PERFORMANCE SUMMARY\n\n';
   message += `Total Functions Tracked: ${summary.totalFunctions}\n`;
   message += `Total Function Calls: ${summary.totalCalls}\n`;
   message += `Total Errors: ${summary.totalErrors}\n`;
@@ -378,6 +378,6 @@ function showPerformanceSummary() {
 // Create tracked versions of critical functions
 // These can be used instead of the original functions to automatically track performance
 
-const recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
-const recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
-const rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);
+var recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
+var recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
+var rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);
