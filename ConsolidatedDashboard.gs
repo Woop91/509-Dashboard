@@ -107,6 +107,7 @@ const COLORS = {
   // Primary brand colors
   PRIMARY_BLUE: "#7EC8E3",
   PRIMARY_PURPLE: "#7C3AED",
+  MASSABILITY_PURPLE: "#6B5FED",
   UNION_GREEN: "#059669",
   SOLIDARITY_RED: "#DC2626",
 
@@ -3447,7 +3448,11 @@ function setupInteractiveDashboardControls() {
     "Success Green",
     "Professional Purple",
     "Modern Dark",
-    "Light & Clean"
+    "Light & Clean",
+    "MassAbility Purple",
+    "Union Green",
+    "Solidarity Orange",
+    "Teal Accent"
   ];
 
   // Comparison options
@@ -4234,12 +4239,41 @@ function applyDashboardTheme(sheet, themeName) {
       primaryColor = COLORS.ACCENT_PURPLE;
       accentColor = COLORS.ACCENT_TEAL;
       break;
+    case "MassAbility Purple":
+      primaryColor = COLORS.MASSABILITY_PURPLE;
+      accentColor = COLORS.ACCENT_PURPLE;
+      break;
+    case "Union Green":
+      primaryColor = COLORS.UNION_GREEN;
+      accentColor = COLORS.ACCENT_TEAL;
+      break;
+    case "Solidarity Orange":
+      primaryColor = COLORS.ACCENT_ORANGE;
+      accentColor = COLORS.ACCENT_YELLOW;
+      break;
+    case "Teal Accent":
+      primaryColor = COLORS.ACCENT_TEAL;
+      accentColor = COLORS.PRIMARY_BLUE;
+      break;
     default:
       primaryColor = COLORS.PRIMARY_BLUE;
       accentColor = COLORS.ACCENT_TEAL;
   }
 
-  // Apply theme colors to headers
+  // Apply theme colors to headers with white Roboto font
+  const headerRanges = [
+    "A1:T1", "A4:T4", "A10:T10", "A21:J21", "L21:T21",
+    "A45:T45", "A47:J47", "L47:T47", "A68:T68", "A70:T70", "A91:T91"
+  ];
+
+  headerRanges.forEach(range => {
+    sheet.getRange(range)
+      .setFontFamily('Roboto')
+      .setFontColor('#FFFFFF')
+      .setFontWeight('bold');
+  });
+
+  // Apply theme-specific background colors
   sheet.getRange("A1:T1").setBackground(primaryColor);
   sheet.getRange("A4:T4").setBackground(accentColor);
   sheet.getRange("A10:T10").setBackground(primaryColor);
