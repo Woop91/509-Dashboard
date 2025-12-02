@@ -226,59 +226,73 @@ function createConfigTab() {
   const configData = [
     ["Job Titles", "Office Locations", "Units", "Office Days", "Yes/No",
      "Supervisor First Name", "Supervisor Last Name", "Manager First Name", "Manager Last Name", "Stewards",
-     "Grievance Status", "Grievance Step", "Issue Category", "Articles Violated", "Communication Methods"],
+     "Grievance Status", "Grievance Step", "Issue Category", "Articles Violated", "Communication Methods",
+     "Grievance Coordinator 1", "Grievance Coordinator 2", "Grievance Coordinator 3"],
 
     ["Coordinator", "Boston HQ", "Unit A - Administrative", "Monday", "Yes",
      "Sarah", "Johnson", "Michael", "Chen", "Jane Smith",
-     "Open", "Informal", "Discipline", "Art. 1 - Recognition", "Email"],
+     "Open", "Informal", "Discipline", "Art. 1 - Recognition", "Email",
+     "Jane Smith", "John Doe", "Mary Johnson"],
 
     ["Analyst", "Worcester Office", "Unit B - Technical", "Tuesday", "No",
      "Mike", "Wilson", "Lisa", "Anderson", "John Doe",
-     "Pending Info", "Step I", "Workload", "Art. 2 - Union Security", "Phone"],
+     "Pending Info", "Step I", "Workload", "Art. 2 - Union Security", "Phone",
+     "Bob Wilson", "Alice Brown", "Tom Davis"],
 
     ["Case Manager", "Springfield Branch", "Unit C - Support Services", "Wednesday", "",
      "Emily", "Davis", "Robert", "Brown", "Mary Johnson",
-     "Settled", "Step II", "Scheduling", "Art. 3 - Management Rights", "Text"],
+     "Settled", "Step II", "Scheduling", "Art. 3 - Management Rights", "Text",
+     "Sarah Martinez", "Kevin Jones", "Linda Garcia"],
 
     ["Specialist", "Cambridge Office", "Unit D - Operations", "Thursday", "",
      "Tom", "Harris", "Jennifer", "Lee", "Bob Wilson",
-     "Withdrawn", "Step III", "Pay", "Art. 4 - No Discrimination", "In Person"],
+     "Withdrawn", "Step III", "Pay", "Art. 4 - No Discrimination", "In Person",
+     "Daniel Kim", "Rachel Adams", "Jane Smith"],
 
     ["Senior Analyst", "Lowell Center", "Unit E - Field Services", "Friday", "",
      "Amanda", "White", "David", "Martinez", "Alice Brown",
-     "Closed", "Mediation", "Discrimination", "Art. 5 - Union Business", ""],
+     "Closed", "Mediation", "Discrimination", "Art. 5 - Union Business", "",
+     "John Doe", "Mary Johnson", "Bob Wilson"],
 
     ["Team Lead", "Quincy Station", "", "Saturday", "",
      "Chris", "Taylor", "Susan", "Garcia", "Tom Davis",
-     "Appealed", "Arbitration", "Safety", "Art. 23 - Grievance Procedure", ""],
+     "Appealed", "Arbitration", "Safety", "Art. 23 - Grievance Procedure", "",
+     "Alice Brown", "Tom Davis", "Sarah Martinez"],
 
     ["Director", "Remote/Hybrid", "", "Sunday", "",
      "Patricia", "Moore", "James", "Wilson", "Sarah Martinez",
-     "", "", "Benefits", "Art. 24 - Discipline", ""],
+     "", "", "Benefits", "Art. 24 - Discipline", "",
+     "Kevin Jones", "Linda Garcia", "Daniel Kim"],
 
     ["Manager", "Brockton Office", "", "", "",
      "Kevin", "Anderson", "Nancy", "Taylor", "Kevin Jones",
-     "", "", "Training", "Art. 25 - Hours of Work", ""],
+     "", "", "Training", "Art. 25 - Hours of Work", "",
+     "Rachel Adams", "", ""],
 
     ["Assistant", "Lynn Location", "", "", "",
      "Michelle", "Lee", "Richard", "White", "Linda Garcia",
-     "", "", "Other", "Art. 26 - Overtime", ""],
+     "", "", "Other", "Art. 26 - Overtime", "",
+     "", "", ""],
 
     ["Associate", "Salem Office", "", "", "",
      "Brandon", "Scott", "Angela", "Moore", "Daniel Kim",
-     "", "", "Harassment", "Art. 27 - Seniority", ""],
+     "", "", "Harassment", "Art. 27 - Seniority", "",
+     "", "", ""],
 
     ["Technician", "", "", "", "",
      "Jessica", "Green", "Christopher", "Lee", "Rachel Adams",
-     "", "", "Equipment", "Art. 28 - Layoff", ""],
+     "", "", "Equipment", "Art. 28 - Layoff", "",
+     "", "", ""],
 
     ["Administrator", "", "", "", "",
      "Andrew", "Clark", "Melissa", "Wright", "",
-     "", "", "Leave", "Art. 29 - Sick Leave", ""],
+     "", "", "Leave", "Art. 29 - Sick Leave", "",
+     "", "", ""],
 
     ["Support Staff", "", "", "", "",
      "Rachel", "Brown", "Timothy", "Davis", "",
-     "", "", "Grievance Process", "Art. 30 - Vacation", ""]
+     "", "", "Grievance Process", "Art. 30 - Vacation", "",
+     "", "", ""]
   ];
 
   config.getRange(1, 1, configData.length, configData[0].length).setValues(configData);
@@ -1318,6 +1332,33 @@ function onOpen() {
       // .addItem("Toggle Advanced Grievance Columns", "toggleGrievanceColumns")  // Disabled - not compatible with current structure
       .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
       .addItem("Show All Member Columns", "showAllMemberColumns"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🧪 Testing & Validation")
+      .addItem("🧪 Run All Tests", "runAllTests")
+      .addSeparator()
+      .addSubMenu(ui.createMenu("Unit Tests")
+        .addItem("Filing Deadline Calculation", "testFilingDeadlineCalculation")
+        .addItem("Step I Deadline Calculation", "testStepIDeadlineCalculation")
+        .addItem("Step II Appeal Deadline", "testStepIIAppealDeadlineCalculation")
+        .addItem("Days Open Calculation", "testDaysOpenCalculation")
+        .addItem("Next Action Due Logic", "testNextActionDueLogic")
+        .addItem("Member Directory Formulas", "testMemberDirectoryFormulas"))
+      .addSeparator()
+      .addSubMenu(ui.createMenu("Data Validation Tests")
+        .addItem("Data Validation Setup", "testDataValidationSetup")
+        .addItem("Config Dropdown Values", "testConfigDropdownValues")
+        .addItem("Member Validation Rules", "testMemberValidationRules")
+        .addItem("Grievance Validation Rules", "testGrievanceValidationRules"))
+      .addSeparator()
+      .addSubMenu(ui.createMenu("Integration Tests")
+        .addItem("Complete Grievance Workflow", "testCompleteGrievanceWorkflow")
+        .addItem("Dashboard Metrics Update", "testDashboardMetricsUpdate")
+        .addItem("Member-Grievance Snapshot", "testMemberGrievanceSnapshot")
+        .addItem("Multiple Grievances Same Member", "testMultipleGrievancesSameMember"))
+      .addSeparator()
+      .addSubMenu(ui.createMenu("Performance Tests")
+        .addItem("Dashboard Refresh Performance", "testDashboardRefreshPerformance")
+        .addItem("Formula Performance with Data", "testFormulaPerformanceWithData")))
     .addSeparator()
     .addSubMenu(ui.createMenu("❓ Help & Support")
       .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
