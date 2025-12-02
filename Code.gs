@@ -1275,7 +1275,9 @@ function onOpen() {
       .addSeparator()
       .addItem("📝 Add Sample Feedback Entries", "addSampleFeedbackEntries")
       .addItem("📊 Populate Analytics Sheets", "populateAllAnalyticsSheets")
-      .addItem("👁️ Hide Diagnostics Tab", "hideDiagnosticsTab"))
+      .addItem("👁️ Hide Diagnostics Tab", "hideDiagnosticsTab")
+      .addSeparator()
+      .addItem("🎨 Setup Dashboard Enhancements", "SETUP_DASHBOARD_ENHANCEMENTS"))
     .addSeparator()
     .addSubMenu(ui.createMenu("♿ Accessibility")
       .addItem("♿ ADHD Control Panel", "showADHDControlPanel")
@@ -2089,5 +2091,275 @@ function hideDiagnosticsTab() {
     SpreadsheetApp.getUi().alert('✅ Diagnostics tab is now hidden');
   } else {
     SpreadsheetApp.getUi().alert('❌ Diagnostics sheet not found');
+  }
+}
+
+/**
+ * Add all dropdown validations and conditional formatting to Member Directory
+ */
+function setupMemberDirectoryValidations() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const config = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!memberDir || !config) {
+    SpreadsheetApp.getUi().alert('❌ Required sheets not found!');
+    return;
+  }
+
+  // Get dropdown values from Config sheet
+  const jobTitles = config.getRange("A2:A100").getValues().flat().filter(String);
+  const locations = config.getRange("B2:B100").getValues().flat().filter(String);
+  const units = config.getRange("C2:C100").getValues().flat().filter(String);
+  const stewards = config.getRange("E2:E100").getValues().flat().filter(String);
+  const supervisors = config.getRange("F2:F100").getValues().flat().filter(String);
+  const managers = config.getRange("G2:G100").getValues().flat().filter(String);
+
+  // Define dropdown ranges (2 = first data row, 5000 = max rows)
+  const MAX_ROWS = 5000;
+
+  // Job Title (Column D = 4)
+  if (jobTitles.length > 0) {
+    const jobTitleRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(jobTitles, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 4, MAX_ROWS, 1).setDataValidation(jobTitleRule);
+  }
+
+  // Work Location (Column E = 5)
+  if (locations.length > 0) {
+    const locationRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(locations, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 5, MAX_ROWS, 1).setDataValidation(locationRule);
+  }
+
+  // Unit (Column F = 6)
+  if (units.length > 0) {
+    const unitRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(units, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 6, MAX_ROWS, 1).setDataValidation(unitRule);
+  }
+
+  // Office Days (Column G = 7) - Allow multiple selections as comma-separated
+  const officeDaysRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter multiple days comma-separated (e.g., "Monday, Wednesday, Friday")')
+    .build();
+  memberDir.getRange(2, 7, MAX_ROWS, 1).setDataValidation(officeDaysRule);
+
+  // Is Steward (Column J = 10)
+  const yesNoRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Yes', 'No'], true)
+    .setAllowInvalid(false)
+    .build();
+  memberDir.getRange(2, 10, MAX_ROWS, 1).setDataValidation(yesNoRule);
+
+  // Supervisor (Column K = 11)
+  if (supervisors.length > 0) {
+    const supervisorRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(supervisors, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 11, MAX_ROWS, 1).setDataValidation(supervisorRule);
+  }
+
+  // Manager (Column L = 12)
+  if (managers.length > 0) {
+    const managerRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(managers, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 12, MAX_ROWS, 1).setDataValidation(managerRule);
+  }
+
+  // Assigned Steward (Column M = 13)
+  if (stewards.length > 0) {
+    const stewardRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(stewards, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 13, MAX_ROWS, 1).setDataValidation(stewardRule);
+  }
+
+  // Interest: Local Actions (Column T = 20)
+  memberDir.getRange(2, 20, MAX_ROWS, 1).setDataValidation(yesNoRule);
+
+  // Interest: Chapter Actions (Column U = 21)
+  memberDir.getRange(2, 21, MAX_ROWS, 1).setDataValidation(yesNoRule);
+
+  // Interest: Allied Chapter Actions (Column V = 22)
+  memberDir.getRange(2, 22, MAX_ROWS, 1).setDataValidation(yesNoRule);
+
+  // Preferred Communication Methods (Column X = 24) - Multiple selections
+  const commMethodsRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter multiple methods comma-separated (e.g., "Email, Phone, Text")')
+    .build();
+  memberDir.getRange(2, 24, MAX_ROWS, 1).setDataValidation(commMethodsRule);
+
+  // Best Time(s) to Reach Member (Column Y = 25) - Multiple selections
+  const bestTimeRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Morning (8am-12pm)', 'Afternoon (12pm-5pm)', 'Evening (5pm-8pm)', 'Anytime'], true)
+    .setAllowInvalid(true)
+    .setHelpText('Select one or enter multiple comma-separated')
+    .build();
+  memberDir.getRange(2, 25, MAX_ROWS, 1).setDataValidation(bestTimeRule);
+
+  // Steward Who Contacted Member (Column AD = 30)
+  if (stewards.length > 0) {
+    memberDir.getRange(2, 30, MAX_ROWS, 1).setDataValidation(stewardRule);
+  }
+
+  // Add conditional formatting for empty email/phone
+  // Email (Column H = 8) - Red background if empty
+  const emailRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=AND(A2<>"", H2="")')
+    .setBackground('#DC2626')
+    .setFontColor('#FFFFFF')
+    .setRanges([memberDir.getRange(2, 8, MAX_ROWS, 1)])
+    .build();
+
+  // Phone (Column I = 9) - Red background if empty
+  const phoneRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=AND(A2<>"", I2="")')
+    .setBackground('#DC2626')
+    .setFontColor('#FFFFFF')
+    .setRanges([memberDir.getRange(2, 9, MAX_ROWS, 1)])
+    .build();
+
+  const rules = memberDir.getConditionalFormatRules();
+  rules.push(emailRule);
+  rules.push(phoneRule);
+  memberDir.setConditionalFormatRules(rules);
+
+  SpreadsheetApp.getUi().alert('✅ Member Directory validations and formatting applied!');
+}
+
+/**
+ * Add Google Drive folder link column to Grievance Log
+ */
+function addGoogleDriveLinkToGrievanceLog() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceLog) {
+    SpreadsheetApp.getUi().alert('❌ Grievance Log not found!');
+    return;
+  }
+
+  // Insert column after Resolution Summary (last column)
+  const lastCol = grievanceLog.getLastColumn();
+  grievanceLog.insertColumnAfter(lastCol);
+
+  // Set header
+  grievanceLog.getRange(1, lastCol + 1)
+    .setValue('📁 Drive Folder Link')
+    .setFontWeight('bold')
+    .setBackground('#DC2626')
+    .setFontColor('#FFFFFF')
+    .setWrap(true);
+
+  // Add note to header
+  grievanceLog.getRange(1, lastCol + 1)
+    .setNote('Paste Google Drive folder link for this grievance. Create folder with grievant name.');
+
+  SpreadsheetApp.getUi().alert('✅ Google Drive folder link column added to Grievance Log!');
+}
+
+/**
+ * Add status bars for grievance dates (visual deadline tracking)
+ */
+function addGrievanceDateStatusBars() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceLog) {
+    SpreadsheetApp.getUi().alert('❌ Grievance Log not found!');
+    return;
+  }
+
+  const MAX_ROWS = 5000;
+
+  // Days to Deadline (Column U = 21) - Color-coded based on urgency
+  const urgentRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberLessThan(0)
+    .setBackground('#DC2626')  // Red - OVERDUE
+    .setFontColor('#FFFFFF')
+    .setRanges([grievanceLog.getRange(2, 21, MAX_ROWS, 1)])
+    .build();
+
+  const warningRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberBetween(0, 3)
+    .setBackground('#F97316')  // Orange - URGENT (0-3 days)
+    .setFontColor('#FFFFFF')
+    .setRanges([grievanceLog.getRange(2, 21, MAX_ROWS, 1)])
+    .build();
+
+  const cautionRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberBetween(4, 7)
+    .setBackground('#FCD34D')  // Yellow - CAUTION (4-7 days)
+    .setFontColor('#000000')
+    .setRanges([grievanceLog.getRange(2, 21, MAX_ROWS, 1)])
+    .build();
+
+  const okRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberGreaterThan(7)
+    .setBackground('#10B981')  // Green - OK (8+ days)
+    .setFontColor('#FFFFFF')
+    .setRanges([grievanceLog.getRange(2, 21, MAX_ROWS, 1)])
+    .build();
+
+  const rules = grievanceLog.getConditionalFormatRules();
+  rules.push(urgentRule, warningRule, cautionRule, okRule);
+  grievanceLog.setConditionalFormatRules(rules);
+
+  SpreadsheetApp.getUi().alert('✅ Date status bars added to Grievance Log!');
+}
+
+/**
+ * Setup all dashboard enhancements
+ */
+function SETUP_DASHBOARD_ENHANCEMENTS() {
+  const ui = SpreadsheetApp.getUi();
+
+  const response = ui.alert(
+    '🎨 Setup Dashboard Enhancements',
+    'This will add:\n\n' +
+    '✓ Dropdowns for all Member Directory fields\n' +
+    '✓ Red highlighting for missing email/phone\n' +
+    '✓ Google Drive folder link to Grievance Log\n' +
+    '✓ Color-coded status bars for deadlines\n\n' +
+    'Continue?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    return;
+  }
+
+  try {
+    ui.alert('⏳ Applying enhancements...');
+
+    setupMemberDirectoryValidations();
+    addGoogleDriveLinkToGrievanceLog();
+    addGrievanceDateStatusBars();
+
+    ui.alert(
+      '✅ Enhancements Complete!',
+      'All dropdown validations, conditional formatting, and visual enhancements have been applied.\n\n' +
+      'Member Directory: Dropdowns active + red highlighting for empty email/phone\n' +
+      'Grievance Log: Drive folder link column added + color-coded deadline tracking',
+      ui.ButtonSet.OK
+    );
+  } catch (error) {
+    ui.alert('❌ Error: ' + error.message);
+    Logger.log('Error in SETUP_DASHBOARD_ENHANCEMENTS: ' + error.message);
   }
 }
