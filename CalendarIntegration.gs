@@ -54,10 +54,10 @@ function syncDeadlinesToCalendar() {
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
     const calendar = CalendarApp.getDefaultCalendar();
-    let eventsCreated = 0;
-    let eventsSkipped = 0;
+    var eventsCreated = 0;
+    var eventsSkipped = 0;
 
-    data.forEach((row, index) => {
+    data.forEachfunction((row, index) {
       const grievanceId = row[0]; // Column A
       const memberName = `${row[2]} ${row[3]}`; // Columns C, D
       const status = row[4]; // Column E
@@ -78,8 +78,8 @@ function syncDeadlinesToCalendar() {
       }
 
       // Determine priority and color
-      let color = CalendarApp.EventColor.BLUE; // Default: Due later
-      let priority = 'Normal';
+      var color = CalendarApp.EventColor.BLUE; // Default: Due later
+      var priority = 'Normal';
 
       if (daysToDeadline < 0) {
         color = CalendarApp.EventColor.RED;
@@ -200,7 +200,7 @@ function syncSingleDeadlineToCalendar(grievanceId) {
       const existingEvent = checkCalendarEventExists(calendar, grievanceId);
       if (existingEvent) {
         // Update existing event
-        let color = CalendarApp.EventColor.BLUE;
+        var color = CalendarApp.EventColor.BLUE;
         if (daysToDeadline < 0) color = CalendarApp.EventColor.RED;
         else if (daysToDeadline <= 3) color = CalendarApp.EventColor.ORANGE;
         else if (daysToDeadline <= 7) color = CalendarApp.EventColor.YELLOW;
@@ -209,8 +209,8 @@ function syncSingleDeadlineToCalendar(grievanceId) {
         existingEvent.setTime(new Date(nextActionDue), new Date(nextActionDue));
       } else {
         // Create new event (same logic as syncDeadlinesToCalendar)
-        let color = CalendarApp.EventColor.BLUE;
-        let priority = 'Normal';
+        var color = CalendarApp.EventColor.BLUE;
+        var priority = 'Normal';
 
         if (daysToDeadline < 0) {
           color = CalendarApp.EventColor.RED;
@@ -289,9 +289,9 @@ function clearAllCalendarEvents() {
     const futureDate = new Date(now.getTime() + (365 * 24 * 60 * 60 * 1000));
 
     const events = calendar.getEvents(now, futureDate);
-    let removedCount = 0;
+    var removedCount = 0;
 
-    events.forEach(event => {
+    events.forEach(function(event) {
       const tag = event.getTag('509Dashboard');
       if (tag) {
         event.deleteEvent();
@@ -320,7 +320,7 @@ function showUpcomingDeadlinesFromCalendar() {
     const nextWeek = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
 
     const events = calendar.getEvents(now, nextWeek);
-    const dashboardEvents = events.filter(e => e.getTag('509Dashboard'));
+    const dashboardEvents = events.filter(function(e) { return e.getTag('509Dashboard'); });
 
     if (dashboardEvents.length === 0) {
       SpreadsheetApp.getUi().alert(
@@ -334,7 +334,7 @@ function showUpcomingDeadlinesFromCalendar() {
 
     const eventList = dashboardEvents
       .slice(0, 10)
-      .map(e => `  • ${e.getTitle()} - ${e.getAllDayStartDate().toLocaleDateString()}`)
+      .map(function(e) { return `  • ${e.getTitle()} - ${e.getAllDayStartDate().toLocaleDateString()}`; })
       .join('\n');
 
     SpreadsheetApp.getUi().alert(

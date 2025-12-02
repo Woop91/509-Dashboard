@@ -239,7 +239,7 @@ function showPhase6Status() {
   const ui = SpreadsheetApp.getUi();
   const status = getPhase6Status();
 
-  let message = 'PHASE 6 FEATURE STATUS\n\n';
+  var message = 'PHASE 6 FEATURE STATUS\n\n';
   message += `Active Features: ${status.activeFeatures} / ${status.totalFeatures}\n\n`;
 
   message += '✅ Batch Grievance Recalculation\n';
@@ -345,7 +345,7 @@ function runPhase6HealthCheck() {
     }
 
     // Display results
-    let message = 'PHASE 6 HEALTH CHECK RESULTS\n\n';
+    var message = 'PHASE 6 HEALTH CHECK RESULTS\n\n';
 
     message += `Passed: ${results.passed.length}\n`;
     message += `Failed: ${results.failed.length}\n`;

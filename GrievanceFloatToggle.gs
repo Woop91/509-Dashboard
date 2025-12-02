@@ -50,7 +50,7 @@ function getGrievanceFloatState() {
 function setGrievanceFloatState(enabled) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let settingsSheet = ss.getSheetByName('User Settings');
+    var settingsSheet = ss.getSheetByName('User Settings');
 
     if (!settingsSheet) {
       // Create settings sheet if it doesn't exist
@@ -64,7 +64,7 @@ function setGrievanceFloatState(enabled) {
 
     // Find and update or add setting
     const settingsData = settingsSheet.getDataRange().getValues();
-    let found = false;
+    var found = false;
 
     for (let i = 0; i < settingsData.length; i++) {
       if (settingsData[i][0] === 'grievanceFloatEnabled') {
@@ -169,7 +169,7 @@ function applyGrievanceFloat() {
  * @returns {Array} Sorted array of data rows
  */
 function sortGrievancesByPriority(dataRows) {
-  return dataRows.sort((a, b) => {
+  return dataRows.sortfunction((a, b) {
     const statusA = String(a[GRIEVANCE_COLS.STATUS - 1] || '').toLowerCase();
     const statusB = String(b[GRIEVANCE_COLS.STATUS - 1] || '').toLowerCase();
     const stepA = String(a[GRIEVANCE_COLS.CURRENT_STEP - 1] || '');
@@ -179,8 +179,8 @@ function sortGrievancesByPriority(dataRows) {
 
     // Inactive statuses go to bottom
     const inactiveStatuses = ['closed', 'settled', 'inactive', 'withdrawn', 'denied'];
-    const aIsInactive = inactiveStatuses.some(status => statusA.includes(status));
-    const bIsInactive = inactiveStatuses.some(status => statusB.includes(status));
+    const aIsInactive = inactiveStatuses.some(function(status) { return statusA.includes(status); });
+    const bIsInactive = inactiveStatuses.some(function(status) { return statusB.includes(status); });
 
     if (aIsInactive && !bIsInactive) return 1;
     if (!aIsInactive && bIsInactive) return -1;

@@ -340,8 +340,8 @@ function createMobileDashboardHTML() {
         return;
       }
 
-      let html = '';
-      grievances.forEach(g => {
+      var html = '';
+      grievances.forEach(function(g) {
         const statusClass = 'status-' + (g.status || 'filed').toLowerCase().replace(/\s+/g, '-');
         html += \`
           <div class="recent-card" onclick="viewGrievanceDetail('\${g.id}')">
@@ -379,15 +379,15 @@ function createMobileDashboardHTML() {
 
     function addSwipeSupport() {
       const cards = document.querySelectorAll('.recent-card');
-      cards.forEach(card => {
-        let startX = 0;
-        let currentX = 0;
+      cards.forEach(function(card) {
+        var startX = 0;
+        var currentX = 0;
 
-        card.addEventListener('touchstart', (e) => {
+        card.addEventListenerfunction('touchstart', (e) {
           startX = e.touches[0].clientX;
         });
 
-        card.addEventListener('touchmove', (e) => {
+        card.addEventListenerfunction('touchmove', (e) {
           currentX = e.touches[0].clientX;
           const diff = currentX - startX;
           if (Math.abs(diff) > 10) {
@@ -395,12 +395,12 @@ function createMobileDashboardHTML() {
           }
         });
 
-        card.addEventListener('touchend', () => {
+        card.addEventListenerfunction('touchend', () {
           const diff = currentX - startX;
           if (Math.abs(diff) > 100) {
             // Swipe action
             card.style.opacity = '0.5';
-            setTimeout(() => card.style.display = 'none', 200);
+            setTimeoutfunction(() { return card.style.display = 'none', 200; });
           } else {
             card.style.transform = '';
           }
@@ -434,7 +434,7 @@ function createMobileDashboardHTML() {
 
       loadRecentGrievances();
 
-      setTimeout(() => {
+      setTimeoutfunction(() {
         indicator.style.display = 'none';
       }, 2000);
     }
@@ -444,12 +444,12 @@ function createMobileDashboardHTML() {
     }
 
     // Pull-to-refresh
-    let touchStartY = 0;
-    document.addEventListener('touchstart', (e) => {
+    var touchStartY = 0;
+    document.addEventListenerfunction('touchstart', (e) {
       touchStartY = e.touches[0].clientY;
     });
 
-    document.addEventListener('touchmove', (e) => {
+    document.addEventListenerfunction('touchmove', (e) {
       const touchY = e.touches[0].clientY;
       if (touchY - touchStartY > 150 && window.scrollY === 0) {
         refreshDashboard();
@@ -490,7 +490,7 @@ function getMobileDashboardStats() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const status = row[GRIEVANCE_COLS.STATUS - 1];
     const deadline = row[GRIEVANCE_COLS.DEADLINE - 1];
 
@@ -530,7 +530,7 @@ function getRecentGrievancesForMobile(limit = 5) {
 
   // Get most recent grievances
   const grievances = data
-    .map((row, index) => {
+    .mapfunction((row, index) {
       const filedDate = row[GRIEVANCE_COLS.FILED_DATE - 1];
       return {
         id: row[GRIEVANCE_COLS.GRIEVANCE_ID - 1],
@@ -543,7 +543,7 @@ function getRecentGrievancesForMobile(limit = 5) {
         filedDateObj: filedDate
       };
     })
-    .sort((a, b) => {
+    .sortfunction((a, b) {
       const dateA = a.filedDateObj instanceof Date ? a.filedDateObj : new Date(0);
       const dateB = b.filedDateObj instanceof Date ? b.filedDateObj : new Date(0);
       return dateB - dateA;
@@ -668,7 +668,7 @@ function createMobileGrievanceListHTML() {
   </div>
 
   <script>
-    let allGrievances = [];
+    var allGrievances = [];
 
     // Load data
     google.script.run
@@ -688,8 +688,8 @@ function createMobileGrievanceListHTML() {
         return;
       }
 
-      let html = '';
-      grievances.forEach(g => {
+      var html = '';
+      grievances.forEach(function(g) {
         html += \`
           <div class="grievance-card">
             <div class="card-header">
@@ -708,19 +708,19 @@ function createMobileGrievanceListHTML() {
 
     function filterByStatus(status) {
       // Update active tab
-      document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.filter-tab').forEach(function(tab) { return tab.classList.remove('active'); });
       event.target.classList.add('active');
 
       // Filter grievances
       const filtered = status === 'all'
         ? allGrievances
-        : allGrievances.filter(g => g.status === status);
+        : allGrievances.filter(function(g) { return g.status === status; });
 
       renderGrievances(filtered);
     }
 
     function filterList(searchTerm) {
-      const filtered = allGrievances.filter(g => {
+      const filtered = allGrievances.filter(function(g) {
         return g.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                g.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                g.issueType.toLowerCase().includes(searchTerm.toLowerCase());
@@ -745,7 +745,7 @@ function showGrievanceDetail(grievanceId) {
   if (!grievanceSheet) return;
 
   const data = grievanceSheet.getDataRange().getValues();
-  const grievanceRow = data.find(row => row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId);
+  const grievanceRow = data.find(function(row) { return row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId; });
 
   if (!grievanceRow) {
     SpreadsheetApp.getUi().alert('Grievance not found');
@@ -784,7 +784,7 @@ function showMyAssignedGrievances() {
 
   const data = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, 28).getValues();
 
-  const myGrievances = data.filter(row => {
+  const myGrievances = data.filter(function(row) {
     const assignedSteward = row[GRIEVANCE_COLS.ASSIGNED_STEWARD - 1];
     return assignedSteward && assignedSteward.includes(userEmail);
   });
@@ -794,9 +794,9 @@ function showMyAssignedGrievances() {
     return;
   }
 
-  let message = `You have ${myGrievances.length} assigned grievance(s):\n\n`;
+  var message = `You have ${myGrievances.length} assigned grievance(s):\n\n`;
 
-  myGrievances.slice(0, 10).forEach(row => {
+  myGrievances.slice(0, 10).forEach(function(row) {
     message += `#${row[GRIEVANCE_COLS.GRIEVANCE_ID - 1]} - ${row[GRIEVANCE_COLS.MEMBER_NAME - 1]} (${row[GRIEVANCE_COLS.STATUS - 1]})\n`;
   });
 

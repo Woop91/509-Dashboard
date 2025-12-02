@@ -155,8 +155,8 @@ function createMemberSearchHTML() {
   </div>
 
   <script>
-    let allMembers = [];
-    let filteredMembers = [];
+    var allMembers = [];
+    var filteredMembers = [];
 
     // Load members on page load
     window.onload = function() {
@@ -185,9 +185,9 @@ function createMemberSearchHTML() {
 
     function populateFilters() {
       // Get unique locations
-      const locations = [...new Set(allMembers.map(m => m.location).filter(l => l))];
+      const locations = [...new Set(allMembers.map(function(m) { return m.location).filter(function(l) { return l; }); })];
       const locationFilter = document.getElementById('locationFilter');
-      locations.forEach(loc => {
+      locations.forEach(function(loc) {
         const option = document.createElement('option');
         option.value = loc;
         option.textContent = loc;
@@ -195,9 +195,9 @@ function createMemberSearchHTML() {
       });
 
       // Get unique units
-      const units = [...new Set(allMembers.map(m => m.unit).filter(u => u))];
+      const units = [...new Set(allMembers.map(function(m) { return m.unit).filter(function(u) { return u; }); })];
       const unitFilter = document.getElementById('unitFilter');
-      units.forEach(unit => {
+      units.forEach(function(unit) {
         const option = document.createElement('option');
         option.value = unit;
         option.textContent = unit;
@@ -211,7 +211,7 @@ function createMemberSearchHTML() {
       const unitFilter = document.getElementById('unitFilter').value;
       const stewardFilter = document.getElementById('stewardFilter').value;
 
-      filteredMembers = allMembers.filter(member => {
+      filteredMembers = allMembers.filter(function(member) {
         // Text search
         const matchesSearch = !searchTerm ||
           member.name.toLowerCase().includes(searchTerm) ||
@@ -260,7 +260,7 @@ function createMemberSearchHTML() {
 
     function selectMember(row, memberId) {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           google.script.host.close();
         })
         .navigateToMember(parseInt(row));
@@ -291,7 +291,7 @@ function getAllMembers() {
 
   const data = memberSheet.getRange(2, 1, lastRow - 1, 13).getValues();
 
-  return data.map((row, index) => ({
+  return data.mapfunction((row, index) { return ({
     row: index + 2,
     id: row[0] || '',
     name: `${row[1]} ${row[2]}`.trim(),
@@ -306,7 +306,7 @@ function getAllMembers() {
     supervisor: row[10] || '',
     manager: row[11] || '',
     assignedSteward: row[12] || ''
-  })).filter(m => m.id); // Filter out empty rows
+  })).filter(function(m) { return m.id; }); // Filter out empty rows
 }
 
 /**

@@ -165,8 +165,8 @@ function calculateAllMetricsOptimized(dataCache) {
   // Calculate member metrics (skip header row)
   metrics.totalMembers = memberData.length - 1;
 
-  let openRateSum = 0;
-  let openRateCount = 0;
+  var openRateSum = 0;
+  var openRateCount = 0;
 
   for (let i = 1; i < memberData.length; i++) {
     const row = memberData[i];
@@ -208,8 +208,8 @@ function calculateAllMetricsOptimized(dataCache) {
   const thisYear = now.getFullYear();
   const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
 
-  let daysOpenSum = 0;
-  let daysOpenCount = 0;
+  var daysOpenSum = 0;
+  var daysOpenCount = 0;
 
   for (let i = 1; i < grievanceData.length; i++) {
     const row = grievanceData[i];
@@ -263,7 +263,7 @@ function calculateAllMetricsOptimized(dataCache) {
   metrics.avgDaysOpen = daysOpenCount > 0 ? (daysOpenSum / daysOpenCount) : 0;
 
   // Sort upcoming deadlines by date
-  metrics.upcomingDeadlines.sort((a, b) => a.deadline - b.deadline);
+  metrics.upcomingDeadlines.sortfunction((a, b) { return a.deadline - b.deadline; });
 
   Logger.log('✅ Metrics calculated');
 

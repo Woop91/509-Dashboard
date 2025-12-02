@@ -45,7 +45,7 @@ function composeGrievanceEmail(grievanceId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  let grievanceData = null;
+  var grievanceData = null;
 
   if (grievanceId) {
     const lastRow = grievanceSheet.getLastRow();
@@ -200,7 +200,7 @@ function createEmailComposerHTML(grievanceData) {
       <label>Template (optional):</label>
       <select id="templateSelect" onchange="loadTemplate()">
         <option value="">-- Select a template --</option>
-        ${templates.map(t => `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`).join('')}
+        ${templates.map(function(t) { return `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`).join(''; })}
       </select>
     </div>
 
@@ -250,7 +250,7 @@ function createEmailComposerHTML(grievanceData) {
       const templateId = document.getElementById('templateSelect').value;
       if (!templateId) return;
 
-      const template = templates.find(t => t.id === templateId);
+      const template = templates.find(function(t) { return t.id === templateId; });
       if (!template) return;
 
       document.getElementById('subject').value = template.subject || '';
@@ -300,7 +300,7 @@ function createEmailComposerHTML(grievanceData) {
 
     function onEmailSent(result) {
       showStatus('✅ Email sent successfully!', 'success');
-      setTimeout(() => {
+      setTimeoutfunction(() {
         google.script.host.close();
       }, 2000);
     }
@@ -462,7 +462,7 @@ function sendGrievanceEmail(emailData) {
  */
 function logCommunication(grievanceId, type, details) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let commLog = ss.getSheetByName('📞 Communications Log');
+  var commLog = ss.getSheetByName('📞 Communications Log');
 
   if (!commLog) {
     commLog = createCommunicationsLogSheet();
@@ -647,7 +647,7 @@ function showEmailTemplateManager() {
       {GRIEVANCE_ID}, {MEMBER_NAME}, {ISSUE_TYPE}, {STATUS}
     </div>
 
-    ${templates.map(t => `
+    ${templates.map(function(t) { return '
       <div class="template">
         <h3>${t.name}</h3>
         <strong>Subject:</strong> ${t.subject}<br><br>
@@ -687,7 +687,7 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const data = commLog.getRange(2, 1, lastRow - 1, 5).getValues();
-  const grievanceComms = data.filter(row => row[1] === grievanceId);
+  const grievanceComms = data.filter(function(row) { return row[1] === grievanceId; });
 
   if (grievanceComms.length === 0) {
     SpreadsheetApp.getUi().alert('No communications logged for this grievance.');
@@ -695,7 +695,7 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const commsList = grievanceComms
-    .map(row => `
+    .map(function(row) { return '
       <div style="background: #f8f9fa; padding: 12px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #1a73e8;">
         <strong>${row[2]}</strong> - ${row[0].toLocaleString()}<br>
         <em>By: ${row[3]}</em><br><br>

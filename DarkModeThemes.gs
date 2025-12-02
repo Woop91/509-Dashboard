@@ -152,8 +152,8 @@ function createThemeManagerHTML() {
   const currentTheme = getCurrentTheme();
   const autoSwitch = getAutoSwitchSettings();
 
-  let themeCards = '';
-  Object.entries(THEME_CONFIG.THEMES).forEach(([key, theme]) => {
+  var themeCards = '';
+  Object.entries(THEME_CONFIG.THEMES).forEachfunction(([key, theme]) {
     const isActive = currentTheme === key;
     themeCards += `
       <div class="theme-card ${isActive ? 'active' : ''}" onclick="selectTheme('${key}')">
@@ -411,11 +411,11 @@ function createThemeManagerHTML() {
   </div>
 
   <script>
-    let selectedTheme = '${currentTheme}';
+    var selectedTheme = '${currentTheme}';
 
     function selectTheme(themeKey) {
       selectedTheme = themeKey;
-      document.querySelectorAll('.theme-card').forEach(card => {
+      document.querySelectorAll('.theme-card').forEach(function(card) {
         card.classList.remove('active');
       });
       event.target.closest('.theme-card').classList.add('active');
@@ -423,7 +423,7 @@ function createThemeManagerHTML() {
 
     function applySelectedTheme() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Theme applied successfully!');
           google.script.host.close();
         })
@@ -432,7 +432,7 @@ function createThemeManagerHTML() {
 
     function applyToAllSheets() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Theme applied to all sheets!');
           location.reload();
         })
@@ -441,7 +441,7 @@ function createThemeManagerHTML() {
 
     function applyToCurrentSheet() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('✅ Theme applied to current sheet!');
           location.reload();
         })
@@ -450,7 +450,7 @@ function createThemeManagerHTML() {
 
     function previewTheme() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert('👁️ Preview applied! This is temporary.');
         })
         .previewTheme(selectedTheme);
@@ -459,7 +459,7 @@ function createThemeManagerHTML() {
     function resetTheme() {
       if (confirm('Reset to default light theme?')) {
         google.script.run
-          .withSuccessHandler(() => {
+          .withSuccessHandlerfunction(() {
             alert('✅ Theme reset!');
             location.reload();
           })
@@ -470,7 +470,7 @@ function createThemeManagerHTML() {
     function toggleAutoSwitch() {
       const enabled = document.getElementById('autoSwitch').checked;
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandlerfunction(() {
           alert(enabled ? '✅ Auto dark mode enabled!' : '🔕 Auto dark mode disabled!');
         })
         .setAutoSwitch(enabled);
@@ -523,7 +523,7 @@ function applyTheme(themeKey, scope = 'all') {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = scope === 'all' ? ss.getSheets() : [ss.getActiveSheet()];
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     applyThemeToSheet(sheet, theme);
   });
 
@@ -562,7 +562,7 @@ function applyThemeToSheet(sheet, theme) {
 
     // Remove existing banding
     const bandings = sheet.getBandings();
-    bandings.forEach(banding => banding.remove());
+    bandings.forEach(function(banding) { return banding.remove(); });
 
     // Apply new banding
     const banding = dataRange.applyRowBanding();
@@ -753,7 +753,7 @@ function importThemeFromJSON(themeJSON, name) {
 function installAutoThemeTrigger() {
   // Delete existing trigger
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'checkAndApplyAutoTheme') {
       ScriptApp.deleteTrigger(trigger);
     }

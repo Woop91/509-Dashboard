@@ -439,7 +439,7 @@ function getFullVersionString() {
  * getColumnLetter(27) // Returns "AA"
  */
 function getColumnLetter(columnNumber) {
-  let letter = '';
+  var letter = '';
   while (columnNumber > 0) {
     const remainder = (columnNumber - 1) % 26;
     letter = String.fromCharCode(65 + remainder) + letter;
@@ -458,7 +458,7 @@ function getColumnLetter(columnNumber) {
  * getColumnNumber('AA') // Returns 27
  */
 function getColumnNumber(columnLetter) {
-  let number = 0;
+  var number = 0;
   for (let i = 0; i < columnLetter.length; i++) {
     number = number * 26 + (columnLetter.charCodeAt(i) - 64);
   }
@@ -509,7 +509,7 @@ function validateRequiredSheets() {
   ];
 
   const missing = [];
-  requiredSheets.forEach(sheetName => {
+  requiredSheets.forEach(function(sheetName) {
     if (!ss.getSheetByName(sheetName)) {
       missing.push(sheetName);
     }

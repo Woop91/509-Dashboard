@@ -119,7 +119,7 @@ var Assert = {
    * Assert that function throws an error
    */
   assertThrows: function(fn, message) {
-    let threw = false;
+    var threw = false;
     try {
       fn();
     } catch (e) {
@@ -224,7 +224,7 @@ function runAllTests() {
   ];
 
   // Run each test
-  testFunctions.forEach(testName => {
+  testFunctions.forEach(function(testName) {
     try {
       const testFn = this[testName];
       if (typeof testFn === 'function') {
@@ -286,7 +286,7 @@ function generateTestReport(duration) {
   const ss = SpreadsheetApp.getActive();
 
   // Create or clear Test Results sheet
-  let reportSheet = ss.getSheetByName('Test Results');
+  var reportSheet = ss.getSheetByName('Test Results');
   if (!reportSheet) {
     reportSheet = ss.insertSheet('Test Results');
   }
@@ -318,7 +318,7 @@ function generateTestReport(duration) {
   reportSheet.getRange(3, 1, summary.length, 2).setValues(summary);
   reportSheet.getRange(3, 1, summary.length, 1).setFontWeight('bold');
 
-  let currentRow = 3 + summary.length + 2;
+  var currentRow = 3 + summary.length + 2;
 
   // Passed tests
   if (TEST_RESULTS.passed.length > 0) {
@@ -334,7 +334,7 @@ function generateTestReport(duration) {
       .setBackground('#F3F4F6');
 
     currentRow++;
-    TEST_RESULTS.passed.forEach(test => {
+    TEST_RESULTS.passed.forEach(function(test) {
       reportSheet.getRange(currentRow, 1, 1, 3).setValues([[test.name, '✅ PASS', test.time]]);
       currentRow++;
     });
@@ -355,7 +355,7 @@ function generateTestReport(duration) {
       .setBackground('#F3F4F6');
 
     currentRow++;
-    TEST_RESULTS.failed.forEach(test => {
+    TEST_RESULTS.failed.forEach(function(test) {
       reportSheet.getRange(currentRow, 1, 1, 4).setValues([[
         test.name,
         '❌ FAIL',
@@ -382,7 +382,7 @@ function generateTestReport(duration) {
       .setBackground('#F3F4F6');
 
     currentRow++;
-    TEST_RESULTS.skipped.forEach(test => {
+    TEST_RESULTS.skipped.forEach(function(test) {
       reportSheet.getRange(currentRow, 1, 1, 3).setValues([[test.name, '⏭️ SKIP', test.reason]]);
       currentRow++;
     });

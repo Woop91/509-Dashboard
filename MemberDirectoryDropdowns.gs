@@ -256,9 +256,9 @@ function getStewardsList() {
     const data = memberSheet.getRange(2, 1, lastRow - 1, 10).getValues();
 
     const stewards = data
-      .filter(row => row[9] === 'Yes' || row[9] === 'Y') // Column J (index 9) = Is Steward
-      .map(row => `${row[1]} ${row[2]}`) // First Name + Last Name
-      .filter(name => name.trim() !== ' ');
+      .filter(function(row) { return row[9] === 'Yes' || row[9] === 'Y') // Column J (index 9; }) = Is Steward
+      .map(function(row) { return `${row[1]} ${row[2]}`; }) // First Name + Last Name
+      .filter(function(name) { return name.trim() !== ' '; });
 
     // Add a few default stewards if none found
     if (stewards.length === 0) {
@@ -330,7 +330,7 @@ function removeEmergencyContactColumns() {
     const columnsToDelete = [];
 
     // Find columns with "Emergency Contact" in the header
-    headers.forEach((header, index) => {
+    headers.forEachfunction((header, index) {
       const headerStr = String(header).toLowerCase();
       if (headerStr.includes('emergency contact') || headerStr.includes('emergency phone')) {
         columnsToDelete.push(index + 1); // +1 because columns are 1-indexed
@@ -343,7 +343,7 @@ function removeEmergencyContactColumns() {
     }
 
     // Delete columns in reverse order to maintain correct indices
-    columnsToDelete.reverse().forEach(colIndex => {
+    columnsToDelete.reverse().forEach(function(colIndex) {
       memberSheet.deleteColumn(colIndex);
       Logger.log(`Deleted column ${colIndex}`);
     });

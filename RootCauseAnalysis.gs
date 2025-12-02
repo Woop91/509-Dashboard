@@ -49,7 +49,7 @@ function performRootCauseAnalysis() {
 function analyzeLocationClusters(data) {
   const locationStats = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const location = row[9]; // Column J: Work Location
     if (!location) return;
 
@@ -91,16 +91,16 @@ function analyzeLocationClusters(data) {
   const totalGrievances = data.length;
   const hotspots = [];
 
-  Object.entries(locationStats).forEach(([location, stats]) => {
+  Object.entries(locationStats).forEachfunction(([location, stats]) {
     const percentage = (stats.count / totalGrievances) * 100;
 
     if (percentage > 15) {
       // If a location has >15% of all grievances, it's a hotspot
       const topIssue = Object.entries(stats.issueTypes)
-        .sort((a, b) => b[1] - a[1])[0];
+        .sortfunction((a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce((sum, val) => sum + val, 0) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reducefunction((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       hotspots.push({
@@ -117,7 +117,7 @@ function analyzeLocationClusters(data) {
 
   return {
     totalLocations: Object.keys(locationStats).length,
-    hotspots: hotspots.sort((a, b) => b.count - a.count),
+    hotspots: hotspots.sortfunction((a, b) { return b.count - a.count); },
     allStats: locationStats
   };
 }
@@ -130,7 +130,7 @@ function analyzeLocationClusters(data) {
 function analyzeManagerPatterns(data) {
   const managerStats = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const manager = row[11]; // Column L: Manager
     if (!manager) return;
 
@@ -172,13 +172,13 @@ function analyzeManagerPatterns(data) {
   const avgGrievancesPerManager = data.length / Object.keys(managerStats).length;
   const concerningManagers = [];
 
-  Object.entries(managerStats).forEach(([manager, stats]) => {
+  Object.entries(managerStats).forEachfunction(([manager, stats]) {
     if (stats.count > avgGrievancesPerManager * 2) {
       const topIssue = Object.entries(stats.issueTypes)
-        .sort((a, b) => b[1] - a[1])[0];
+        .sortfunction((a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce((sum, val) => sum + val, 0) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reducefunction((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       concerningManagers.push({
@@ -195,7 +195,7 @@ function analyzeManagerPatterns(data) {
   return {
     totalManagers: Object.keys(managerStats).length,
     avgPerManager: avgGrievancesPerManager.toFixed(1),
-    concerningManagers: concerningManagers.sort((a, b) => b.count - a.count),
+    concerningManagers: concerningManagers.sortfunction((a, b) { return b.count - a.count); },
     allStats: managerStats
   };
 }
@@ -208,7 +208,7 @@ function analyzeManagerPatterns(data) {
 function analyzeIssueTypePatterns(data) {
   const issueTypeStats = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const issueType = row[5];
     if (!issueType) return;
 
@@ -257,10 +257,10 @@ function analyzeIssueTypePatterns(data) {
   // Identify systemic issues
   const systemicIssues = [];
 
-  Object.entries(issueTypeStats).forEach(([issueType, stats]) => {
+  Object.entries(issueTypeStats).forEachfunction(([issueType, stats]) {
     // Check if concentrated in specific locations (>60% in one location)
     const topLocation = Object.entries(stats.locations)
-      .sort((a, b) => b[1] - a[1])[0];
+      .sortfunction((a, b) { return b[1] - a[1]; })[0];
 
     const locationConcentration = topLocation
       ? (topLocation[1] / stats.count) * 100
@@ -268,7 +268,7 @@ function analyzeIssueTypePatterns(data) {
 
     if (locationConcentration > 60 || stats.count > data.length * 0.15) {
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce((sum, val) => sum + val, 0) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reducefunction((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       systemicIssues.push({
@@ -285,7 +285,7 @@ function analyzeIssueTypePatterns(data) {
 
   return {
     totalIssueTypes: Object.keys(issueTypeStats).length,
-    systemicIssues: systemicIssues.sort((a, b) => b.count - a.count),
+    systemicIssues: systemicIssues.sortfunction((a, b) { return b.count - a.count); },
     allStats: issueTypeStats
   };
 }
@@ -299,7 +299,7 @@ function analyzeTemporalPatterns(data) {
   const monthlyPatterns = {};
   const dayOfWeekPatterns = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const filedDate = row[6];
     if (!filedDate) return;
 
@@ -314,7 +314,7 @@ function analyzeTemporalPatterns(data) {
 
   // Find peak days
   const peakDay = Object.entries(dayOfWeekPatterns)
-    .sort((a, b) => b[1] - a[1])[0];
+    .sortfunction((a, b) { return b[1] - a[1]; })[0];
 
   return {
     monthlyPatterns: monthlyPatterns,
@@ -335,7 +335,7 @@ function findCorrelations(data) {
   // Check: Specific manager + specific issue type
   const managerIssueMatrix = {};
 
-  data.forEach(row => {
+  data.forEach(function(row) {
     const manager = row[11];
     const issueType = row[5];
 
@@ -345,7 +345,7 @@ function findCorrelations(data) {
     }
   });
 
-  Object.entries(managerIssueMatrix).forEach(([key, count]) => {
+  Object.entries(managerIssueMatrix).forEachfunction(([key, count]) {
     if (count >= 5) {
       const [manager, issueType] = key.split('|||');
       correlations.push({
@@ -357,7 +357,7 @@ function findCorrelations(data) {
     }
   });
 
-  return correlations.sort((a, b) => b.count - a.count);
+  return correlations.sortfunction((a, b) { return b.count - a.count; });
 }
 
 /**
@@ -373,7 +373,7 @@ function generateRCARecommendations(data) {
   const issueAnalysis = analyzeIssueTypePatterns(data);
 
   // Location-based recommendations
-  locationAnalysis.hotspots.forEach(hotspot => {
+  locationAnalysis.hotspots.forEach(function(hotspot) {
     recommendations.push({
       category: 'Location Hotspot',
       priority: hotspot.severity,
@@ -384,7 +384,7 @@ function generateRCARecommendations(data) {
   });
 
   // Manager-based recommendations
-  managerAnalysis.concerningManagers.forEach(manager => {
+  managerAnalysis.concerningManagers.forEach(function(manager) {
     recommendations.push({
       category: 'Management Pattern',
       priority: manager.severity,
@@ -395,7 +395,7 @@ function generateRCARecommendations(data) {
   });
 
   // Systemic issue recommendations
-  issueAnalysis.systemicIssues.forEach(issue => {
+  issueAnalysis.systemicIssues.forEach(function(issue) {
     if (issue.isSystemic) {
       recommendations.push({
         category: 'Systemic Issue',
@@ -407,7 +407,7 @@ function generateRCARecommendations(data) {
     }
   });
 
-  return recommendations.sort((a, b) => {
+  return recommendations.sortfunction((a, b) {
     const priorityOrder = { 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
     return priorityOrder[b.priority] - priorityOrder[a.priority];
   });
@@ -452,7 +452,7 @@ function showRootCauseAnalysisDashboard() {
  */
 function createRCADashboardHTML(analysis) {
   const hotspotsHTML = analysis.locationClusters.hotspots.length > 0
-    ? analysis.locationClusters.hotspots.map(h => `
+    ? analysis.locationClusters.hotspots.map(function(h) { return '
         <div class="finding severity-${h.severity.toLowerCase()}">
           <div class="finding-header">
             <span class="finding-title">${h.location}</span>
@@ -468,7 +468,7 @@ function createRCADashboardHTML(analysis) {
     : '<p>No significant location hotspots identified.</p>';
 
   const concerningManagersHTML = analysis.managerPatterns.concerningManagers.length > 0
-    ? analysis.managerPatterns.concerningManagers.map(m => `
+    ? analysis.managerPatterns.concerningManagers.map(function(m) { return '
         <div class="finding severity-${m.severity.toLowerCase()}">
           <div class="finding-header">
             <span class="finding-title">${m.manager}</span>
@@ -484,7 +484,7 @@ function createRCADashboardHTML(analysis) {
     : '<p>No concerning manager patterns identified.</p>';
 
   const systemicIssuesHTML = analysis.issueTypePatterns.systemicIssues.length > 0
-    ? analysis.issueTypePatterns.systemicIssues.map(i => `
+    ? analysis.issueTypePatterns.systemicIssues.map(function(i) { return '
         <div class="finding ${i.isSystemic ? 'severity-high' : 'severity-medium'}">
           <div class="finding-header">
             <span class="finding-title">${i.issueType}</span>
@@ -500,7 +500,7 @@ function createRCADashboardHTML(analysis) {
     : '<p>No systemic issues identified.</p>';
 
   const recommendationsHTML = analysis.recommendations.length > 0
-    ? analysis.recommendations.map(r => `
+    ? analysis.recommendations.map(function(r) { return '
         <div class="recommendation priority-${r.priority.toLowerCase()}">
           <div class="rec-header">
             <span class="rec-category">${r.category}</span>

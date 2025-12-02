@@ -61,7 +61,7 @@ function handleError(error, context, showToUser = true, logToSheet = true) {
  */
 function logToDiagnostics(context, errorMessage, stackTrace, timestamp) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let diagnosticsSheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  var diagnosticsSheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
 
   if (!diagnosticsSheet) {
     return; // Sheet doesn't exist yet
@@ -225,7 +225,7 @@ function safeArrayGet(array, index, defaultValue = null) {
  * @throws {Error} If any required field is missing
  */
 function validateRequiredFields(data, requiredFields, context = 'validation') {
-  const missing = requiredFields.filter(field => {
+  const missing = requiredFields.filter(function(field) {
     return data[field] === null || data[field] === undefined || data[field] === '';
   });
 
@@ -248,7 +248,7 @@ function validateConfiguration() {
     'CONFIG', 'MEMBER_DIR', 'GRIEVANCE_LOG', 'DASHBOARD'
   ];
 
-  requiredSheets.forEach(key => {
+  requiredSheets.forEach(function(key) {
     if (!SHEETS[key]) {
       errors.push(`SHEETS.${key} is not defined`);
     }
@@ -259,7 +259,7 @@ function validateConfiguration() {
     'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'EMAIL'
   ];
 
-  requiredMemberCols.forEach(key => {
+  requiredMemberCols.forEach(function(key) {
     if (!MEMBER_COLS[key]) {
       errors.push(`MEMBER_COLS.${key} is not defined`);
     }
@@ -270,7 +270,7 @@ function validateConfiguration() {
     'GRIEVANCE_ID', 'MEMBER_ID', 'STATUS', 'INCIDENT_DATE'
   ];
 
-  requiredGrievanceCols.forEach(key => {
+  requiredGrievanceCols.forEach(function(key) {
     if (!GRIEVANCE_COLS[key]) {
       errors.push(`GRIEVANCE_COLS.${key} is not defined`);
     }
@@ -418,7 +418,7 @@ var SimpleCache = {
 function withCache(fn, cacheKey, ttl = 5 * 60 * 1000) {
   return function(...args) {
     const key = cacheKey + JSON.stringify(args);
-    let cached = SimpleCache.get(key);
+    var cached = SimpleCache.get(key);
 
     if (cached !== null) {
       return cached;

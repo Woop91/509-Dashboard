@@ -93,7 +93,7 @@ function sanitizeArray(arr) {
   if (!Array.isArray(arr)) {
     return [];
   }
-  return arr.map(item => sanitizeHTML(item));
+  return arr.map(function(item) { return sanitizeHTML(item); });
 }
 
 /**
@@ -490,7 +490,7 @@ function validateInput(input, type, maxLength = 255) {
 function logAuditEvent(action, details = {}, level = 'INFO') {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
+    var auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
 
     // Create audit log sheet if it doesn't exist
     if (!auditLog) {
@@ -572,12 +572,12 @@ function getAuditLog(limit = 100, action = null) {
     const headers = data[0];
     const rows = data.slice(1).reverse(); // Most recent first
 
-    let filtered = rows;
+    var filtered = rows;
     if (action) {
-      filtered = rows.filter(row => row[3] === action);
+      filtered = rows.filter(function(row) { return row[3] === action; });
     }
 
-    const result = filtered.slice(0, limit).map(row => ({
+    const result = filtered.slice(0, limit).map(function(row) { return ({
       timestamp: row[0],
       userEmail: row[1],
       userRole: row[2],
@@ -825,7 +825,7 @@ function showSecurityAudit() {
     const report = runSecurityAudit();
     const ui = SpreadsheetApp.getUi();
 
-    let message = '🔒 SECURITY AUDIT REPORT\n\n';
+    var message = '🔒 SECURITY AUDIT REPORT\n\n';
     message += `Total Users: ${report.results.totalUsers}\n`;
     message += `Admins: ${report.results.adminCount}\n`;
     message += `Stewards: ${report.results.stewardCount}\n`;
@@ -837,7 +837,7 @@ function showSecurityAudit() {
 
     if (report.recommendations.length > 0) {
       message += 'RECOMMENDATIONS:\n';
-      report.recommendations.forEach(rec => {
+      report.recommendations.forEach(function(rec) {
         message += `${rec}\n`;
       });
     } else {

@@ -138,7 +138,7 @@ function invalidateAllCaches() {
     CacheService.getScriptCache().removeAll(Object.values(CACHE_KEYS));
 
     const propsCache = PropertiesService.getScriptProperties();
-    Object.values(CACHE_KEYS).forEach(key => {
+    Object.values(CACHE_KEYS).forEach(function(key) {
       propsCache.deleteProperty(key);
     });
 
@@ -192,7 +192,7 @@ function warmUpCaches() {
 function getCachedGrievances() {
   return getCachedData(
     CACHE_KEYS.ALL_GRIEVANCES,
-    () => {
+    function() {
       const ss = SpreadsheetApp.getActiveSpreadsheet();
       const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
       const lastRow = sheet.getLastRow();
@@ -212,7 +212,7 @@ function getCachedGrievances() {
 function getCachedMembers() {
   return getCachedData(
     CACHE_KEYS.ALL_MEMBERS,
-    () => {
+    function() {
       const ss = SpreadsheetApp.getActiveSpreadsheet();
       const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
       const lastRow = sheet.getLastRow();
@@ -232,9 +232,9 @@ function getCachedMembers() {
 function getCachedStewards() {
   return getCachedData(
     CACHE_KEYS.ALL_STEWARDS,
-    () => {
+    function() {
       const members = getCachedMembers();
-      return members.filter(row => row[9] === 'Yes'); // Column J: Is Steward?
+      return members.filter(function(row) { return row[9] === 'Yes'; }); // Column J: Is Steward?
     },
     600 // 10 minutes
   );
@@ -247,7 +247,7 @@ function getCachedStewards() {
 function getCachedDashboardMetrics() {
   return getCachedData(
     CACHE_KEYS.DASHBOARD_METRICS,
-    () => {
+    function() {
       const grievances = getCachedGrievances();
 
       const metrics = {
@@ -260,7 +260,7 @@ function getCachedDashboardMetrics() {
         bySteward: {}
       };
 
-      grievances.forEach(row => {
+      grievances.forEach(function(row) {
         const status = row[4];
         const issueType = row[5];
         const steward = row[13];
@@ -327,11 +327,11 @@ function showCacheStatusDashboard() {
 
   const cacheStatus = [];
 
-  Object.entries(CACHE_KEYS).forEach(([name, key]) => {
+  Object.entries(CACHE_KEYS).forEachfunction(([name, key]) {
     const inMemory = memoryCache.get(key) !== null;
     const inProps = propsCache.getProperty(key) !== null;
 
-    let age = 'N/A';
+    var age = 'N/A';
     if (inProps) {
       const cached = JSON.parse(propsCache.getProperty(key));
       if (cached.timestamp) {
@@ -349,7 +349,7 @@ function showCacheStatusDashboard() {
   });
 
   const statusRows = cacheStatus
-    .map(s => `
+    .map(function(s) { return '
       <tr>
         <td>${s.name}</td>
         <td>${s.inMemory ? '✅ Yes' : '❌ No'}</td>
@@ -405,11 +405,11 @@ function showCacheStatusDashboard() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandler(() => { location.reload(); }).warmUpCaches()">
+    <button onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).warmUpCaches()">
       🔥 Warm Up All Caches
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandler(() => { location.reload(); }).invalidateAllCaches()">
+    <button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).invalidateAllCaches()">
       🗑️ Clear All Caches
     </button>
   </div>
@@ -454,8 +454,8 @@ function getCachePerformanceStats() {
   const memoryCache = CacheService.getScriptCache();
   const propsCache = PropertiesService.getScriptProperties();
 
-  let cachedKeys = 0;
-  Object.values(CACHE_KEYS).forEach(key => {
+  var cachedKeys = 0;
+  Object.values(CACHE_KEYS).forEach(function(key) {
     if (propsCache.getProperty(key) !== null) {
       cachedKeys++;
     }

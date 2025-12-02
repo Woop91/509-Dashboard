@@ -91,7 +91,7 @@ var addMemberIdempotent = makeIdempotent(
 
     // Check if member already exists
     const data = memberSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(row => row[0] === memberID);
+    const existingRow = data.findIndex(function(row) { return row[0] === memberID; });
 
     if (existingRow > 0) {
       // Update existing member
@@ -116,7 +116,7 @@ var addMemberIdempotent = makeIdempotent(
       };
     }
   },
-  (memberData) => `add_member_${memberData[0]}` // Use Member ID as key
+  function(memberData) { return 'add_member_${memberData[0]}` // Use Member ID as key
 );
 
 /**
@@ -135,7 +135,7 @@ var addGrievanceIdempotent = makeIdempotent(
 
     // Check if grievance already exists
     const data = grievanceSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(row => row[0] === grievanceID);
+    const existingRow = data.findIndex(function(row) { return row[0] === grievanceID; });
 
     if (existingRow > 0) {
       // Update existing grievance
@@ -160,7 +160,7 @@ var addGrievanceIdempotent = makeIdempotent(
       };
     }
   },
-  (grievanceData) => `add_grievance_${grievanceData[0]}` // Use Grievance ID as key
+  function(grievanceData) { return 'add_grievance_${grievanceData[0]}` // Use Grievance ID as key
 );
 
 /**
@@ -175,7 +175,7 @@ var createBackupIdempotent = makeIdempotent(
 
     throw new Error('createIncrementalBackup function not available');
   },
-  () => {
+  function() {
     // Key is based on current hour - allows one backup per hour
     const now = new Date();
     const hourKey = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy-MM-dd-HH');
@@ -203,7 +203,7 @@ var recalcAllIdempotent = makeIdempotent(
 
     return results;
   },
-  () => {
+  function() {
     // Key is based on current 5-minute window
     const now = new Date();
     const minutes = Math.floor(now.getMinutes() / 5) * 5;
@@ -226,7 +226,7 @@ var rebuildDashboardIdempotent = makeIdempotent(
 
     throw new Error('No dashboard rebuild function available');
   },
-  () => {
+  function() {
     // Key is based on current 5-minute window
     const now = new Date();
     const minutes = Math.floor(now.getMinutes() / 5) * 5;
@@ -308,7 +308,7 @@ function showIdempotentStatus() {
 
   const keys = JSON.parse(activeKeys);
 
-  let message = `Active Idempotent Operations: ${keys.length}\n\n`;
+  var message = `Active Idempotent Operations: ${keys.length}\n\n`;
 
   for (const key of keys) {
     const hasResult = cache.get(`result_${key}`) !== null;
@@ -335,7 +335,7 @@ function trackIdempotentKey(key) {
   const props = PropertiesService.getScriptProperties();
   const activeKeys = props.getProperty('IDEMPOTENT_KEYS');
 
-  let keys = activeKeys ? JSON.parse(activeKeys) : [];
+  var keys = activeKeys ? JSON.parse(activeKeys) : [];
 
   if (!keys.includes(key)) {
     keys.push(key);
