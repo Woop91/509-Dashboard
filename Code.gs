@@ -1146,7 +1146,13 @@ function setupFormulasAndCalculations() {
 }
 
 /* ===================== MENU ===================== */
+/**
+ * Runs when spreadsheet opens - creates menu and validates configuration
+ */
 function onOpen() {
+  // Validate configuration on startup
+  const configValid = validateConfigurationOnOpen();
+
   const ui = SpreadsheetApp.getUi();
 
   ui.createMenu("📊 509 Dashboard")
