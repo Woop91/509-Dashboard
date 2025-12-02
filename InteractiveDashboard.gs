@@ -440,12 +440,12 @@ function rebuildInteractiveDashboard() {
     // Update metric cards
     updateMetricCards(sheet, metrics);
 
-    // Create primary chart
-    createDynamicChart(sheet, metric1, chartType1, metrics, "A22", 10, 20);
+    // Create primary chart - pass data to avoid refetch
+    createDynamicChart(sheet, metric1, chartType1, metrics, "A22", 10, 20, grievanceData, memberData);
 
     // Create comparison chart if enabled
     if (enableComparison === "Yes") {
-      createDynamicChart(sheet, metric2, chartType2, metrics, "L22", 9, 20);
+      createDynamicChart(sheet, metric2, chartType2, metrics, "L22", 9, 20, grievanceData, memberData);
     }
 
     // Create pie/donut charts
@@ -653,20 +653,30 @@ function getVictoryMessage(metrics) {
 
 /**
  * Create dynamic chart based on user selection
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - Target sheet
+ * @param {string} metricName - Metric to display
+ * @param {string} chartType - Type of chart (Donut, Pie, Bar, etc)
+ * @param {Object} metrics - Pre-calculated metrics
+ * @param {string} startCell - Starting cell for chart
+ * @param {number} width - Chart width multiplier
+ * @param {number} height - Chart height multiplier
+ * @param {Array<Array>} grievanceData - Grievance data (to avoid refetch)
+ * @param {Array<Array>} memberData - Member data (to avoid refetch)
  */
-function createDynamicChart(sheet, metricName, chartType, metrics, startCell, width, height) {
-  // Remove existing charts in this area first
-  const charts = sheet.getCharts();
-  charts.forEach(chart => {
-    const anchor = chart.getContainerInfo().getAnchorRow();
-    // Extract row number correctly (handles cells like "AA22" not just "A22")
-    if (anchor >= parseInt(startCell.match(/\d+/)[0])) {
-      sheet.removeChart(chart);
-    }
-  });
+function createDynamicChart(sheet, metricName, chartType, metrics, startCell, width, height, grievanceData, memberData) {
+  try {
+    // Remove existing charts in this area first
+    const charts = sheet.getCharts();
+    charts.forEach(chart => {
+      const anchor = chart.getContainerInfo().getAnchorRow();
+      // Extract row number correctly (handles cells like "AA22" not just "A22")
+      if (anchor >= parseInt(startCell.match(/\d+/)[0])) {
+        sheet.removeChart(chart);
+      }
+    });
 
-  // Get data based on metric selection
-  const chartData = getChartDataForMetric(metricName, metrics);
+    // Get data based on metric selection - pass data to avoid refetch
+    const chartData = getChartDataForMetric(metricName, metrics, grievanceData, memberData);
 
   if (!chartData || chartData.length === 0) return;
 
@@ -734,42 +744,55 @@ function createDynamicChart(sheet, metricName, chartType, metrics, startCell, wi
       .setOption('colors', [COLORS.PRIMARY_BLUE]);
   }
 
-  if (chartBuilder) {
-    sheet.insertChart(chartBuilder.build());
-  }
+    if (chartBuilder) {
+      sheet.insertChart(chartBuilder.build());
+    }
 
-  // Write data to hidden area for chart
-  writeChartData(sheet, startCell, chartData);
+    // Write data to hidden area for chart
+    writeChartData(sheet, startCell, chartData);
+  } catch (error) {
+    handleError(error, `createDynamicChart(${metricName})`, false);
+  }
 }
 
 /**
  * Write chart data to sheet (hidden area)
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - Target sheet
+ * @param {string} startCell - Starting cell reference
+ * @param {Array<Array>} data - Data to write
  */
 function writeChartData(sheet, startCell, data) {
-  const range = sheet.getRange(startCell).offset(1, 0, data.length, 2);
-  range.setValues(data);
+  if (!data || data.length === 0) return;
 
-  // Hide this data area
-  const startRow = range.getRow();
-  for (let i = 0; i < data.length; i++) {
-    sheet.hideRows(startRow + i, 1);
+  try {
+    const range = sheet.getRange(startCell).offset(1, 0, data.length, 2);
+    range.setValues(data);
+
+    // Hide this data area - OPTIMIZED: batch hide instead of one-by-one
+    const startRow = range.getRow();
+    sheet.hideRows(startRow, data.length);
+  } catch (error) {
+    handleError(error, 'writeChartData', false);
   }
 }
 
 /**
  * Get chart data for specific metric
  */
-function getChartDataForMetric(metricName, metrics) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-
-  if (!grievanceSheet || !memberSheet) {
+/**
+ * Gets chart data based on selected metric
+ * @param {string} metricName - Name of the metric to chart
+ * @param {Object} metrics - Pre-calculated metrics object
+ * @param {Array<Array>} grievanceData - Grievance data (passed to avoid refetch)
+ * @param {Array<Array>} memberData - Member data (passed to avoid refetch)
+ * @returns {Array<Array>} Chart data as [label, value] pairs
+ */
+function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
+  // Data validation
+  if (!grievanceData || !memberData) {
+    logWarning('getChartDataForMetric', 'Missing data parameters');
     return [["No Data", 0]];
   }
-
-  const grievanceData = grievanceSheet.getDataRange().getValues();
-  const memberData = memberSheet.getDataRange().getValues();
 
   switch (metricName) {
     case "Total Members":

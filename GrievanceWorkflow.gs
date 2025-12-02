@@ -15,10 +15,18 @@
  * ============================================================================
  */
 
-// Configuration - Update this with your Google Form URL
+/**
+ * Configuration for grievance workflow and Google Form integration
+ * @type {Object}
+ */
 const GRIEVANCE_FORM_CONFIG = {
   // Replace with your actual Google Form URL
+  // To find: Create a Google Form, then copy the URL from the browser
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform",
+
+  // Email address for grievance notifications
+  // Configure this with your union's actual grievance email
+  GRIEVANCE_EMAIL: "grievances@seiu509.org",
 
   // Form field entry IDs (found by inspecting your form)
   // To find these: Open your form, right-click a field, inspect element, find "entry.XXXXXXX"
@@ -67,41 +75,66 @@ function showStartGrievanceDialog() {
 
 /**
  * Gets list of all members from Member Directory
+ * @returns {Array<Object>} Array of member objects with properties
  */
 function getMemberList() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-  if (!memberSheet) return [];
+    if (!memberSheet) {
+      logWarning('getMemberList', 'Member Directory sheet not found');
+      return [];
+    }
 
-  const lastRow = memberSheet.getLastRow();
-  if (lastRow < 2) return [];
+    const lastRow = memberSheet.getLastRow();
+    if (lastRow < 2) return [];
 
-  // Get all member data (columns A-K: ID, First, Last, Job, Location, Unit, Office Days, Email, Phone, Is Steward, Status)
-  const data = memberSheet.getRange(2, 1, lastRow - 1, 11).getValues();
+    // Get all member data - using MEMBER_COLS constants
+    const numCols = Math.max(
+      MEMBER_COLS.MEMBER_ID,
+      MEMBER_COLS.FIRST_NAME,
+      MEMBER_COLS.LAST_NAME,
+      MEMBER_COLS.JOB_TITLE,
+      MEMBER_COLS.WORK_LOCATION,
+      MEMBER_COLS.UNIT,
+      MEMBER_COLS.OFFICE_DAYS,
+      MEMBER_COLS.EMAIL,
+      MEMBER_COLS.PHONE,
+      MEMBER_COLS.IS_STEWARD,
+      MEMBER_COLS.SUPERVISOR
+    );
 
-  return data.map((row, index) => ({
-    rowIndex: index + 2,
-    memberId: row[0],
-    firstName: row[1],
-    lastName: row[2],
-    jobTitle: row[3],
-    location: row[4],
-    unit: row[5],
-    officeDays: row[6],
-    email: row[7],
-    phone: row[8],
-    isSteward: row[9],
-    status: row[10]
-  })).filter(member => member.memberId); // Filter out empty rows
+    const data = memberSheet.getRange(2, 1, lastRow - 1, numCols).getValues();
+
+    return data.map((row, index) => ({
+      rowIndex: index + 2,
+      memberId: safeArrayGet(row, MEMBER_COLS.MEMBER_ID - 1, ''),
+      firstName: safeArrayGet(row, MEMBER_COLS.FIRST_NAME - 1, ''),
+      lastName: safeArrayGet(row, MEMBER_COLS.LAST_NAME - 1, ''),
+      jobTitle: safeArrayGet(row, MEMBER_COLS.JOB_TITLE - 1, ''),
+      location: safeArrayGet(row, MEMBER_COLS.WORK_LOCATION - 1, ''),
+      unit: safeArrayGet(row, MEMBER_COLS.UNIT - 1, ''),
+      officeDays: safeArrayGet(row, MEMBER_COLS.OFFICE_DAYS - 1, ''),
+      email: safeArrayGet(row, MEMBER_COLS.EMAIL - 1, ''),
+      phone: safeArrayGet(row, MEMBER_COLS.PHONE - 1, ''),
+      isSteward: safeArrayGet(row, MEMBER_COLS.IS_STEWARD - 1, ''),
+      supervisor: safeArrayGet(row, MEMBER_COLS.SUPERVISOR - 1, '')
+    })).filter(member => member.memberId); // Filter out empty rows
+  } catch (error) {
+    return handleError(error, 'getMemberList', true, true) || [];
+  }
 }
 
 /**
  * Creates HTML dialog for member selection
+ * @param {Array<Object>} members - Array of member objects
+ * @returns {string} HTML content for dialog
  */
 function createMemberSelectionDialog(members) {
+  // Use HTML escaping to prevent XSS
   const memberOptions = members.map(m =>
-    `<option value="${m.rowIndex}">${m.lastName}, ${m.firstName} (${m.memberId}) - ${m.location}</option>`
+    `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`
   ).join('');
 
   return `
@@ -577,9 +610,9 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
   const coordinators = getGrievanceCoordinators();
   const folderUrl = folder ? folder.getUrl() : '';
 
-  // Note: This would need actual email addresses for coordinators
-  // For now, we'll use placeholder emails
-  const grievanceEmail = 'grievances@seiu509.org'; // This should be configured
+  // TODO: Configure actual grievance email address in settings
+  // This email address needs to be set up by the organization
+  const grievanceEmail = GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL || 'grievances@seiu509.org';
 
   const html = HtmlService.createHtmlOutput(`
 <!DOCTYPE html>
@@ -800,15 +833,20 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
     }
 
     // Share folder with each recipient
-    if (folder) {
+    // Note: Requires valid email addresses. Configure coordinator emails in Config sheet.
+    if (folder && recipients && recipients.length > 0) {
       recipients.forEach(email => {
         try {
-          // Note: These should be actual email addresses
-          // For now, we're using names, so we'll skip the actual sharing
-          // folder.addEditor(email);
-          Logger.log(`Would share folder with: ${email}`);
+          // Validate email before sharing
+          const validEmail = sanitizeEmail(email);
+          if (validEmail) {
+            folder.addEditor(validEmail);
+            logInfo('shareGrievanceWithRecipients', `Shared folder with: ${validEmail}`);
+          } else {
+            logWarning('shareGrievanceWithRecipients', `Invalid email address: ${email}`);
+          }
         } catch (e) {
-          Logger.log(`Could not share with ${email}: ${e.message}`);
+          handleError(e, `shareGrievanceWithRecipients - sharing with ${email}`, false);
         }
       });
     }
@@ -821,18 +859,24 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
                  `Please review the attached grievance form and folder for details.\n\n` +
                  `This is an automated message from the SEIU Local 509 Dashboard.`;
 
-    // Note: Email sending would require actual email addresses
-    // For now, we'll just log the intended recipients
-    Logger.log(`Would send email to: ${recipients.join(', ')}`);
-    Logger.log(`Subject: ${subject}`);
-    Logger.log(`Body: ${body}`);
-
-    // Uncomment when actual emails are configured:
-    // recipients.forEach(email => {
-    //   GmailApp.sendEmail(email, subject, body, {
-    //     attachments: [pdfBlob]
-    //   });
-    // });
+    // Send email notification with grievance PDF
+    // Note: Requires valid email addresses and Gmail permissions
+    recipients.forEach(email => {
+      try {
+        const validEmail = sanitizeEmail(email);
+        if (validEmail) {
+          GmailApp.sendEmail(validEmail, subject, body, {
+            attachments: [pdfBlob],
+            name: 'SEIU Local 509 Dashboard'
+          });
+          logInfo('shareGrievanceWithRecipients', `Sent email to: ${validEmail}`);
+        } else {
+          logWarning('shareGrievanceWithRecipients', `Skipped invalid email: ${email}`);
+        }
+      } catch (e) {
+        handleError(e, `shareGrievanceWithRecipients - emailing ${email}`, false);
+      }
+    });
 
   } catch (error) {
     Logger.log('Error sharing grievance: ' + error.message);
