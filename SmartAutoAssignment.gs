@@ -81,7 +81,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
     alternates: scoredStewards.slice(1, 4).map(function(s) { return {
       name: s.name,
       score: s.score
-    }))
+    };})
   };
 }
 
@@ -323,7 +323,7 @@ function logAssignment(grievanceId, selectedSteward, topCandidates) {
     selectedSteward.name,
     selectedSteward.score,
     selectedSteward.currentCaseload,
-    topCandidates.map(function(s) { return `${s.name} (${s.score})`).join(', '); },
+    topCandidates.map(function(s) { return `${s.name} (${s.score})`; }).join(', '),
     user
   ];
 
@@ -469,7 +469,7 @@ function batchAutoAssign() {
     return;
   }
 
-  const rows = Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   // Count unassigned
   var unassigned = 0;
@@ -552,7 +552,7 @@ function showStewardWorkloadDashboard() {
   stewards.sort(function(a, b) { return b.currentCaseload - a.currentCaseload; });
 
   const stewardsList = stewards
-    .map(function(s) { return '
+    .map(function(s) { return `
       <div class="steward-item" style="border-left-color: ${getCaseloadColor(s.currentCaseload)}">
         <div class="steward-name">${s.name}</div>
         <div class="steward-details">
@@ -570,7 +570,7 @@ function showStewardWorkloadDashboard() {
             : 'No cases yet'}
         </div>
       </div>
-    `)
+    `; })
     .join('');
 
   const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0) / stewards.length;

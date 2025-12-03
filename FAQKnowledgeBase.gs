@@ -370,9 +370,9 @@ function createFAQSearchHTML() {
 
     <div class="categories">
       <div class="category-badge active" onclick="filterByCategory('')">All Categories</div>
-      ${categories.map(function(cat) { return '
+      ${categories.map(function(cat) { return `
         <div class="category-badge" onclick="filterByCategory('${cat}')">${cat}</div>
-      `).join('')}
+      `; }).join('')}
     </div>
 
     <div class="stats" id="stats">
@@ -403,7 +403,7 @@ function createFAQSearchHTML() {
       const stats = document.getElementById('stats');
       stats.innerHTML = \`
         <strong>📊 Knowledge Base Stats:</strong>
-        ${allFAQs.length} articles across ${new Set(allFAQs.map(function(f) { return f.category); }).size} categories
+        ${allFAQs.length} articles across ${new Set(allFAQs.map(function(f) { return f.category; })).size} categories
       \`;
     }
 

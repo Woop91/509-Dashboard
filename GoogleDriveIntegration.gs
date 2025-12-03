@@ -486,7 +486,7 @@ function createFileListHTML(grievanceId, folderId, files) {
   const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
 
   const filesList = files
-    .map(function(file) { return '
+    .map(function(file) { return `
       <div class="file-item">
         <div class="file-icon">${getFileIcon(file.type)}</div>
         <div class="file-details">
@@ -498,7 +498,7 @@ function createFileListHTML(grievanceId, folderId, files) {
           </div>
         </div>
       </div>
-    `)
+    `; })
     .join('');
 
   return `

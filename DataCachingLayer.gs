@@ -349,14 +349,14 @@ function showCacheStatusDashboard() {
   });
 
   const statusRows = cacheStatus
-    .map(function(s) { return '
+    .map(function(s) { return `
       <tr>
         <td>${s.name}</td>
         <td>${s.inMemory ? '✅ Yes' : '❌ No'}</td>
         <td>${s.inProps ? '✅ Yes' : '❌ No'}</td>
         <td>${s.age}</td>
       </tr>
-    `)
+    `; })
     .join('');
 
   const html = `

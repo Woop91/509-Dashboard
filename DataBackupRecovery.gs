@@ -506,7 +506,7 @@ function verifyBackup(backupFileId) {
     const verification = {
       valid: true,
       sheetCount: sheets.length,
-      sheets: sheets.map(function(s) { return s.getName()); },
+      sheets: sheets.map(function(s) { return s.getName(); }),
       dataRows: {}
     };
 

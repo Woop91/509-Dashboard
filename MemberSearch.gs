@@ -306,7 +306,7 @@ function getAllMembers() {
     supervisor: row[10] || '',
     manager: row[11] || '',
     assignedSteward: row[12] || ''
-  })).filter(function(m) { return m.id; }); // Filter out empty rows
+  };}).filter(function(m) { return m.id; }); // Filter out empty rows
 }
 
 /**

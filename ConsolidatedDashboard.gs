@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:22:39.828Z
+ * - Build Date: 2025-12-03T02:53:13.228Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -10147,7 +10147,7 @@ function verifyBackup(backupFileId) {
     const verification = {
       valid: true,
       sheetCount: sheets.length,
-      sheets: sheets.map(function(s) { return s.getName()); },
+      sheets: sheets.map(function(s) { return s.getName(); }),
       dataRows: {}
     };
 
@@ -10531,14 +10531,14 @@ function showCacheStatusDashboard() {
   });
 
   const statusRows = cacheStatus
-    .map(function(s) { return '
+    .map(function(s) { return `
       <tr>
         <td>${s.name}</td>
         <td>${s.inMemory ? '✅ Yes' : '❌ No'}</td>
         <td>${s.inProps ? '✅ Yes' : '❌ No'}</td>
         <td>${s.age}</td>
       </tr>
-    `)
+    `; })
     .join('');
 
   const html = `
@@ -11028,8 +11028,8 @@ function checkReferentialIntegrity() {
     );
   } else {
     const orphanedList = orphaned.slice(0, 10).map(function(o) {
-      `  Row ${o.row}: ${o.grievanceId} (Member ID: ${o.memberId})`
-    ).join('\n');
+      return `  Row ${o.row}: ${o.grievanceId} (Member ID: ${o.memberId})`;
+    }).join('\n');
 
     SpreadsheetApp.getUi().alert(
       '⚠️ Referential Integrity Issues Found',
@@ -11569,7 +11569,7 @@ function exportPageToCSV(page, pageSize) {
   var csv = '';
 
   // Headers
-  csv += data.headers.map(function(h) { return `"${h}"`).join(','; }) + '\n';
+  csv += data.headers.map(function(h) { return `"${h}"`; }).join(',') + '\n';
 
   // Rows
   data.rows.forEach(function(row) {
@@ -11756,7 +11756,7 @@ function getPaginationStats() {
  *
  * Usage:
  *   const lock = new DistributedLock('resource-name');
- *   lock.executeWithLockfunction() {
+ *   lock.executeWithLock(function() {
  *     // Critical section code here
  *   });
  */
@@ -11901,7 +11901,7 @@ class DistributedLock {
 function recalcAllMembersThreadSafe() {
   const lock = new DistributedLock('recalc_members', 300000); // 5 minute timeout
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     // Call the actual recalculation function
     if (typeof recalcAllMembers === 'function') {
       return recalcAllMembers();
@@ -11917,7 +11917,7 @@ function recalcAllMembersThreadSafe() {
 function recalcAllGrievancesThreadSafe() {
   const lock = new DistributedLock('recalc_grievances', 300000); // 5 minute timeout
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     // Call the batched recalculation if available
     if (typeof recalcAllGrievancesBatched === 'function') {
       return recalcAllGrievancesBatched();
@@ -11933,7 +11933,7 @@ function recalcAllGrievancesThreadSafe() {
 function rebuildDashboardThreadSafe() {
   const lock = new DistributedLock('rebuild_dashboard', 300000); // 5 minute timeout
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     // Call the optimized rebuild if available, otherwise standard rebuild
     if (typeof rebuildDashboardOptimized === 'function') {
       return rebuildDashboardOptimized();
@@ -11952,7 +11952,7 @@ function rebuildDashboardThreadSafe() {
 function seedDataThreadSafe() {
   const lock = new DistributedLock('seed_data', 600000); // 10 minute timeout
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     if (typeof seedAllWithRollback === 'function') {
       return seedAllWithRollback();
     } else {
@@ -11974,7 +11974,7 @@ function seedDataThreadSafe() {
 function clearAllDataThreadSafe() {
   const lock = new DistributedLock('clear_data', 300000); // 5 minute timeout
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     if (typeof NUKE_ALL_DATA === 'function') {
       return NUKE_ALL_DATA();
     }
@@ -11994,7 +11994,7 @@ function makeThreadSafe(fn, resourceName, timeout = 30000) {
   return function(...args) {
     const lock = new DistributedLock(resourceName, timeout);
 
-    return lock.executeWithLockfunction() {
+    return lock.executeWithLock(function() {
       return fn.apply(this, args);
     });
   };
@@ -12163,7 +12163,7 @@ function CHECK_LOCK_STATUS() {
 function batchUpdateWithLock(updates) {
   const lock = new DistributedLock('batch_update', 600000); // 10 minutes
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
@@ -12712,7 +12712,7 @@ function getRecentErrors(limit = 20) {
     stackTrace: row[5],
     user: row[6],
     recovered: row[7]
-  })).reverse();
+  };}).reverse();
 }
 
 /**
@@ -13389,9 +13389,9 @@ function createFAQSearchHTML() {
 
     <div class="categories">
       <div class="category-badge active" onclick="filterByCategory('')">All Categories</div>
-      ${categories.map(function(cat) { return '
+      ${categories.map(function(cat) { return `
         <div class="category-badge" onclick="filterByCategory('${cat}')">${cat}</div>
-      `).join('')}
+      `; }).join('')}
     </div>
 
     <div class="stats" id="stats">
@@ -13422,7 +13422,7 @@ function createFAQSearchHTML() {
       const stats = document.getElementById('stats');
       stats.innerHTML = \`
         <strong>📊 Knowledge Base Stats:</strong>
-        ${allFAQs.length} articles across ${new Set(allFAQs.map(function(f) { return f.category); }).size} categories
+        ${allFAQs.length} articles across ${new Set(allFAQs.map(function(f) { return f.category; })).size} categories
       \`;
     }
 
@@ -14833,14 +14833,14 @@ function showEmailTemplateManager() {
       {GRIEVANCE_ID}, {MEMBER_NAME}, {ISSUE_TYPE}, {STATUS}
     </div>
 
-    ${templates.map(function(t) { return '
+    ${templates.map(function(t) { return `
       <div class="template">
         <h3>${t.name}</h3>
         <strong>Subject:</strong> ${t.subject}<br><br>
         <strong>Body:</strong>
         <div class="template-body">${t.body}</div>
       </div>
-    `).join('')}
+    `; }).join('')}
   </div>
 </body>
 </html>
@@ -14881,13 +14881,13 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const commsList = grievanceComms
-    .map(function(row) { return '
+    .map(function(row) { return `
       <div style="background: #f8f9fa; padding: 12px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #1a73e8;">
         <strong>${row[2]}</strong> - ${row[0].toLocaleString()}<br>
         <em>By: ${row[3]}</em><br><br>
         <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[4]}</div>
       </div>
-    `)
+    `; })
     .join('');
 
   const html = `
@@ -15412,7 +15412,7 @@ function createFileListHTML(grievanceId, folderId, files) {
   const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
 
   const filesList = files
-    .map(function(file) { return '
+    .map(function(file) { return `
       <div class="file-item">
         <div class="file-icon">${getFileIcon(file.type)}</div>
         <div class="file-details">
@@ -15424,7 +15424,7 @@ function createFileListHTML(grievanceId, folderId, files) {
           </div>
         </div>
       </div>
-    `)
+    `; })
     .join('');
 
   return `
@@ -15706,7 +15706,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
         // Throw aggregate error
         throw new Error(
           `Complete failure - all degradation levels failed:\n` +
-          errors.map(function(e) { return `${e.level}: ${e.error.message}`).join('\n'; })
+          errors.map(function(e) { return `${e.level}: ${e.error.message}`; }).join('\n')
         );
       }
     }
@@ -16573,7 +16573,7 @@ function getMemberList() {
       phone: safeArrayGet(row, MEMBER_COLS.PHONE - 1, ''),
       isSteward: safeArrayGet(row, MEMBER_COLS.IS_STEWARD - 1, ''),
       supervisor: safeArrayGet(row, MEMBER_COLS.SUPERVISOR - 1, '')
-    })).filter(function(member) { return member.memberId; }); // Filter out empty rows
+    };}).filter(function(member) { return member.memberId; }); // Filter out empty rows
   } catch (error) {
     return handleError(error, 'getMemberList', true, true) || [];
   }
@@ -16587,8 +16587,8 @@ function getMemberList() {
 function createMemberSelectionDialog(members) {
   // Use HTML escaping to prevent XSS
   const memberOptions = members.map(function(m) {
-    `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`
-  ).join('');
+    return `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`;
+  }).join('');
 
   return `
 <!DOCTYPE html>
@@ -17983,7 +17983,7 @@ var addMemberIdempotent = makeIdempotent(
       };
     }
   },
-  function(memberData) { return 'add_member_${memberData[0]}` // Use Member ID as key
+  function(memberData) { return `add_member_${memberData[0]}`; } // Use Member ID as key
 );
 
 /**
@@ -18027,7 +18027,7 @@ var addGrievanceIdempotent = makeIdempotent(
       };
     }
   },
-  function(grievanceData) { return 'add_grievance_${grievanceData[0]}` // Use Grievance ID as key
+  function(grievanceData) { return `add_grievance_${grievanceData[0]}`; } // Use Grievance ID as key
 );
 
 /**
@@ -19183,9 +19183,11 @@ function calculateAllMetrics(memberData, grievanceData) {
   // Grievance metrics
   metrics.totalGrievances = grievanceData.length - 1;
   metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision')).length;
+    return row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision');
+  }).length;
   metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && row[4].startsWith('Resolved')).length;
+    return row[4] && row[4].startsWith('Resolved');
+  }).length;
 
   const resolvedData = grievanceData.slice(1).filter(function(row) { return row[4] && row[4].startsWith('Resolved'); });
   metrics.grievancesWon = resolvedData.filter(function(row) { return row[24] && row[24].includes('Won'); }).length;
@@ -21404,7 +21406,7 @@ function getStewardsList() {
     const data = memberSheet.getRange(2, 1, lastRow - 1, 10).getValues();
 
     const stewards = data
-      .filter(function(row) { return row[9] === 'Yes' || row[9] === 'Y') // Column J (index 9; }) = Is Steward
+      .filter(function(row) { return row[9] === 'Yes' || row[9] === 'Y'; }) // Column J (index 9) = Is Steward
       .map(function(row) { return `${row[1]} ${row[2]}`; }) // First Name + Last Name
       .filter(function(name) { return name.trim() !== ' '; });
 
@@ -22167,7 +22169,7 @@ function getAllMembers() {
     supervisor: row[10] || '',
     manager: row[11] || '',
     assignedSteward: row[12] || ''
-  })).filter(function(m) { return m.id; }); // Filter out empty rows
+  };}).filter(function(m) { return m.id; }); // Filter out empty rows
 }
 
 /**
@@ -24672,7 +24674,7 @@ function detectAnomalies(data) {
 
   const volumes = Object.values(monthlyVolumes);
   if (volumes.length >= 3) {
-    const average = volumes.slice(0, -1).reduce(function(sum, val) { return sum + val, 0) / (volumes.length - 1; });
+    const average = volumes.slice(0, -1).reduce(function(sum, val) { return sum + val; }, 0) / (volumes.length - 1);
     const latest = volumes[volumes.length - 1];
 
     if (latest > average * 1.5) {
@@ -24827,7 +24829,7 @@ function showPredictiveAnalyticsDashboard() {
  */
 function createAnalyticsDashboardHTML(analytics) {
   const risksHTML = analytics.riskFactors.length > 0
-    ? analytics.riskFactors.map(function(risk) { return '
+    ? analytics.riskFactors.map(function(risk) { return `
         <div class="risk-item severity-${risk.severity.toLowerCase()}">
           <div class="risk-header">
             <span class="risk-type">${risk.type}</span>
@@ -24836,11 +24838,11 @@ function createAnalyticsDashboardHTML(analytics) {
           <div class="risk-desc">${risk.description}</div>
           <div class="risk-action">⚡ ${risk.action}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No significant risks identified. ✅</p>';
 
   const recommendationsHTML = analytics.recommendations.length > 0
-    ? analytics.recommendations.map(function(rec) { return '
+    ? analytics.recommendations.map(function(rec) { return `
         <div class="recommendation priority-${rec.priority.toLowerCase()}">
           <div class="rec-header">
             <span class="rec-category">${rec.category}</span>
@@ -24849,17 +24851,17 @@ function createAnalyticsDashboardHTML(analytics) {
           <div class="rec-text">${rec.recommendation}</div>
           <div class="rec-impact">📊 ${rec.expectedImpact}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No specific recommendations at this time.</p>';
 
   const anomaliesHTML = analytics.anomalies.length > 0
-    ? analytics.anomalies.map(function(anomaly) { return '
+    ? analytics.anomalies.map(function(anomaly) { return `
         <div class="anomaly-item">
           <div class="anomaly-type">${anomaly.type}</div>
           <div class="anomaly-desc">${anomaly.description}</div>
           <div class="anomaly-impact">${anomaly.impact}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No anomalies detected. ✅</p>';
 
   return `
@@ -25326,7 +25328,7 @@ function analyzeLocationClusters(data) {
 
   return {
     totalLocations: Object.keys(locationStats).length,
-    hotspots: hotspots.sort(function(a, b) { return b.count - a.count); },
+    hotspots: hotspots.sort(function(a, b) { return b.count - a.count; }),
     allStats: locationStats
   };
 }
@@ -25404,7 +25406,7 @@ function analyzeManagerPatterns(data) {
   return {
     totalManagers: Object.keys(managerStats).length,
     avgPerManager: avgGrievancesPerManager.toFixed(1),
-    concerningManagers: concerningManagers.sort(function(a, b) { return b.count - a.count); },
+    concerningManagers: concerningManagers.sort(function(a, b) { return b.count - a.count; }),
     allStats: managerStats
   };
 }
@@ -25494,7 +25496,7 @@ function analyzeIssueTypePatterns(data) {
 
   return {
     totalIssueTypes: Object.keys(issueTypeStats).length,
-    systemicIssues: systemicIssues.sort(function(a, b) { return b.count - a.count); },
+    systemicIssues: systemicIssues.sort(function(a, b) { return b.count - a.count; }),
     allStats: issueTypeStats
   };
 }
@@ -25661,7 +25663,7 @@ function showRootCauseAnalysisDashboard() {
  */
 function createRCADashboardHTML(analysis) {
   const hotspotsHTML = analysis.locationClusters.hotspots.length > 0
-    ? analysis.locationClusters.hotspots.map(function(h) { return '
+    ? analysis.locationClusters.hotspots.map(function(h) { return `
         <div class="finding severity-${h.severity.toLowerCase()}">
           <div class="finding-header">
             <span class="finding-title">${h.location}</span>
@@ -25673,11 +25675,11 @@ function createRCADashboardHTML(analysis) {
             <div class="stat">Avg resolution: ${h.avgResolutionTime} days</div>
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No significant location hotspots identified.</p>';
 
   const concerningManagersHTML = analysis.managerPatterns.concerningManagers.length > 0
-    ? analysis.managerPatterns.concerningManagers.map(function(m) { return '
+    ? analysis.managerPatterns.concerningManagers.map(function(m) { return `
         <div class="finding severity-${m.severity.toLowerCase()}">
           <div class="finding-header">
             <span class="finding-title">${m.manager}</span>
@@ -25689,11 +25691,11 @@ function createRCADashboardHTML(analysis) {
             <div class="stat">Avg resolution: ${m.avgResolutionTime} days</div>
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No concerning manager patterns identified.</p>';
 
   const systemicIssuesHTML = analysis.issueTypePatterns.systemicIssues.length > 0
-    ? analysis.issueTypePatterns.systemicIssues.map(function(i) { return '
+    ? analysis.issueTypePatterns.systemicIssues.map(function(i) { return `
         <div class="finding ${i.isSystemic ? 'severity-high' : 'severity-medium'}">
           <div class="finding-header">
             <span class="finding-title">${i.issueType}</span>
@@ -25705,11 +25707,11 @@ function createRCADashboardHTML(analysis) {
             <div class="stat">Avg resolution: ${i.avgResolutionTime} days</div>
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No systemic issues identified.</p>';
 
   const recommendationsHTML = analysis.recommendations.length > 0
-    ? analysis.recommendations.map(function(r) { return '
+    ? analysis.recommendations.map(function(r) { return `
         <div class="recommendation priority-${r.priority.toLowerCase()}">
           <div class="rec-header">
             <span class="rec-category">${r.category}</span>
@@ -25720,7 +25722,7 @@ function createRCADashboardHTML(analysis) {
             <strong>Expected Impact:</strong> ${r.expectedImpact}
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No specific recommendations at this time.</p>';
 
   return `
@@ -26408,7 +26410,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
     alternates: scoredStewards.slice(1, 4).map(function(s) { return {
       name: s.name,
       score: s.score
-    }))
+    };})
   };
 }
 
@@ -26650,7 +26652,7 @@ function logAssignment(grievanceId, selectedSteward, topCandidates) {
     selectedSteward.name,
     selectedSteward.score,
     selectedSteward.currentCaseload,
-    topCandidates.map(function(s) { return `${s.name} (${s.score})`).join(', '); },
+    topCandidates.map(function(s) { return `${s.name} (${s.score})`; }).join(', '),
     user
   ];
 
@@ -26796,7 +26798,7 @@ function batchAutoAssign() {
     return;
   }
 
-  const rows = Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   // Count unassigned
   var unassigned = 0;
@@ -26879,7 +26881,7 @@ function showStewardWorkloadDashboard() {
   stewards.sort(function(a, b) { return b.currentCaseload - a.currentCaseload; });
 
   const stewardsList = stewards
-    .map(function(s) { return '
+    .map(function(s) { return `
       <div class="steward-item" style="border-left-color: ${getCaseloadColor(s.currentCaseload)}">
         <div class="steward-name">${s.name}</div>
         <div class="steward-details">
@@ -26897,7 +26899,7 @@ function showStewardWorkloadDashboard() {
             : 'No cases yet'}
         </div>
       </div>
-    `)
+    `; })
     .join('');
 
   const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0) / stewards.length;
@@ -28162,7 +28164,7 @@ function getUnifiedDashboardData() {
     steps: calculateStepEfficiency(grievances),
 
     // Section 3: Network Health
-    totalMembers: members.filter(function(m) { return m[MEMBER_COLS.MEMBER_ID - 1]).length; },
+    totalMembers: members.filter(function(m) { return m[MEMBER_COLS.MEMBER_ID - 1]; }).length,
     engagementRate: calculateEngagementRate(grievances, members),
     noContactCount: calculateNoContact(members, today),
     stewardCount: calculateActiveStewards(grievances),
@@ -28426,8 +28428,8 @@ function calculateIssueDistribution(grievances) {
   });
 
   return {
-    disciplinary: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Discipline')).length; },
-    contract: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Pay') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Workload')).length; },
+    disciplinary: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Discipline'); }).length,
+    contract: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Pay') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Workload'); }).length,
     work: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Safety') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Scheduling'); }).length
   };
 }
@@ -28545,7 +28547,7 @@ function getSystemicRisks(grievances) {
       cases: data.total,
       lossRate: 0, // Would need historical data
       severity: data.total > 10 ? 'CRITICAL' : data.total > 5 ? 'WARNING' : 'NORMAL'
-    }))
+    };})
     .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
@@ -28576,7 +28578,7 @@ function getArbitrationTracker(grievances) {
     maxFinancialImpact: 125000,
     docCompliance: 78.5,
     pendingWitness: 3,
-    step3Cases: grievances.filter(function(g) { return (g[GRIEVANCE_COLS.CURRENT_STEP - 1] || '').includes('III')).length; },
+    step3Cases: grievances.filter(function(g) { return (g[GRIEVANCE_COLS.CURRENT_STEP - 1] || '').includes('III'); }).length,
     highRiskCases: 2
   };
 }
@@ -28640,7 +28642,7 @@ function getLocationCaseload(grievances) {
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
-    }))
+    };})
     .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 10);
 }
@@ -29469,7 +29471,7 @@ function createWorkflowVisualizerHTML() {
           </div>
           ${state.allowedNextStates.length > 0
             ? `<div class="next-states">
-                <strong>Can transition to:</strong> ${state.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name).join(', '; })}
+                <strong>Can transition to:</strong> ${state.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name; }).join(', ')}
               </div>`
             : ''}
         </div>
@@ -29518,7 +29520,7 @@ function validateStateTransition(currentState, newState) {
   if (!current.allowedNextStates.includes(newState)) {
     return {
       valid: false,
-      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name).join(', '; })}`
+      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name; }).join(', ')}`
     };
   }
 
@@ -29605,7 +29607,7 @@ function changeWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    function(key) { return WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName; }
   );
 
   if (!newStateKey) {
@@ -29816,7 +29818,7 @@ function batchUpdateWorkflowState() {
     return;
   }
 
-  const rows = Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   const response = ui.prompt(
     '🔄 Batch Update Workflow State',
@@ -29831,7 +29833,7 @@ function batchUpdateWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    function(key) { return WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName; }
   );
 
   if (!newStateKey) {
