@@ -11970,25 +11970,25 @@ function getPaginationStats() {
  *     // Critical section code here
  *   });
  */
-class DistributedLock {
-  /**
-   * Create a new distributed lock
-   * @param {string} resource - Name of the resource being locked
-   * @param {number} timeout - Timeout in milliseconds (default: 30000 = 30 seconds)
-   */
-  constructor(resource, timeout = 30000) {
-    this.resource = resource;
-    this.timeout = timeout;
-    this.lock = LockService.getScriptLock();
-    this.lockAcquired = false;
-  }
+/**
+ * Create a new distributed lock
+ * @param {string} resource - Name of the resource being locked
+ * @param {number} timeout - Timeout in milliseconds (default: 30000 = 30 seconds)
+ * @constructor
+ */
+function DistributedLock(resource, timeout) {
+  this.resource = resource;
+  this.timeout = timeout !== undefined ? timeout : 30000;
+  this.lock = LockService.getScriptLock();
+  this.lockAcquired = false;
+}
 
-  /**
-   * Attempt to acquire the lock
-   * @returns {boolean} True if lock acquired, false otherwise
-   * @throws {Error} If unable to acquire lock after timeout
-   */
-  acquire() {
+/**
+ * Attempt to acquire the lock
+ * @returns {boolean} True if lock acquired, false otherwise
+ * @throws {Error} If unable to acquire lock after timeout
+ */
+DistributedLock.prototype.acquire = function() {
     try {
       const acquired = this.lock.tryLock(this.timeout);
 
@@ -12029,12 +12029,12 @@ class DistributedLock {
       Logger.log(`Error acquiring lock for "${this.resource}": ${error.message}`);
       throw error;
     }
-  }
+};
 
-  /**
-   * Release the lock
-   */
-  release() {
+/**
+ * Release the lock
+ */
+DistributedLock.prototype.release = function() {
     if (this.lockAcquired) {
       try {
         this.lock.releaseLock();
@@ -12052,17 +12052,17 @@ class DistributedLock {
         Logger.log(`Error releasing lock for "${this.resource}": ${error.message}`);
       }
     }
-  }
+};
 
-  /**
-   * Execute a function while holding the lock
-   * Automatically acquires lock before execution and releases after
-   *
-   * @param {Function} operation - Function to execute
-   * @returns {*} Result from the operation
-   * @throws {Error} If lock cannot be acquired or operation fails
-   */
-  executeWithLock(operation) {
+/**
+ * Execute a function while holding the lock
+ * Automatically acquires lock before execution and releases after
+ *
+ * @param {Function} operation - Function to execute
+ * @returns {*} Result from the operation
+ * @throws {Error} If lock cannot be acquired or operation fails
+ */
+DistributedLock.prototype.executeWithLock = function(operation) {
     const startTime = new Date();
 
     try {
@@ -12093,16 +12093,15 @@ class DistributedLock {
       // Always release the lock
       this.release();
     }
-  }
+};
 
-  /**
-   * Check if lock is currently held
-   * @returns {boolean} True if lock is held
-   */
-  isLocked() {
+/**
+ * Check if lock is currently held
+ * @returns {boolean} True if lock is held
+ */
+DistributedLock.prototype.isLocked = function() {
     return this.lockAcquired;
-  }
-}
+};
 
 /**
  * Recalculate all members with thread safety
@@ -27353,19 +27352,18 @@ function getCaseloadColor(caseload) {
  *     txn.rollback();
  *   }
  */
-class Transaction {
-  /**
-   * Create a new transaction
-   * @param {SpreadsheetApp.Spreadsheet} spreadsheet - The spreadsheet to manage
-   */
-  constructor(spreadsheet) {
-    this.ss = spreadsheet;
-    this.snapshots = new Map();
-    this.startTime = new Date();
-    this.transactionId = Utilities.getUuid();
-    this.committed = false;
-    this.rolledBack = false;
-  }
+/**
+ * Create a new transaction
+ * @param {SpreadsheetApp.Spreadsheet} spreadsheet - The spreadsheet to manage
+ * @constructor
+ */
+function Transaction(spreadsheet) {
+  this.ss = spreadsheet;
+  this.snapshots = {}; // Changed from Map to plain object for ES5 compatibility
+  this.startTime = new Date();
+  this.transactionId = Utilities.getUuid();
+  this.committed = false;
+  this.rolledBack = false;
 
   /**
    * Take a snapshot of a sheet's current state
@@ -27386,7 +27384,7 @@ class Transaction {
 
       if (lastRow === 0 || lastCol === 0) {
         // Empty sheet - store empty snapshot
-        this.snapshots.set(sheetName, {
+        this.snapshots[sheetName] = {
           data: [],
           lastRow: 0,
           lastCol: 0,
@@ -27400,7 +27398,7 @@ class Transaction {
       const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
       const formulas = sheet.getRange(1, 1, lastRow, lastCol).getFormulas();
 
-      this.snapshots.set(sheetName, {
+      this.snapshots[sheetName] = {
         data: data,
         formulas: formulas,
         lastRow: lastRow,
