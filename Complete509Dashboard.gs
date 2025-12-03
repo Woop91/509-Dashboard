@@ -5492,6 +5492,122 @@ function findMemberRow(memberId) {
 }
 
 /**
+ * Recalculates all formula columns for a specific grievance row
+ */
+function recalcGrievanceRow(rowNumber) {
+  if (!rowNumber || rowNumber < 2) return;
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceSheet) return;
+
+  const row = rowNumber;
+
+  // Filing Deadline (Column H = 8): Incident Date + 21 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.FILING_DEADLINE).setFormula(
+    `=IF(G${row}<>"",G${row}+21,"")`
+  );
+
+  // Step I Decision Due (Column J = 10): Date Filed + 30 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP1_DUE).setFormula(
+    `=IF(I${row}<>"",I${row}+30,"")`
+  );
+
+  // Step II Appeal Due (Column L = 12): Step I Decision Rcvd + 10 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP2_APPEAL_DUE).setFormula(
+    `=IF(K${row}<>"",K${row}+10,"")`
+  );
+
+  // Step II Decision Due (Column N = 14): Step II Appeal Filed + 30 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP2_DUE).setFormula(
+    `=IF(M${row}<>"",M${row}+30,"")`
+  );
+
+  // Step III Appeal Due (Column P = 16): Step II Decision Rcvd + 30 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP3_APPEAL_DUE).setFormula(
+    `=IF(O${row}<>"",O${row}+30,"")`
+  );
+
+  // Days Open (Column S = 19): Date Filed to Date Closed or TODAY
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.DAYS_OPEN).setFormula(
+    `=IF(I${row}<>"",IF(R${row}<>"",R${row}-I${row},TODAY()-I${row}),"")`
+  );
+
+  // Next Action Due (Column T = 20): Based on current step
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.NEXT_ACTION_DUE).setFormula(
+    `=IF(E${row}="Open",IF(F${row}="Step I",J${row},IF(F${row}="Step II",N${row},IF(F${row}="Step III",P${row},H${row}))),"")`
+  );
+
+  // Days to Deadline (Column U = 21): Next Action Due - TODAY
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.DAYS_TO_DEADLINE).setFormula(
+    `=IF(T${row}<>"",T${row}-TODAY(),"")`
+  );
+}
+
+/**
+ * Recalculates member directory snapshot columns for a specific member row
+ */
+function recalcMemberRow(rowNumber) {
+  if (!rowNumber || rowNumber < 2) return;
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) return;
+
+  const row = rowNumber;
+
+  // Get column letters for Grievance Log references
+  const memberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+
+  // Has Open Grievance? (Column Z = 26)
+  memberSheet.getRange(row, MEMBER_COLS.HAS_OPEN_GRIEVANCE).setFormula(
+    `=IF(COUNTIFS('Grievance Log'!${memberIdCol}:${memberIdCol},A${row},'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No")`
+  );
+
+  // Grievance Status Snapshot (Column AA = 27)
+  memberSheet.getRange(row, MEMBER_COLS.GRIEVANCE_STATUS).setFormula(
+    `=IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
+  );
+
+  // Next Grievance Deadline (Column AB = 28)
+  memberSheet.getRange(row, MEMBER_COLS.NEXT_DEADLINE).setFormula(
+    `=IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
+  );
+}
+
+/**
+ * Rebuilds all dashboard calculations
+ */
+function rebuildDashboard() {
+  try {
+    Logger.log('Rebuilding dashboard calculations...');
+
+    // Rebuild the interactive dashboard if it exists
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const interactiveDashboard = ss.getSheetByName('Interactive Dashboard');
+
+    if (interactiveDashboard) {
+      // Use existing rebuildInteractiveDashboard function if available
+      if (typeof rebuildInteractiveDashboard === 'function') {
+        rebuildInteractiveDashboard();
+      }
+    }
+
+    // Recalculate all formulas by forcing a recalculation
+    SpreadsheetApp.flush();
+
+    Logger.log('Dashboard rebuild complete');
+  } catch (error) {
+    Logger.log('Error in rebuildDashboard: ' + error.message);
+    // Don't throw - this is a best-effort function
+  }
+}
+
+/**
  * ------------------------------------------------------------------------====
  * PDF GENERATION AND DISTRIBUTION
  * ------------------------------------------------------------------------====
@@ -7294,13 +7410,14 @@ function setupMemberDirectoryValidations() {
     memberDir.getRange(2, 12, MAX_ROWS, 1).setDataValidation(managerRule);
   }
 
-  // Assigned Steward (Column M = 13)
+  // Assigned Steward (Column M = 13) and Steward Who Contacted Member (Column AD = 30)
   if (stewards.length > 0) {
     const stewardRule = SpreadsheetApp.newDataValidation()
       .requireValueInList(stewards, true)
       .setAllowInvalid(false)
       .build();
     memberDir.getRange(2, 13, MAX_ROWS, 1).setDataValidation(stewardRule);
+    memberDir.getRange(2, 30, MAX_ROWS, 1).setDataValidation(stewardRule);
   }
 
   // Interest: Local Actions (Column T = 20)
@@ -7327,11 +7444,6 @@ function setupMemberDirectoryValidations() {
     .setHelpText('Select one or enter multiple comma-separated')
     .build();
   memberDir.getRange(2, 25, MAX_ROWS, 1).setDataValidation(bestTimeRule);
-
-  // Steward Who Contacted Member (Column AD = 30)
-  if (stewards.length > 0) {
-    memberDir.getRange(2, 30, MAX_ROWS, 1).setDataValidation(stewardRule);
-  }
 
   // Add conditional formatting for empty email/phone
   // Email (Column H = 8) - Red background if empty

@@ -489,7 +489,14 @@ function logCommunication(grievanceId, type, details) {
  */
 function createCommunicationsLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('📞 Communications Log');
+
+  // Check if sheet already exists
+  let sheet = ss.getSheetByName('📞 Communications Log');
+  if (sheet) {
+    return sheet; // Return existing sheet
+  }
+
+  sheet = ss.insertSheet('📞 Communications Log');
 
   // Set headers
   const headers = [

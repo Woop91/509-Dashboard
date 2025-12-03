@@ -5379,7 +5379,12 @@ function resetADHDSettings() {
   const sheets = ss.getSheets();
 
   sheets.forEach(function(sheet) {
-    sheet.setFontSize(10);
+    // Reset font size for data range (setFontSize only works on ranges, not sheets)
+    const maxRows = sheet.getMaxRows();
+    const maxCols = sheet.getMaxColumns();
+    if (maxRows > 0 && maxCols > 0) {
+      sheet.getRange(1, 1, maxRows, maxCols).setFontSize(10);
+    }
     sheet.setHiddenGridlines(false);
     removeZebraStripes(sheet);
   });
@@ -15930,6 +15935,17 @@ function batchCreateGrievanceFolders() {
  */
 function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
   const errors = [];
+
+  // Validate that all parameters are functions
+  if (typeof primaryFn !== 'function') {
+    throw new Error('primaryFn must be a function');
+  }
+  if (typeof fallbackFn !== 'function') {
+    throw new Error('fallbackFn must be a function');
+  }
+  if (typeof minimalFn !== 'function') {
+    throw new Error('minimalFn must be a function');
+  }
 
   // Try primary function
   try {

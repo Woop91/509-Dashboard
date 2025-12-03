@@ -112,7 +112,14 @@ function logBackup(backupName, fileId, automated) {
  */
 function createBackupLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('💾 Backup Log');
+
+  // Check if sheet already exists
+  let sheet = ss.getSheetByName('💾 Backup Log');
+  if (sheet) {
+    return sheet; // Return existing sheet
+  }
+
+  sheet = ss.insertSheet('💾 Backup Log');
 
   const headers = [
     'Timestamp',
