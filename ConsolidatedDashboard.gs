@@ -3562,7 +3562,7 @@ function populateStewardWorkload() {
     const s = stewards[stewardId];
     const winRate = s.resolvedCases > 0 ? (s.wonCases / s.resolvedCases * 100) : 0;
     const avgDays = s.resolutionDays.length > 0
-      ? s.resolutionDays.reduce(function((a, b) { return a + b, 0; }) / s.resolutionDays.length
+      ? s.resolutionDays.reduce(function(a, b) { return a + b, 0; }) / s.resolutionDays.length
       : 0;
 
     // Capacity status based on active cases
@@ -3593,7 +3593,7 @@ function populateStewardWorkload() {
   }
 
   // Sort by active cases (descending)
-  outputData.sort(function((a, b) { return b[2] - a[2]; });
+  outputData.sort(function(a, b) { return b[2] - a[2]; });
 
   // Clear existing data (keep headers)
   const lastRow = workloadSheet.getLastRow();
@@ -4098,7 +4098,7 @@ function reorderSheetsLogically() {
   ];
 
   // Move sheets to correct positions
-  sheetOrder.forEach(function((sheetName, index) {
+  sheetOrder.forEach(function(sheetName, index) {
     const sheet = ss.getSheetByName(sheetName);
     if (sheet) {
       ss.setActiveSheet(sheet);
@@ -4157,7 +4157,7 @@ function addStewardWorkloadInstructions() {
   ];
 
   // Create colored instruction boxes
-  instructionData.forEach(function((instruction, index) {
+  instructionData.forEach(function(instruction, index) {
     const row = index + 2;
 
     // Label column (A-B)
@@ -4331,7 +4331,7 @@ function createUserSettingsSheet() {
     ["🔔", "Set up desktop notifications for overdue items (Future Feature)"]
   ];
 
-  tips.forEach(function((tip, index) {
+  tips.forEach(function(tip, index) {
     const row = 15 + index;
     sheet.getRange(row, 1).setValue(tip[0])
       .setFontSize(18)
@@ -4820,22 +4820,22 @@ function createADHDControlPanelHTML() {
 
     function toggleZebraStripes() {
       google.script.run.toggleZebraStripes();
-      setTimeoutfunction(() { return location.reload(), 1000; });
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function toggleGridlines() {
       google.script.run.toggleGridlinesADHD();
-      setTimeoutfunction(() { return location.reload(), 1000; });
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function toggleReducedMotion() {
       google.script.run.toggleReducedMotion();
-      setTimeoutfunction(() { return location.reload(), 1000; });
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function toggleComplexityIndicators() {
       google.script.run.toggleComplexityIndicators();
-      setTimeoutfunction(() { return location.reload(), 1000; });
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function activateFocusMode() {
@@ -4865,7 +4865,7 @@ function createADHDControlPanelHTML() {
       };
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Settings saved!');
           google.script.host.close();
         })
@@ -4875,7 +4875,7 @@ function createADHDControlPanelHTML() {
     function resetToDefaults() {
       if (confirm('Reset all ADHD settings to defaults?')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function() {
             alert('✅ Settings reset!');
             location.reload();
           })
@@ -5142,7 +5142,7 @@ function showQuickCaptureNotepad() {
     function saveNotes() {
       const notes = document.getElementById('notes').value;
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Notes saved!');
         })
         .saveQuickCaptureNotes(notes);
@@ -5156,7 +5156,7 @@ function showQuickCaptureNotepad() {
     }
 
     // Auto-save every 30 seconds
-    setIntervalfunction(() {
+    setInterval(function() {
       const notes = document.getElementById('notes').value;
       if (notes) {
         google.script.run.saveQuickCaptureNotes(notes);
@@ -5244,7 +5244,7 @@ function startPomodoroTimer() {
       isRunning = true;
       document.querySelector('button').textContent = '⏸️ Pause';
 
-      interval = setIntervalfunction(() {
+      interval = setInterval(function() {
         if (timeLeft > 0) {
           timeLeft--;
           updateDisplay();
@@ -5637,7 +5637,7 @@ function checkDeadlinesAndNotify() {
   };
 
   // Categorize grievances by deadline urgency
-  data.forEach(function((row, index) {
+  data.forEach(function(row, index) {
     const grievanceId = row[0];
     const memberFirstName = row[2];
     const memberLastName = row[3];
@@ -5993,13 +5993,13 @@ function showNotificationSettings() {
       </ul>
     </div>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupDailyDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).setupDailyDeadlineNotifications()">
       ${isEnabled ? '🔄 Refresh Trigger' : '✅ Enable Notifications'}
     </button>
 
-    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
+    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).testDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).testDeadlineNotifications()">
       🧪 Test Now
     </button>
   </div>
@@ -6358,11 +6358,13 @@ function createMonthlyReportDoc(data) {
     .setHeading(DocumentApp.ParagraphHeading.HEADING2);
 
   const issueTypes = Object.entries(data.byIssueType)
-    .sort(function((a, b) { return b[1] - a[1]; })
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const issueTable = [['Issue Type', 'Count']];
-  issueTypes.forEach(function(([type, count]) {
+  issueTypes.forEach(function(item) {
+    var type = item[0];
+    var count = item[1];
     issueTable.push([type, count.toString()]);
   });
 
@@ -6376,11 +6378,13 @@ function createMonthlyReportDoc(data) {
     .setHeading(DocumentApp.ParagraphHeading.HEADING2);
 
   const stewards = Object.entries(data.bySteward)
-    .sort(function((a, b) { return b[1] - a[1]; })
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const stewardTable = [['Steward', 'Active Grievances']];
-  stewards.forEach(function(([steward, count]) {
+  stewards.forEach(function(item) {
+    var steward = item[0];
+    var count = item[1];
     stewardTable.push([steward, count.toString()]);
   });
 
@@ -6475,7 +6479,7 @@ function createQuarterlyReportDoc(data) {
   const monthNames = ['Month 1', 'Month 2', 'Month 3'];
   const monthTable = [['Month', 'Grievances Filed']];
 
-  data.monthlyTrends.forEach(function((count, index) {
+  data.monthlyTrends.forEach(function(count, index) {
     monthTable.push([monthNames[index], count.toString()]);
   });
 
@@ -6635,7 +6639,7 @@ function showReportAutomationSettings() {
     <div class="status ${monthlyEnabled ? 'enabled' : 'disabled'}">
       ${monthlyEnabled ? '✅ Monthly reports ENABLED (1st of month, 9 AM)' : '🔕 Monthly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupMonthlyReports()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).setupMonthlyReports()">
       ${monthlyEnabled ? '🔄 Refresh Monthly Trigger' : '✅ Enable Monthly Reports'}
     </button>
 
@@ -6643,21 +6647,21 @@ function showReportAutomationSettings() {
     <div class="status ${quarterlyEnabled ? 'enabled' : 'disabled'}">
       ${quarterlyEnabled ? '✅ Quarterly reports ENABLED (Jan/Apr/Jul/Oct, 10 AM)' : '🔕 Quarterly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupQuarterlyReports()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).setupQuarterlyReports()">
       ${quarterlyEnabled ? '🔄 Refresh Quarterly Trigger' : '✅ Enable Quarterly Reports'}
     </button>
 
     <hr style="margin: 30px 0;">
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).generateMonthlyReport()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).generateMonthlyReport()">
       🧪 Test Monthly Report
     </button>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).generateQuarterlyReport()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).generateQuarterlyReport()">
       🧪 Test Quarterly Report
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).disableAutomatedReports()">
+    <button class="danger" onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).disableAutomatedReports()">
       🔕 Disable All Reports
     </button>
   </div>
@@ -7068,31 +7072,31 @@ function showBatchOperationsMenu() {
 
   <script>
     function runBatchAssignSteward() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function() {
         google.script.host.close();
       }).batchAssignSteward();
     }
 
     function runBatchUpdateStatus() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function() {
         google.script.host.close();
       }).batchUpdateStatus();
     }
 
     function runBatchExportPDF() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function() {
         google.script.host.close();
       }).batchExportPDF();
     }
 
     function runBatchEmail() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function() {
         google.script.host.close();
       }).batchEmailNotifications();
     }
 
     function runBatchAddNotes() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function() {
         google.script.host.close();
       }).batchAddNotes();
     }
@@ -7634,7 +7638,7 @@ function syncDeadlinesToCalendar() {
     var eventsCreated = 0;
     var eventsSkipped = 0;
 
-    data.forEach(function((row, index) {
+    data.forEach(function(row, index) {
       const grievanceId = row[0]; // Column A
       const memberName = `${row[2]} ${row[3]}`; // Columns C, D
       const status = row[4]; // Column E
@@ -8533,7 +8537,7 @@ function createReportBuilderHTML() {
       alert('Generating PDF report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ PDF report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -8549,7 +8553,7 @@ function createReportBuilderHTML() {
       }
 
       google.script.run
-        .withSuccessHandlerfunction((csvData) {
+        .withSuccessHandler(function(csvData) {
           downloadCSV(csvData);
         })
         .withFailureHandler(onError)
@@ -8567,7 +8571,7 @@ function createReportBuilderHTML() {
       alert('Generating Excel report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Excel report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -8591,7 +8595,7 @@ function createReportBuilderHTML() {
       if (!name) return;
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Template saved: ' + name);
         })
         .withFailureHandler(onError)
@@ -8869,7 +8873,7 @@ function sortData(data, sortBy, sortOrder, fieldMapping) {
   const field = fieldMapping[sortBy];
   if (!field) return data;
 
-  return data.sort(function((a, b) {
+  return data.sort(function(a, b) {
     const aVal = a[field.index];
     const bVal = b[field.index];
 
@@ -9190,8 +9194,10 @@ function createThemeManagerHTML() {
   const autoSwitch = getAutoSwitchSettings();
 
   var themeCards = '';
-  Object.entries(THEME_CONFIG.THEMES).forEach(function(([key, theme]) {
-    const isActive = currentTheme === key;
+  Object.entries(THEME_CONFIG.THEMES).forEach(function(entry) {
+    var key = entry[0];
+    var theme = entry[1];
+    var isActive = currentTheme === key;
     themeCards += `
       <div class="theme-card ${isActive ? 'active' : ''}" onclick="selectTheme('${key}')">
         <div class="theme-icon">${theme.icon}</div>
@@ -9460,7 +9466,7 @@ function createThemeManagerHTML() {
 
     function applySelectedTheme() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Theme applied successfully!');
           google.script.host.close();
         })
@@ -9469,7 +9475,7 @@ function createThemeManagerHTML() {
 
     function applyToAllSheets() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Theme applied to all sheets!');
           location.reload();
         })
@@ -9478,7 +9484,7 @@ function createThemeManagerHTML() {
 
     function applyToCurrentSheet() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Theme applied to current sheet!');
           location.reload();
         })
@@ -9487,7 +9493,7 @@ function createThemeManagerHTML() {
 
     function previewTheme() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('👁️ Preview applied! This is temporary.');
         })
         .previewTheme(selectedTheme);
@@ -9496,7 +9502,7 @@ function createThemeManagerHTML() {
     function resetTheme() {
       if (confirm('Reset to default light theme?')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function() {
             alert('✅ Theme reset!');
             location.reload();
           })
@@ -9507,7 +9513,7 @@ function createThemeManagerHTML() {
     function toggleAutoSwitch() {
       const enabled = document.getElementById('autoSwitch').checked;
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert(enabled ? '✅ Auto dark mode enabled!' : '🔕 Auto dark mode disabled!');
         })
         .setAutoSwitch(enabled);
@@ -9992,13 +9998,13 @@ function cleanOldBackups() {
     }
 
     // Sort by date (oldest first)
-    backupFiles.sort(function((a, b) { return a.created - b.created; });
+    backupFiles.sort(function(a, b) { return a.created - b.created; });
 
     const now = new Date();
     const cutoffDate = new Date(now.getTime() - (RETENTION_DAYS * 24 * 60 * 60 * 1000));
 
     // Delete old backups
-    backupFiles.forEach(function((backup, index) {
+    backupFiles.forEach(function(backup, index) {
       // Keep if:
       // 1. Within retention period
       // 2. One of the most recent MAX_BACKUPS
@@ -10151,10 +10157,10 @@ function createBackupManagerHTML() {
       <div class="status ${isAutomated ? 'enabled' : 'disabled'}">
         ${isAutomated ? '✅ Automated backups are ENABLED (Weekly, Sundays 2 AM)' : '🔕 Automated backups are DISABLED'}
       </div>
-      <button onclick="google.script.run.withSuccessHandlerfunction(() { return location.reload()).setupAutomatedBackups(; })">
+      <button onclick="google.script.run.withSuccessHandler(function() { return location.reload()).setupAutomatedBackups(; })">
         ${isAutomated ? '🔄 Refresh Schedule' : '✅ Enable Automated Backups'}
       </button>
-      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { return location.reload()).disableAutomatedBackups(; })">🔕 Disable</button>' : ''}
+      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function() { return location.reload()).disableAutomatedBackups(; })">🔕 Disable</button>' : ''}
     </div>
 
     <div class="section">
@@ -10192,10 +10198,10 @@ function createBackupManagerHTML() {
       alert('Creating backup... This may take a moment.');
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Backup created successfully!');
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function(error) {
           alert('❌ Backup failed: ' + error.message);
         })
         .createBackup(false);
@@ -10208,7 +10214,7 @@ function createBackupManagerHTML() {
 
     function showBackupLog() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('Opening Backup Log sheet...');
           google.script.host.close();
         })
@@ -10218,7 +10224,7 @@ function createBackupManagerHTML() {
     function exportGrievances() {
       alert('Exporting grievances to CSV...');
       google.script.run
-        .withSuccessHandlerfunction((csv) {
+        .withSuccessHandler(function(csv) {
           downloadCSV(csv, 'grievances.csv');
         })
         .exportGrievancesToCSV();
@@ -10227,7 +10233,7 @@ function createBackupManagerHTML() {
     function exportMembers() {
       alert('Exporting members to CSV...');
       google.script.run
-        .withSuccessHandlerfunction((csv) {
+        .withSuccessHandler(function(csv) {
           downloadCSV(csv, 'members.csv');
         })
         .exportMembersToCSV();
@@ -10684,7 +10690,9 @@ function showCacheStatusDashboard() {
 
   const cacheStatus = [];
 
-  Object.entries(CACHE_KEYS).forEach(function(([name, key]) {
+  Object.entries(CACHE_KEYS).forEach(function(entry) {
+    var name = entry[0];
+    var key = entry[1];
     const inMemory = memoryCache.get(key) !== null;
     const inProps = propsCache.getProperty(key) !== null;
 
@@ -10762,11 +10770,11 @@ function showCacheStatusDashboard() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).warmUpCaches()">
+    <button onclick="google.script.run.withSuccessHandler(function() { location.reload(); }).warmUpCaches()">
       🔥 Warm Up All Caches
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).invalidateAllCaches()">
+    <button class="danger" onclick="google.script.run.withSuccessHandler(function() { location.reload(); }).invalidateAllCaches()">
       🗑️ Clear All Caches
     </button>
   </div>
@@ -11673,7 +11681,7 @@ function createPaginatedViewerHTML() {
 
     function exportCurrentPage() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function(url) {
           alert('✅ Page exported!');
           window.open(url, '_blank');
         })
@@ -12717,7 +12725,7 @@ function createErrorDashboardHTML() {
   <script>
     function runHealthCheck() {
       google.script.run
-        .withSuccessHandlerfunction((result) {
+        .withSuccessHandler(function(result) {
           alert('🏥 Health Check Complete:\\n\\n' + result.summary);
           location.reload();
         })
@@ -12726,7 +12734,7 @@ function createErrorDashboardHTML() {
 
     function exportErrorLog() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function(url) {
           alert('✅ Error log exported!');
           window.open(url, '_blank');
         })
@@ -12736,7 +12744,7 @@ function createErrorDashboardHTML() {
     function clearErrorLog() {
       if (confirm('Clear all error logs? This cannot be undone.')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function() {
             alert('✅ Error log cleared!');
             location.reload();
           })
@@ -12746,7 +12754,7 @@ function createErrorDashboardHTML() {
 
     function testErrorHandling() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Test error logged successfully!');
           location.reload();
         })
@@ -12755,7 +12763,7 @@ function createErrorDashboardHTML() {
 
     function viewErrorTrends() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function(url) {
           window.open(url, '_blank');
         })
         .createErrorTrendReport();
@@ -13747,7 +13755,7 @@ function createFAQSearchHTML() {
 
     function markHelpful(faqId, isHelpful) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           // Reload FAQs to get updated counts
           google.script.run
             .withSuccessHandler(onFAQsLoaded)
@@ -13903,11 +13911,11 @@ function createFAQAdminHTML() {
       }
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ FAQ saved successfully!');
           google.script.host.close();
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function(error) {
           alert('Error: ' + error.message);
         })
         .addNewFAQ(faq);
@@ -15824,7 +15832,7 @@ function batchCreateGrievanceFolders() {
     var created = 0;
     var skipped = 0;
 
-    data.forEach(function((row, index) {
+    data.forEach(function(row, index) {
       const grievanceId = row[0];
       const folderId = row[28]; // Column AC
 
@@ -16499,7 +16507,7 @@ function applyGrievanceFloat() {
  * @returns {Array} Sorted array of data rows
  */
 function sortGrievancesByPriority(dataRows) {
-  return dataRows.sort(function((a, b) {
+  return dataRows.sort(function(a, b) {
     const statusA = String(a[GRIEVANCE_COLS.STATUS - 1] || '').toLowerCase();
     const statusB = String(b[GRIEVANCE_COLS.STATUS - 1] || '').toLowerCase();
     const stepA = String(a[GRIEVANCE_COLS.CURRENT_STEP - 1] || '');
@@ -16808,7 +16816,7 @@ function getMemberList() {
 
     const data = memberSheet.getRange(2, 1, lastRow - 1, numCols).getValues();
 
-    return data.map(function((row, index) { return ({
+    return data.map(function(row, index) { return ({
       rowIndex: index + 2,
       memberId: safeArrayGet(row, MEMBER_COLS.MEMBER_ID - 1, ''),
       firstName: safeArrayGet(row, MEMBER_COLS.FIRST_NAME - 1, ''),
@@ -17508,7 +17516,7 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
       const folderUrl = '${folderUrl}';
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Sharing invitations sent successfully!');
           google.script.host.close();
         })
@@ -18074,7 +18082,7 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
       }
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Email sent successfully!');
           google.script.host.close();
         })
@@ -18744,7 +18752,7 @@ function listBackups() {
     }
 
     // Sort by creation date (newest first)
-    backups.sort(function((a, b) { return b.created - a.created; });
+    backups.sort(function(a, b) { return b.created - a.created; });
 
     return backups;
 
@@ -19102,7 +19110,7 @@ function createInteractiveDashboardSheet(ss) {
     {col: "P", endCol: "T", title: "⏰ Needs Attention", color: COLORS.SOLIDARITY_RED}
   ];
 
-  cardPositions.forEach(function((card, idx) {
+  cardPositions.forEach(function(card, idx) {
     const startRow = 12;
     const endRow = 18;
 
@@ -19818,8 +19826,8 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const stepData = Object.entries(stepCounts)
-        .filter(function(([step]) { return step && step !== 'Current Step'; })
-        .map(function(([step, count]) { return [step, count]; });
+        .filter(function([step]) { return step && step !== 'Current Step'; })
+        .map(function([step, count]) { return [step, count]; });
 
       return stepData.length > 0 ? stepData : [["No Active Grievances", 0]];
 
@@ -19840,9 +19848,9 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const typeData = Object.entries(typeCounts)
-        .sort(function((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(function(([type, count]) { return [type, count]; });
+        .map(function([type, count]) { return [type, count]; });
 
       return typeData.length > 0 ? typeData : [["No Data", 0]];
 
@@ -19857,9 +19865,9 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const locationData = Object.entries(locationCounts)
-        .sort(function((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(function(([location, count]) { return [location, count]; });
+        .map(function([location, count]) { return [location, count]; });
 
       return locationData.length > 0 ? locationData : [["No Data", 0]];
 
@@ -19874,7 +19882,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const allStepData = Object.entries(allStepCounts)
-        .map(function(([step, count]) { return [step, count]; });
+        .map(function([step, count]) { return [step, count]; });
 
       return allStepData.length > 0 ? allStepData : [["No Data", 0]];
 
@@ -20047,9 +20055,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(typeCounts)
-        .sort(function((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(function(([type, total], index) {
+        .map(function([type, total], index) {
           const active = typeActive[type] || 0;
           const resolved = typeResolved[type] || 0;
           const won = typeWon[type] || 0;
@@ -20086,9 +20094,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(locationCounts)
-        .sort(function((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(function(([location, total], index) {
+        .map(function([location, total], index) {
           const active = locationActive[location] || 0;
           const resolved = locationResolved[location] || 0;
           const won = locationWon[location] || 0;
@@ -20125,9 +20133,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(stewardCounts)
-        .sort(function((a, b) { return (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0); })
+        .sort(function(a, b) { return (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0); })
         .slice(0, 15)
-        .map(function(([steward, total], index) {
+        .map(function([steward, total], index) {
           const active = stewardActive[steward] || 0;
           const resolved = stewardResolved[steward] || 0;
           const won = stewardWon[steward] || 0;
@@ -20149,9 +20157,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(defaultLocationCounts)
-        .sort(function((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(function(([location, count], index) {
+        .map(function([location, count], index) {
           return [index + 1, location, count, "-", "-", "-", "📊 Data"];
         });
       break;
@@ -20802,7 +20810,7 @@ function showKeyboardShortcutsConfig() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { return google.script.host.close()).showKeyboardShortcuts(; })">
+    <button onclick="google.script.run.withSuccessHandler(function() { return google.script.host.close()).showKeyboardShortcuts(; })">
       📖 View Shortcuts Guide
     </button>
   </div>
@@ -21805,7 +21813,7 @@ function removeEmergencyContactColumns() {
     const columnsToDelete = [];
 
     // Find columns with "Emergency Contact" in the header
-    headers.forEach(function((header, index) {
+    headers.forEach(function(header, index) {
       const headerStr = String(header).toLowerCase();
       if (headerStr.includes('emergency contact') || headerStr.includes('emergency phone')) {
         columnsToDelete.push(index + 1); // +1 because columns are 1-indexed
@@ -22448,7 +22456,7 @@ function createMemberSearchHTML() {
 
     function selectMember(row, memberId) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           google.script.host.close();
         })
         .navigateToMember(parseInt(row));
@@ -22479,7 +22487,7 @@ function getAllMembers() {
 
   const data = memberSheet.getRange(2, 1, lastRow - 1, 13).getValues();
 
-  return data.map(function((row, index) { return ({
+  return data.map(function(row, index) { return ({
     row: index + 2,
     id: row[0] || '',
     name: `${row[1]} ${row[2]}`.trim(),
@@ -22937,7 +22945,7 @@ function createMobileDashboardHTML() {
           if (Math.abs(diff) > 100) {
             // Swipe action
             card.style.opacity = '0.5';
-            setTimeoutfunction(() { return card.style.display = 'none', 200; });
+            setTimeout(function() { return card.style.display = 'none', 200; });
           } else {
             card.style.transform = '';
           }
@@ -22971,7 +22979,7 @@ function createMobileDashboardHTML() {
 
       loadRecentGrievances();
 
-      setTimeoutfunction(() {
+      setTimeout(function() {
         indicator.style.display = 'none';
       }, 2000);
     }
@@ -23067,7 +23075,7 @@ function getRecentGrievancesForMobile(limit = 5) {
 
   // Get most recent grievances
   const grievances = data
-    .map(function((row, index) {
+    .map(function(row, index) {
       const filedDate = row[GRIEVANCE_COLS.FILED_DATE - 1];
       return {
         id: row[GRIEVANCE_COLS.GRIEVANCE_ID - 1],
@@ -23080,7 +23088,7 @@ function getRecentGrievancesForMobile(limit = 5) {
         filedDateObj: filedDate
       };
     })
-    .sort(function((a, b) {
+    .sort(function(a, b) {
       const dateA = a.filedDateObj instanceof Date ? a.filedDateObj : new Date(0);
       const dateB = b.filedDateObj instanceof Date ? b.filedDateObj : new Date(0);
       return dateB - dateA;
@@ -23616,7 +23624,7 @@ function calculateAllMetricsOptimized(dataCache) {
   metrics.avgDaysOpen = daysOpenCount > 0 ? (daysOpenSum / daysOpenCount) : 0;
 
   // Sort upcoming deadlines by date
-  metrics.upcomingDeadlines.sort(function((a, b) { return a.deadline - b.deadline; });
+  metrics.upcomingDeadlines.sort(function(a, b) { return a.deadline - b.deadline; });
 
   Logger.log('✅ Metrics calculated');
 
@@ -23872,7 +23880,7 @@ function logPerformanceMetric(funcName, duration, error = false) {
   const keys = Object.keys(perfLog);
   if (keys.length > 100) {
     // Remove oldest entries
-    const sorted = keys.sort(function((a, b) { return (perfLog[a].lastRun || 0) - (perfLog[b].lastRun || 0); });
+    const sorted = keys.sort(function(a, b) { return (perfLog[a].lastRun || 0) - (perfLog[b].lastRun || 0); });
     delete perfLog[sorted[0]];
   }
 
@@ -23928,7 +23936,7 @@ function createPerformanceMonitoringSheet() {
   }
 
   // Sort by average time (descending) to show slowest functions first
-  rows.sort(function((a, b) { return b[1] - a[1]; });
+  rows.sort(function(a, b) { return b[1] - a[1]; });
 
   if (rows.length > 0) {
     perfSheet.getRange(2, 1, rows.length, 7).setValues(rows);
@@ -23990,7 +23998,7 @@ function createPerformanceMonitoringSheet() {
 
   perfSheet.getRange(summaryRow + 2, 1).setValue('Total Calls:');
   perfSheet.getRange(summaryRow + 2, 2).setValue(
-    rows.reduce(function((sum, row) { return sum + row[4], 0; })
+    rows.reduce(function(sum, row) { return sum + row[4], 0; })
   );
 
   perfSheet.getRange(summaryRow + 3, 1).setValue('Last Updated:');
@@ -24763,13 +24771,13 @@ function analyzeIssueTypeTrends(data) {
       const olderCounts = {};
 
       recentMonths.forEach(function(month) {
-        Object.entries(issueTypesByMonth[month]).forEach(function(([type, count]) {
+        Object.entries(issueTypesByMonth[month]).forEach(function([type, count]) {
           recentCounts[type] = (recentCounts[type] || 0) + count;
         });
       });
 
       olderMonths.forEach(function(month) {
-        Object.entries(issueTypesByMonth[month]).forEach(function(([type, count]) {
+        Object.entries(issueTypesByMonth[month]).forEach(function([type, count]) {
           olderCounts[type] = (olderCounts[type] || 0) + count;
         });
       });
@@ -24823,7 +24831,7 @@ function detectSeasonalPatterns(data) {
   var peakQuarter = 'Q1';
   var peakVolume = 0;
 
-  Object.entries(quarterlyVolumes).forEach(function(([quarter, volume]) {
+  Object.entries(quarterlyVolumes).forEach(function([quarter, volume]) {
     if (volume > peakVolume) {
       peakQuarter = quarter;
       peakVolume = volume;
@@ -24865,17 +24873,17 @@ function analyzeResolutionTimeTrend(data) {
   }
 
   // Sort for median
-  resolutionTimes.sort(function((a, b) { return a - b; });
+  resolutionTimes.sort(function(a, b) { return a - b; });
 
-  const average = resolutionTimes.reduce(function((sum, val) { return sum + val, 0; }) / resolutionTimes.length;
+  const average = resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / resolutionTimes.length;
   const median = resolutionTimes[Math.floor(resolutionTimes.length / 2)];
 
   // Recent vs older comparison
   const recent = resolutionTimes.slice(-10);
   const older = resolutionTimes.slice(0, -10);
 
-  const recentAvg = recent.reduce(function((sum, val) { return sum + val, 0; }) / recent.length;
-  const olderAvg = older.length > 0 ? older.reduce(function((sum, val) { return sum + val, 0; }) / older.length : recentAvg;
+  const recentAvg = recent.reduce(function(sum, val) { return sum + val, 0; }) / recent.length;
+  const olderAvg = older.length > 0 ? older.reduce(function(sum, val) { return sum + val, 0; }) / older.length : recentAvg;
 
   return {
     average: Math.round(average),
@@ -24907,7 +24915,7 @@ function forecastStewardWorkload(data) {
   const overloaded = [];
   const underutilized = [];
 
-  Object.entries(stewardCases).forEach(function(([steward, count]) {
+  Object.entries(stewardCases).forEach(function([steward, count]) {
     if (count > 15) {
       overloaded.push({ steward, caseload: count });
     } else if (count < 3) {
@@ -24999,7 +25007,7 @@ function detectAnomalies(data) {
 
   const volumes = Object.values(monthlyVolumes);
   if (volumes.length >= 3) {
-    const average = volumes.slice(0, -1).reduce(function((sum, val) { return sum + val, 0) / (volumes.length - 1; });
+    const average = volumes.slice(0, -1).reduce(function(sum, val) { return sum + val, 0) / (volumes.length - 1; });
     const latest = volumes[volumes.length - 1];
 
     if (latest > average * 1.5) {
@@ -25020,8 +25028,8 @@ function detectAnomalies(data) {
     }
   });
 
-  const totalCases = Object.values(locationCounts).reduce(function((sum, val) { return sum + val, 0; });
-  Object.entries(locationCounts).forEach(function(([location, count]) {
+  const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val, 0; });
+  Object.entries(locationCounts).forEach(function([location, count]) {
     if (count > totalCases * 0.4) {
       anomalies.push({
         type: 'Location Concentration',
@@ -25627,16 +25635,16 @@ function analyzeLocationClusters(data) {
   const totalGrievances = data.length;
   const hotspots = [];
 
-  Object.entries(locationStats).forEach(function(([location, stats]) {
+  Object.entries(locationStats).forEach(function([location, stats]) {
     const percentage = (stats.count / totalGrievances) * 100;
 
     if (percentage > 15) {
       // If a location has >15% of all grievances, it's a hotspot
       const topIssue = Object.entries(stats.issueTypes)
-        .sort(function((a, b) { return b[1] - a[1]; })[0];
+        .sort(function(a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       hotspots.push({
@@ -25653,7 +25661,7 @@ function analyzeLocationClusters(data) {
 
   return {
     totalLocations: Object.keys(locationStats).length,
-    hotspots: hotspots.sort(function((a, b) { return b.count - a.count); },
+    hotspots: hotspots.sort(function(a, b) { return b.count - a.count); },
     allStats: locationStats
   };
 }
@@ -25708,13 +25716,13 @@ function analyzeManagerPatterns(data) {
   const avgGrievancesPerManager = data.length / Object.keys(managerStats).length;
   const concerningManagers = [];
 
-  Object.entries(managerStats).forEach(function(([manager, stats]) {
+  Object.entries(managerStats).forEach(function([manager, stats]) {
     if (stats.count > avgGrievancesPerManager * 2) {
       const topIssue = Object.entries(stats.issueTypes)
-        .sort(function((a, b) { return b[1] - a[1]; })[0];
+        .sort(function(a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       concerningManagers.push({
@@ -25731,7 +25739,7 @@ function analyzeManagerPatterns(data) {
   return {
     totalManagers: Object.keys(managerStats).length,
     avgPerManager: avgGrievancesPerManager.toFixed(1),
-    concerningManagers: concerningManagers.sort(function((a, b) { return b.count - a.count); },
+    concerningManagers: concerningManagers.sort(function(a, b) { return b.count - a.count); },
     allStats: managerStats
   };
 }
@@ -25793,10 +25801,10 @@ function analyzeIssueTypePatterns(data) {
   // Identify systemic issues
   const systemicIssues = [];
 
-  Object.entries(issueTypeStats).forEach(function(([issueType, stats]) {
+  Object.entries(issueTypeStats).forEach(function([issueType, stats]) {
     // Check if concentrated in specific locations (>60% in one location)
     const topLocation = Object.entries(stats.locations)
-      .sort(function((a, b) { return b[1] - a[1]; })[0];
+      .sort(function(a, b) { return b[1] - a[1]; })[0];
 
     const locationConcentration = topLocation
       ? (topLocation[1] / stats.count) * 100
@@ -25804,7 +25812,7 @@ function analyzeIssueTypePatterns(data) {
 
     if (locationConcentration > 60 || stats.count > data.length * 0.15) {
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       systemicIssues.push({
@@ -25821,7 +25829,7 @@ function analyzeIssueTypePatterns(data) {
 
   return {
     totalIssueTypes: Object.keys(issueTypeStats).length,
-    systemicIssues: systemicIssues.sort(function((a, b) { return b.count - a.count); },
+    systemicIssues: systemicIssues.sort(function(a, b) { return b.count - a.count); },
     allStats: issueTypeStats
   };
 }
@@ -25850,7 +25858,7 @@ function analyzeTemporalPatterns(data) {
 
   // Find peak days
   const peakDay = Object.entries(dayOfWeekPatterns)
-    .sort(function((a, b) { return b[1] - a[1]; })[0];
+    .sort(function(a, b) { return b[1] - a[1]; })[0];
 
   return {
     monthlyPatterns: monthlyPatterns,
@@ -25881,7 +25889,7 @@ function findCorrelations(data) {
     }
   });
 
-  Object.entries(managerIssueMatrix).forEach(function(([key, count]) {
+  Object.entries(managerIssueMatrix).forEach(function([key, count]) {
     if (count >= 5) {
       const [manager, issueType] = key.split('|||');
       correlations.push({
@@ -25893,7 +25901,7 @@ function findCorrelations(data) {
     }
   });
 
-  return correlations.sort(function((a, b) { return b.count - a.count; });
+  return correlations.sort(function(a, b) { return b.count - a.count; });
 }
 
 /**
@@ -25943,7 +25951,7 @@ function generateRCARecommendations(data) {
     }
   });
 
-  return recommendations.sort(function((a, b) {
+  return recommendations.sort(function(a, b) {
     const priorityOrder = { 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
     return priorityOrder[b.priority] - priorityOrder[a.priority];
   });
@@ -26716,7 +26724,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   }));
 
   // Sort by score (descending)
-  scoredStewards.sort(function((a, b) { return b.score - a.score; });
+  scoredStewards.sort(function(a, b) { return b.score - a.score; });
 
   // Get top candidate
   const selectedSteward = scoredStewards[0];
@@ -26786,7 +26794,7 @@ function getAllStewards() {
 
   const stewards = [];
 
-  data.forEach(function((row, index) {
+  data.forEach(function(row, index) {
     const isSteward = row[9]; // Column J: Is Steward?
 
     if (isSteward === 'Yes') {
@@ -27203,7 +27211,7 @@ function showStewardWorkloadDashboard() {
   }
 
   // Sort by caseload (descending)
-  stewards.sort(function((a, b) { return b.currentCaseload - a.currentCaseload; });
+  stewards.sort(function(a, b) { return b.currentCaseload - a.currentCaseload; });
 
   const stewardsList = stewards
     .map(function(s) { return '
@@ -27217,9 +27225,9 @@ function showStewardWorkloadDashboard() {
         <div class="steward-expertise">
           <strong>Expertise:</strong> ${Object.keys(s.expertise).length > 0
             ? Object.entries(s.expertise)
-                .sort(function((a, b) { return b[1] - a[1]; })
+                .sort(function(a, b) { return b[1] - a[1]; })
                 .slice(0, 3)
-                .map(function(([type, count]) { return `${type} (${count})`; })
+                .map(function([type, count]) { return `${type} (${count})`; })
                 .join(', ')
             : 'No cases yet'}
         </div>
@@ -27227,7 +27235,7 @@ function showStewardWorkloadDashboard() {
     `)
     .join('');
 
-  const avgCaseload = stewards.reduce(function((sum, s) { return sum + s.currentCaseload, 0; }) / stewards.length;
+  const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload, 0; }) / stewards.length;
 
   const html = `
 <!DOCTYPE html>
@@ -27252,7 +27260,7 @@ function showStewardWorkloadDashboard() {
     <div class="summary">
       <strong>Total Stewards:</strong> ${stewards.length}<br>
       <strong>Average Caseload:</strong> ${avgCaseload.toFixed(1)} cases/steward<br>
-      <strong>Total Open Cases:</strong> ${stewards.reduce(function((sum, s) { return sum + s.currentCaseload, 0; })}
+      <strong>Total Open Cases:</strong> ${stewards.reduce(function(sum, s) { return sum + s.currentCaseload, 0; })}
     </div>
 
     <div style="max-height: 500px; overflow-y: auto;">
@@ -27773,7 +27781,7 @@ function createUndoRedoPanelHTML() {
   if (history.actions.length === 0) {
     historyRows = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #999;">No actions recorded yet</td></tr>';
   } else {
-    history.actions.slice().reverse().forEach(function((action, index) {
+    history.actions.slice().reverse().forEach(function(action, index) {
       const timestamp = new Date(action.timestamp).toLocaleString();
       const canUndo = index < history.actions.length - history.currentIndex;
       const canRedo = index >= history.actions.length - history.currentIndex;
@@ -27975,11 +27983,11 @@ function createUndoRedoPanelHTML() {
   <script>
     function performUndo() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Action undone!');
           location.reload();
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function(error) {
           alert('❌ Cannot undo: ' + error.message);
         })
         .undoLastAction();
@@ -27987,11 +27995,11 @@ function createUndoRedoPanelHTML() {
 
     function performRedo() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Action redone!');
           location.reload();
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function(error) {
           alert('❌ Cannot redo: ' + error.message);
         })
         .redoLastAction();
@@ -27999,7 +28007,7 @@ function createUndoRedoPanelHTML() {
 
     function undoToAction(index) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Undo complete!');
           location.reload();
         })
@@ -28008,7 +28016,7 @@ function createUndoRedoPanelHTML() {
 
     function redoToAction(index) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Redo complete!');
           location.reload();
         })
@@ -28018,7 +28026,7 @@ function createUndoRedoPanelHTML() {
     function clearHistory() {
       if (confirm('Clear all undo/redo history? This cannot be undone.')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function() {
             alert('✅ History cleared!');
             location.reload();
           })
@@ -28028,7 +28036,7 @@ function createUndoRedoPanelHTML() {
 
     function exportHistory() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function(url) {
           alert('✅ History exported!');
           window.open(url, '_blank');
         })
@@ -28324,7 +28332,7 @@ function exportUndoHistoryToSheet() {
 
   // Data
   if (history.actions.length > 0) {
-    const rows = history.actions.map(function((action, index) {
+    const rows = history.actions.map(function(action, index) {
       const status = index < history.currentIndex ? 'Applied' : 'Undone';
       return [
         index + 1,
@@ -28631,7 +28639,7 @@ function calculateAvgDays(grievances) {
 
   if (closed.length === 0) return 0;
 
-  const totalDays = closed.reduce(function((sum, g) {
+  const totalDays = closed.reduce(function(sum, g) {
     const days = Math.floor((g[GRIEVANCE_COLS.DATE_CLOSED - 1] - g[GRIEVANCE_COLS.DATE_FILED - 1]) / (1000 * 60 * 60 * 24));
     return sum + days;
   }, 0);
@@ -28729,7 +28737,7 @@ function calculateAvgLoad(grievances) {
   const stewardCount = Object.keys(stewardLoad).length;
   if (stewardCount === 0) return 0;
 
-  const totalLoad = Object.values(stewardLoad).reduce(function((sum, load) { return sum + load, 0; });
+  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load, 0; });
   return totalLoad / stewardCount;
 }
 
@@ -28786,7 +28794,7 @@ function getTopProcesses(grievances, today, limit) {
                 daysUntilDue !== null && daysUntilDue <= 3 ? 'ALERT' : 'NORMAL'
       };
     })
-    .sort(function((a, b) { return a.due - b.due; })
+    .sort(function(a, b) { return a.due - b.due; })
     .slice(0, limit);
 }
 
@@ -28866,14 +28874,14 @@ function getSystemicRisks(grievances) {
   });
 
   return Object.entries(locationRisks)
-    .map(function(([location, data]) { return ({
+    .map(function([location, data]) { return ({
       entity: location,
       type: 'LOCATION',
       cases: data.total,
       lossRate: 0, // Would need historical data
       severity: data.total > 10 ? 'CRITICAL' : data.total > 5 ? 'WARNING' : 'NORMAL'
     }))
-    .sort(function((a, b) { return b.cases - a.cases; })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
 
@@ -28919,7 +28927,7 @@ function getContractTrends(grievances) {
   });
 
   return Object.entries(articleCounts)
-    .map(function(([article, count]) {
+    .map(function([article, count]) {
       // Calculate real win/loss rates for this article
       const articleGrievances = grievances.filter(function(g) { return g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] === article; });  // Column W: Articles Violated
       const resolvedArticle = articleGrievances.filter(function(g) { return g[GRIEVANCE_COLS.STATUS - 1] && g[GRIEVANCE_COLS.STATUS - 1].toString().includes('Resolved'); });
@@ -28934,7 +28942,7 @@ function getContractTrends(grievances) {
         severity: count > 10 ? 'HIGH' : 'NORMAL'
       };
     })
-    .sort(function((a, b) { return b.cases - a.cases; })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
 
@@ -28963,12 +28971,12 @@ function getLocationCaseload(grievances) {
   });
 
   return Object.entries(locationData)
-    .map(function(([site, cases]) { return ({
+    .map(function([site, cases]) { return ({
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
     }))
-    .sort(function((a, b) { return b.cases - a.cases; })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 10);
 }
 
@@ -30878,7 +30886,7 @@ function testNextActionDueLogic() {
     }
   ];
 
-  testCases.forEach(function((testCase, index) {
+  testCases.forEach(function(testCase, index) {
     var nextAction;
     if (testCase.status === 'Open') {
       if (testCase.step === 'Step I') {
