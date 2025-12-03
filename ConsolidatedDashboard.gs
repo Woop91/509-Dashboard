@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:51:58.538Z
+ * - Build Date: 2025-12-03T02:53:13.228Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -29471,7 +29471,7 @@ function createWorkflowVisualizerHTML() {
           </div>
           ${state.allowedNextStates.length > 0
             ? `<div class="next-states">
-                <strong>Can transition to:</strong> ${state.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name).join(', '; })}
+                <strong>Can transition to:</strong> ${state.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name; }).join(', ')}
               </div>`
             : ''}
         </div>
@@ -29520,7 +29520,7 @@ function validateStateTransition(currentState, newState) {
   if (!current.allowedNextStates.includes(newState)) {
     return {
       valid: false,
-      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name).join(', '; })}`
+      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name; }).join(', ')}`
     };
   }
 
@@ -29607,7 +29607,7 @@ function changeWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    function(key) { return WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName; }
   );
 
   if (!newStateKey) {
@@ -29833,7 +29833,7 @@ function batchUpdateWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    function(key) { return WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName; }
   );
 
   if (!newStateKey) {

@@ -390,7 +390,7 @@ function changeWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    function(key) { return WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName; }
   );
 
   if (!newStateKey) {
@@ -616,7 +616,7 @@ function batchUpdateWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    function(key) { return WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName; }
   );
 
   if (!newStateKey) {
