@@ -17011,6 +17011,12 @@ function addStewardContactInfoToConfig() {
  * 2. Add trigger: onGrievanceFormSubmit, From spreadsheet, On form submit
  */
 function onGrievanceFormSubmit(e) {
+  if (!e) {
+    Logger.log('Error: Form submission event is null or undefined');
+    SpreadsheetApp.getUi().alert('❌ Error: Invalid form submission event');
+    return;
+  }
+
   try {
     // Extract form responses
     const formData = extractFormData(e);
@@ -17371,6 +17377,10 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
  * Extracts and structures data from form submission
  */
 function extractFormData(e) {
+  if (!e || !e.namedValues) {
+    throw new Error('Invalid form submission event: missing namedValues');
+  }
+
   const responses = e.namedValues;
 
   // Map form responses to grievance data structure
@@ -17477,6 +17487,8 @@ function addGrievanceToLog(formData) {
  * Sets deadline formulas (Filing Deadline, Step deadlines, Days Open, etc.)
  */
 function recalcGrievanceRow(row) {
+  if (!row || row < 2) return;
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   if (!grievanceLog) return;
@@ -17516,6 +17528,8 @@ function recalcGrievanceRow(row) {
  * Updates grievance snapshot columns (Has Open Grievance, Status, Next Deadline)
  */
 function recalcMemberRow(row) {
+  if (!row || row < 2) return;
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   if (!memberDir) return;
