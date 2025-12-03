@@ -56,13 +56,13 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   }
 
   // Score each steward
-  const scoredStewards = stewards.map(function(steward) { return ({
+  const scoredStewards = stewards.map(function(steward) { return {
     ...steward,
     score: calculateAssignmentScore(steward, grievance, preferences)
-  }));
+  };});
 
   // Sort by score (descending)
-  scoredStewards.sortfunction((a, b) { return b.score - a.score; });
+  scoredStewards.sort(function(a, b) { return b.score - a.score; });
 
   // Get top candidate
   const selectedSteward = scoredStewards[0];
@@ -78,10 +78,10 @@ function autoAssignSteward(grievanceId, preferences = {}) {
     assignedSteward: selectedSteward.name,
     score: selectedSteward.score,
     reasoning: generateAssignmentReasoning(selectedSteward, grievance),
-    alternates: scoredStewards.slice(1, 4).map(function(s) { return ({
+    alternates: scoredStewards.slice(1, 4).map(function(s) { return {
       name: s.name,
       score: s.score
-    }))
+    };})
   };
 }
 
@@ -132,7 +132,7 @@ function getAllStewards() {
 
   const stewards = [];
 
-  data.forEachfunction((row, index) {
+  data.forEach(function(row, index) {
     const isSteward = row[9]; // Column J: Is Steward?
 
     if (isSteward === 'Yes') {
@@ -323,7 +323,7 @@ function logAssignment(grievanceId, selectedSteward, topCandidates) {
     selectedSteward.name,
     selectedSteward.score,
     selectedSteward.currentCaseload,
-    topCandidates.map(function(s) { return `${s.name} (${s.score})`).join(', '); },
+    topCandidates.map(function(s) { return `${s.name} (${s.score})`; }).join(', '),
     user
   ];
 
@@ -469,7 +469,7 @@ function batchAutoAssign() {
     return;
   }
 
-  const rows = Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   // Count unassigned
   var unassigned = 0;
@@ -549,10 +549,10 @@ function showStewardWorkloadDashboard() {
   }
 
   // Sort by caseload (descending)
-  stewards.sortfunction((a, b) { return b.currentCaseload - a.currentCaseload; });
+  stewards.sort(function(a, b) { return b.currentCaseload - a.currentCaseload; });
 
   const stewardsList = stewards
-    .map(function(s) { return '
+    .map(function(s) { return `
       <div class="steward-item" style="border-left-color: ${getCaseloadColor(s.currentCaseload)}">
         <div class="steward-name">${s.name}</div>
         <div class="steward-details">
@@ -563,17 +563,17 @@ function showStewardWorkloadDashboard() {
         <div class="steward-expertise">
           <strong>Expertise:</strong> ${Object.keys(s.expertise).length > 0
             ? Object.entries(s.expertise)
-                .sortfunction((a, b) { return b[1] - a[1]; })
+                .sort(function(a, b) { return b[1] - a[1]; })
                 .slice(0, 3)
-                .mapfunction(([type, count]) { return `${type} (${count})`; })
+                .map(function([type, count]) { return `${type} (${count})`; })
                 .join(', ')
             : 'No cases yet'}
         </div>
       </div>
-    `)
+    `; })
     .join('');
 
-  const avgCaseload = stewards.reducefunction((sum, s) { return sum + s.currentCaseload, 0; }) / stewards.length;
+  const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0) / stewards.length;
 
   const html = `
 <!DOCTYPE html>
@@ -598,7 +598,7 @@ function showStewardWorkloadDashboard() {
     <div class="summary">
       <strong>Total Stewards:</strong> ${stewards.length}<br>
       <strong>Average Caseload:</strong> ${avgCaseload.toFixed(1)} cases/steward<br>
-      <strong>Total Open Cases:</strong> ${stewards.reducefunction((sum, s) { return sum + s.currentCaseload, 0; })}
+      <strong>Total Open Cases:</strong> ${stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0)}
     </div>
 
     <div style="max-height: 500px; overflow-y: auto;">

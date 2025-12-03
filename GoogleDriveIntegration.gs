@@ -486,7 +486,7 @@ function createFileListHTML(grievanceId, folderId, files) {
   const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
 
   const filesList = files
-    .map(function(file) { return '
+    .map(function(file) { return `
       <div class="file-item">
         <div class="file-icon">${getFileIcon(file.type)}</div>
         <div class="file-details">
@@ -498,7 +498,7 @@ function createFileListHTML(grievanceId, folderId, files) {
           </div>
         </div>
       </div>
-    `)
+    `; })
     .join('');
 
   return `
@@ -650,7 +650,7 @@ function batchCreateGrievanceFolders() {
     var created = 0;
     var skipped = 0;
 
-    data.forEachfunction((row, index) {
+    data.forEach(function(row, index) {
       const grievanceId = row[0];
       const folderId = row[28]; // Column AC
 

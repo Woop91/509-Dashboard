@@ -200,7 +200,7 @@ function createEmailComposerHTML(grievanceData) {
       <label>Template (optional):</label>
       <select id="templateSelect" onchange="loadTemplate()">
         <option value="">-- Select a template --</option>
-        ${templates.map(function(t) { return `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`).join(''; })}
+        ${templates.map(function(t) { return `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`; }).join('')}
       </select>
     </div>
 
@@ -300,7 +300,7 @@ function createEmailComposerHTML(grievanceData) {
 
     function onEmailSent(result) {
       showStatus('✅ Email sent successfully!', 'success');
-      setTimeoutfunction(() {
+      setTimeout(function() {
         google.script.host.close();
       }, 2000);
     }
@@ -647,14 +647,14 @@ function showEmailTemplateManager() {
       {GRIEVANCE_ID}, {MEMBER_NAME}, {ISSUE_TYPE}, {STATUS}
     </div>
 
-    ${templates.map(function(t) { return '
+    ${templates.map(function(t) { return `
       <div class="template">
         <h3>${t.name}</h3>
         <strong>Subject:</strong> ${t.subject}<br><br>
         <strong>Body:</strong>
         <div class="template-body">${t.body}</div>
       </div>
-    `).join('')}
+    `; }).join('')}
   </div>
 </body>
 </html>
@@ -695,13 +695,13 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const commsList = grievanceComms
-    .map(function(row) { return '
+    .map(function(row) { return `
       <div style="background: #f8f9fa; padding: 12px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #1a73e8;">
         <strong>${row[2]}</strong> - ${row[0].toLocaleString()}<br>
         <em>By: ${row[3]}</em><br><br>
         <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[4]}</div>
       </div>
-    `)
+    `; })
     .join('');
 
   const html = `

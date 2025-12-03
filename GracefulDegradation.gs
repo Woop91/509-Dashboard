@@ -77,7 +77,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
         // Throw aggregate error
         throw new Error(
           `Complete failure - all degradation levels failed:\n` +
-          errors.map(function(e) { return `${e.level}: ${e.error.message}`).join('\n'; })
+          errors.map(function(e) { return `${e.level}: ${e.error.message}`; }).join('\n')
         );
       }
     }

@@ -357,7 +357,7 @@ function filterMemberDataByPermission(memberData, userEmail) {
 
   // Members can only see their own data
   if (role === 'MEMBER') {
-    return memberData.filterfunction((row, index) {
+    return memberData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
       return row[7] && row[7].toLowerCase() === userEmail.toLowerCase(); // Email column
     });
@@ -365,11 +365,11 @@ function filterMemberDataByPermission(memberData, userEmail) {
 
   // Viewers see anonymized data (remove PII)
   if (role === 'VIEWER') {
-    return memberData.mapfunction((row, index) {
+    return memberData.map(function(row, index) {
       if (index === 0) return row; // Keep header
 
       // Anonymize PII
-      return row.mapfunction((cell, colIndex) {
+      return row.map(function(cell, colIndex) {
         // Hide email (column 8) and phone (column 9)
         if (colIndex === 7 || colIndex === 8) {
           return '[REDACTED]';
@@ -415,7 +415,7 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
       }
     }
 
-    return grievanceData.filterfunction((row, index) {
+    return grievanceData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
       const assignedSteward = row[26]; // Assigned Steward column
       return assignedSteward && assignedSteward.includes(stewardName);
@@ -424,7 +424,7 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
 
   // Members can only see their own grievances
   if (role === 'MEMBER') {
-    return grievanceData.filterfunction((row, index) {
+    return grievanceData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
       const memberEmail = row[23]; // Member Email column
       return memberEmail && memberEmail.toLowerCase() === userEmail.toLowerCase();
@@ -433,11 +433,11 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
 
   // Viewers see anonymized data
   if (role === 'VIEWER') {
-    return grievanceData.mapfunction((row, index) {
+    return grievanceData.map(function(row, index) {
       if (index === 0) return row; // Keep header
 
       // Anonymize PII
-      return row.mapfunction((cell, colIndex) {
+      return row.map(function(cell, colIndex) {
         // Hide names (2,3), email (23)
         if ([2, 3, 23].includes(colIndex)) {
           return '[REDACTED]';

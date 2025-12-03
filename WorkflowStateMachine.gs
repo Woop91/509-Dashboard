@@ -250,11 +250,11 @@ function createWorkflowVisualizerHTML() {
           </div>
           <div class="stage-desc">${state.description}</div>
           <div class="stage-actions">
-            ${state.actions.map(function(action) { return `<span class="action-tag">✓ ${action}</span>`).join(''; })}
+            ${state.actions.map(function(action) { return `<span class="action-tag">✓ ${action}</span>`; }).join('')}
           </div>
           ${state.allowedNextStates.length > 0
             ? `<div class="next-states">
-                <strong>Can transition to:</strong> ${state.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name).join(', '; })}
+                <strong>Can transition to:</strong> ${state.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name; }).join(', ')}
               </div>`
             : ''}
         </div>
@@ -303,7 +303,7 @@ function validateStateTransition(currentState, newState) {
   if (!current.allowedNextStates.includes(newState)) {
     return {
       valid: false,
-      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name).join(', '; })}`
+      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name; }).join(', ')}`
     };
   }
 
@@ -390,7 +390,7 @@ function changeWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    function(key) { return WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName; }
   );
 
   if (!newStateKey) {
@@ -601,7 +601,7 @@ function batchUpdateWorkflowState() {
     return;
   }
 
-  const rows = Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   const response = ui.prompt(
     '🔄 Batch Update Workflow State',
@@ -616,7 +616,7 @@ function batchUpdateWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    function(key) { return WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName; }
   );
 
   if (!newStateKey) {

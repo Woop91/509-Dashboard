@@ -1625,7 +1625,7 @@ function seedGrievancesWithCount(count, toggleName) {
   }
 
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
-  const memberIDs = allMemberData.map(function(row) { return row[0]).filter(String; });
+  const memberIDs = allMemberData.map(function(row) { return row[0]; }).filter(String);
 
   // Updated config column references for new structure
   const statuses = config.getRange("K2:K8").getValues().flat().filter(String);       // Grievance Status (column K)
@@ -1978,7 +1978,7 @@ function populateStewardWorkload() {
     const s = stewards[stewardId];
     const winRate = s.resolvedCases > 0 ? (s.wonCases / s.resolvedCases * 100) : 0;
     const avgDays = s.resolutionDays.length > 0
-      ? s.resolutionDays.reducefunction((a, b) { return a + b, 0; }) / s.resolutionDays.length
+      ? s.resolutionDays.reduce(function(a, b) { return a + b; }, 0) / s.resolutionDays.length
       : 0;
 
     // Capacity status based on active cases
@@ -2009,7 +2009,7 @@ function populateStewardWorkload() {
   }
 
   // Sort by active cases (descending)
-  outputData.sortfunction((a, b) { return b[2] - a[2]; });
+  outputData.sort(function(a, b) { return b[2] - a[2]; });
 
   // Clear existing data (keep headers)
   const lastRow = workloadSheet.getLastRow();

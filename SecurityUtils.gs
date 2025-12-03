@@ -577,7 +577,7 @@ function getAuditLog(limit = 100, action = null) {
       filtered = rows.filter(function(row) { return row[3] === action; });
     }
 
-    const result = filtered.slice(0, limit).map(function(row) { return ({
+    const result = filtered.slice(0, limit).map(function(row) { return {
       timestamp: row[0],
       userEmail: row[1],
       userRole: row[2],
@@ -585,7 +585,7 @@ function getAuditLog(limit = 100, action = null) {
       level: row[4],
       details: row[5],
       ipAddress: row[6]
-    }));
+    };});
 
     return result;
   } catch (e) {

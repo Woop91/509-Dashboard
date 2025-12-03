@@ -203,7 +203,7 @@ function createReportBuilderHTML() {
       <div class="form-group">
         <label>Fields (hold Ctrl/Cmd to select multiple):</label>
         <select id="fields" multiple class="multi-select">
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <button class="small secondary" onclick="selectAllFields()">Select All</button>
@@ -218,7 +218,7 @@ function createReportBuilderHTML() {
           <div>
             <label>Field:</label>
             <select id="filter0_field">
-              ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+              ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
             </select>
           </div>
           <div>
@@ -251,13 +251,13 @@ function createReportBuilderHTML() {
         <label>Group By (optional):</label>
         <select id="groupBy">
           <option value="">No Grouping</option>
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <div class="form-group">
         <label>Sort By:</label>
         <select id="sortBy">
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <div class="form-group">
@@ -347,7 +347,7 @@ function createReportBuilderHTML() {
         <div>
           <label>Field:</label>
           <select id="filter\${filterCount}_field">
-            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>').join(''; })}
+            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>').join('')}
           </select>
         </div>
         <div>
@@ -471,7 +471,7 @@ function createReportBuilderHTML() {
       alert('Generating PDF report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ PDF report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -487,7 +487,7 @@ function createReportBuilderHTML() {
       }
 
       google.script.run
-        .withSuccessHandlerfunction((csvData) {
+        .withSuccessHandler(function(csvData) {
           downloadCSV(csvData);
         })
         .withFailureHandler(onError)
@@ -505,7 +505,7 @@ function createReportBuilderHTML() {
       alert('Generating Excel report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Excel report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -529,7 +529,7 @@ function createReportBuilderHTML() {
       if (!name) return;
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Template saved: ' + name);
         })
         .withFailureHandler(onError)
@@ -807,7 +807,7 @@ function sortData(data, sortBy, sortOrder, fieldMapping) {
   const field = fieldMapping[sortBy];
   if (!field) return data;
 
-  return data.sortfunction((a, b) {
+  return data.sort(function(a, b) {
     const aVal = a[field.index];
     const bVal = b[field.index];
 
@@ -866,7 +866,7 @@ function exportReportToPDF(config) {
     const tableData = [headers];
 
     data.forEach(function(row) {
-      tableData.push(Object.values(row).map(function(v) { return v.toString()); });
+      tableData.push(Object.values(row).map(function(v) { return v.toString(); }));
     });
 
     const table = body.appendTable(tableData);

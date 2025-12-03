@@ -215,7 +215,7 @@ function gatherMonthlyData() {
   });
 
   const avgResolutionTime = resolutionTimes.length > 0
-    ? Math.roundfunction(resolutionTimes.reduce((a, b) { return a + b, 0) / resolutionTimes.length; })
+    ? Math.round(resolutionTimes.reduce(function(a, b) { return a + b; }, 0) / resolutionTimes.length)
     : 0;
 
   return {
@@ -337,11 +337,11 @@ function createMonthlyReportDoc(data) {
     .setHeading(DocumentApp.ParagraphHeading.HEADING2);
 
   const issueTypes = Object.entries(data.byIssueType)
-    .sortfunction((a, b) { return b[1] - a[1]; })
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const issueTable = [['Issue Type', 'Count']];
-  issueTypes.forEachfunction(([type, count]) {
+  issueTypes.forEach(function([type, count]) {
     issueTable.push([type, count.toString()]);
   });
 
@@ -355,11 +355,11 @@ function createMonthlyReportDoc(data) {
     .setHeading(DocumentApp.ParagraphHeading.HEADING2);
 
   const stewards = Object.entries(data.bySteward)
-    .sortfunction((a, b) { return b[1] - a[1]; })
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const stewardTable = [['Steward', 'Active Grievances']];
-  stewards.forEachfunction(([steward, count]) {
+  stewards.forEach(function([steward, count]) {
     stewardTable.push([steward, count.toString()]);
   });
 
@@ -454,7 +454,7 @@ function createQuarterlyReportDoc(data) {
   const monthNames = ['Month 1', 'Month 2', 'Month 3'];
   const monthTable = [['Month', 'Grievances Filed']];
 
-  data.monthlyTrends.forEachfunction((count, index) {
+  data.monthlyTrends.forEach(function(count, index) {
     monthTable.push([monthNames[index], count.toString()]);
   });
 
@@ -553,7 +553,7 @@ function getReportRecipients(reportType) {
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === `${reportType}_recipients`) {
-      const emails = data[i][1].toString().split(',').map(function(e) { return e.trim()).filter(function(e) { return e; }));
+      const emails = data[i][1].toString().split(',').map(function(e) { return e.trim(); }).filter(function(e) { return e; });
       return emails;
     }
   }
@@ -614,7 +614,7 @@ function showReportAutomationSettings() {
     <div class="status ${monthlyEnabled ? 'enabled' : 'disabled'}">
       ${monthlyEnabled ? '✅ Monthly reports ENABLED (1st of month, 9 AM)' : '🔕 Monthly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupMonthlyReports()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).setupMonthlyReports()">
       ${monthlyEnabled ? '🔄 Refresh Monthly Trigger' : '✅ Enable Monthly Reports'}
     </button>
 
@@ -622,21 +622,21 @@ function showReportAutomationSettings() {
     <div class="status ${quarterlyEnabled ? 'enabled' : 'disabled'}">
       ${quarterlyEnabled ? '✅ Quarterly reports ENABLED (Jan/Apr/Jul/Oct, 10 AM)' : '🔕 Quarterly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupQuarterlyReports()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).setupQuarterlyReports()">
       ${quarterlyEnabled ? '🔄 Refresh Quarterly Trigger' : '✅ Enable Quarterly Reports'}
     </button>
 
     <hr style="margin: 30px 0;">
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).generateMonthlyReport()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).generateMonthlyReport()">
       🧪 Test Monthly Report
     </button>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).generateQuarterlyReport()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).generateQuarterlyReport()">
       🧪 Test Quarterly Report
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).disableAutomatedReports()">
+    <button class="danger" onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).disableAutomatedReports()">
       🔕 Disable All Reports
     </button>
   </div>

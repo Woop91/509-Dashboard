@@ -116,7 +116,7 @@ var addMemberIdempotent = makeIdempotent(
       };
     }
   },
-  function(memberData) { return 'add_member_${memberData[0]}` // Use Member ID as key
+  function(memberData) { return `add_member_${memberData[0]}`; } // Use Member ID as key
 );
 
 /**
@@ -160,7 +160,7 @@ var addGrievanceIdempotent = makeIdempotent(
       };
     }
   },
-  function(grievanceData) { return 'add_grievance_${grievanceData[0]}` // Use Grievance ID as key
+  function(grievanceData) { return `add_grievance_${grievanceData[0]}`; } // Use Grievance ID as key
 );
 
 /**

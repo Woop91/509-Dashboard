@@ -85,7 +85,7 @@ function reorderSheetsLogically() {
   ];
 
   // Move sheets to correct positions
-  sheetOrder.forEachfunction((sheetName, index) {
+  sheetOrder.forEach(function(sheetName, index) {
     const sheet = ss.getSheetByName(sheetName);
     if (sheet) {
       ss.setActiveSheet(sheet);
@@ -144,7 +144,7 @@ function addStewardWorkloadInstructions() {
   ];
 
   // Create colored instruction boxes
-  instructionData.forEachfunction((instruction, index) {
+  instructionData.forEach(function(instruction, index) {
     const row = index + 2;
 
     // Label column (A-B)
@@ -318,7 +318,7 @@ function createUserSettingsSheet() {
     ["🔔", "Set up desktop notifications for overdue items (Future Feature)"]
   ];
 
-  tips.forEachfunction((tip, index) {
+  tips.forEach(function(tip, index) {
     const row = 15 + index;
     sheet.getRange(row, 1).setValue(tip[0])
       .setFontSize(18)

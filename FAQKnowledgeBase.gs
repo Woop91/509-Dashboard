@@ -370,9 +370,9 @@ function createFAQSearchHTML() {
 
     <div class="categories">
       <div class="category-badge active" onclick="filterByCategory('')">All Categories</div>
-      ${categories.map(function(cat) { return '
+      ${categories.map(function(cat) { return `
         <div class="category-badge" onclick="filterByCategory('${cat}')">${cat}</div>
-      `).join('')}
+      `; }).join('')}
     </div>
 
     <div class="stats" id="stats">
@@ -403,7 +403,7 @@ function createFAQSearchHTML() {
       const stats = document.getElementById('stats');
       stats.innerHTML = \`
         <strong>📊 Knowledge Base Stats:</strong>
-        ${allFAQs.length} articles across ${new Set(allFAQs.map(function(f) { return f.category); }).size} categories
+        ${allFAQs.length} articles across ${new Set(allFAQs.map(function(f) { return f.category; })).size} categories
       \`;
     }
 
@@ -487,7 +487,7 @@ function createFAQSearchHTML() {
 
     function markHelpful(faqId, isHelpful) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           // Reload FAQs to get updated counts
           google.script.run
             .withSuccessHandler(onFAQsLoaded)
@@ -520,7 +520,7 @@ function getAllFAQs() {
 
   const data = faqSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
-  return data.map(function(row) { return ({
+  return data.map(function(row) { return {
     id: row[0],
     category: row[1],
     question: row[2],
@@ -532,7 +532,7 @@ function getAllFAQs() {
     createdDate: row[8],
     lastUpdated: row[9],
     createdBy: row[10]
-  }));
+  };});
 }
 
 /**
@@ -605,7 +605,7 @@ function createFAQAdminHTML() {
     <div class="form-group">
       <label>Category:</label>
       <select id="category">
-        ${categories.map(function(cat) { return `<option value="${cat}">${cat}</option>`).join(''; })}
+        ${categories.map(function(cat) { return `<option value="${cat}">${cat}</option>`; }).join('')}
       </select>
     </div>
 
@@ -643,11 +643,11 @@ function createFAQAdminHTML() {
       }
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ FAQ saved successfully!');
           google.script.host.close();
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function(error) {
           alert('Error: ' + error.message);
         })
         .addNewFAQ(faq);

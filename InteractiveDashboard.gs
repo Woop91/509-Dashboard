@@ -123,7 +123,7 @@ function createInteractiveDashboardSheet(ss) {
     {col: "P", endCol: "T", title: "⏰ Needs Attention", color: COLORS.SOLIDARITY_RED}
   ];
 
-  cardPositions.forEachfunction((card, idx) {
+  cardPositions.forEach(function(card, idx) {
     const startRow = 12;
     const endRow = 18;
 
@@ -487,9 +487,11 @@ function calculateAllMetrics(memberData, grievanceData) {
   // Grievance metrics
   metrics.totalGrievances = grievanceData.length - 1;
   metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision')).length;
+    return row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision');
+  }).length;
   metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && row[4].startsWith('Resolved')).length;
+    return row[4] && row[4].startsWith('Resolved');
+  }).length;
 
   const resolvedData = grievanceData.slice(1).filter(function(row) { return row[4] && row[4].startsWith('Resolved'); });
   metrics.grievancesWon = resolvedData.filter(function(row) { return row[24] && row[24].includes('Won'); }).length;
@@ -813,8 +815,8 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const stepData = Object.entries(stepCounts)
-        .filterfunction(([step]) { return step && step !== 'Current Step'; })
-        .mapfunction(([step, count]) { return [step, count]; });
+        .filter(function([step]) { return step && step !== 'Current Step'; })
+        .map(function([step, count]) { return [step, count]; });
 
       return stepData.length > 0 ? stepData : [["No Active Grievances", 0]];
 
@@ -835,9 +837,9 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const typeData = Object.entries(typeCounts)
-        .sortfunction((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .mapfunction(([type, count]) { return [type, count]; });
+        .map(function([type, count]) { return [type, count]; });
 
       return typeData.length > 0 ? typeData : [["No Data", 0]];
 
@@ -852,9 +854,9 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const locationData = Object.entries(locationCounts)
-        .sortfunction((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .mapfunction(([location, count]) { return [location, count]; });
+        .map(function([location, count]) { return [location, count]; });
 
       return locationData.length > 0 ? locationData : [["No Data", 0]];
 
@@ -869,7 +871,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const allStepData = Object.entries(allStepCounts)
-        .mapfunction(([step, count]) { return [step, count]; });
+        .map(function([step, count]) { return [step, count]; });
 
       return allStepData.length > 0 ? allStepData : [["No Data", 0]];
 
@@ -903,7 +905,7 @@ function createGrievanceStatusDonut(sheet, grievanceData) {
     statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
 
-  const data = Object.entries(statusCounts).mapfunction(([status, count]) { return [status, count]; });
+  const data = Object.entries(statusCounts).map(function([status, count]) { return [status, count]; });
 
   const chart = sheet.newChart()
     .setChartType(Charts.ChartType.PIE)
@@ -936,7 +938,7 @@ function createLocationPieChart(sheet, grievanceData) {
 
   // Get top 10
   const topLocations = Object.entries(locationCounts)
-    .sortfunction((a, b) { return b[1] - a[1]; })
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const chart = sheet.newChart()
@@ -968,7 +970,7 @@ function createWarehouseLocationChart(sheet, grievanceData) {
   });
 
   const topLocations = Object.entries(locationCounts)
-    .sortfunction((a, b) { return b[1] - a[1]; })
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 15);
 
   const chart = sheet.newChart()
@@ -1024,9 +1026,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(typeCounts)
-        .sortfunction((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .mapfunction(([type, total], index) {
+        .map(function([type, total], index) {
           const active = typeActive[type] || 0;
           const resolved = typeResolved[type] || 0;
           const won = typeWon[type] || 0;
@@ -1063,9 +1065,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(locationCounts)
-        .sortfunction((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .mapfunction(([location, total], index) {
+        .map(function([location, total], index) {
           const active = locationActive[location] || 0;
           const resolved = locationResolved[location] || 0;
           const won = locationWon[location] || 0;
@@ -1102,9 +1104,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(stewardCounts)
-        .sortfunction((a, b) { return (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0); })
+        .sort(function(a, b) { return (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0); })
         .slice(0, 15)
-        .mapfunction(([steward, total], index) {
+        .map(function([steward, total], index) {
           const active = stewardActive[steward] || 0;
           const resolved = stewardResolved[steward] || 0;
           const won = stewardWon[steward] || 0;
@@ -1126,9 +1128,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(defaultLocationCounts)
-        .sortfunction((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .mapfunction(([location, count], index) {
+        .map(function([location, count], index) {
           return [index + 1, location, count, "-", "-", "-", "📊 Data"];
         });
       break;

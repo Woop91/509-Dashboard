@@ -256,7 +256,7 @@ function getStewardsList() {
     const data = memberSheet.getRange(2, 1, lastRow - 1, 10).getValues();
 
     const stewards = data
-      .filter(function(row) { return row[9] === 'Yes' || row[9] === 'Y') // Column J (index 9; }) = Is Steward
+      .filter(function(row) { return row[9] === 'Yes' || row[9] === 'Y'; }) // Column J (index 9) = Is Steward
       .map(function(row) { return `${row[1]} ${row[2]}`; }) // First Name + Last Name
       .filter(function(name) { return name.trim() !== ' '; });
 
@@ -330,7 +330,7 @@ function removeEmergencyContactColumns() {
     const columnsToDelete = [];
 
     // Find columns with "Emergency Contact" in the header
-    headers.forEachfunction((header, index) {
+    headers.forEach(function(header, index) {
       const headerStr = String(header).toLowerCase();
       if (headerStr.includes('emergency contact') || headerStr.includes('emergency phone')) {
         columnsToDelete.push(index + 1); // +1 because columns are 1-indexed

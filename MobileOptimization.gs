@@ -400,7 +400,7 @@ function createMobileDashboardHTML() {
           if (Math.abs(diff) > 100) {
             // Swipe action
             card.style.opacity = '0.5';
-            setTimeoutfunction(() { return card.style.display = 'none', 200; });
+            setTimeout(function() { return card.style.display = 'none', 200; });
           } else {
             card.style.transform = '';
           }
@@ -434,7 +434,7 @@ function createMobileDashboardHTML() {
 
       loadRecentGrievances();
 
-      setTimeoutfunction(() {
+      setTimeout(function() {
         indicator.style.display = 'none';
       }, 2000);
     }
@@ -530,7 +530,7 @@ function getRecentGrievancesForMobile(limit = 5) {
 
   // Get most recent grievances
   const grievances = data
-    .mapfunction((row, index) {
+    .map(function(row, index) {
       const filedDate = row[GRIEVANCE_COLS.FILED_DATE - 1];
       return {
         id: row[GRIEVANCE_COLS.GRIEVANCE_ID - 1],
@@ -543,7 +543,7 @@ function getRecentGrievancesForMobile(limit = 5) {
         filedDateObj: filedDate
       };
     })
-    .sortfunction((a, b) {
+    .sort(function(a, b) {
       const dateA = a.filedDateObj instanceof Date ? a.filedDateObj : new Date(0);
       const dateB = b.filedDateObj instanceof Date ? b.filedDateObj : new Date(0);
       return dateB - dateA;

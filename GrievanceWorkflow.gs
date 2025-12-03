@@ -107,7 +107,7 @@ function getMemberList() {
 
     const data = memberSheet.getRange(2, 1, lastRow - 1, numCols).getValues();
 
-    return data.mapfunction((row, index) { return ({
+    return data.map(function(row, index) { return {
       rowIndex: index + 2,
       memberId: safeArrayGet(row, MEMBER_COLS.MEMBER_ID - 1, ''),
       firstName: safeArrayGet(row, MEMBER_COLS.FIRST_NAME - 1, ''),
@@ -120,7 +120,7 @@ function getMemberList() {
       phone: safeArrayGet(row, MEMBER_COLS.PHONE - 1, ''),
       isSteward: safeArrayGet(row, MEMBER_COLS.IS_STEWARD - 1, ''),
       supervisor: safeArrayGet(row, MEMBER_COLS.SUPERVISOR - 1, '')
-    })).filter(function(member) { return member.memberId; }); // Filter out empty rows
+    };}).filter(function(member) { return member.memberId; }); // Filter out empty rows
   } catch (error) {
     return handleError(error, 'getMemberList', true, true) || [];
   }
@@ -134,8 +134,8 @@ function getMemberList() {
 function createMemberSelectionDialog(members) {
   // Use HTML escaping to prevent XSS
   const memberOptions = members.map(function(m) {
-    `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`
-  ).join('');
+    return `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`;
+  }).join('');
 
   return `
 <!DOCTYPE html>
@@ -438,9 +438,9 @@ function getGrievanceCoordinators() {
     const coordinatorData = configSheet.getRange(2, 16, 10, 3).getValues();
 
     // Get unique coordinator names
-    const coordinator1List = coordinatorData.map(function(row) { return row[0]).filter(String; });
-    const coordinator2List = coordinatorData.map(function(row) { return row[1]).filter(String; });
-    const coordinator3List = coordinatorData.map(function(row) { return row[2]).filter(String; });
+    const coordinator1List = coordinatorData.map(function(row) { return row[0]; }).filter(String);
+    const coordinator2List = coordinatorData.map(function(row) { return row[1]; }).filter(String);
+    const coordinator3List = coordinatorData.map(function(row) { return row[2]; }).filter(String);
 
     return {
       coordinator1: coordinator1List.length > 0 ? coordinator1List[0] : '',
@@ -799,7 +799,7 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
       const folderUrl = '${folderUrl}';
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Sharing invitations sent successfully!');
           google.script.host.close();
         })
@@ -1338,7 +1338,7 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
       }
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Email sent successfully!');
           google.script.host.close();
         })

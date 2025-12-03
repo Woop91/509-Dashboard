@@ -88,7 +88,7 @@ function checkDeadlinesAndNotify() {
   };
 
   // Categorize grievances by deadline urgency
-  data.forEachfunction((row, index) {
+  data.forEach(function(row, index) {
     const grievanceId = row[0];
     const memberFirstName = row[2];
     const memberLastName = row[3];
@@ -444,13 +444,13 @@ function showNotificationSettings() {
       </ul>
     </div>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupDailyDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).setupDailyDeadlineNotifications()">
       ${isEnabled ? '🔄 Refresh Trigger' : '✅ Enable Notifications'}
     </button>
 
-    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
+    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).testDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).testDeadlineNotifications()">
       🧪 Test Now
     </button>
   </div>

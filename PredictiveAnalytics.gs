@@ -148,13 +148,13 @@ function analyzeIssueTypeTrends(data) {
       const olderCounts = {};
 
       recentMonths.forEach(function(month) {
-        Object.entries(issueTypesByMonth[month]).forEachfunction(([type, count]) {
+        Object.entries(issueTypesByMonth[month]).forEach(function([type, count]) {
           recentCounts[type] = (recentCounts[type] || 0) + count;
         });
       });
 
       olderMonths.forEach(function(month) {
-        Object.entries(issueTypesByMonth[month]).forEachfunction(([type, count]) {
+        Object.entries(issueTypesByMonth[month]).forEach(function([type, count]) {
           olderCounts[type] = (olderCounts[type] || 0) + count;
         });
       });
@@ -208,7 +208,7 @@ function detectSeasonalPatterns(data) {
   var peakQuarter = 'Q1';
   var peakVolume = 0;
 
-  Object.entries(quarterlyVolumes).forEachfunction(([quarter, volume]) {
+  Object.entries(quarterlyVolumes).forEach(function([quarter, volume]) {
     if (volume > peakVolume) {
       peakQuarter = quarter;
       peakVolume = volume;
@@ -250,17 +250,17 @@ function analyzeResolutionTimeTrend(data) {
   }
 
   // Sort for median
-  resolutionTimes.sortfunction((a, b) { return a - b; });
+  resolutionTimes.sort(function(a, b) { return a - b; });
 
-  const average = resolutionTimes.reducefunction((sum, val) { return sum + val, 0; }) / resolutionTimes.length;
+  const average = resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / resolutionTimes.length;
   const median = resolutionTimes[Math.floor(resolutionTimes.length / 2)];
 
   // Recent vs older comparison
   const recent = resolutionTimes.slice(-10);
   const older = resolutionTimes.slice(0, -10);
 
-  const recentAvg = recent.reducefunction((sum, val) { return sum + val, 0; }) / recent.length;
-  const olderAvg = older.length > 0 ? older.reducefunction((sum, val) { return sum + val, 0; }) / older.length : recentAvg;
+  const recentAvg = recent.reduce(function(sum, val) { return sum + val; }, 0) / recent.length;
+  const olderAvg = older.length > 0 ? older.reduce(function(sum, val) { return sum + val; }, 0) / older.length : recentAvg;
 
   return {
     average: Math.round(average),
@@ -292,7 +292,7 @@ function forecastStewardWorkload(data) {
   const overloaded = [];
   const underutilized = [];
 
-  Object.entries(stewardCases).forEachfunction(([steward, count]) {
+  Object.entries(stewardCases).forEach(function([steward, count]) {
     if (count > 15) {
       overloaded.push({ steward, caseload: count });
     } else if (count < 3) {
@@ -384,7 +384,7 @@ function detectAnomalies(data) {
 
   const volumes = Object.values(monthlyVolumes);
   if (volumes.length >= 3) {
-    const average = volumes.slice(0, -1).reducefunction((sum, val) { return sum + val, 0) / (volumes.length - 1; });
+    const average = volumes.slice(0, -1).reduce(function(sum, val) { return sum + val; }, 0) / (volumes.length - 1);
     const latest = volumes[volumes.length - 1];
 
     if (latest > average * 1.5) {
@@ -405,8 +405,8 @@ function detectAnomalies(data) {
     }
   });
 
-  const totalCases = Object.values(locationCounts).reducefunction((sum, val) { return sum + val, 0; });
-  Object.entries(locationCounts).forEachfunction(([location, count]) {
+  const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val; }, 0);
+  Object.entries(locationCounts).forEach(function([location, count]) {
     if (count > totalCases * 0.4) {
       anomalies.push({
         type: 'Location Concentration',
@@ -539,7 +539,7 @@ function showPredictiveAnalyticsDashboard() {
  */
 function createAnalyticsDashboardHTML(analytics) {
   const risksHTML = analytics.riskFactors.length > 0
-    ? analytics.riskFactors.map(function(risk) { return '
+    ? analytics.riskFactors.map(function(risk) { return `
         <div class="risk-item severity-${risk.severity.toLowerCase()}">
           <div class="risk-header">
             <span class="risk-type">${risk.type}</span>
@@ -548,11 +548,11 @@ function createAnalyticsDashboardHTML(analytics) {
           <div class="risk-desc">${risk.description}</div>
           <div class="risk-action">⚡ ${risk.action}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No significant risks identified. ✅</p>';
 
   const recommendationsHTML = analytics.recommendations.length > 0
-    ? analytics.recommendations.map(function(rec) { return '
+    ? analytics.recommendations.map(function(rec) { return `
         <div class="recommendation priority-${rec.priority.toLowerCase()}">
           <div class="rec-header">
             <span class="rec-category">${rec.category}</span>
@@ -561,17 +561,17 @@ function createAnalyticsDashboardHTML(analytics) {
           <div class="rec-text">${rec.recommendation}</div>
           <div class="rec-impact">📊 ${rec.expectedImpact}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No specific recommendations at this time.</p>';
 
   const anomaliesHTML = analytics.anomalies.length > 0
-    ? analytics.anomalies.map(function(anomaly) { return '
+    ? analytics.anomalies.map(function(anomaly) { return `
         <div class="anomaly-item">
           <div class="anomaly-type">${anomaly.type}</div>
           <div class="anomaly-desc">${anomaly.description}</div>
           <div class="anomaly-impact">${anomaly.impact}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No anomalies detected. ✅</p>';
 
   return `

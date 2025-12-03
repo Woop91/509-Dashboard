@@ -169,7 +169,7 @@ function applyGrievanceFloat() {
  * @returns {Array} Sorted array of data rows
  */
 function sortGrievancesByPriority(dataRows) {
-  return dataRows.sortfunction((a, b) {
+  return dataRows.sort(function(a, b) {
     const statusA = String(a[GRIEVANCE_COLS.STATUS - 1] || '').toLowerCase();
     const statusB = String(b[GRIEVANCE_COLS.STATUS - 1] || '').toLowerCase();
     const stepA = String(a[GRIEVANCE_COLS.CURRENT_STEP - 1] || '');
