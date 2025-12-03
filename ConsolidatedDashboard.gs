@@ -2562,6 +2562,173 @@ function setupFormulasAndCalculations() {
   );
 }
 
+/* --------------------= CONFIGURATION VALIDATION --------------------= */
+
+/**
+ * Validates dashboard configuration
+ * Checks that required constants and configurations are properly set
+ * @throws {Error} If configuration is invalid
+ */
+function validateConfiguration() {
+  const errors = [];
+
+  // Validate SHEETS configuration
+  const requiredSheets = [
+    'CONFIG', 'MEMBER_DIR', 'GRIEVANCE_LOG', 'DASHBOARD'
+  ];
+
+  requiredSheets.forEach(function(key) {
+    if (!SHEETS[key]) {
+      errors.push(`SHEETS.${key} is not defined`);
+    }
+  });
+
+  // Validate MEMBER_COLS configuration
+  const requiredMemberCols = [
+    'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'EMAIL'
+  ];
+
+  requiredMemberCols.forEach(function(key) {
+    if (!MEMBER_COLS[key]) {
+      errors.push(`MEMBER_COLS.${key} is not defined`);
+    }
+  });
+
+  // Validate GRIEVANCE_COLS configuration
+  const requiredGrievanceCols = [
+    'GRIEVANCE_ID', 'MEMBER_ID', 'STATUS', 'INCIDENT_DATE'
+  ];
+
+  requiredGrievanceCols.forEach(function(key) {
+    if (!GRIEVANCE_COLS[key]) {
+      errors.push(`GRIEVANCE_COLS.${key} is not defined`);
+    }
+  });
+
+  // Validate grievance form configuration if present
+  if (typeof GRIEVANCE_FORM_CONFIG !== 'undefined') {
+    if (GRIEVANCE_FORM_CONFIG.FORM_URL && GRIEVANCE_FORM_CONFIG.FORM_URL.includes('YOUR_FORM_ID')) {
+      errors.push('GRIEVANCE_FORM_CONFIG.FORM_URL contains placeholder - needs real form URL');
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(errors.join('\n'));
+  }
+}
+
+/**
+ * Validates configuration on spreadsheet open
+ * Shows alert to user if there are configuration errors
+ * @returns {boolean} True if configuration is valid
+ */
+function validateConfigurationOnOpen() {
+  try {
+    validateConfiguration();
+    return true;
+  } catch (error) {
+    SpreadsheetApp.getUi().alert(
+      '⚠️ Configuration Error',
+      'The dashboard configuration has errors:\n\n' + error.message +
+      '\n\nPlease contact the administrator.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return false;
+  }
+}
+
+/* --------------------= ERROR HANDLING --------------------= */
+
+/**
+ * Centralized error handler with logging and user notification
+ * @param {Error} error - The error object
+ * @param {string} context - Context where error occurred
+ * @param {boolean} showToUser - Whether to show toast to user
+ * @param {boolean} logToSheet - Whether to log to Diagnostics sheet
+ * @returns {null} Always returns null for safe fallback values
+ */
+function handleError(error, context, showToUser = true, logToSheet = true) {
+  const errorMessage = error.message || error.toString();
+  const timestamp = new Date();
+
+  // Log to console
+  Logger.log(`[ERROR] ${context}: ${errorMessage}`);
+  Logger.log(error.stack);
+
+  // Show user-friendly message
+  if (showToUser) {
+    SpreadsheetApp.getActiveSpreadsheet().toast(
+      `❌ Error in ${context}: ${errorMessage}`,
+      'Error',
+      10
+    );
+  }
+
+  // Log to Diagnostics sheet
+  if (logToSheet) {
+    try {
+      logToDiagnostics(context, errorMessage, error.stack, timestamp);
+    } catch (e) {
+      Logger.log('Failed to log to diagnostics: ' + e.message);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Logs errors to Diagnostics sheet for tracking
+ * @param {string} context - Context where error occurred
+ * @param {string} errorMessage - Error message
+ * @param {string} stackTrace - Stack trace
+ * @param {Date} timestamp - Timestamp of error
+ */
+function logToDiagnostics(context, errorMessage, stackTrace, timestamp) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  var diagnosticsSheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+
+  if (!diagnosticsSheet) {
+    return; // Sheet doesn't exist yet
+  }
+
+  const user = Session.getActiveUser().getEmail();
+  const row = [
+    timestamp,
+    user,
+    context,
+    errorMessage,
+    stackTrace,
+    'ERROR'
+  ];
+
+  diagnosticsSheet.appendRow(row);
+}
+
+/**
+ * Logs warning messages
+ * @param {string} context - Context for the warning
+ * @param {string} message - Warning message
+ */
+function logWarning(context, message) {
+  Logger.log(`[WARNING] ${context}: ${message}`);
+}
+
+/**
+ * Wraps a function with try-catch error handling
+ * @param {Function} fn - Function to wrap
+ * @param {string} context - Context name for error messages
+ * @returns {Function} Wrapped function
+ */
+function withErrorHandling(fn, context) {
+  return function(...args) {
+    try {
+      return fn.apply(this, args);
+    } catch (error) {
+      return handleError(error, context);
+    }
+  };
+}
+
 /* --------------------= MENU --------------------= */
 /**
  * Runs when spreadsheet opens - creates menu and validates configuration
