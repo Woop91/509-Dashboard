@@ -185,7 +185,7 @@ function createMemberSearchHTML() {
 
     function populateFilters() {
       // Get unique locations
-      const locations = [...new Set(allMembers.map(function(m) { return m.location).filter(function(l) { return l; }); })];
+      const locations = [...new Set(allMembers.map(function(m) { return m.location; }).filter(function(l) { return l; }))];
       const locationFilter = document.getElementById('locationFilter');
       locations.forEach(function(loc) {
         const option = document.createElement('option');
@@ -195,7 +195,7 @@ function createMemberSearchHTML() {
       });
 
       // Get unique units
-      const units = [...new Set(allMembers.map(function(m) { return m.unit).filter(function(u) { return u; }); })];
+      const units = [...new Set(allMembers.map(function(m) { return m.unit; }).filter(function(u) { return u; }))];
       const unitFilter = document.getElementById('unitFilter');
       units.forEach(function(unit) {
         const option = document.createElement('option');

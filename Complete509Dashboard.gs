@@ -2433,8 +2433,8 @@ function calculateIssueDistribution(grievances) {
   });
 
   return {
-    disciplinary: active.filter(function(g) { return (g[22] || '').includes('Discipline')).length; },
-    contract: active.filter(function(g) { return (g[22] || '').includes('Pay') || (g[22] || '').includes('Workload')).length; },
+    disciplinary: active.filter(function(g) { return (g[22] || '').includes('Discipline'); }).length,
+    contract: active.filter(function(g) { return (g[22] || '').includes('Pay') || (g[22] || '').includes('Workload'); }).length,
     work: active.filter(function(g) { return (g[22] || '').includes('Safety') || (g[22] || '').includes('Scheduling'); }).length
   };
 }
@@ -2583,7 +2583,7 @@ function getArbitrationTracker(grievances) {
     maxFinancialImpact: 125000,
     docCompliance: 78.5,
     pendingWitness: 3,
-    step3Cases: grievances.filter(function(g) { return (g[5] || '').includes('III')).length; },
+    step3Cases: grievances.filter(function(g) { return (g[5] || '').includes('III'); }).length,
     highRiskCases: 2
   };
 }
