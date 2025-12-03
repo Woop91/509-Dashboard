@@ -256,7 +256,7 @@ function getStewardsList() {
     const data = memberSheet.getRange(2, 1, lastRow - 1, 10).getValues();
 
     const stewards = data
-      .filter(function(row) { return row[9] === 'Yes' || row[9] === 'Y') // Column J (index 9; }) = Is Steward
+      .filter(function(row) { return row[9] === 'Yes' || row[9] === 'Y'; }) // Column J (index 9) = Is Steward
       .map(function(row) { return `${row[1]} ${row[2]}`; }) // First Name + Last Name
       .filter(function(name) { return name.trim() !== ' '; });
 

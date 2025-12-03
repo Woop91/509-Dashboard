@@ -384,7 +384,7 @@ function detectAnomalies(data) {
 
   const volumes = Object.values(monthlyVolumes);
   if (volumes.length >= 3) {
-    const average = volumes.slice(0, -1).reduce(function(sum, val) { return sum + val, 0) / (volumes.length - 1; });
+    const average = volumes.slice(0, -1).reduce(function(sum, val) { return sum + val; }, 0) / (volumes.length - 1);
     const latest = volumes[volumes.length - 1];
 
     if (latest > average * 1.5) {
@@ -539,7 +539,7 @@ function showPredictiveAnalyticsDashboard() {
  */
 function createAnalyticsDashboardHTML(analytics) {
   const risksHTML = analytics.riskFactors.length > 0
-    ? analytics.riskFactors.map(function(risk) { return '
+    ? analytics.riskFactors.map(function(risk) { return `
         <div class="risk-item severity-${risk.severity.toLowerCase()}">
           <div class="risk-header">
             <span class="risk-type">${risk.type}</span>
@@ -548,11 +548,11 @@ function createAnalyticsDashboardHTML(analytics) {
           <div class="risk-desc">${risk.description}</div>
           <div class="risk-action">⚡ ${risk.action}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No significant risks identified. ✅</p>';
 
   const recommendationsHTML = analytics.recommendations.length > 0
-    ? analytics.recommendations.map(function(rec) { return '
+    ? analytics.recommendations.map(function(rec) { return `
         <div class="recommendation priority-${rec.priority.toLowerCase()}">
           <div class="rec-header">
             <span class="rec-category">${rec.category}</span>
@@ -561,17 +561,17 @@ function createAnalyticsDashboardHTML(analytics) {
           <div class="rec-text">${rec.recommendation}</div>
           <div class="rec-impact">📊 ${rec.expectedImpact}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No specific recommendations at this time.</p>';
 
   const anomaliesHTML = analytics.anomalies.length > 0
-    ? analytics.anomalies.map(function(anomaly) { return '
+    ? analytics.anomalies.map(function(anomaly) { return `
         <div class="anomaly-item">
           <div class="anomaly-type">${anomaly.type}</div>
           <div class="anomaly-desc">${anomaly.description}</div>
           <div class="anomaly-impact">${anomaly.impact}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No anomalies detected. ✅</p>';
 
   return `

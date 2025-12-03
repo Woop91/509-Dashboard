@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:38:17.018Z
+ * - Build Date: 2025-12-03T02:42:21.579Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -19183,9 +19183,11 @@ function calculateAllMetrics(memberData, grievanceData) {
   // Grievance metrics
   metrics.totalGrievances = grievanceData.length - 1;
   metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision')).length;
+    return row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision');
+  }).length;
   metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && row[4].startsWith('Resolved')).length;
+    return row[4] && row[4].startsWith('Resolved');
+  }).length;
 
   const resolvedData = grievanceData.slice(1).filter(function(row) { return row[4] && row[4].startsWith('Resolved'); });
   metrics.grievancesWon = resolvedData.filter(function(row) { return row[24] && row[24].includes('Won'); }).length;
@@ -21404,7 +21406,7 @@ function getStewardsList() {
     const data = memberSheet.getRange(2, 1, lastRow - 1, 10).getValues();
 
     const stewards = data
-      .filter(function(row) { return row[9] === 'Yes' || row[9] === 'Y') // Column J (index 9; }) = Is Steward
+      .filter(function(row) { return row[9] === 'Yes' || row[9] === 'Y'; }) // Column J (index 9) = Is Steward
       .map(function(row) { return `${row[1]} ${row[2]}`; }) // First Name + Last Name
       .filter(function(name) { return name.trim() !== ' '; });
 
@@ -22167,7 +22169,7 @@ function getAllMembers() {
     supervisor: row[10] || '',
     manager: row[11] || '',
     assignedSteward: row[12] || ''
-  })).filter(function(m) { return m.id; }); // Filter out empty rows
+  };}).filter(function(m) { return m.id; }); // Filter out empty rows
 }
 
 /**
@@ -24672,7 +24674,7 @@ function detectAnomalies(data) {
 
   const volumes = Object.values(monthlyVolumes);
   if (volumes.length >= 3) {
-    const average = volumes.slice(0, -1).reduce(function(sum, val) { return sum + val, 0) / (volumes.length - 1; });
+    const average = volumes.slice(0, -1).reduce(function(sum, val) { return sum + val; }, 0) / (volumes.length - 1);
     const latest = volumes[volumes.length - 1];
 
     if (latest > average * 1.5) {
@@ -24827,7 +24829,7 @@ function showPredictiveAnalyticsDashboard() {
  */
 function createAnalyticsDashboardHTML(analytics) {
   const risksHTML = analytics.riskFactors.length > 0
-    ? analytics.riskFactors.map(function(risk) { return '
+    ? analytics.riskFactors.map(function(risk) { return `
         <div class="risk-item severity-${risk.severity.toLowerCase()}">
           <div class="risk-header">
             <span class="risk-type">${risk.type}</span>
@@ -24836,11 +24838,11 @@ function createAnalyticsDashboardHTML(analytics) {
           <div class="risk-desc">${risk.description}</div>
           <div class="risk-action">⚡ ${risk.action}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No significant risks identified. ✅</p>';
 
   const recommendationsHTML = analytics.recommendations.length > 0
-    ? analytics.recommendations.map(function(rec) { return '
+    ? analytics.recommendations.map(function(rec) { return `
         <div class="recommendation priority-${rec.priority.toLowerCase()}">
           <div class="rec-header">
             <span class="rec-category">${rec.category}</span>
@@ -24849,7 +24851,7 @@ function createAnalyticsDashboardHTML(analytics) {
           <div class="rec-text">${rec.recommendation}</div>
           <div class="rec-impact">📊 ${rec.expectedImpact}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No specific recommendations at this time.</p>';
 
   const anomaliesHTML = analytics.anomalies.length > 0
