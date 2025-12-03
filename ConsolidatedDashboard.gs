@@ -17713,6 +17713,12 @@ function addGrievanceToLog(formData) {
  * Sets deadline formulas (Filing Deadline, Step deadlines, Days Open, etc.)
  */
 function recalcGrievanceRow(row) {
+  // Validate row parameter
+  if (!row || row < 2) {
+    Logger.log('recalcGrievanceRow: Invalid row parameter ' + row);
+    return;
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   if (!grievanceLog) return;
@@ -17752,6 +17758,12 @@ function recalcGrievanceRow(row) {
  * Updates grievance snapshot columns (Has Open Grievance, Status, Next Deadline)
  */
 function recalcMemberRow(row) {
+  // Validate row parameter
+  if (!row || row < 2) {
+    Logger.log('recalcMemberRow: Invalid row parameter ' + row);
+    return;
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   if (!memberDir) return;
