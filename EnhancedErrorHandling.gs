@@ -12,36 +12,10 @@
  * - Validation helpers
  * - Graceful degradation
  * - Error notification system
+ *
+ * Configuration: Uses ERROR_CONFIG and ERROR_CATEGORIES from Constants.gs
+ * @see Constants.gs for configuration
  */
-
-/**
- * Error handling configuration
- */
-ERROR_CONFIG = {
-  LOG_SHEET_NAME: 'Error_Log',
-  MAX_LOG_ENTRIES: 1000,
-  ERROR_LEVELS: {
-    INFO: 'INFO',
-    WARNING: 'WARNING',
-    ERROR: 'ERROR',
-    CRITICAL: 'CRITICAL'
-  },
-  NOTIFICATION_THRESHOLD: 'ERROR',  // Send notifications for ERROR and CRITICAL
-  AUTO_RECOVERY_ENABLED: true
-};
-
-/**
- * Error categories
- */
-ERROR_CATEGORIES = {
-  VALIDATION: 'Data Validation',
-  PERMISSION: 'Permission Error',
-  NETWORK: 'Network Error',
-  DATA_INTEGRITY: 'Data Integrity',
-  USER_INPUT: 'User Input',
-  SYSTEM: 'System Error',
-  INTEGRATION: 'Integration Error'
-};
 
 /**
  * Shows error dashboard

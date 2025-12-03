@@ -11,29 +11,10 @@
  * - Automatic cache warming
  * - Performance monitoring
  * - Configurable TTL (time-to-live)
+ *
+ * Configuration: Uses CACHE_CONFIG and CACHE_KEYS from Constants.gs
+ * @see Constants.gs for configuration
  */
-
-/**
- * Cache configuration
- */
-CACHE_CONFIG = {
-  MEMORY_TTL: 300,        // 5 minutes for memory cache
-  PROPERTIES_TTL: 3600,   // 1 hour for properties cache
-  ENABLE_LOGGING: true
-};
-
-/**
- * Cache keys
- */
-CACHE_KEYS = {
-  ALL_GRIEVANCES: 'all_grievances',
-  ALL_MEMBERS: 'all_members',
-  ALL_STEWARDS: 'all_stewards',
-  GRIEVANCE_COUNT: 'grievance_count',
-  MEMBER_COUNT: 'member_count',
-  DASHBOARD_METRICS: 'dashboard_metrics',
-  STEWARD_WORKLOAD: 'steward_workload'
-};
 
 /**
  * Gets data from cache or loads from source

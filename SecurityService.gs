@@ -22,7 +22,7 @@
  * Role definitions with permissions
  * @type {Object}
  */
-ROLES = {
+const ROLES = {
   ADMIN: {
     name: 'Admin',
     permissions: [
