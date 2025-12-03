@@ -2169,7 +2169,7 @@ function getUnifiedDashboardData() {
     steps: calculateStepEfficiency(grievances),
 
     // Section 3: Network Health
-    totalMembers: members.filter(function(m) { return m[0]).length; },
+    totalMembers: members.filter(function(m) { return m[0]; }).length,
     engagementRate: calculateEngagementRate(grievances, members),
     noContactCount: calculateNoContact(members, today),
     stewardCount: calculateActiveStewards(grievances),
