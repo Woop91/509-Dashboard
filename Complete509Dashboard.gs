@@ -2311,7 +2311,7 @@ function calculateAvgDays(grievances) {
 
   if (closed.length === 0) return 0;
 
-  const totalDays = closed.reduce(function((sum, g) {
+  const totalDays = closed.reduce(function(sum, g) {
     const days = Math.floor((g[17] - g[8]) / (1000 * 60 * 60 * 24));
     return sum + days;
   }, 0);
@@ -2409,7 +2409,7 @@ function calculateAvgLoad(grievances) {
   const stewardCount = Object.keys(stewardLoad).length;
   if (stewardCount === 0) return 0;
 
-  const totalLoad = Object.values(stewardLoad).reduce(function((sum, load) { return sum + load, 0; });
+  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load; }, 0);
   return totalLoad / stewardCount;
 }
 
@@ -2466,7 +2466,7 @@ function getTopProcesses(grievances, today, limit) {
                 daysUntilDue !== null && daysUntilDue <= 3 ? 'ALERT' : 'NORMAL'
       };
     })
-    .sort(function((a, b) { return a.due - b.due; })
+    .sort(function(a, b) { return a.due - b.due; })
     .slice(0, limit);
 }
 
@@ -2546,14 +2546,14 @@ function getSystemicRisks(grievances) {
   });
 
   return Object.entries(locationRisks)
-    .map(function(([location, data]) { return ({
+    .map(function(item) { var location = item[0]; var data = item[1]; return ({
       entity: location,
       type: 'LOCATION',
       cases: data.total,
       lossRate: 0, // Would need historical data
       severity: data.total > 10 ? 'CRITICAL' : data.total > 5 ? 'WARNING' : 'NORMAL'
-    }))
-    .sort(function((a, b) { return b.cases - a.cases; })
+    }); })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
 
@@ -2599,14 +2599,14 @@ function getContractTrends(grievances) {
   });
 
   return Object.entries(articleCounts)
-    .map(function(([article, count]) { return ({
+    .map(function(item) { var article = item[0]; var count = item[1]; return ({
       article: article,
       cases: count,
       lossRate: 25, // Mock data
       winRate: 75,  // Mock data
       severity: count > 10 ? 'HIGH' : 'NORMAL'
-    }))
-    .sort(function((a, b) { return b.cases - a.cases; })
+    }); })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
 
@@ -2635,12 +2635,12 @@ function getLocationCaseload(grievances) {
   });
 
   return Object.entries(locationData)
-    .map(function(([site, cases]) { return ({
+    .map(function(item) { var site = item[0]; var cases = item[1]; return ({
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
-    }))
-    .sort(function((a, b) { return b.cases - a.cases; })
+    }); })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 10);
 }
 
@@ -3336,7 +3336,7 @@ function createInteractiveDashboardSheet(ss) {
     {col: "P", endCol: "T", title: "⏰ Needs Attention", color: COLORS.SOLIDARITY_RED}
   ];
 
-  cardPositions.forEach(function((card, idx) {
+  cardPositions.forEach(function(card, idx) {
     const startRow = 12;
     const endRow = 18;
 
@@ -4027,8 +4027,8 @@ function getChartDataForMetric(metricName, metrics) {
       });
 
       const stepData = Object.entries(stepCounts)
-        .filter(function(([step]) { return step && step !== 'Current Step'; })
-        .map(function(([step, count]) { return [step, count]; });
+        .filter(function(item) { var step = item[0]; return step && step !== 'Current Step'; })
+        .map(function(item) { return [item[0], item[1]]; });
 
       return stepData.length > 0 ? stepData : [["No Active Grievances", 0]];
 
@@ -4049,9 +4049,9 @@ function getChartDataForMetric(metricName, metrics) {
       });
 
       const typeData = Object.entries(typeCounts)
-        .sort(function((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(function(([type, count]) { return [type, count]; });
+        .map(function(item) { return [item[0], item[1]]; });
 
       return typeData.length > 0 ? typeData : [["No Data", 0]];
 
@@ -4066,9 +4066,9 @@ function getChartDataForMetric(metricName, metrics) {
       });
 
       const locationData = Object.entries(locationCounts)
-        .sort(function((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(function(([location, count]) { return [location, count]; });
+        .map(function(item) { return [item[0], item[1]]; });
 
       return locationData.length > 0 ? locationData : [["No Data", 0]];
 
@@ -4083,7 +4083,7 @@ function getChartDataForMetric(metricName, metrics) {
       });
 
       const allStepData = Object.entries(allStepCounts)
-        .map(function(([step, count]) { return [step, count]; });
+        .map(function(item) { return [item[0], item[1]]; });
 
       return allStepData.length > 0 ? allStepData : [["No Data", 0]];
 
@@ -4117,7 +4117,7 @@ function createGrievanceStatusDonut(sheet, grievanceData) {
     statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
 
-  const data = Object.entries(statusCounts).map(function(([status, count]) { return [status, count]; });
+  const data = Object.entries(statusCounts).map(function(item) { return [item[0], item[1]]; });
 
   const chart = sheet.newChart()
     .setChartType(Charts.ChartType.PIE)
@@ -4150,7 +4150,7 @@ function createLocationPieChart(sheet, grievanceData) {
 
   // Get top 10
   const topLocations = Object.entries(locationCounts)
-    .sort(function((a, b) { return b[1] - a[1]; })
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const chart = sheet.newChart()
@@ -4182,7 +4182,7 @@ function createWarehouseLocationChart(sheet, grievanceData) {
   });
 
   const topLocations = Object.entries(locationCounts)
-    .sort(function((a, b) { return b[1] - a[1]; })
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 15);
 
   const chart = sheet.newChart()
@@ -4239,9 +4239,10 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(typeCounts)
-        .sort(function((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(function(([type, total], index) {
+        .map(function(item, index) {
+          var type = item[0]; var total = item[1];
           const active = typeActive[type] || 0;
           const resolved = typeResolved[type] || 0;
           const won = typeWon[type] || 0;
@@ -4279,9 +4280,10 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(locationCounts)
-        .sort(function((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(function(([location, total], index) {
+        .map(function(item, index) {
+          var location = item[0]; var total = item[1];
           const active = locationActive[location] || 0;
           const resolved = locationResolved[location] || 0;
           const won = locationWon[location] || 0;
@@ -4318,9 +4320,10 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(stewardCounts)
-        .sort(function((a, b) { return (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0); })
+        .sort(function(a, b) { return (stewardActive[b[0]] || 0) - (stewardActive[a[0]] || 0); })
         .slice(0, 15)
-        .map(function(([steward, total], index) {
+        .map(function(item, index) {
+          var steward = item[0]; var total = item[1];
           const active = stewardActive[steward] || 0;
           const resolved = stewardResolved[steward] || 0;
           const won = stewardWon[steward] || 0;
@@ -4342,9 +4345,10 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(defaultLocationCounts)
-        .sort(function((a, b) { return b[1] - a[1]; })
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(function(([location, count], index) {
+        .map(function(item, index) {
+          var location = item[0]; var count = item[1];
           return [index + 1, location, count, "-", "-", "-", "📊 Data"];
         });
       break;
@@ -4532,7 +4536,7 @@ function reorderSheetsLogically() {
   ];
 
   // Move sheets to correct positions
-  sheetOrder.forEach(function((sheetName, index) {
+  sheetOrder.forEach(function(sheetName, index) {
     const sheet = ss.getSheetByName(sheetName);
     if (sheet) {
       ss.setActiveSheet(sheet);
@@ -4591,7 +4595,7 @@ function addStewardWorkloadInstructions() {
   ];
 
   // Create colored instruction boxes
-  instructionData.forEach(function((instruction, index) {
+  instructionData.forEach(function(instruction, index) {
     const row = index + 2;
 
     // Label column (A-B)
@@ -4765,7 +4769,7 @@ function createUserSettingsSheet() {
     ["🔔", "Set up desktop notifications for overdue items (Future Feature)"]
   ];
 
-  tips.forEach(function((tip, index) {
+  tips.forEach(function(tip, index) {
     const row = 15 + index;
     sheet.getRange(row, 1).setValue(tip[0])
       .setFontSize(18)
@@ -7205,7 +7209,7 @@ function populateStewardWorkload() {
     const s = stewards[stewardId];
     const winRate = s.resolvedCases > 0 ? (s.wonCases / s.resolvedCases * 100) : 0;
     const avgDays = s.resolutionDays.length > 0
-      ? s.resolutionDays.reduce(function((a, b) { return a + b, 0; }) / s.resolutionDays.length
+      ? s.resolutionDays.reduce(function(a, b) { return a + b; }, 0) / s.resolutionDays.length
       : 0;
 
     // Capacity status based on active cases
@@ -7236,7 +7240,7 @@ function populateStewardWorkload() {
   }
 
   // Sort by active cases (descending)
-  outputData.sort(function((a, b) { return b[2] - a[2]; });
+  outputData.sort(function(a, b) { return b[2] - a[2]; });
 
   // Clear existing data (keep headers)
   const lastRow = workloadSheet.getLastRow();
