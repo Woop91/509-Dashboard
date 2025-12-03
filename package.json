@@ -8,7 +8,12 @@
     "build:verify": "node build.js --verify",
     "build:clean": "node build.js --clean",
     "test": "echo \"Run tests in Google Apps Script environment\"",
-    "help": "node build.js --help"
+    "help": "node build.js --help",
+    "push": "clasp push",
+    "pull": "clasp pull",
+    "deploy": "clasp push && clasp deploy",
+    "open": "clasp open",
+    "logs": "clasp logs"
   },
   "keywords": [
     "union",
