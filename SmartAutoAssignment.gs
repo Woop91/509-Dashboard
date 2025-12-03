@@ -56,7 +56,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   }
 
   // Score each steward
-  const scoredStewards = stewards.map(function(steward) { return ({
+  const scoredStewards = stewards.map(function(steward) { return {
     ...steward,
     score: calculateAssignmentScore(steward, grievance, preferences)
   }));
@@ -78,7 +78,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
     assignedSteward: selectedSteward.name,
     score: selectedSteward.score,
     reasoning: generateAssignmentReasoning(selectedSteward, grievance),
-    alternates: scoredStewards.slice(1, 4).map(function(s) { return ({
+    alternates: scoredStewards.slice(1, 4).map(function(s) { return {
       name: s.name,
       score: s.score
     }))

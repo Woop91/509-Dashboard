@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:02:27.950Z
+ * - Build Date: 2025-12-03T02:07:36.333Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -1134,7 +1134,7 @@ function getAuditLog(limit = 100, action = null) {
       filtered = rows.filter(function(row) { return row[3] === action; });
     }
 
-    const result = filtered.slice(0, limit).map(function(row) { return ({
+    const result = filtered.slice(0, limit).map(function(row) { return {
       timestamp: row[0],
       userEmail: row[1],
       userRole: row[2],
@@ -12703,7 +12703,7 @@ function getRecentErrors(limit = 20) {
 
   const data = errorSheet.getRange(startRow, 1, numRows, 8).getValues();
 
-  return data.map(function(row) { return ({
+  return data.map(function(row) { return {
     timestamp: row[0],
     level: row[1],
     category: row[2],
@@ -13539,7 +13539,7 @@ function getAllFAQs() {
 
   const data = faqSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
-  return data.map(function(row) { return ({
+  return data.map(function(row) { return {
     id: row[0],
     category: row[1],
     question: row[2],
@@ -16560,7 +16560,7 @@ function getMemberList() {
 
     const data = memberSheet.getRange(2, 1, lastRow - 1, numCols).getValues();
 
-    return data.map(function(row, index) { return ({
+    return data.map(function(row, index) { return {
       rowIndex: index + 2,
       memberId: safeArrayGet(row, MEMBER_COLS.MEMBER_ID - 1, ''),
       firstName: safeArrayGet(row, MEMBER_COLS.FIRST_NAME - 1, ''),
@@ -22152,7 +22152,7 @@ function getAllMembers() {
 
   const data = memberSheet.getRange(2, 1, lastRow - 1, 13).getValues();
 
-  return data.map(function(row, index) { return ({
+  return data.map(function(row, index) { return {
     row: index + 2,
     id: row[0] || '',
     name: `${row[1]} ${row[2]}`.trim(),
@@ -26383,7 +26383,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   }
 
   // Score each steward
-  const scoredStewards = stewards.map(function(steward) { return ({
+  const scoredStewards = stewards.map(function(steward) { return {
     ...steward,
     score: calculateAssignmentScore(steward, grievance, preferences)
   }));
@@ -26405,7 +26405,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
     assignedSteward: selectedSteward.name,
     score: selectedSteward.score,
     reasoning: generateAssignmentReasoning(selectedSteward, grievance),
-    alternates: scoredStewards.slice(1, 4).map(function(s) { return ({
+    alternates: scoredStewards.slice(1, 4).map(function(s) { return {
       name: s.name,
       score: s.score
     }))
@@ -28353,7 +28353,7 @@ function calculateStepEfficiency(grievances) {
     { name: 'Step III', team: 'ESCALATION', status: 'red' }
   ];
 
-  return steps.map(function(s) { return ({
+  return steps.map(function(s) { return {
     ...s,
     cases: stepData[s.name] || 0,
     caseload: Math.round(((stepData[s.name] || 0) / total) * 100)
@@ -28539,7 +28539,7 @@ function getSystemicRisks(grievances) {
   });
 
   return Object.entries(locationRisks)
-    .map(function([location, data]) { return ({
+    .map(function([location, data]) { return {
       entity: location,
       type: 'LOCATION',
       cases: data.total,
@@ -28636,7 +28636,7 @@ function getLocationCaseload(grievances) {
   });
 
   return Object.entries(locationData)
-    .map(function([site, cases]) { return ({
+    .map(function([site, cases]) { return {
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
