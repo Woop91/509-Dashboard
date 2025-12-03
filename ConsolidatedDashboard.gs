@@ -10535,58 +10535,49 @@ function warmUpCaches() {
 }
 
 /**
- * Gets all grievances (cached)
+ * Gets all grievances (NOT cached due to size - reads directly)
  * @returns {Array} Grievances array
  */
 function getCachedGrievances() {
-  return getCachedData(
-    CACHE_KEYS.ALL_GRIEVANCES,
-    function() {
-      const ss = SpreadsheetApp.getActiveSpreadsheet();
-      const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-      const lastRow = sheet.getLastRow();
+  // NOTE: Caching disabled for large datasets to avoid "Argument too large" errors
+  // With 5000+ grievances, the dataset exceeds cache limits
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-      if (lastRow < 2) return [];
+  if (!sheet) return [];
 
-      return sheet.getRange(2, 1, lastRow - 1, 28).getValues();
-    },
-    300 // 5 minutes
-  );
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  return sheet.getRange(2, 1, lastRow - 1, 28).getValues();
 }
 
 /**
- * Gets all members (cached)
+ * Gets all members (NOT cached due to size - reads directly)
  * @returns {Array} Members array
  */
 function getCachedMembers() {
-  return getCachedData(
-    CACHE_KEYS.ALL_MEMBERS,
-    function() {
-      const ss = SpreadsheetApp.getActiveSpreadsheet();
-      const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-      const lastRow = sheet.getLastRow();
+  // NOTE: Caching disabled for large datasets to avoid "Argument too large" errors
+  // With 20000+ members, the dataset exceeds cache limits
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-      if (lastRow < 2) return [];
+  if (!sheet) return [];
 
-      return sheet.getRange(2, 1, lastRow - 1, 28).getValues();
-    },
-    600 // 10 minutes
-  );
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  return sheet.getRange(2, 1, lastRow - 1, 28).getValues();
 }
 
 /**
- * Gets all stewards (cached)
+ * Gets all stewards (NOT cached - filtered from members)
  * @returns {Array} Stewards array
  */
 function getCachedStewards() {
-  return getCachedData(
-    CACHE_KEYS.ALL_STEWARDS,
-    function() {
-      const members = getCachedMembers();
-      return members.filter(function(row) { return row[9] === 'Yes'; }); // Column J: Is Steward?
-    },
-    600 // 10 minutes
-  );
+  // NOTE: Caching disabled to avoid "Argument too large" errors
+  const members = getCachedMembers();
+  return members.filter(function(row) { return row[9] === 'Yes'; }); // Column J: Is Steward?
 }
 
 /**
@@ -12065,6 +12056,72 @@ class DistributedLock {
  * Recalculate all members with thread safety
  * Prevents multiple users from running this simultaneously
  */
+/**
+ * Recalculates all member rows
+ * Uses array formulas for efficient batch processing
+ * @returns {Object} Statistics about the recalculation
+ */
+function recalcAllMembers() {
+  const startTime = new Date();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberDir) {
+    throw new Error('Member Directory sheet not found');
+  }
+
+  const lastRow = memberDir.getLastRow();
+  if (lastRow < 2) {
+    return {
+      processed: 0,
+      duration: new Date() - startTime,
+      message: 'No members to process'
+    };
+  }
+
+  // Dynamic column references for formulas
+  const memberIdCol = getColumnLetter(MEMBER_COLS.MEMBER_ID);
+  const grievanceMemberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+
+  // Set array formulas for all member rows at once (efficient batch operation)
+  try {
+    // Has Open Grievance? - Column Z (26)
+    if (MEMBER_COLS.HAS_OPEN_GRIEVANCE) {
+      memberDir.getRange("Z2").setFormula(
+        `=ARRAYFORMULA(IF(A2:A1000<>"",IF(COUNTIFS('Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},A2:A1000,'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No"),""))`
+      );
+    }
+
+    // Grievance Status Snapshot - Column AA (27)
+    if (MEMBER_COLS.GRIEVANCE_STATUS) {
+      memberDir.getRange("AA2").setFormula(
+        `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A2:A1000,'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),""),""))`
+      );
+    }
+
+    // Next Grievance Deadline - Column AB (28)
+    if (MEMBER_COLS.NEXT_DEADLINE) {
+      memberDir.getRange("AB2").setFormula(
+        `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A2:A1000,'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),""),""))`
+      );
+    }
+
+    const duration = new Date() - startTime;
+    const processed = lastRow - 1;
+
+    return {
+      processed: processed,
+      duration: duration,
+      message: `Recalculated ${processed} members in ${duration}ms`
+    };
+  } catch (error) {
+    Logger.log('Error in recalcAllMembers: ' + error.message);
+    throw error;
+  }
+}
+
 function recalcAllMembersThreadSafe() {
   const lock = new DistributedLock('recalc_members', 300000); // 5 minute timeout
 
