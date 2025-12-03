@@ -81,7 +81,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
     alternates: scoredStewards.slice(1, 4).map(function(s) { return {
       name: s.name,
       score: s.score
-    }))
+    };})
   };
 }
 
@@ -323,7 +323,7 @@ function logAssignment(grievanceId, selectedSteward, topCandidates) {
     selectedSteward.name,
     selectedSteward.score,
     selectedSteward.currentCaseload,
-    topCandidates.map(function(s) { return `${s.name} (${s.score})`).join(', '); },
+    topCandidates.map(function(s) { return `${s.name} (${s.score})`; }).join(', '),
     user
   ];
 
@@ -469,7 +469,7 @@ function batchAutoAssign() {
     return;
   }
 
-  const rows = Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   // Count unassigned
   var unassigned = 0;

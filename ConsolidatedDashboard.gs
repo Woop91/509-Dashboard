@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:42:21.579Z
+ * - Build Date: 2025-12-03T02:49:49.393Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -24855,13 +24855,13 @@ function createAnalyticsDashboardHTML(analytics) {
     : '<p>No specific recommendations at this time.</p>';
 
   const anomaliesHTML = analytics.anomalies.length > 0
-    ? analytics.anomalies.map(function(anomaly) { return '
+    ? analytics.anomalies.map(function(anomaly) { return `
         <div class="anomaly-item">
           <div class="anomaly-type">${anomaly.type}</div>
           <div class="anomaly-desc">${anomaly.description}</div>
           <div class="anomaly-impact">${anomaly.impact}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No anomalies detected. ✅</p>';
 
   return `
@@ -25328,7 +25328,7 @@ function analyzeLocationClusters(data) {
 
   return {
     totalLocations: Object.keys(locationStats).length,
-    hotspots: hotspots.sort(function(a, b) { return b.count - a.count); },
+    hotspots: hotspots.sort(function(a, b) { return b.count - a.count; }),
     allStats: locationStats
   };
 }
@@ -25406,7 +25406,7 @@ function analyzeManagerPatterns(data) {
   return {
     totalManagers: Object.keys(managerStats).length,
     avgPerManager: avgGrievancesPerManager.toFixed(1),
-    concerningManagers: concerningManagers.sort(function(a, b) { return b.count - a.count); },
+    concerningManagers: concerningManagers.sort(function(a, b) { return b.count - a.count; }),
     allStats: managerStats
   };
 }
@@ -25496,7 +25496,7 @@ function analyzeIssueTypePatterns(data) {
 
   return {
     totalIssueTypes: Object.keys(issueTypeStats).length,
-    systemicIssues: systemicIssues.sort(function(a, b) { return b.count - a.count); },
+    systemicIssues: systemicIssues.sort(function(a, b) { return b.count - a.count; }),
     allStats: issueTypeStats
   };
 }
@@ -25663,7 +25663,7 @@ function showRootCauseAnalysisDashboard() {
  */
 function createRCADashboardHTML(analysis) {
   const hotspotsHTML = analysis.locationClusters.hotspots.length > 0
-    ? analysis.locationClusters.hotspots.map(function(h) { return '
+    ? analysis.locationClusters.hotspots.map(function(h) { return `
         <div class="finding severity-${h.severity.toLowerCase()}">
           <div class="finding-header">
             <span class="finding-title">${h.location}</span>
@@ -25675,11 +25675,11 @@ function createRCADashboardHTML(analysis) {
             <div class="stat">Avg resolution: ${h.avgResolutionTime} days</div>
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No significant location hotspots identified.</p>';
 
   const concerningManagersHTML = analysis.managerPatterns.concerningManagers.length > 0
-    ? analysis.managerPatterns.concerningManagers.map(function(m) { return '
+    ? analysis.managerPatterns.concerningManagers.map(function(m) { return `
         <div class="finding severity-${m.severity.toLowerCase()}">
           <div class="finding-header">
             <span class="finding-title">${m.manager}</span>
@@ -25691,11 +25691,11 @@ function createRCADashboardHTML(analysis) {
             <div class="stat">Avg resolution: ${m.avgResolutionTime} days</div>
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No concerning manager patterns identified.</p>';
 
   const systemicIssuesHTML = analysis.issueTypePatterns.systemicIssues.length > 0
-    ? analysis.issueTypePatterns.systemicIssues.map(function(i) { return '
+    ? analysis.issueTypePatterns.systemicIssues.map(function(i) { return `
         <div class="finding ${i.isSystemic ? 'severity-high' : 'severity-medium'}">
           <div class="finding-header">
             <span class="finding-title">${i.issueType}</span>
@@ -25707,11 +25707,11 @@ function createRCADashboardHTML(analysis) {
             <div class="stat">Avg resolution: ${i.avgResolutionTime} days</div>
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No systemic issues identified.</p>';
 
   const recommendationsHTML = analysis.recommendations.length > 0
-    ? analysis.recommendations.map(function(r) { return '
+    ? analysis.recommendations.map(function(r) { return `
         <div class="recommendation priority-${r.priority.toLowerCase()}">
           <div class="rec-header">
             <span class="rec-category">${r.category}</span>
@@ -25722,7 +25722,7 @@ function createRCADashboardHTML(analysis) {
             <strong>Expected Impact:</strong> ${r.expectedImpact}
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No specific recommendations at this time.</p>';
 
   return `
@@ -26410,7 +26410,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
     alternates: scoredStewards.slice(1, 4).map(function(s) { return {
       name: s.name,
       score: s.score
-    }))
+    };})
   };
 }
 
@@ -26652,7 +26652,7 @@ function logAssignment(grievanceId, selectedSteward, topCandidates) {
     selectedSteward.name,
     selectedSteward.score,
     selectedSteward.currentCaseload,
-    topCandidates.map(function(s) { return `${s.name} (${s.score})`).join(', '); },
+    topCandidates.map(function(s) { return `${s.name} (${s.score})`; }).join(', '),
     user
   ];
 
@@ -26798,7 +26798,7 @@ function batchAutoAssign() {
     return;
   }
 
-  const rows = Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   // Count unassigned
   var unassigned = 0;
@@ -28164,7 +28164,7 @@ function getUnifiedDashboardData() {
     steps: calculateStepEfficiency(grievances),
 
     // Section 3: Network Health
-    totalMembers: members.filter(function(m) { return m[MEMBER_COLS.MEMBER_ID - 1]).length; },
+    totalMembers: members.filter(function(m) { return m[MEMBER_COLS.MEMBER_ID - 1]; }).length,
     engagementRate: calculateEngagementRate(grievances, members),
     noContactCount: calculateNoContact(members, today),
     stewardCount: calculateActiveStewards(grievances),
@@ -28428,8 +28428,8 @@ function calculateIssueDistribution(grievances) {
   });
 
   return {
-    disciplinary: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Discipline')).length; },
-    contract: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Pay') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Workload')).length; },
+    disciplinary: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Discipline'; }).length,
+    contract: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Pay') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Workload'; }).length,
     work: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Safety') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Scheduling'); }).length
   };
 }
@@ -28578,7 +28578,7 @@ function getArbitrationTracker(grievances) {
     maxFinancialImpact: 125000,
     docCompliance: 78.5,
     pendingWitness: 3,
-    step3Cases: grievances.filter(function(g) { return (g[GRIEVANCE_COLS.CURRENT_STEP - 1] || '').includes('III')).length; },
+    step3Cases: grievances.filter(function(g) { return (g[GRIEVANCE_COLS.CURRENT_STEP - 1] || '').includes('III'; }).length,
     highRiskCases: 2
   };
 }
@@ -29818,7 +29818,7 @@ function batchUpdateWorkflowState() {
     return;
   }
 
-  const rows = Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   const response = ui.prompt(
     '🔄 Batch Update Workflow State',

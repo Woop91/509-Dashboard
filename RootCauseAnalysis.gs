@@ -117,7 +117,7 @@ function analyzeLocationClusters(data) {
 
   return {
     totalLocations: Object.keys(locationStats).length,
-    hotspots: hotspots.sort(function(a, b) { return b.count - a.count); },
+    hotspots: hotspots.sort(function(a, b) { return b.count - a.count; }),
     allStats: locationStats
   };
 }
@@ -195,7 +195,7 @@ function analyzeManagerPatterns(data) {
   return {
     totalManagers: Object.keys(managerStats).length,
     avgPerManager: avgGrievancesPerManager.toFixed(1),
-    concerningManagers: concerningManagers.sort(function(a, b) { return b.count - a.count); },
+    concerningManagers: concerningManagers.sort(function(a, b) { return b.count - a.count; }),
     allStats: managerStats
   };
 }
@@ -285,7 +285,7 @@ function analyzeIssueTypePatterns(data) {
 
   return {
     totalIssueTypes: Object.keys(issueTypeStats).length,
-    systemicIssues: systemicIssues.sort(function(a, b) { return b.count - a.count); },
+    systemicIssues: systemicIssues.sort(function(a, b) { return b.count - a.count; }),
     allStats: issueTypeStats
   };
 }
@@ -452,7 +452,7 @@ function showRootCauseAnalysisDashboard() {
  */
 function createRCADashboardHTML(analysis) {
   const hotspotsHTML = analysis.locationClusters.hotspots.length > 0
-    ? analysis.locationClusters.hotspots.map(function(h) { return '
+    ? analysis.locationClusters.hotspots.map(function(h) { return `
         <div class="finding severity-${h.severity.toLowerCase()}">
           <div class="finding-header">
             <span class="finding-title">${h.location}</span>
@@ -464,11 +464,11 @@ function createRCADashboardHTML(analysis) {
             <div class="stat">Avg resolution: ${h.avgResolutionTime} days</div>
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No significant location hotspots identified.</p>';
 
   const concerningManagersHTML = analysis.managerPatterns.concerningManagers.length > 0
-    ? analysis.managerPatterns.concerningManagers.map(function(m) { return '
+    ? analysis.managerPatterns.concerningManagers.map(function(m) { return `
         <div class="finding severity-${m.severity.toLowerCase()}">
           <div class="finding-header">
             <span class="finding-title">${m.manager}</span>
@@ -480,11 +480,11 @@ function createRCADashboardHTML(analysis) {
             <div class="stat">Avg resolution: ${m.avgResolutionTime} days</div>
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No concerning manager patterns identified.</p>';
 
   const systemicIssuesHTML = analysis.issueTypePatterns.systemicIssues.length > 0
-    ? analysis.issueTypePatterns.systemicIssues.map(function(i) { return '
+    ? analysis.issueTypePatterns.systemicIssues.map(function(i) { return `
         <div class="finding ${i.isSystemic ? 'severity-high' : 'severity-medium'}">
           <div class="finding-header">
             <span class="finding-title">${i.issueType}</span>
@@ -496,11 +496,11 @@ function createRCADashboardHTML(analysis) {
             <div class="stat">Avg resolution: ${i.avgResolutionTime} days</div>
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No systemic issues identified.</p>';
 
   const recommendationsHTML = analysis.recommendations.length > 0
-    ? analysis.recommendations.map(function(r) { return '
+    ? analysis.recommendations.map(function(r) { return `
         <div class="recommendation priority-${r.priority.toLowerCase()}">
           <div class="rec-header">
             <span class="rec-category">${r.category}</span>
@@ -511,7 +511,7 @@ function createRCADashboardHTML(analysis) {
             <strong>Expected Impact:</strong> ${r.expectedImpact}
           </div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No specific recommendations at this time.</p>';
 
   return `

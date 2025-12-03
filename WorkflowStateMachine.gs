@@ -601,7 +601,7 @@ function batchUpdateWorkflowState() {
     return;
   }
 
-  const rows = Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   const response = ui.prompt(
     '🔄 Batch Update Workflow State',
