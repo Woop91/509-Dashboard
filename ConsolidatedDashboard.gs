@@ -5192,7 +5192,12 @@ function resetADHDSettings() {
   const sheets = ss.getSheets();
 
   sheets.forEach(function(sheet) {
-    sheet.setFontSize(10);
+    // Reset font size for data range (setFontSize only works on ranges, not sheets)
+    const maxRows = sheet.getMaxRows();
+    const maxCols = sheet.getMaxColumns();
+    if (maxRows > 0 && maxCols > 0) {
+      sheet.getRange(1, 1, maxRows, maxCols).setFontSize(10);
+    }
     sheet.setHiddenGridlines(false);
     removeZebraStripes(sheet);
   });
@@ -9753,7 +9758,14 @@ function logBackup(backupName, fileId, automated) {
  */
 function createBackupLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('💾 Backup Log');
+
+  // Check if sheet already exists
+  let sheet = ss.getSheetByName('💾 Backup Log');
+  if (sheet) {
+    return sheet; // Return existing sheet
+  }
+
+  sheet = ss.insertSheet('💾 Backup Log');
 
   const headers = [
     'Timestamp',
@@ -14675,7 +14687,14 @@ function logCommunication(grievanceId, type, details) {
  */
 function createCommunicationsLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('📞 Communications Log');
+
+  // Check if sheet already exists
+  let sheet = ss.getSheetByName('📞 Communications Log');
+  if (sheet) {
+    return sheet; // Return existing sheet
+  }
+
+  sheet = ss.insertSheet('📞 Communications Log');
 
   // Set headers
   const headers = [
@@ -15648,6 +15667,17 @@ function batchCreateGrievanceFolders() {
  */
 function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
   const errors = [];
+
+  // Validate that all parameters are functions
+  if (typeof primaryFn !== 'function') {
+    throw new Error('primaryFn must be a function');
+  }
+  if (typeof fallbackFn !== 'function') {
+    throw new Error('fallbackFn must be a function');
+  }
+  if (typeof minimalFn !== 'function') {
+    throw new Error('minimalFn must be a function');
+  }
 
   // Try primary function
   try {
