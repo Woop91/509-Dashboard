@@ -100,7 +100,7 @@ function analyzeLocationClusters(data) {
         .sort(function(a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
         : 0;
 
       hotspots.push({
@@ -178,7 +178,7 @@ function analyzeManagerPatterns(data) {
         .sort(function(a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
         : 0;
 
       concerningManagers.push({
@@ -268,7 +268,7 @@ function analyzeIssueTypePatterns(data) {
 
     if (locationConcentration > 60 || stats.count > data.length * 0.15) {
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
         : 0;
 
       systemicIssues.push({

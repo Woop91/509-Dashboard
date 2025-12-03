@@ -59,7 +59,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   const scoredStewards = stewards.map(function(steward) { return {
     ...steward,
     score: calculateAssignmentScore(steward, grievance, preferences)
-  }));
+  };});
 
   // Sort by score (descending)
   scoredStewards.sort(function(a, b) { return b.score - a.score; });
@@ -573,7 +573,7 @@ function showStewardWorkloadDashboard() {
     `)
     .join('');
 
-  const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload, 0; }) / stewards.length;
+  const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0) / stewards.length;
 
   const html = `
 <!DOCTYPE html>
@@ -598,7 +598,7 @@ function showStewardWorkloadDashboard() {
     <div class="summary">
       <strong>Total Stewards:</strong> ${stewards.length}<br>
       <strong>Average Caseload:</strong> ${avgCaseload.toFixed(1)} cases/steward<br>
-      <strong>Total Open Cases:</strong> ${stewards.reduce(function(sum, s) { return sum + s.currentCaseload, 0; })}
+      <strong>Total Open Cases:</strong> ${stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0)}
     </div>
 
     <div style="max-height: 500px; overflow-y: auto;">

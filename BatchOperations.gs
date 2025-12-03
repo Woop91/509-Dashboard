@@ -184,10 +184,10 @@ function getSelectedGrievanceRows() {
       );
       return [];
     }
-    return Array.fromfunction({ length: numRows - 1 }, (_, i) { return startRow + i + 1; });
+    return Array.from({ length: numRows - 1 }, function(_, i) { return startRow + i + 1; });
   }
 
-  return Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  return Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 }
 
 /**

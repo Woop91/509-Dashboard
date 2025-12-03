@@ -167,7 +167,7 @@ function createPerformanceMonitoringSheet() {
 
   perfSheet.getRange(summaryRow + 2, 1).setValue('Total Calls:');
   perfSheet.getRange(summaryRow + 2, 2).setValue(
-    rows.reduce(function(sum, row) { return sum + row[4], 0; })
+    rows.reduce(function(sum, row) { return sum + row[4]; }, 0)
   );
 
   perfSheet.getRange(summaryRow + 3, 1).setValue('Last Updated:');

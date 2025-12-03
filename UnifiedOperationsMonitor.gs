@@ -266,7 +266,7 @@ function calculateStepEfficiency(grievances) {
     ...s,
     cases: stepData[s.name] || 0,
     caseload: Math.round(((stepData[s.name] || 0) / total) * 100)
-  }));
+  };});
 }
 
 function calculateEngagementRate(grievances, members) {
@@ -311,7 +311,7 @@ function calculateAvgLoad(grievances) {
   const stewardCount = Object.keys(stewardLoad).length;
   if (stewardCount === 0) return 0;
 
-  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load, 0; });
+  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load; }, 0);
   return totalLoad / stewardCount;
 }
 

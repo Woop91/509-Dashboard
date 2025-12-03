@@ -252,15 +252,15 @@ function analyzeResolutionTimeTrend(data) {
   // Sort for median
   resolutionTimes.sort(function(a, b) { return a - b; });
 
-  const average = resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / resolutionTimes.length;
+  const average = resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / resolutionTimes.length;
   const median = resolutionTimes[Math.floor(resolutionTimes.length / 2)];
 
   // Recent vs older comparison
   const recent = resolutionTimes.slice(-10);
   const older = resolutionTimes.slice(0, -10);
 
-  const recentAvg = recent.reduce(function(sum, val) { return sum + val, 0; }) / recent.length;
-  const olderAvg = older.length > 0 ? older.reduce(function(sum, val) { return sum + val, 0; }) / older.length : recentAvg;
+  const recentAvg = recent.reduce(function(sum, val) { return sum + val; }, 0) / recent.length;
+  const olderAvg = older.length > 0 ? older.reduce(function(sum, val) { return sum + val; }, 0) / older.length : recentAvg;
 
   return {
     average: Math.round(average),
@@ -405,7 +405,7 @@ function detectAnomalies(data) {
     }
   });
 
-  const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val, 0; });
+  const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val; }, 0);
   Object.entries(locationCounts).forEach(function([location, count]) {
     if (count > totalCases * 0.4) {
       anomalies.push({

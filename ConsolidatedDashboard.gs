@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:07:36.333Z
+ * - Build Date: 2025-12-03T02:22:39.828Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -1142,7 +1142,7 @@ function getAuditLog(limit = 100, action = null) {
       level: row[4],
       details: row[5],
       ipAddress: row[6]
-    }));
+    };});
 
     return result;
   } catch (e) {
@@ -3042,7 +3042,7 @@ function seedGrievancesWithCount(count, toggleName) {
   }
 
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
-  const memberIDs = allMemberData.map(function(row) { return row[0]).filter(String; });
+  const memberIDs = allMemberData.map(function(row) { return row[0]; }).filter(String);
 
   // Updated config column references for new structure
   const statuses = config.getRange("K2:K8").getValues().flat().filter(String);       // Grievance Status (column K)
@@ -3395,7 +3395,7 @@ function populateStewardWorkload() {
     const s = stewards[stewardId];
     const winRate = s.resolvedCases > 0 ? (s.wonCases / s.resolvedCases * 100) : 0;
     const avgDays = s.resolutionDays.length > 0
-      ? s.resolutionDays.reduce(function(a, b) { return a + b; }, 0) }) / s.resolutionDays.length
+      ? s.resolutionDays.reduce(function(a, b) { return a + b; }, 0) / s.resolutionDays.length
       : 0;
 
     // Capacity status based on active cases
@@ -6059,7 +6059,7 @@ function gatherMonthlyData() {
   });
 
   const avgResolutionTime = resolutionTimes.length > 0
-    ? Math.roundfunction(resolutionTimes.reduce((a, b) { return a + b, 0) / resolutionTimes.length; })
+    ? Math.round(resolutionTimes.reduce(function(a, b) { return a + b; }, 0) / resolutionTimes.length)
     : 0;
 
   return {
@@ -6397,7 +6397,7 @@ function getReportRecipients(reportType) {
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === `${reportType}_recipients`) {
-      const emails = data[i][1].toString().split(',').map(function(e) { return e.trim()).filter(function(e) { return e; }));
+      const emails = data[i][1].toString().split(',').map(function(e) { return e.trim(); }).filter(function(e) { return e; });
       return emails;
     }
   }
@@ -6962,10 +6962,10 @@ function getSelectedGrievanceRows() {
       );
       return [];
     }
-    return Array.fromfunction({ length: numRows - 1 }, (_, i) { return startRow + i + 1; });
+    return Array.from({ length: numRows - 1 }, function(_, i) { return startRow + i + 1; });
   }
 
-  return Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  return Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 }
 
 /**
@@ -8088,7 +8088,7 @@ function createReportBuilderHTML() {
       <div class="form-group">
         <label>Fields (hold Ctrl/Cmd to select multiple):</label>
         <select id="fields" multiple class="multi-select">
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <button class="small secondary" onclick="selectAllFields()">Select All</button>
@@ -8103,7 +8103,7 @@ function createReportBuilderHTML() {
           <div>
             <label>Field:</label>
             <select id="filter0_field">
-              ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+              ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
             </select>
           </div>
           <div>
@@ -8136,13 +8136,13 @@ function createReportBuilderHTML() {
         <label>Group By (optional):</label>
         <select id="groupBy">
           <option value="">No Grouping</option>
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <div class="form-group">
         <label>Sort By:</label>
         <select id="sortBy">
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <div class="form-group">
@@ -8232,7 +8232,7 @@ function createReportBuilderHTML() {
         <div>
           <label>Field:</label>
           <select id="filter\${filterCount}_field">
-            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>').join(''; })}
+            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>').join('')}
           </select>
         </div>
         <div>
@@ -8751,7 +8751,7 @@ function exportReportToPDF(config) {
     const tableData = [headers];
 
     data.forEach(function(row) {
-      tableData.push(Object.values(row).map(function(v) { return v.toString()); });
+      tableData.push(Object.values(row).map(function(v) { return v.toString(); }));
     });
 
     const table = body.appendTable(tableData);
@@ -13551,7 +13551,7 @@ function getAllFAQs() {
     createdDate: row[8],
     lastUpdated: row[9],
     createdBy: row[10]
-  }));
+  };});
 }
 
 /**
@@ -13624,7 +13624,7 @@ function createFAQAdminHTML() {
     <div class="form-group">
       <label>Category:</label>
       <select id="category">
-        ${categories.map(function(cat) { return `<option value="${cat}">${cat}</option>`).join(''; })}
+        ${categories.map(function(cat) { return `<option value="${cat}">${cat}</option>`; }).join('')}
       </select>
     </div>
 
@@ -14386,7 +14386,7 @@ function createEmailComposerHTML(grievanceData) {
       <label>Template (optional):</label>
       <select id="templateSelect" onchange="loadTemplate()">
         <option value="">-- Select a template --</option>
-        ${templates.map(function(t) { return `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`).join(''; })}
+        ${templates.map(function(t) { return `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`; }).join('')}
       </select>
     </div>
 
@@ -16891,9 +16891,9 @@ function getGrievanceCoordinators() {
     const coordinatorData = configSheet.getRange(2, 16, 10, 3).getValues();
 
     // Get unique coordinator names
-    const coordinator1List = coordinatorData.map(function(row) { return row[0]).filter(String; });
-    const coordinator2List = coordinatorData.map(function(row) { return row[1]).filter(String; });
-    const coordinator3List = coordinatorData.map(function(row) { return row[2]).filter(String; });
+    const coordinator1List = coordinatorData.map(function(row) { return row[0]; }).filter(String);
+    const coordinator2List = coordinatorData.map(function(row) { return row[1]; }).filter(String);
+    const coordinator3List = coordinatorData.map(function(row) { return row[2]; }).filter(String);
 
     return {
       coordinator1: coordinator1List.length > 0 ? coordinator1List[0] : '',
@@ -23663,7 +23663,7 @@ function createPerformanceMonitoringSheet() {
 
   perfSheet.getRange(summaryRow + 2, 1).setValue('Total Calls:');
   perfSheet.getRange(summaryRow + 2, 2).setValue(
-    rows.reduce(function(sum, row) { return sum + row[4], 0; })
+    rows.reduce(function(sum, row) { return sum + row[4]; }, 0)
   );
 
   perfSheet.getRange(summaryRow + 3, 1).setValue('Last Updated:');
@@ -24540,15 +24540,15 @@ function analyzeResolutionTimeTrend(data) {
   // Sort for median
   resolutionTimes.sort(function(a, b) { return a - b; });
 
-  const average = resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / resolutionTimes.length;
+  const average = resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / resolutionTimes.length;
   const median = resolutionTimes[Math.floor(resolutionTimes.length / 2)];
 
   // Recent vs older comparison
   const recent = resolutionTimes.slice(-10);
   const older = resolutionTimes.slice(0, -10);
 
-  const recentAvg = recent.reduce(function(sum, val) { return sum + val, 0; }) / recent.length;
-  const olderAvg = older.length > 0 ? older.reduce(function(sum, val) { return sum + val, 0; }) / older.length : recentAvg;
+  const recentAvg = recent.reduce(function(sum, val) { return sum + val; }, 0) / recent.length;
+  const olderAvg = older.length > 0 ? older.reduce(function(sum, val) { return sum + val; }, 0) / older.length : recentAvg;
 
   return {
     average: Math.round(average),
@@ -24693,7 +24693,7 @@ function detectAnomalies(data) {
     }
   });
 
-  const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val, 0; });
+  const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val; }, 0);
   Object.entries(locationCounts).forEach(function([location, count]) {
     if (count > totalCases * 0.4) {
       anomalies.push({
@@ -25309,7 +25309,7 @@ function analyzeLocationClusters(data) {
         .sort(function(a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
         : 0;
 
       hotspots.push({
@@ -25387,7 +25387,7 @@ function analyzeManagerPatterns(data) {
         .sort(function(a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
         : 0;
 
       concerningManagers.push({
@@ -25477,7 +25477,7 @@ function analyzeIssueTypePatterns(data) {
 
     if (locationConcentration > 60 || stats.count > data.length * 0.15) {
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
         : 0;
 
       systemicIssues.push({
@@ -26386,7 +26386,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   const scoredStewards = stewards.map(function(steward) { return {
     ...steward,
     score: calculateAssignmentScore(steward, grievance, preferences)
-  }));
+  };});
 
   // Sort by score (descending)
   scoredStewards.sort(function(a, b) { return b.score - a.score; });
@@ -26900,7 +26900,7 @@ function showStewardWorkloadDashboard() {
     `)
     .join('');
 
-  const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload, 0; }) / stewards.length;
+  const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0) / stewards.length;
 
   const html = `
 <!DOCTYPE html>
@@ -26925,7 +26925,7 @@ function showStewardWorkloadDashboard() {
     <div class="summary">
       <strong>Total Stewards:</strong> ${stewards.length}<br>
       <strong>Average Caseload:</strong> ${avgCaseload.toFixed(1)} cases/steward<br>
-      <strong>Total Open Cases:</strong> ${stewards.reduce(function(sum, s) { return sum + s.currentCaseload, 0; })}
+      <strong>Total Open Cases:</strong> ${stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0)}
     </div>
 
     <div style="max-height: 500px; overflow-y: auto;">
@@ -28357,7 +28357,7 @@ function calculateStepEfficiency(grievances) {
     ...s,
     cases: stepData[s.name] || 0,
     caseload: Math.round(((stepData[s.name] || 0) / total) * 100)
-  }));
+  };});
 }
 
 function calculateEngagementRate(grievances, members) {
@@ -28402,7 +28402,7 @@ function calculateAvgLoad(grievances) {
   const stewardCount = Object.keys(stewardLoad).length;
   if (stewardCount === 0) return 0;
 
-  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load, 0; });
+  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load; }, 0);
   return totalLoad / stewardCount;
 }
 
@@ -29465,7 +29465,7 @@ function createWorkflowVisualizerHTML() {
           </div>
           <div class="stage-desc">${state.description}</div>
           <div class="stage-actions">
-            ${state.actions.map(function(action) { return `<span class="action-tag">✓ ${action}</span>`).join(''; })}
+            ${state.actions.map(function(action) { return `<span class="action-tag">✓ ${action}</span>`; }).join('')}
           </div>
           ${state.allowedNextStates.length > 0
             ? `<div class="next-states">

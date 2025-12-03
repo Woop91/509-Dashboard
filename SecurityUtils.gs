@@ -585,7 +585,7 @@ function getAuditLog(limit = 100, action = null) {
       level: row[4],
       details: row[5],
       ipAddress: row[6]
-    }));
+    };});
 
     return result;
   } catch (e) {
