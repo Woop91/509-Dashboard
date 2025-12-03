@@ -8437,7 +8437,7 @@ function createReportBuilderHTML() {
         <div>
           <label>Field:</label>
           <select id="filter\${filterCount}_field">
-            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>').join('')}
+            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>'; }).join('')}
           </select>
         </div>
         <div>
@@ -8639,7 +8639,7 @@ function createReportBuilderHTML() {
         return;
       }
 
-      const templateNames = templates.map(function(t) { return t.name).join('\\n'; });
+      const templateNames = templates.map(function(t) { return t.name; }).join('\\n');
       const selected = prompt('Available templates:\\n' + templateNames + '\\n\\nEnter template name to load:');
 
       if (!selected) return;
@@ -10189,10 +10189,10 @@ function createBackupManagerHTML() {
       <div class="status ${isAutomated ? 'enabled' : 'disabled'}">
         ${isAutomated ? '✅ Automated backups are ENABLED (Weekly, Sundays 2 AM)' : '🔕 Automated backups are DISABLED'}
       </div>
-      <button onclick="google.script.run.withSuccessHandler(function() { return location.reload()).setupAutomatedBackups(; })">
+      <button onclick="google.script.run.withSuccessHandler(function() { location.reload(); }).setupAutomatedBackups()">
         ${isAutomated ? '🔄 Refresh Schedule' : '✅ Enable Automated Backups'}
       </button>
-      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function() { return location.reload()).disableAutomatedBackups(; })">🔕 Disable</button>' : ''}
+      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function() { location.reload(); }).disableAutomatedBackups()">🔕 Disable</button>' : ''}
     </div>
 
     <div class="section">
@@ -20888,7 +20888,7 @@ function showKeyboardShortcutsConfig() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandler(function() { return google.script.host.close()).showKeyboardShortcuts(; })">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).showKeyboardShortcuts()">
       📖 View Shortcuts Guide
     </button>
   </div>
@@ -22459,7 +22459,7 @@ function createMemberSearchHTML() {
 
     function populateFilters() {
       // Get unique locations
-      const locations = [...new Set(allMembers.map(function(m) { return m.location).filter(function(l) { return l; }); })];
+      const locations = [...new Set(allMembers.map(function(m) { return m.location; }).filter(function(l) { return l; }))];
       const locationFilter = document.getElementById('locationFilter');
       locations.forEach(function(loc) {
         const option = document.createElement('option');
@@ -22469,7 +22469,7 @@ function createMemberSearchHTML() {
       });
 
       // Get unique units
-      const units = [...new Set(allMembers.map(function(m) { return m.unit).filter(function(u) { return u; }); })];
+      const units = [...new Set(allMembers.map(function(m) { return m.unit; }).filter(function(u) { return u; }))];
       const unitFilter = document.getElementById('unitFilter');
       units.forEach(function(unit) {
         const option = document.createElement('option');

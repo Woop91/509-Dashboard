@@ -551,7 +551,7 @@ function showKeyboardShortcutsConfig() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandler(function() { return google.script.host.close()).showKeyboardShortcuts(; })">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).showKeyboardShortcuts()">
       📖 View Shortcuts Guide
     </button>
   </div>

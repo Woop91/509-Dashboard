@@ -333,10 +333,10 @@ function createBackupManagerHTML() {
       <div class="status ${isAutomated ? 'enabled' : 'disabled'}">
         ${isAutomated ? '✅ Automated backups are ENABLED (Weekly, Sundays 2 AM)' : '🔕 Automated backups are DISABLED'}
       </div>
-      <button onclick="google.script.run.withSuccessHandler(function() { return location.reload()).setupAutomatedBackups(; })">
+      <button onclick="google.script.run.withSuccessHandler(function() { location.reload(); }).setupAutomatedBackups()">
         ${isAutomated ? '🔄 Refresh Schedule' : '✅ Enable Automated Backups'}
       </button>
-      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function() { return location.reload()).disableAutomatedBackups(; })">🔕 Disable</button>' : ''}
+      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function() { location.reload(); }).disableAutomatedBackups()">🔕 Disable</button>' : ''}
     </div>
 
     <div class="section">

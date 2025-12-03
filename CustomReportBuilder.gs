@@ -347,7 +347,7 @@ function createReportBuilderHTML() {
         <div>
           <label>Field:</label>
           <select id="filter\${filterCount}_field">
-            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>').join('')}
+            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>'; }).join('')}
           </select>
         </div>
         <div>
@@ -549,7 +549,7 @@ function createReportBuilderHTML() {
         return;
       }
 
-      const templateNames = templates.map(function(t) { return t.name).join('\\n'; });
+      const templateNames = templates.map(function(t) { return t.name; }).join('\\n');
       const selected = prompt('Available templates:\\n' + templateNames + '\\n\\nEnter template name to load:');
 
       if (!selected) return;
