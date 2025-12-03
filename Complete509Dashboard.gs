@@ -1800,7 +1800,7 @@ function SEED_5K_GRIEVANCES() {
   }
 
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
-  const memberIDs = allMemberData.map(function(row) { return row[0]).filter(String; });
+  const memberIDs = allMemberData.map(function(row) { return row[0]; }).filter(String);
 
   const statuses = config.getRange("I2:I8").getValues().flat().filter(String);
   const steps = config.getRange("J2:J7").getValues().flat().filter(String);
