@@ -215,7 +215,7 @@ function gatherMonthlyData() {
   });
 
   const avgResolutionTime = resolutionTimes.length > 0
-    ? Math.roundfunction(resolutionTimes.reduce((a, b) { return a + b, 0) / resolutionTimes.length; })
+    ? Math.round(resolutionTimes.reduce(function(a, b) { return a + b; }, 0) / resolutionTimes.length)
     : 0;
 
   return {
@@ -553,7 +553,7 @@ function getReportRecipients(reportType) {
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === `${reportType}_recipients`) {
-      const emails = data[i][1].toString().split(',').map(function(e) { return e.trim()).filter(function(e) { return e; }));
+      const emails = data[i][1].toString().split(',').map(function(e) { return e.trim(); }).filter(function(e) { return e; });
       return emails;
     }
   }

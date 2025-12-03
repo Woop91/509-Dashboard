@@ -203,7 +203,7 @@ function createReportBuilderHTML() {
       <div class="form-group">
         <label>Fields (hold Ctrl/Cmd to select multiple):</label>
         <select id="fields" multiple class="multi-select">
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <button class="small secondary" onclick="selectAllFields()">Select All</button>
@@ -218,7 +218,7 @@ function createReportBuilderHTML() {
           <div>
             <label>Field:</label>
             <select id="filter0_field">
-              ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+              ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
             </select>
           </div>
           <div>
@@ -251,13 +251,13 @@ function createReportBuilderHTML() {
         <label>Group By (optional):</label>
         <select id="groupBy">
           <option value="">No Grouping</option>
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <div class="form-group">
         <label>Sort By:</label>
         <select id="sortBy">
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <div class="form-group">
@@ -347,7 +347,7 @@ function createReportBuilderHTML() {
         <div>
           <label>Field:</label>
           <select id="filter\${filterCount}_field">
-            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>').join(''; })}
+            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>').join('')}
           </select>
         </div>
         <div>
@@ -866,7 +866,7 @@ function exportReportToPDF(config) {
     const tableData = [headers];
 
     data.forEach(function(row) {
-      tableData.push(Object.values(row).map(function(v) { return v.toString()); });
+      tableData.push(Object.values(row).map(function(v) { return v.toString(); }));
     });
 
     const table = body.appendTable(tableData);

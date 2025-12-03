@@ -605,7 +605,7 @@ function createFAQAdminHTML() {
     <div class="form-group">
       <label>Category:</label>
       <select id="category">
-        ${categories.map(function(cat) { return `<option value="${cat}">${cat}</option>`).join(''; })}
+        ${categories.map(function(cat) { return `<option value="${cat}">${cat}</option>`; }).join('')}
       </select>
     </div>
 

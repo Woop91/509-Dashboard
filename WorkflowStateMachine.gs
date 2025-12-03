@@ -250,7 +250,7 @@ function createWorkflowVisualizerHTML() {
           </div>
           <div class="stage-desc">${state.description}</div>
           <div class="stage-actions">
-            ${state.actions.map(function(action) { return `<span class="action-tag">✓ ${action}</span>`).join(''; })}
+            ${state.actions.map(function(action) { return `<span class="action-tag">✓ ${action}</span>`; }).join('')}
           </div>
           ${state.allowedNextStates.length > 0
             ? `<div class="next-states">

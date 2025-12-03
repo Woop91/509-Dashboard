@@ -200,7 +200,7 @@ function createEmailComposerHTML(grievanceData) {
       <label>Template (optional):</label>
       <select id="templateSelect" onchange="loadTemplate()">
         <option value="">-- Select a template --</option>
-        ${templates.map(function(t) { return `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`).join(''; })}
+        ${templates.map(function(t) { return `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`; }).join('')}
       </select>
     </div>
 

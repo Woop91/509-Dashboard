@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:16:57.337Z
+ * - Build Date: 2025-12-03T02:22:39.828Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -6059,7 +6059,7 @@ function gatherMonthlyData() {
   });
 
   const avgResolutionTime = resolutionTimes.length > 0
-    ? Math.roundfunction(resolutionTimes.reduce((a, b) { return a + b, 0) / resolutionTimes.length; })
+    ? Math.round(resolutionTimes.reduce(function(a, b) { return a + b; }, 0) / resolutionTimes.length)
     : 0;
 
   return {
@@ -6397,7 +6397,7 @@ function getReportRecipients(reportType) {
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === `${reportType}_recipients`) {
-      const emails = data[i][1].toString().split(',').map(function(e) { return e.trim()).filter(function(e) { return e; }));
+      const emails = data[i][1].toString().split(',').map(function(e) { return e.trim(); }).filter(function(e) { return e; });
       return emails;
     }
   }
@@ -6962,10 +6962,10 @@ function getSelectedGrievanceRows() {
       );
       return [];
     }
-    return Array.fromfunction({ length: numRows - 1 }, (_, i) { return startRow + i + 1; });
+    return Array.from({ length: numRows - 1 }, function(_, i) { return startRow + i + 1; });
   }
 
-  return Array.fromfunction({ length: numRows }, (_, i) { return startRow + i; });
+  return Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 }
 
 /**
@@ -8088,7 +8088,7 @@ function createReportBuilderHTML() {
       <div class="form-group">
         <label>Fields (hold Ctrl/Cmd to select multiple):</label>
         <select id="fields" multiple class="multi-select">
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <button class="small secondary" onclick="selectAllFields()">Select All</button>
@@ -8103,7 +8103,7 @@ function createReportBuilderHTML() {
           <div>
             <label>Field:</label>
             <select id="filter0_field">
-              ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+              ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
             </select>
           </div>
           <div>
@@ -8136,13 +8136,13 @@ function createReportBuilderHTML() {
         <label>Group By (optional):</label>
         <select id="groupBy">
           <option value="">No Grouping</option>
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <div class="form-group">
         <label>Sort By:</label>
         <select id="sortBy">
-          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`).join(''; })}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <div class="form-group">
@@ -8232,7 +8232,7 @@ function createReportBuilderHTML() {
         <div>
           <label>Field:</label>
           <select id="filter\${filterCount}_field">
-            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>').join(''; })}
+            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>').join('')}
           </select>
         </div>
         <div>
@@ -8751,7 +8751,7 @@ function exportReportToPDF(config) {
     const tableData = [headers];
 
     data.forEach(function(row) {
-      tableData.push(Object.values(row).map(function(v) { return v.toString()); });
+      tableData.push(Object.values(row).map(function(v) { return v.toString(); }));
     });
 
     const table = body.appendTable(tableData);
@@ -13624,7 +13624,7 @@ function createFAQAdminHTML() {
     <div class="form-group">
       <label>Category:</label>
       <select id="category">
-        ${categories.map(function(cat) { return `<option value="${cat}">${cat}</option>`).join(''; })}
+        ${categories.map(function(cat) { return `<option value="${cat}">${cat}</option>`; }).join('')}
       </select>
     </div>
 
@@ -14386,7 +14386,7 @@ function createEmailComposerHTML(grievanceData) {
       <label>Template (optional):</label>
       <select id="templateSelect" onchange="loadTemplate()">
         <option value="">-- Select a template --</option>
-        ${templates.map(function(t) { return `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`).join(''; })}
+        ${templates.map(function(t) { return `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`; }).join('')}
       </select>
     </div>
 
@@ -29465,7 +29465,7 @@ function createWorkflowVisualizerHTML() {
           </div>
           <div class="stage-desc">${state.description}</div>
           <div class="stage-actions">
-            ${state.actions.map(function(action) { return `<span class="action-tag">✓ ${action}</span>`).join(''; })}
+            ${state.actions.map(function(action) { return `<span class="action-tag">✓ ${action}</span>`; }).join('')}
           </div>
           ${state.allowedNextStates.length > 0
             ? `<div class="next-states">
