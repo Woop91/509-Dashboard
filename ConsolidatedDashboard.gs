@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:33:51.894Z
+ * - Build Date: 2025-12-03T02:38:17.018Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -15412,7 +15412,7 @@ function createFileListHTML(grievanceId, folderId, files) {
   const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
 
   const filesList = files
-    .map(function(file) { return '
+    .map(function(file) { return `
       <div class="file-item">
         <div class="file-icon">${getFileIcon(file.type)}</div>
         <div class="file-details">
@@ -15424,7 +15424,7 @@ function createFileListHTML(grievanceId, folderId, files) {
           </div>
         </div>
       </div>
-    `)
+    `; })
     .join('');
 
   return `
@@ -15706,7 +15706,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
         // Throw aggregate error
         throw new Error(
           `Complete failure - all degradation levels failed:\n` +
-          errors.map(function(e) { return `${e.level}: ${e.error.message}`).join('\n'; })
+          errors.map(function(e) { return `${e.level}: ${e.error.message}`; }).join('\n')
         );
       }
     }
@@ -16573,7 +16573,7 @@ function getMemberList() {
       phone: safeArrayGet(row, MEMBER_COLS.PHONE - 1, ''),
       isSteward: safeArrayGet(row, MEMBER_COLS.IS_STEWARD - 1, ''),
       supervisor: safeArrayGet(row, MEMBER_COLS.SUPERVISOR - 1, '')
-    })).filter(function(member) { return member.memberId; }); // Filter out empty rows
+    };}).filter(function(member) { return member.memberId; }); // Filter out empty rows
   } catch (error) {
     return handleError(error, 'getMemberList', true, true) || [];
   }
@@ -16587,8 +16587,8 @@ function getMemberList() {
 function createMemberSelectionDialog(members) {
   // Use HTML escaping to prevent XSS
   const memberOptions = members.map(function(m) {
-    `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`
-  ).join('');
+    return `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`;
+  }).join('');
 
   return `
 <!DOCTYPE html>
@@ -17983,7 +17983,7 @@ var addMemberIdempotent = makeIdempotent(
       };
     }
   },
-  function(memberData) { return 'add_member_${memberData[0]}` // Use Member ID as key
+  function(memberData) { return `add_member_${memberData[0]}`; } // Use Member ID as key
 );
 
 /**
@@ -18027,7 +18027,7 @@ var addGrievanceIdempotent = makeIdempotent(
       };
     }
   },
-  function(grievanceData) { return 'add_grievance_${grievanceData[0]}` // Use Grievance ID as key
+  function(grievanceData) { return `add_grievance_${grievanceData[0]}`; } // Use Grievance ID as key
 );
 
 /**

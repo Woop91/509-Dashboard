@@ -487,9 +487,11 @@ function calculateAllMetrics(memberData, grievanceData) {
   // Grievance metrics
   metrics.totalGrievances = grievanceData.length - 1;
   metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision')).length;
+    return row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision');
+  }).length;
   metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && row[4].startsWith('Resolved')).length;
+    return row[4] && row[4].startsWith('Resolved');
+  }).length;
 
   const resolvedData = grievanceData.slice(1).filter(function(row) { return row[4] && row[4].startsWith('Resolved'); });
   metrics.grievancesWon = resolvedData.filter(function(row) { return row[24] && row[24].includes('Won'); }).length;

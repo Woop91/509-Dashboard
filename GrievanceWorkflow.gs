@@ -120,7 +120,7 @@ function getMemberList() {
       phone: safeArrayGet(row, MEMBER_COLS.PHONE - 1, ''),
       isSteward: safeArrayGet(row, MEMBER_COLS.IS_STEWARD - 1, ''),
       supervisor: safeArrayGet(row, MEMBER_COLS.SUPERVISOR - 1, '')
-    })).filter(function(member) { return member.memberId; }); // Filter out empty rows
+    };}).filter(function(member) { return member.memberId; }); // Filter out empty rows
   } catch (error) {
     return handleError(error, 'getMemberList', true, true) || [];
   }
@@ -134,8 +134,8 @@ function getMemberList() {
 function createMemberSelectionDialog(members) {
   // Use HTML escaping to prevent XSS
   const memberOptions = members.map(function(m) {
-    `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`
-  ).join('');
+    return `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`;
+  }).join('');
 
   return `
 <!DOCTYPE html>
