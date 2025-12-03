@@ -17261,6 +17261,14 @@ function onGrievanceFormSubmit(e) {
  */
 function createGrievanceFolder(grievanceId, formData) {
   try {
+    // Validate parameters
+    if (!grievanceId) {
+      throw new Error('Grievance ID is required');
+    }
+    if (!formData || !formData.lastName || !formData.firstName) {
+      throw new Error('Form data with lastName and firstName is required');
+    }
+
     // Get or create main Grievances folder
     const mainFolderName = 'SEIU 509 - Grievances';
     var mainFolder;
@@ -17589,6 +17597,11 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
  * Extracts and structures data from form submission
  */
 function extractFormData(e) {
+  // Check if event object exists
+  if (!e || !e.namedValues) {
+    throw new Error('Form event data is missing or invalid. Make sure this function is triggered by a Google Form submission.');
+  }
+
   const responses = e.namedValues;
 
   // Map form responses to grievance data structure
@@ -17614,6 +17627,11 @@ function extractFormData(e) {
  * Adds grievance data to the Grievance Log
  */
 function addGrievanceToLog(formData) {
+  // Validate formData
+  if (!formData) {
+    throw new Error('Form data is missing or invalid');
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
