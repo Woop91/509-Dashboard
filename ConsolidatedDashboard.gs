@@ -17279,6 +17279,12 @@ function addStewardContactInfoToConfig() {
  * 2. Add trigger: onGrievanceFormSubmit, From spreadsheet, On form submit
  */
 function onGrievanceFormSubmit(e) {
+  if (!e) {
+    Logger.log('Error: Form submission event is null or undefined');
+    SpreadsheetApp.getUi().alert('❌ Error: Invalid form submission event');
+    return;
+  }
+
   try {
     // Extract form responses
     const formData = extractFormData(e);
