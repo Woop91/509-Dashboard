@@ -2720,9 +2720,9 @@ function logWarning(context, message) {
  * @returns {Function} Wrapped function
  */
 function withErrorHandling(fn, context) {
-  return function(...args) {
+  return function() {
     try {
-      return fn.apply(this, args);
+      return fn.apply(this, arguments);
     } catch (error) {
       return handleError(error, context);
     }
@@ -3075,7 +3075,7 @@ function seedMembersWithCount(count, toggleName) {
     // Generate multiple office days (1-3 days)
     const numDays = Math.floor(Math.random() * 3) + 1;
     const selectedDays = [];
-    const availableDays = [...officeDays];
+    const availableDays = officeDays.slice();
     for (let d = 0; d < numDays; d++) {
       if (availableDays.length > 0) {
         const idx = Math.floor(Math.random() * availableDays.length);
@@ -4921,7 +4921,17 @@ function saveADHDSettings(settings) {
   const currentSettings = getADHDSettings();
 
   // Merge with current
-  const newSettings = { ...currentSettings, ...settings };
+  var newSettings = {};
+  for (var key in currentSettings) {
+    if (currentSettings.hasOwnProperty(key)) {
+      newSettings[key] = currentSettings[key];
+    }
+  }
+  for (var key in settings) {
+    if (settings.hasOwnProperty(key)) {
+      newSettings[key] = settings[key];
+    }
+  }
 
   props.setProperty('adhdSettings', JSON.stringify(newSettings));
 
@@ -6302,13 +6312,22 @@ function gatherQuarterlyData() {
     trend = 'decreasing';
   }
 
-  return {
+  var result = {
     quarter: `Q${quarter + 1} ${now.getFullYear()}`,
-    monthlyTrends,
-    totalGrievances,
-    trend,
-    ...gatherMonthlyData() // Include current month details
+    monthlyTrends: monthlyTrends,
+    totalGrievances: totalGrievances,
+    trend: trend
   };
+
+  // Include current month details
+  var monthlyData = gatherMonthlyData();
+  for (var key in monthlyData) {
+    if (monthlyData.hasOwnProperty(key)) {
+      result[key] = monthlyData[key];
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -9723,11 +9742,19 @@ function createCustomTheme(name, colors) {
 
   const themeKey = 'CUSTOM_' + name.toUpperCase().replace(/\s+/g, '_');
 
-  customThemes[themeKey] = {
+  var newTheme = {
     name: name,
-    icon: '🎨',
-    ...colors
+    icon: '🎨'
   };
+
+  // Merge colors into the theme
+  for (var key in colors) {
+    if (colors.hasOwnProperty(key)) {
+      newTheme[key] = colors[key];
+    }
+  }
+
+  customThemes[themeKey] = newTheme;
 
   saveCustomThemes(customThemes);
 
@@ -19826,8 +19853,8 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const stepData = Object.entries(stepCounts)
-        .filter(function([step]) { return step && step !== 'Current Step'; })
-        .map(function([step, count]) { return [step, count]; });
+        .filter(function(item) { var step = item[0]; return step && step !== 'Current Step'; })
+        .map(function(item) { return [item[0], item[1]]; });
 
       return stepData.length > 0 ? stepData : [["No Active Grievances", 0]];
 
@@ -19850,7 +19877,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       const typeData = Object.entries(typeCounts)
         .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(function([type, count]) { return [type, count]; });
+        .map(function(item) { return [item[0], item[1]]; });
 
       return typeData.length > 0 ? typeData : [["No Data", 0]];
 
@@ -19867,7 +19894,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       const locationData = Object.entries(locationCounts)
         .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(function([location, count]) { return [location, count]; });
+        .map(function(item) { return [item[0], item[1]]; });
 
       return locationData.length > 0 ? locationData : [["No Data", 0]];
 
@@ -19882,7 +19909,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const allStepData = Object.entries(allStepCounts)
-        .map(function([step, count]) { return [step, count]; });
+        .map(function(item) { return [item[0], item[1]]; });
 
       return allStepData.length > 0 ? allStepData : [["No Data", 0]];
 
@@ -24771,13 +24798,13 @@ function analyzeIssueTypeTrends(data) {
       const olderCounts = {};
 
       recentMonths.forEach(function(month) {
-        Object.entries(issueTypesByMonth[month]).forEach(function([type, count]) {
+        Object.entries(issueTypesByMonth[month]).forEach(function(entry) { var type = entry[0]; var count = entry[1];
           recentCounts[type] = (recentCounts[type] || 0) + count;
         });
       });
 
       olderMonths.forEach(function(month) {
-        Object.entries(issueTypesByMonth[month]).forEach(function([type, count]) {
+        Object.entries(issueTypesByMonth[month]).forEach(function(entry) { var type = entry[0]; var count = entry[1];
           olderCounts[type] = (olderCounts[type] || 0) + count;
         });
       });
@@ -24831,7 +24858,7 @@ function detectSeasonalPatterns(data) {
   var peakQuarter = 'Q1';
   var peakVolume = 0;
 
-  Object.entries(quarterlyVolumes).forEach(function([quarter, volume]) {
+  Object.entries(quarterlyVolumes).forEach(function(entry) { var quarter = entry[0]; var volume = entry[1];
     if (volume > peakVolume) {
       peakQuarter = quarter;
       peakVolume = volume;
@@ -24915,7 +24942,7 @@ function forecastStewardWorkload(data) {
   const overloaded = [];
   const underutilized = [];
 
-  Object.entries(stewardCases).forEach(function([steward, count]) {
+  Object.entries(stewardCases).forEach(function(entry) { var steward = entry[0]; var count = entry[1];
     if (count > 15) {
       overloaded.push({ steward, caseload: count });
     } else if (count < 3) {
@@ -25029,7 +25056,7 @@ function detectAnomalies(data) {
   });
 
   const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val, 0; });
-  Object.entries(locationCounts).forEach(function([location, count]) {
+  Object.entries(locationCounts).forEach(function(entry) { var location = entry[0]; var count = entry[1];
     if (count > totalCases * 0.4) {
       anomalies.push({
         type: 'Location Concentration',
@@ -25635,7 +25662,7 @@ function analyzeLocationClusters(data) {
   const totalGrievances = data.length;
   const hotspots = [];
 
-  Object.entries(locationStats).forEach(function([location, stats]) {
+  Object.entries(locationStats).forEach(function(entry) { var location = entry[0]; var stats = entry[1];
     const percentage = (stats.count / totalGrievances) * 100;
 
     if (percentage > 15) {
@@ -25716,7 +25743,7 @@ function analyzeManagerPatterns(data) {
   const avgGrievancesPerManager = data.length / Object.keys(managerStats).length;
   const concerningManagers = [];
 
-  Object.entries(managerStats).forEach(function([manager, stats]) {
+  Object.entries(managerStats).forEach(function(entry) { var manager = entry[0]; var stats = entry[1];
     if (stats.count > avgGrievancesPerManager * 2) {
       const topIssue = Object.entries(stats.issueTypes)
         .sort(function(a, b) { return b[1] - a[1]; })[0];
@@ -25801,7 +25828,7 @@ function analyzeIssueTypePatterns(data) {
   // Identify systemic issues
   const systemicIssues = [];
 
-  Object.entries(issueTypeStats).forEach(function([issueType, stats]) {
+  Object.entries(issueTypeStats).forEach(function(entry) { var issueType = entry[0]; var stats = entry[1];
     // Check if concentrated in specific locations (>60% in one location)
     const topLocation = Object.entries(stats.locations)
       .sort(function(a, b) { return b[1] - a[1]; })[0];
@@ -25889,7 +25916,7 @@ function findCorrelations(data) {
     }
   });
 
-  Object.entries(managerIssueMatrix).forEach(function([key, count]) {
+  Object.entries(managerIssueMatrix).forEach(function(entry) { var key = entry[0]; var count = entry[1];
     if (count >= 5) {
       const [manager, issueType] = key.split('|||');
       correlations.push({
@@ -26718,10 +26745,16 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   }
 
   // Score each steward
-  const scoredStewards = stewards.map(function(steward) { return ({
-    ...steward,
-    score: calculateAssignmentScore(steward, grievance, preferences)
-  }));
+  const scoredStewards = stewards.map(function(steward) {
+    var scored = {};
+    for (var key in steward) {
+      if (steward.hasOwnProperty(key)) {
+        scored[key] = steward[key];
+      }
+    }
+    scored.score = calculateAssignmentScore(steward, grievance, preferences);
+    return scored;
+  });
 
   // Sort by score (descending)
   scoredStewards.sort(function(a, b) { return b.score - a.score; });
@@ -27227,7 +27260,7 @@ function showStewardWorkloadDashboard() {
             ? Object.entries(s.expertise)
                 .sort(function(a, b) { return b[1] - a[1]; })
                 .slice(0, 3)
-                .map(function([type, count]) { return `${type} (${count})`; })
+                .map(function(item) { var type = item[0]; var count = item[1]; return `${type} (${count})`; })
                 .join(', ')
             : 'No cases yet'}
         </div>
@@ -28688,11 +28721,17 @@ function calculateStepEfficiency(grievances) {
     { name: 'Step III', team: 'ESCALATION', status: 'red' }
   ];
 
-  return steps.map(function(s) { return ({
-    ...s,
-    cases: stepData[s.name] || 0,
-    caseload: Math.round(((stepData[s.name] || 0) / total) * 100)
-  }));
+  return steps.map(function(s) {
+    var result = {};
+    for (var key in s) {
+      if (s.hasOwnProperty(key)) {
+        result[key] = s[key];
+      }
+    }
+    result.cases = stepData[s.name] || 0;
+    result.caseload = Math.round(((stepData[s.name] || 0) / total) * 100);
+    return result;
+  });
 }
 
 function calculateEngagementRate(grievances, members) {
@@ -28874,7 +28913,7 @@ function getSystemicRisks(grievances) {
   });
 
   return Object.entries(locationRisks)
-    .map(function([location, data]) { return ({
+    .map(function(item) { var location = item[0]; var data = item[1]; return ({
       entity: location,
       type: 'LOCATION',
       cases: data.total,
@@ -28927,7 +28966,7 @@ function getContractTrends(grievances) {
   });
 
   return Object.entries(articleCounts)
-    .map(function([article, count]) {
+    .map(function(item) { var article = item[0]; var count = item[1];
       // Calculate real win/loss rates for this article
       const articleGrievances = grievances.filter(function(g) { return g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] === article; });  // Column W: Articles Violated
       const resolvedArticle = articleGrievances.filter(function(g) { return g[GRIEVANCE_COLS.STATUS - 1] && g[GRIEVANCE_COLS.STATUS - 1].toString().includes('Resolved'); });
@@ -28971,7 +29010,7 @@ function getLocationCaseload(grievances) {
   });
 
   return Object.entries(locationData)
-    .map(function([site, cases]) { return ({
+    .map(function(item) { var site = item[0]; var cases = item[1]; return ({
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
