@@ -16899,7 +16899,7 @@ function getMemberList() {
       phone: safeArrayGet(row, MEMBER_COLS.PHONE - 1, ''),
       isSteward: safeArrayGet(row, MEMBER_COLS.IS_STEWARD - 1, ''),
       supervisor: safeArrayGet(row, MEMBER_COLS.SUPERVISOR - 1, '')
-    };}).filter(function(member) { return member.memberId; }); // Filter out empty rows
+    }); }).filter(function(member) { return member.memberId; }); // Filter out empty rows
   } catch (error) {
     return handleError(error, 'getMemberList', true, true) || [];
   }
@@ -22580,7 +22580,7 @@ function getAllMembers() {
     supervisor: row[10] || '',
     manager: row[11] || '',
     assignedSteward: row[12] || ''
-  };}).filter(function(m) { return m.id; }); // Filter out empty rows
+  }); }).filter(function(m) { return m.id; }); // Filter out empty rows
 }
 
 /**
