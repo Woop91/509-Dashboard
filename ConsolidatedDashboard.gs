@@ -2562,7 +2562,174 @@ function setupFormulasAndCalculations() {
   );
 }
 
-/* --------------------- MENU --------------------- */
+/* --------------------= CONFIGURATION VALIDATION --------------------= */
+
+/**
+ * Validates dashboard configuration
+ * Checks that required constants and configurations are properly set
+ * @throws {Error} If configuration is invalid
+ */
+function validateConfiguration() {
+  const errors = [];
+
+  // Validate SHEETS configuration
+  const requiredSheets = [
+    'CONFIG', 'MEMBER_DIR', 'GRIEVANCE_LOG', 'DASHBOARD'
+  ];
+
+  requiredSheets.forEach(function(key) {
+    if (!SHEETS[key]) {
+      errors.push(`SHEETS.${key} is not defined`);
+    }
+  });
+
+  // Validate MEMBER_COLS configuration
+  const requiredMemberCols = [
+    'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'EMAIL'
+  ];
+
+  requiredMemberCols.forEach(function(key) {
+    if (!MEMBER_COLS[key]) {
+      errors.push(`MEMBER_COLS.${key} is not defined`);
+    }
+  });
+
+  // Validate GRIEVANCE_COLS configuration
+  const requiredGrievanceCols = [
+    'GRIEVANCE_ID', 'MEMBER_ID', 'STATUS', 'INCIDENT_DATE'
+  ];
+
+  requiredGrievanceCols.forEach(function(key) {
+    if (!GRIEVANCE_COLS[key]) {
+      errors.push(`GRIEVANCE_COLS.${key} is not defined`);
+    }
+  });
+
+  // Validate grievance form configuration if present
+  if (typeof GRIEVANCE_FORM_CONFIG !== 'undefined') {
+    if (GRIEVANCE_FORM_CONFIG.FORM_URL && GRIEVANCE_FORM_CONFIG.FORM_URL.includes('YOUR_FORM_ID')) {
+      errors.push('GRIEVANCE_FORM_CONFIG.FORM_URL contains placeholder - needs real form URL');
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(errors.join('\n'));
+  }
+}
+
+/**
+ * Validates configuration on spreadsheet open
+ * Shows alert to user if there are configuration errors
+ * @returns {boolean} True if configuration is valid
+ */
+function validateConfigurationOnOpen() {
+  try {
+    validateConfiguration();
+    return true;
+  } catch (error) {
+    SpreadsheetApp.getUi().alert(
+      '⚠️ Configuration Error',
+      'The dashboard configuration has errors:\n\n' + error.message +
+      '\n\nPlease contact the administrator.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return false;
+  }
+}
+
+/* --------------------= ERROR HANDLING --------------------= */
+
+/**
+ * Centralized error handler with logging and user notification
+ * @param {Error} error - The error object
+ * @param {string} context - Context where error occurred
+ * @param {boolean} showToUser - Whether to show toast to user
+ * @param {boolean} logToSheet - Whether to log to Diagnostics sheet
+ * @returns {null} Always returns null for safe fallback values
+ */
+function handleError(error, context, showToUser = true, logToSheet = true) {
+  const errorMessage = error.message || error.toString();
+  const timestamp = new Date();
+
+  // Log to console
+  Logger.log(`[ERROR] ${context}: ${errorMessage}`);
+  Logger.log(error.stack);
+
+  // Show user-friendly message
+  if (showToUser) {
+    SpreadsheetApp.getActiveSpreadsheet().toast(
+      `❌ Error in ${context}: ${errorMessage}`,
+      'Error',
+      10
+    );
+  }
+
+  // Log to Diagnostics sheet
+  if (logToSheet) {
+    try {
+      logToDiagnostics(context, errorMessage, error.stack, timestamp);
+    } catch (e) {
+      Logger.log('Failed to log to diagnostics: ' + e.message);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Logs errors to Diagnostics sheet for tracking
+ * @param {string} context - Context where error occurred
+ * @param {string} errorMessage - Error message
+ * @param {string} stackTrace - Stack trace
+ * @param {Date} timestamp - Timestamp of error
+ */
+function logToDiagnostics(context, errorMessage, stackTrace, timestamp) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  var diagnosticsSheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+
+  if (!diagnosticsSheet) {
+    return; // Sheet doesn't exist yet
+  }
+
+  const user = Session.getActiveUser().getEmail();
+  const row = [
+    timestamp,
+    user,
+    context,
+    errorMessage,
+    stackTrace,
+    'ERROR'
+  ];
+
+  diagnosticsSheet.appendRow(row);
+}
+
+/**
+ * Logs warning messages
+ * @param {string} context - Context for the warning
+ * @param {string} message - Warning message
+ */
+function logWarning(context, message) {
+  Logger.log(`[WARNING] ${context}: ${message}`);
+}
+
+/**
+ * Wraps a function with try-catch error handling
+ * @param {Function} fn - Function to wrap
+ * @param {string} context - Context name for error messages
+ * @returns {Function} Wrapped function
+ */
+function withErrorHandling(fn, context) {
+  return function() {
+    try {
+      return fn.apply(this, arguments);
+    } catch (error) {
+      return handleError(error, context);
+    }
+  };
+}
+
+/* --------------------= MENU --------------------= */
 /**
  * Runs when spreadsheet opens - creates menu and validates configuration
  */
@@ -2908,7 +3075,7 @@ function seedMembersWithCount(count, toggleName) {
     // Generate multiple office days (1-3 days)
     const numDays = Math.floor(Math.random() * 3) + 1;
     const selectedDays = [];
-    const availableDays = [...officeDays];
+    const availableDays = officeDays.slice();
     for (let d = 0; d < numDays; d++) {
       if (availableDays.length > 0) {
         const idx = Math.floor(Math.random() * availableDays.length);
@@ -3395,7 +3562,7 @@ function populateStewardWorkload() {
     const s = stewards[stewardId];
     const winRate = s.resolvedCases > 0 ? (s.wonCases / s.resolvedCases * 100) : 0;
     const avgDays = s.resolutionDays.length > 0
-      ? s.resolutionDays.reduce(function(a, b) { return a + b; }, 0) / s.resolutionDays.length
+      ? s.resolutionDays.reduce(function(a, b) { return a + b, 0; }) / s.resolutionDays.length
       : 0;
 
     // Capacity status based on active cases
@@ -4754,7 +4921,17 @@ function saveADHDSettings(settings) {
   const currentSettings = getADHDSettings();
 
   // Merge with current
-  const newSettings = { ...currentSettings, ...settings };
+  var newSettings = {};
+  for (var key in currentSettings) {
+    if (currentSettings.hasOwnProperty(key)) {
+      newSettings[key] = currentSettings[key];
+    }
+  }
+  for (var key in settings) {
+    if (settings.hasOwnProperty(key)) {
+      newSettings[key] = settings[key];
+    }
+  }
 
   props.setProperty('adhdSettings', JSON.stringify(newSettings));
 
@@ -4819,6 +4996,11 @@ function toggleZebraStripes() {
  * @param {Sheet} sheet - Sheet to apply to
  */
 function applyZebraStripes(sheet) {
+  if (!sheet) {
+    Logger.log('applyZebraStripes: sheet parameter is undefined');
+    return;
+  }
+
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return;
 
@@ -4838,6 +5020,11 @@ function applyZebraStripes(sheet) {
  * @param {Sheet} sheet - Sheet to remove from
  */
 function removeZebraStripes(sheet) {
+  if (!sheet) {
+    Logger.log('removeZebraStripes: sheet parameter is undefined');
+    return;
+  }
+
   const bandings = sheet.getBandings();
   bandings.forEach(function(banding) { return banding.remove(); });
 }
@@ -6125,13 +6312,22 @@ function gatherQuarterlyData() {
     trend = 'decreasing';
   }
 
-  return {
+  var result = {
     quarter: `Q${quarter + 1} ${now.getFullYear()}`,
-    monthlyTrends,
-    totalGrievances,
-    trend,
-    ...gatherMonthlyData() // Include current month details
+    monthlyTrends: monthlyTrends,
+    totalGrievances: totalGrievances,
+    trend: trend
   };
+
+  // Include current month details
+  var monthlyData = gatherMonthlyData();
+  for (var key in monthlyData) {
+    if (monthlyData.hasOwnProperty(key)) {
+      result[key] = monthlyData[key];
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -6185,7 +6381,9 @@ function createMonthlyReportDoc(data) {
     .slice(0, 10);
 
   const issueTable = [['Issue Type', 'Count']];
-  issueTypes.forEach(function([type, count]) {
+  issueTypes.forEach(function(item) {
+    var type = item[0];
+    var count = item[1];
     issueTable.push([type, count.toString()]);
   });
 
@@ -6203,7 +6401,9 @@ function createMonthlyReportDoc(data) {
     .slice(0, 10);
 
   const stewardTable = [['Steward', 'Active Grievances']];
-  stewards.forEach(function([steward, count]) {
+  stewards.forEach(function(item) {
+    var steward = item[0];
+    var count = item[1];
     stewardTable.push([steward, count.toString()]);
   });
 
@@ -9013,8 +9213,10 @@ function createThemeManagerHTML() {
   const autoSwitch = getAutoSwitchSettings();
 
   var themeCards = '';
-  Object.entries(THEME_CONFIG.THEMES).forEach(function([key, theme]) {
-    const isActive = currentTheme === key;
+  Object.entries(THEME_CONFIG.THEMES).forEach(function(entry) {
+    var key = entry[0];
+    var theme = entry[1];
+    var isActive = currentTheme === key;
     themeCards += `
       <div class="theme-card ${isActive ? 'active' : ''}" onclick="selectTheme('${key}')">
         <div class="theme-icon">${theme.icon}</div>
@@ -9540,11 +9742,19 @@ function createCustomTheme(name, colors) {
 
   const themeKey = 'CUSTOM_' + name.toUpperCase().replace(/\s+/g, '_');
 
-  customThemes[themeKey] = {
+  var newTheme = {
     name: name,
-    icon: '🎨',
-    ...colors
+    icon: '🎨'
   };
+
+  // Merge colors into the theme
+  for (var key in colors) {
+    if (colors.hasOwnProperty(key)) {
+      newTheme[key] = colors[key];
+    }
+  }
+
+  customThemes[themeKey] = newTheme;
 
   saveCustomThemes(customThemes);
 
@@ -9748,12 +9958,19 @@ function logBackup(backupName, fileId, automated) {
 }
 
 /**
- * Creates backup log sheet
+ * Creates backup log sheet (or returns existing one)
  * @returns {Sheet} Backup log sheet
  */
 function createBackupLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('💾 Backup Log');
+
+  // Check if sheet already exists
+  var sheet = ss.getSheetByName('💾 Backup Log');
+  if (sheet) {
+    return sheet;
+  }
+
+  sheet = ss.insertSheet('💾 Backup Log');
 
   const headers = [
     'Timestamp',
@@ -10368,58 +10585,49 @@ function warmUpCaches() {
 }
 
 /**
- * Gets all grievances (cached)
+ * Gets all grievances (NOT cached due to size - reads directly)
  * @returns {Array} Grievances array
  */
 function getCachedGrievances() {
-  return getCachedData(
-    CACHE_KEYS.ALL_GRIEVANCES,
-    function() {
-      const ss = SpreadsheetApp.getActiveSpreadsheet();
-      const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-      const lastRow = sheet.getLastRow();
+  // NOTE: Caching disabled for large datasets to avoid "Argument too large" errors
+  // With 5000+ grievances, the dataset exceeds cache limits
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-      if (lastRow < 2) return [];
+  if (!sheet) return [];
 
-      return sheet.getRange(2, 1, lastRow - 1, 28).getValues();
-    },
-    300 // 5 minutes
-  );
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  return sheet.getRange(2, 1, lastRow - 1, 28).getValues();
 }
 
 /**
- * Gets all members (cached)
+ * Gets all members (NOT cached due to size - reads directly)
  * @returns {Array} Members array
  */
 function getCachedMembers() {
-  return getCachedData(
-    CACHE_KEYS.ALL_MEMBERS,
-    function() {
-      const ss = SpreadsheetApp.getActiveSpreadsheet();
-      const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-      const lastRow = sheet.getLastRow();
+  // NOTE: Caching disabled for large datasets to avoid "Argument too large" errors
+  // With 20000+ members, the dataset exceeds cache limits
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-      if (lastRow < 2) return [];
+  if (!sheet) return [];
 
-      return sheet.getRange(2, 1, lastRow - 1, 28).getValues();
-    },
-    600 // 10 minutes
-  );
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  return sheet.getRange(2, 1, lastRow - 1, 28).getValues();
 }
 
 /**
- * Gets all stewards (cached)
+ * Gets all stewards (NOT cached - filtered from members)
  * @returns {Array} Stewards array
  */
 function getCachedStewards() {
-  return getCachedData(
-    CACHE_KEYS.ALL_STEWARDS,
-    function() {
-      const members = getCachedMembers();
-      return members.filter(function(row) { return row[9] === 'Yes'; }); // Column J: Is Steward?
-    },
-    600 // 10 minutes
-  );
+  // NOTE: Caching disabled to avoid "Argument too large" errors
+  const members = getCachedMembers();
+  return members.filter(function(row) { return row[9] === 'Yes'; }); // Column J: Is Steward?
 }
 
 /**
@@ -10509,7 +10717,9 @@ function showCacheStatusDashboard() {
 
   const cacheStatus = [];
 
-  Object.entries(CACHE_KEYS).forEach(function([name, key]) {
+  Object.entries(CACHE_KEYS).forEach(function(entry) {
+    var name = entry[0];
+    var key = entry[1];
     const inMemory = memoryCache.get(key) !== null;
     const inProps = propsCache.getProperty(key) !== null;
 
@@ -11756,29 +11966,29 @@ function getPaginationStats() {
  *
  * Usage:
  *   const lock = new DistributedLock('resource-name');
- *   lock.executeWithLock(function() {
+ *   lock.executeWithLock(() {
  *     // Critical section code here
  *   });
  */
-class DistributedLock {
-  /**
-   * Create a new distributed lock
-   * @param {string} resource - Name of the resource being locked
-   * @param {number} timeout - Timeout in milliseconds (default: 30000 = 30 seconds)
-   */
-  constructor(resource, timeout = 30000) {
-    this.resource = resource;
-    this.timeout = timeout;
-    this.lock = LockService.getScriptLock();
-    this.lockAcquired = false;
-  }
+/**
+ * Create a new distributed lock
+ * @param {string} resource - Name of the resource being locked
+ * @param {number} timeout - Timeout in milliseconds (default: 30000 = 30 seconds)
+ * @constructor
+ */
+function DistributedLock(resource, timeout) {
+  this.resource = resource;
+  this.timeout = timeout !== undefined ? timeout : 30000;
+  this.lock = LockService.getScriptLock();
+  this.lockAcquired = false;
+}
 
-  /**
-   * Attempt to acquire the lock
-   * @returns {boolean} True if lock acquired, false otherwise
-   * @throws {Error} If unable to acquire lock after timeout
-   */
-  acquire() {
+/**
+ * Attempt to acquire the lock
+ * @returns {boolean} True if lock acquired, false otherwise
+ * @throws {Error} If unable to acquire lock after timeout
+ */
+DistributedLock.prototype.acquire = function() {
     try {
       const acquired = this.lock.tryLock(this.timeout);
 
@@ -11819,12 +12029,12 @@ class DistributedLock {
       Logger.log(`Error acquiring lock for "${this.resource}": ${error.message}`);
       throw error;
     }
-  }
+};
 
-  /**
-   * Release the lock
-   */
-  release() {
+/**
+ * Release the lock
+ */
+DistributedLock.prototype.release = function() {
     if (this.lockAcquired) {
       try {
         this.lock.releaseLock();
@@ -11842,17 +12052,17 @@ class DistributedLock {
         Logger.log(`Error releasing lock for "${this.resource}": ${error.message}`);
       }
     }
-  }
+};
 
-  /**
-   * Execute a function while holding the lock
-   * Automatically acquires lock before execution and releases after
-   *
-   * @param {Function} operation - Function to execute
-   * @returns {*} Result from the operation
-   * @throws {Error} If lock cannot be acquired or operation fails
-   */
-  executeWithLock(operation) {
+/**
+ * Execute a function while holding the lock
+ * Automatically acquires lock before execution and releases after
+ *
+ * @param {Function} operation - Function to execute
+ * @returns {*} Result from the operation
+ * @throws {Error} If lock cannot be acquired or operation fails
+ */
+DistributedLock.prototype.executeWithLock = function(operation) {
     const startTime = new Date();
 
     try {
@@ -11883,25 +12093,90 @@ class DistributedLock {
       // Always release the lock
       this.release();
     }
-  }
+};
 
-  /**
-   * Check if lock is currently held
-   * @returns {boolean} True if lock is held
-   */
-  isLocked() {
+/**
+ * Check if lock is currently held
+ * @returns {boolean} True if lock is held
+ */
+DistributedLock.prototype.isLocked = function() {
     return this.lockAcquired;
-  }
-}
+};
 
 /**
  * Recalculate all members with thread safety
  * Prevents multiple users from running this simultaneously
  */
+/**
+ * Recalculates all member rows
+ * Uses array formulas for efficient batch processing
+ * @returns {Object} Statistics about the recalculation
+ */
+function recalcAllMembers() {
+  const startTime = new Date();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberDir) {
+    throw new Error('Member Directory sheet not found');
+  }
+
+  const lastRow = memberDir.getLastRow();
+  if (lastRow < 2) {
+    return {
+      processed: 0,
+      duration: new Date() - startTime,
+      message: 'No members to process'
+    };
+  }
+
+  // Dynamic column references for formulas
+  const memberIdCol = getColumnLetter(MEMBER_COLS.MEMBER_ID);
+  const grievanceMemberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+
+  // Set array formulas for all member rows at once (efficient batch operation)
+  try {
+    // Has Open Grievance? - Column Z (26)
+    if (MEMBER_COLS.HAS_OPEN_GRIEVANCE) {
+      memberDir.getRange("Z2").setFormula(
+        `=ARRAYFORMULA(IF(A2:A1000<>"",IF(COUNTIFS('Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},A2:A1000,'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No"),""))`
+      );
+    }
+
+    // Grievance Status Snapshot - Column AA (27)
+    if (MEMBER_COLS.GRIEVANCE_STATUS) {
+      memberDir.getRange("AA2").setFormula(
+        `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A2:A1000,'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),""),""))`
+      );
+    }
+
+    // Next Grievance Deadline - Column AB (28)
+    if (MEMBER_COLS.NEXT_DEADLINE) {
+      memberDir.getRange("AB2").setFormula(
+        `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A2:A1000,'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),""),""))`
+      );
+    }
+
+    const duration = new Date() - startTime;
+    const processed = lastRow - 1;
+
+    return {
+      processed: processed,
+      duration: duration,
+      message: `Recalculated ${processed} members in ${duration}ms`
+    };
+  } catch (error) {
+    Logger.log('Error in recalcAllMembers: ' + error.message);
+    throw error;
+  }
+}
+
 function recalcAllMembersThreadSafe() {
   const lock = new DistributedLock('recalc_members', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(function() {
+  return lock.executeWithLock(() {
     // Call the actual recalculation function
     if (typeof recalcAllMembers === 'function') {
       return recalcAllMembers();
@@ -11917,7 +12192,7 @@ function recalcAllMembersThreadSafe() {
 function recalcAllGrievancesThreadSafe() {
   const lock = new DistributedLock('recalc_grievances', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(function() {
+  return lock.executeWithLock(() {
     // Call the batched recalculation if available
     if (typeof recalcAllGrievancesBatched === 'function') {
       return recalcAllGrievancesBatched();
@@ -11933,7 +12208,7 @@ function recalcAllGrievancesThreadSafe() {
 function rebuildDashboardThreadSafe() {
   const lock = new DistributedLock('rebuild_dashboard', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(function() {
+  return lock.executeWithLock(() {
     // Call the optimized rebuild if available, otherwise standard rebuild
     if (typeof rebuildDashboardOptimized === 'function') {
       return rebuildDashboardOptimized();
@@ -11952,7 +12227,7 @@ function rebuildDashboardThreadSafe() {
 function seedDataThreadSafe() {
   const lock = new DistributedLock('seed_data', 600000); // 10 minute timeout
 
-  return lock.executeWithLock(function() {
+  return lock.executeWithLock(() {
     if (typeof seedAllWithRollback === 'function') {
       return seedAllWithRollback();
     } else {
@@ -11974,7 +12249,7 @@ function seedDataThreadSafe() {
 function clearAllDataThreadSafe() {
   const lock = new DistributedLock('clear_data', 300000); // 5 minute timeout
 
-  return lock.executeWithLock(function() {
+  return lock.executeWithLock(() {
     if (typeof NUKE_ALL_DATA === 'function') {
       return NUKE_ALL_DATA();
     }
@@ -11994,7 +12269,7 @@ function makeThreadSafe(fn, resourceName, timeout = 30000) {
   return function(...args) {
     const lock = new DistributedLock(resourceName, timeout);
 
-    return lock.executeWithLock(function() {
+    return lock.executeWithLock(() {
       return fn.apply(this, args);
     });
   };
@@ -12163,7 +12438,7 @@ function CHECK_LOCK_STATUS() {
 function batchUpdateWithLock(updates) {
   const lock = new DistributedLock('batch_update', 600000); // 10 minutes
 
-  return lock.executeWithLock(function() {
+  return lock.executeWithLock(() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
@@ -14670,12 +14945,19 @@ function logCommunication(grievanceId, type, details) {
 }
 
 /**
- * Creates Communications Log sheet
+ * Creates Communications Log sheet (or returns existing one)
  * @returns {Sheet} Communications Log sheet
  */
 function createCommunicationsLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('📞 Communications Log');
+
+  // Check if sheet already exists
+  var sheet = ss.getSheetByName('📞 Communications Log');
+  if (sheet) {
+    return sheet;
+  }
+
+  sheet = ss.insertSheet('📞 Communications Log');
 
   // Set headers
   const headers = [
@@ -16560,7 +16842,7 @@ function getMemberList() {
 
     const data = memberSheet.getRange(2, 1, lastRow - 1, numCols).getValues();
 
-    return data.map(function(row, index) { return {
+    return data.map(function(row, index) { return ({
       rowIndex: index + 2,
       memberId: safeArrayGet(row, MEMBER_COLS.MEMBER_ID - 1, ''),
       firstName: safeArrayGet(row, MEMBER_COLS.FIRST_NAME - 1, ''),
@@ -17013,6 +17295,14 @@ function onGrievanceFormSubmit(e) {
  */
 function createGrievanceFolder(grievanceId, formData) {
   try {
+    // Validate parameters
+    if (!grievanceId) {
+      throw new Error('Grievance ID is required');
+    }
+    if (!formData || !formData.lastName || !formData.firstName) {
+      throw new Error('Form data with lastName and firstName is required');
+    }
+
     // Get or create main Grievances folder
     const mainFolderName = 'SEIU 509 - Grievances';
     var mainFolder;
@@ -17341,6 +17631,11 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
  * Extracts and structures data from form submission
  */
 function extractFormData(e) {
+  // Check if event object exists
+  if (!e || !e.namedValues) {
+    throw new Error('Form event data is missing or invalid. Make sure this function is triggered by a Google Form submission.');
+  }
+
   const responses = e.namedValues;
 
   // Map form responses to grievance data structure
@@ -17366,6 +17661,11 @@ function extractFormData(e) {
  * Adds grievance data to the Grievance Log
  */
 function addGrievanceToLog(formData) {
+  // Validate formData
+  if (!formData) {
+    throw new Error('Form data is missing or invalid');
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
@@ -17447,6 +17747,12 @@ function addGrievanceToLog(formData) {
  * Sets deadline formulas (Filing Deadline, Step deadlines, Days Open, etc.)
  */
 function recalcGrievanceRow(row) {
+  // Validate row parameter
+  if (!row || row < 2) {
+    Logger.log('recalcGrievanceRow: Invalid row parameter ' + row);
+    return;
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   if (!grievanceLog) return;
@@ -17486,6 +17792,12 @@ function recalcGrievanceRow(row) {
  * Updates grievance snapshot columns (Has Open Grievance, Status, Next Deadline)
  */
 function recalcMemberRow(row) {
+  // Validate row parameter
+  if (!row || row < 2) {
+    Logger.log('recalcMemberRow: Invalid row parameter ' + row);
+    return;
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   if (!memberDir) return;
@@ -17576,6 +17888,11 @@ function findMemberRow(memberId) {
  * Generates a PDF for a grievance
  */
 function generateGrievancePDF(grievanceId) {
+  // Validate grievance ID
+  if (!grievanceId) {
+    throw new Error('Grievance ID is required to generate PDF');
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
@@ -17595,7 +17912,7 @@ function generateGrievancePDF(grievanceId) {
   }
 
   if (grievanceRow === -1) {
-    throw new Error('Grievance not found');
+    throw new Error(`Grievance ${grievanceId} not found in log`);
   }
 
   const grievanceData = data[grievanceRow];
@@ -19171,6 +19488,16 @@ function rebuildInteractiveDashboard() {
  * Calculate all metrics from data
  */
 function calculateAllMetrics(memberData, grievanceData) {
+  // Validate input data
+  if (!memberData || !Array.isArray(memberData) || memberData.length === 0) {
+    Logger.log('calculateAllMetrics: Invalid memberData');
+    return {};
+  }
+  if (!grievanceData || !Array.isArray(grievanceData) || grievanceData.length === 0) {
+    Logger.log('calculateAllMetrics: Invalid grievanceData');
+    return {};
+  }
+
   const metrics = {};
 
   // Member metrics
@@ -19210,9 +19537,19 @@ function calculateAllMetrics(memberData, grievanceData) {
  * Update metric cards with current data and celebratory messages
  */
 function updateMetricCards(sheet, metrics) {
+  // Validate parameters
+  if (!sheet) {
+    Logger.log('updateMetricCards: sheet parameter is undefined');
+    return;
+  }
+  if (!metrics || typeof metrics !== 'object') {
+    Logger.log('updateMetricCards: metrics parameter is invalid');
+    return;
+  }
+
   // Card 1: Total Members
   sheet.getRange("A15:E17").merge()
-    .setValue(formatNumber(metrics.totalMembers))
+    .setValue(formatNumber(metrics.totalMembers || 0))
     .setNumberFormat("#,##0");
 
   // Add celebration message for members
@@ -19322,7 +19659,13 @@ function getOverdueCelebration(overdue, total) {
  * Get overall victory message based on all metrics
  */
 function getVictoryMessage(metrics) {
-  const winRate = parseFloat(metrics.winRate);
+  // Validate metrics parameter
+  if (!metrics || typeof metrics !== 'object') {
+    Logger.log('getVictoryMessage: metrics parameter is invalid');
+    return "📊 Keep up the good work!";
+  }
+
+  const winRate = parseFloat(metrics.winRate || 0);
   const messages = [];
 
   // Check for major victories
@@ -19511,8 +19854,8 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const stepData = Object.entries(stepCounts)
-        .filter(function([step]) { return step && step !== 'Current Step'; })
-        .map(function([step, count]) { return [step, count]; });
+        .filter(function(item) { var step = item[0]; return step && step !== 'Current Step'; })
+        .map(function(item) { return [item[0], item[1]]; });
 
       return stepData.length > 0 ? stepData : [["No Active Grievances", 0]];
 
@@ -19535,7 +19878,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       const typeData = Object.entries(typeCounts)
         .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(function([type, count]) { return [type, count]; });
+        .map(function(item) { return [item[0], item[1]]; });
 
       return typeData.length > 0 ? typeData : [["No Data", 0]];
 
@@ -19552,7 +19895,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       const locationData = Object.entries(locationCounts)
         .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(function([location, count]) { return [location, count]; });
+        .map(function(item) { return [item[0], item[1]]; });
 
       return locationData.length > 0 ? locationData : [["No Data", 0]];
 
@@ -19567,7 +19910,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       });
 
       const allStepData = Object.entries(allStepCounts)
-        .map(function([step, count]) { return [step, count]; });
+        .map(function(item) { return [item[0], item[1]]; });
 
       return allStepData.length > 0 ? allStepData : [["No Data", 0]];
 
@@ -19594,16 +19937,22 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
  * Create Grievance Status Donut Chart
  */
 function createGrievanceStatusDonut(sheet, grievanceData) {
+  // Validate input
+  if (!grievanceData || !Array.isArray(grievanceData) || grievanceData.length < 2) {
+    Logger.log('createGrievanceStatusDonut: Invalid or empty grievanceData');
+    return;
+  }
+
   // Count by status
-  const statusCounts = {};
+  var statusCounts = {};
   grievanceData.slice(1).forEach(function(row) {
-    const status = row[4] || 'Unknown';
+    var status = row[4] || 'Unknown';
     statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
 
-  const data = Object.entries(statusCounts).map(function([status, count]) { return [status, count]; });
+  var data = Object.entries(statusCounts).map(function(entry) { return [entry[0], entry[1]]; });
 
-  const chart = sheet.newChart()
+  var chart = sheet.newChart()
     .setChartType(Charts.ChartType.PIE)
     .setPosition(48, 1, 0, 0)
     .setOption('title', 'Grievances by Status')
@@ -19625,19 +19974,25 @@ function createGrievanceStatusDonut(sheet, grievanceData) {
  * Create Location Pie Chart
  */
 function createLocationPieChart(sheet, grievanceData) {
+  // Validate input
+  if (!grievanceData || !Array.isArray(grievanceData) || grievanceData.length < 2) {
+    Logger.log('createLocationPieChart: Invalid or empty grievanceData');
+    return;
+  }
+
   // Count by location (from member data)
-  const locationCounts = {};
+  var locationCounts = {};
   grievanceData.slice(1).forEach(function(row) {
-    const location = row[4] || 'Unknown';  // Adjust column as needed
+    var location = row[4] || 'Unknown';  // Adjust column as needed
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
   // Get top 10
-  const topLocations = Object.entries(locationCounts)
+  var topLocations = Object.entries(locationCounts)
     .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
-  const chart = sheet.newChart()
+  var chart = sheet.newChart()
     .setChartType(Charts.ChartType.PIE)
     .setPosition(48, 12, 0, 0)
     .setOption('title', 'Top Locations by Grievances')
@@ -19658,18 +20013,24 @@ function createLocationPieChart(sheet, grievanceData) {
  * Create warehouse-style location bar chart
  */
 function createWarehouseLocationChart(sheet, grievanceData) {
+  // Validate input
+  if (!grievanceData || !Array.isArray(grievanceData) || grievanceData.length < 2) {
+    Logger.log('createWarehouseLocationChart: Invalid or empty grievanceData');
+    return;
+  }
+
   // This would create a horizontal bar chart similar to warehouse dashboard
-  const locationCounts = {};
+  var locationCounts = {};
   grievanceData.slice(1).forEach(function(row) {
-    const location = row[4] || 'Unknown';
+    var location = row[4] || 'Unknown';
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
-  const topLocations = Object.entries(locationCounts)
+  var topLocations = Object.entries(locationCounts)
     .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 15);
 
-  const chart = sheet.newChart()
+  var chart = sheet.newChart()
     .setChartType(Charts.ChartType.BAR)
     .setPosition(71, 1, 0, 0)
     .setOption('title', 'Grievances by City/Location')
@@ -22154,7 +22515,7 @@ function getAllMembers() {
 
   const data = memberSheet.getRange(2, 1, lastRow - 1, 13).getValues();
 
-  return data.map(function(row, index) { return {
+  return data.map(function(row, index) { return ({
     row: index + 2,
     id: row[0] || '',
     name: `${row[1]} ${row[2]}`.trim(),
@@ -23665,7 +24026,7 @@ function createPerformanceMonitoringSheet() {
 
   perfSheet.getRange(summaryRow + 2, 1).setValue('Total Calls:');
   perfSheet.getRange(summaryRow + 2, 2).setValue(
-    rows.reduce(function(sum, row) { return sum + row[4]; }, 0)
+    rows.reduce(function(sum, row) { return sum + row[4], 0; })
   );
 
   perfSheet.getRange(summaryRow + 3, 1).setValue('Last Updated:');
@@ -24438,13 +24799,13 @@ function analyzeIssueTypeTrends(data) {
       const olderCounts = {};
 
       recentMonths.forEach(function(month) {
-        Object.entries(issueTypesByMonth[month]).forEach(function([type, count]) {
+        Object.entries(issueTypesByMonth[month]).forEach(function(entry) { var type = entry[0]; var count = entry[1];
           recentCounts[type] = (recentCounts[type] || 0) + count;
         });
       });
 
       olderMonths.forEach(function(month) {
-        Object.entries(issueTypesByMonth[month]).forEach(function([type, count]) {
+        Object.entries(issueTypesByMonth[month]).forEach(function(entry) { var type = entry[0]; var count = entry[1];
           olderCounts[type] = (olderCounts[type] || 0) + count;
         });
       });
@@ -24498,7 +24859,7 @@ function detectSeasonalPatterns(data) {
   var peakQuarter = 'Q1';
   var peakVolume = 0;
 
-  Object.entries(quarterlyVolumes).forEach(function([quarter, volume]) {
+  Object.entries(quarterlyVolumes).forEach(function(entry) { var quarter = entry[0]; var volume = entry[1];
     if (volume > peakVolume) {
       peakQuarter = quarter;
       peakVolume = volume;
@@ -24542,15 +24903,15 @@ function analyzeResolutionTimeTrend(data) {
   // Sort for median
   resolutionTimes.sort(function(a, b) { return a - b; });
 
-  const average = resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / resolutionTimes.length;
+  const average = resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / resolutionTimes.length;
   const median = resolutionTimes[Math.floor(resolutionTimes.length / 2)];
 
   // Recent vs older comparison
   const recent = resolutionTimes.slice(-10);
   const older = resolutionTimes.slice(0, -10);
 
-  const recentAvg = recent.reduce(function(sum, val) { return sum + val; }, 0) / recent.length;
-  const olderAvg = older.length > 0 ? older.reduce(function(sum, val) { return sum + val; }, 0) / older.length : recentAvg;
+  const recentAvg = recent.reduce(function(sum, val) { return sum + val, 0; }) / recent.length;
+  const olderAvg = older.length > 0 ? older.reduce(function(sum, val) { return sum + val, 0; }) / older.length : recentAvg;
 
   return {
     average: Math.round(average),
@@ -24582,7 +24943,7 @@ function forecastStewardWorkload(data) {
   const overloaded = [];
   const underutilized = [];
 
-  Object.entries(stewardCases).forEach(function([steward, count]) {
+  Object.entries(stewardCases).forEach(function(entry) { var steward = entry[0]; var count = entry[1];
     if (count > 15) {
       overloaded.push({ steward, caseload: count });
     } else if (count < 3) {
@@ -24674,7 +25035,7 @@ function detectAnomalies(data) {
 
   const volumes = Object.values(monthlyVolumes);
   if (volumes.length >= 3) {
-    const average = volumes.slice(0, -1).reduce(function(sum, val) { return sum + val; }, 0) / (volumes.length - 1);
+    const average = volumes.slice(0, -1).reduce(function(sum, val) { return sum + val, 0) / (volumes.length - 1; });
     const latest = volumes[volumes.length - 1];
 
     if (latest > average * 1.5) {
@@ -24695,8 +25056,8 @@ function detectAnomalies(data) {
     }
   });
 
-  const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val; }, 0);
-  Object.entries(locationCounts).forEach(function([location, count]) {
+  const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val, 0; });
+  Object.entries(locationCounts).forEach(function(entry) { var location = entry[0]; var count = entry[1];
     if (count > totalCases * 0.4) {
       anomalies.push({
         type: 'Location Concentration',
@@ -25302,7 +25663,7 @@ function analyzeLocationClusters(data) {
   const totalGrievances = data.length;
   const hotspots = [];
 
-  Object.entries(locationStats).forEach(function([location, stats]) {
+  Object.entries(locationStats).forEach(function(entry) { var location = entry[0]; var stats = entry[1];
     const percentage = (stats.count / totalGrievances) * 100;
 
     if (percentage > 15) {
@@ -25311,7 +25672,7 @@ function analyzeLocationClusters(data) {
         .sort(function(a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       hotspots.push({
@@ -25328,7 +25689,7 @@ function analyzeLocationClusters(data) {
 
   return {
     totalLocations: Object.keys(locationStats).length,
-    hotspots: hotspots.sort(function(a, b) { return b.count - a.count; }),
+    hotspots: hotspots.sort(function(a, b) { return b.count - a.count); },
     allStats: locationStats
   };
 }
@@ -25383,13 +25744,13 @@ function analyzeManagerPatterns(data) {
   const avgGrievancesPerManager = data.length / Object.keys(managerStats).length;
   const concerningManagers = [];
 
-  Object.entries(managerStats).forEach(function([manager, stats]) {
+  Object.entries(managerStats).forEach(function(entry) { var manager = entry[0]; var stats = entry[1];
     if (stats.count > avgGrievancesPerManager * 2) {
       const topIssue = Object.entries(stats.issueTypes)
         .sort(function(a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       concerningManagers.push({
@@ -25406,7 +25767,7 @@ function analyzeManagerPatterns(data) {
   return {
     totalManagers: Object.keys(managerStats).length,
     avgPerManager: avgGrievancesPerManager.toFixed(1),
-    concerningManagers: concerningManagers.sort(function(a, b) { return b.count - a.count; }),
+    concerningManagers: concerningManagers.sort(function(a, b) { return b.count - a.count); },
     allStats: managerStats
   };
 }
@@ -25468,7 +25829,7 @@ function analyzeIssueTypePatterns(data) {
   // Identify systemic issues
   const systemicIssues = [];
 
-  Object.entries(issueTypeStats).forEach(function([issueType, stats]) {
+  Object.entries(issueTypeStats).forEach(function(entry) { var issueType = entry[0]; var stats = entry[1];
     // Check if concentrated in specific locations (>60% in one location)
     const topLocation = Object.entries(stats.locations)
       .sort(function(a, b) { return b[1] - a[1]; })[0];
@@ -25479,7 +25840,7 @@ function analyzeIssueTypePatterns(data) {
 
     if (locationConcentration > 60 || stats.count > data.length * 0.15) {
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       systemicIssues.push({
@@ -25496,7 +25857,7 @@ function analyzeIssueTypePatterns(data) {
 
   return {
     totalIssueTypes: Object.keys(issueTypeStats).length,
-    systemicIssues: systemicIssues.sort(function(a, b) { return b.count - a.count; }),
+    systemicIssues: systemicIssues.sort(function(a, b) { return b.count - a.count); },
     allStats: issueTypeStats
   };
 }
@@ -25556,7 +25917,7 @@ function findCorrelations(data) {
     }
   });
 
-  Object.entries(managerIssueMatrix).forEach(function([key, count]) {
+  Object.entries(managerIssueMatrix).forEach(function(entry) { var key = entry[0]; var count = entry[1];
     if (count >= 5) {
       const [manager, issueType] = key.split('|||');
       correlations.push({
@@ -26385,10 +26746,16 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   }
 
   // Score each steward
-  const scoredStewards = stewards.map(function(steward) { return {
-    ...steward,
-    score: calculateAssignmentScore(steward, grievance, preferences)
-  };});
+  const scoredStewards = stewards.map(function(steward) {
+    var scored = {};
+    for (var key in steward) {
+      if (steward.hasOwnProperty(key)) {
+        scored[key] = steward[key];
+      }
+    }
+    scored.score = calculateAssignmentScore(steward, grievance, preferences);
+    return scored;
+  });
 
   // Sort by score (descending)
   scoredStewards.sort(function(a, b) { return b.score - a.score; });
@@ -26894,7 +27261,7 @@ function showStewardWorkloadDashboard() {
             ? Object.entries(s.expertise)
                 .sort(function(a, b) { return b[1] - a[1]; })
                 .slice(0, 3)
-                .map(function([type, count]) { return `${type} (${count})`; })
+                .map(function(item) { var type = item[0]; var count = item[1]; return `${type} (${count})`; })
                 .join(', ')
             : 'No cases yet'}
         </div>
@@ -26902,7 +27269,7 @@ function showStewardWorkloadDashboard() {
     `; })
     .join('');
 
-  const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0) / stewards.length;
+  const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload, 0; }) / stewards.length;
 
   const html = `
 <!DOCTYPE html>
@@ -26927,7 +27294,7 @@ function showStewardWorkloadDashboard() {
     <div class="summary">
       <strong>Total Stewards:</strong> ${stewards.length}<br>
       <strong>Average Caseload:</strong> ${avgCaseload.toFixed(1)} cases/steward<br>
-      <strong>Total Open Cases:</strong> ${stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0)}
+      <strong>Total Open Cases:</strong> ${stewards.reduce(function(sum, s) { return sum + s.currentCaseload, 0; })}
     </div>
 
     <div style="max-height: 500px; overflow-y: auto;">
@@ -26987,19 +27354,18 @@ function getCaseloadColor(caseload) {
  *     txn.rollback();
  *   }
  */
-class Transaction {
-  /**
-   * Create a new transaction
-   * @param {SpreadsheetApp.Spreadsheet} spreadsheet - The spreadsheet to manage
-   */
-  constructor(spreadsheet) {
-    this.ss = spreadsheet;
-    this.snapshots = new Map();
-    this.startTime = new Date();
-    this.transactionId = Utilities.getUuid();
-    this.committed = false;
-    this.rolledBack = false;
-  }
+/**
+ * Create a new transaction
+ * @param {SpreadsheetApp.Spreadsheet} spreadsheet - The spreadsheet to manage
+ * @constructor
+ */
+function Transaction(spreadsheet) {
+  this.ss = spreadsheet;
+  this.snapshots = {}; // Changed from Map to plain object for ES5 compatibility
+  this.startTime = new Date();
+  this.transactionId = Utilities.getUuid();
+  this.committed = false;
+  this.rolledBack = false;
 
   /**
    * Take a snapshot of a sheet's current state
@@ -27020,7 +27386,7 @@ class Transaction {
 
       if (lastRow === 0 || lastCol === 0) {
         // Empty sheet - store empty snapshot
-        this.snapshots.set(sheetName, {
+        this.snapshots[sheetName] = {
           data: [],
           lastRow: 0,
           lastCol: 0,
@@ -27034,7 +27400,7 @@ class Transaction {
       const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
       const formulas = sheet.getRange(1, 1, lastRow, lastCol).getFormulas();
 
-      this.snapshots.set(sheetName, {
+      this.snapshots[sheetName] = {
         data: data,
         formulas: formulas,
         lastRow: lastRow,
@@ -28355,11 +28721,17 @@ function calculateStepEfficiency(grievances) {
     { name: 'Step III', team: 'ESCALATION', status: 'red' }
   ];
 
-  return steps.map(function(s) { return {
-    ...s,
-    cases: stepData[s.name] || 0,
-    caseload: Math.round(((stepData[s.name] || 0) / total) * 100)
-  };});
+  return steps.map(function(s) {
+    var result = {};
+    for (var key in s) {
+      if (s.hasOwnProperty(key)) {
+        result[key] = s[key];
+      }
+    }
+    result.cases = stepData[s.name] || 0;
+    result.caseload = Math.round(((stepData[s.name] || 0) / total) * 100);
+    return result;
+  });
 }
 
 function calculateEngagementRate(grievances, members) {
@@ -28404,7 +28776,7 @@ function calculateAvgLoad(grievances) {
   const stewardCount = Object.keys(stewardLoad).length;
   if (stewardCount === 0) return 0;
 
-  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load; }, 0);
+  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load, 0; });
   return totalLoad / stewardCount;
 }
 
@@ -28541,13 +28913,13 @@ function getSystemicRisks(grievances) {
   });
 
   return Object.entries(locationRisks)
-    .map(function([location, data]) { return {
+    .map(function(item) { var location = item[0]; var data = item[1]; return ({
       entity: location,
       type: 'LOCATION',
       cases: data.total,
       lossRate: 0, // Would need historical data
       severity: data.total > 10 ? 'CRITICAL' : data.total > 5 ? 'WARNING' : 'NORMAL'
-    };})
+    }))
     .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
@@ -28594,7 +28966,7 @@ function getContractTrends(grievances) {
   });
 
   return Object.entries(articleCounts)
-    .map(function([article, count]) {
+    .map(function(item) { var article = item[0]; var count = item[1];
       // Calculate real win/loss rates for this article
       const articleGrievances = grievances.filter(function(g) { return g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] === article; });  // Column W: Articles Violated
       const resolvedArticle = articleGrievances.filter(function(g) { return g[GRIEVANCE_COLS.STATUS - 1] && g[GRIEVANCE_COLS.STATUS - 1].toString().includes('Resolved'); });
@@ -28638,11 +29010,11 @@ function getLocationCaseload(grievances) {
   });
 
   return Object.entries(locationData)
-    .map(function([site, cases]) { return {
+    .map(function(item) { var site = item[0]; var cases = item[1]; return ({
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
-    };})
+    }))
     .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 10);
 }
