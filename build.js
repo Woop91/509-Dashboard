@@ -138,10 +138,10 @@ function build() {
       const content = fs.readFileSync(modulePath, 'utf8');
 
       // Add module header
-      consolidated += `\n${'='.repeat(80)}\n`;
+      consolidated += `\n// ${'='.repeat(80)}\n`;
       consolidated += `// MODULE: ${moduleName}\n`;
       consolidated += `// Source: ${moduleName}\n`;
-      consolidated += `${'='.repeat(80)}\n\n`;
+      consolidated += `// ${'='.repeat(80)}\n\n`;
 
       // Add module content
       consolidated += content;
