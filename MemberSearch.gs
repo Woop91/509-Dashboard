@@ -260,7 +260,7 @@ function createMemberSearchHTML() {
 
     function selectMember(row, memberId) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           google.script.host.close();
         })
         .navigateToMember(parseInt(row));
@@ -291,7 +291,7 @@ function getAllMembers() {
 
   const data = memberSheet.getRange(2, 1, lastRow - 1, 13).getValues();
 
-  return data.map(function((row, index) { return ({
+  return data.map(function(row, index) { return ({
     row: index + 2,
     id: row[0] || '',
     name: `${row[1]} ${row[2]}`.trim(),

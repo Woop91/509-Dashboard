@@ -327,7 +327,7 @@ function showCacheStatusDashboard() {
 
   const cacheStatus = [];
 
-  Object.entries(CACHE_KEYS).forEach(function(([name, key]) {
+  Object.entries(CACHE_KEYS).forEach(function([name, key]) {
     const inMemory = memoryCache.get(key) !== null;
     const inProps = propsCache.getProperty(key) !== null;
 
@@ -405,11 +405,11 @@ function showCacheStatusDashboard() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).warmUpCaches()">
+    <button onclick="google.script.run.withSuccessHandler(function() { location.reload(); }).warmUpCaches()">
       🔥 Warm Up All Caches
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).invalidateAllCaches()">
+    <button class="danger" onclick="google.script.run.withSuccessHandler(function() { location.reload(); }).invalidateAllCaches()">
       🗑️ Clear All Caches
     </button>
   </div>

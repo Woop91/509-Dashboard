@@ -487,7 +487,7 @@ function createFAQSearchHTML() {
 
     function markHelpful(faqId, isHelpful) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           // Reload FAQs to get updated counts
           google.script.run
             .withSuccessHandler(onFAQsLoaded)
@@ -643,11 +643,11 @@ function createFAQAdminHTML() {
       }
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ FAQ saved successfully!');
           google.script.host.close();
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function(error) {
           alert('Error: ' + error.message);
         })
         .addNewFAQ(faq);

@@ -107,7 +107,7 @@ function getMemberList() {
 
     const data = memberSheet.getRange(2, 1, lastRow - 1, numCols).getValues();
 
-    return data.map(function((row, index) { return ({
+    return data.map(function(row, index) { return ({
       rowIndex: index + 2,
       memberId: safeArrayGet(row, MEMBER_COLS.MEMBER_ID - 1, ''),
       firstName: safeArrayGet(row, MEMBER_COLS.FIRST_NAME - 1, ''),
@@ -799,7 +799,7 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
       const folderUrl = '${folderUrl}';
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Sharing invitations sent successfully!');
           google.script.host.close();
         })
@@ -1338,7 +1338,7 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
       }
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function() {
           alert('✅ Email sent successfully!');
           google.script.host.close();
         })
