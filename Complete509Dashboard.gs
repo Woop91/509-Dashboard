@@ -3854,7 +3854,13 @@ function getOverdueCelebration(overdue, total) {
  * Get overall victory message based on all metrics
  */
 function getVictoryMessage(metrics) {
-  const winRate = parseFloat(metrics.winRate);
+  // Validate metrics parameter
+  if (!metrics || typeof metrics !== 'object') {
+    Logger.log('getVictoryMessage: metrics parameter is invalid');
+    return "📊 Keep up the good work!";
+  }
+
+  const winRate = parseFloat(metrics.winRate || 0);
   const messages = [];
 
   // Check for major victories

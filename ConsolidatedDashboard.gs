@@ -16012,6 +16012,34 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
 }
 
 /**
+ * Base rebuildDashboard function
+ */
+function rebuildDashboard() {
+  try {
+    Logger.log('Rebuilding dashboard calculations...');
+
+    // Rebuild the interactive dashboard if it exists
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const interactiveDashboard = ss.getSheetByName('Interactive Dashboard');
+
+    if (interactiveDashboard) {
+      // Use existing rebuildInteractiveDashboard function if available
+      if (typeof rebuildInteractiveDashboard === 'function') {
+        rebuildInteractiveDashboard();
+      }
+    }
+
+    // Recalculate all formulas by forcing a recalculation
+    SpreadsheetApp.flush();
+
+    Logger.log('Dashboard rebuild complete');
+  } catch (error) {
+    Logger.log('Error in rebuildDashboard: ' + error.message);
+    // Don't throw - this is a best-effort function
+  }
+}
+
+/**
  * Rebuild dashboard with graceful degradation
  * Primary: Full rebuild with all charts
  * Fallback: Rebuild with minimal charts (KPIs only)
@@ -19524,33 +19552,33 @@ function calculateAllMetrics(memberData, grievanceData) {
 
   // Member metrics
   metrics.totalMembers = memberData.length - 1;
-  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row[10] === 'Active'; }).length;
-  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row[9] === 'Yes'; }).length;
-  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
-  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
+  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row && row.length > 10 && row[10] === 'Active'; }).length;
+  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row && row.length > 9 && row[9] === 'Yes'; }).length;
+  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row && row.length > 5 && row[5] === 'Unit 8'; }).length;
+  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row && row.length > 5 && row[5] === 'Unit 10'; }).length;
 
   // Grievance metrics
   metrics.totalGrievances = grievanceData.length - 1;
   metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
-    return row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision');
+    return row && row.length > 4 && row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision');
   }).length;
   metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
-    return row[4] && row[4].startsWith('Resolved');
+    return row && row.length > 4 && row[4] && row[4].startsWith('Resolved');
   }).length;
 
-  const resolvedData = grievanceData.slice(1).filter(function(row) { return row[4] && row[4].startsWith('Resolved'); });
-  metrics.grievancesWon = resolvedData.filter(function(row) { return row[24] && row[24].includes('Won'); }).length;
-  metrics.grievancesLost = resolvedData.filter(function(row) { return row[24] && row[24].includes('Lost'); }).length;
+  const resolvedData = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] && row[4].startsWith('Resolved'); });
+  metrics.grievancesWon = resolvedData.filter(function(row) { return row && row.length > 24 && row[24] && row[24].includes('Won'); }).length;
+  metrics.grievancesLost = resolvedData.filter(function(row) { return row && row.length > 24 && row[24] && row[24].includes('Lost'); }).length;
 
   metrics.winRate = metrics.resolvedGrievances > 0
     ? ((metrics.grievancesWon / metrics.resolvedGrievances) * 100).toFixed(1)
     : 0;
 
-  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) { return row[28] === 'YES'; }).length;
+  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) { return row && row.length > 28 && row[28] === 'YES'; }).length;
 
   // Additional metrics
-  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Mediation'; }).length;
-  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Arbitration'; }).length;
+  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] === 'In Mediation'; }).length;
+  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] === 'In Arbitration'; }).length;
 
   return metrics;
 }
