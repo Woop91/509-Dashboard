@@ -96,23 +96,30 @@ function getCachedData(key, loader, ttl = CACHE_CONFIG.MEMORY_TTL) {
 function setCachedData(key, data, ttl = CACHE_CONFIG.MEMORY_TTL) {
   try {
     const dataStr = JSON.stringify(data);
+    const sizeInBytes = dataStr.length;
+    const MAX_PROPERTY_SIZE = 400000; // 400KB limit (conservative, actual limit is 500KB)
 
     // Store in memory cache
     const memoryCache = CacheService.getScriptCache();
     memoryCache.put(key, dataStr, Math.min(ttl, 21600)); // Max 6 hours for memory
 
-    // Store in properties cache with timestamp
-    const propsCache = PropertiesService.getScriptProperties();
-    const cachedObj = {
-      data: data,
-      timestamp: Date.now()
-    };
-    propsCache.setProperty(key, JSON.stringify(cachedObj));
+    // Only store in properties cache if size is within limits
+    if (sizeInBytes < MAX_PROPERTY_SIZE) {
+      const propsCache = PropertiesService.getScriptProperties();
+      const cachedObj = {
+        data: data,
+        timestamp: Date.now()
+      };
+      propsCache.setProperty(key, JSON.stringify(cachedObj));
+    } else {
+      Logger.log(`Skipping properties cache for key ${key}: size ${sizeInBytes} bytes exceeds limit`);
+    }
 
     logCacheSet(key);
 
   } catch (error) {
     Logger.log(`Error setting cache for key ${key}: ${error.message}`);
+    // Silently fail - cache is optional
   }
 }
 

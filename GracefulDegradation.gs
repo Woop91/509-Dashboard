@@ -20,6 +20,17 @@
 function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
   const errors = [];
 
+  // Validate that all parameters are functions
+  if (typeof primaryFn !== 'function') {
+    throw new Error('primaryFn must be a function');
+  }
+  if (typeof fallbackFn !== 'function') {
+    throw new Error('fallbackFn must be a function');
+  }
+  if (typeof minimalFn !== 'function') {
+    throw new Error('minimalFn must be a function');
+  }
+
   // Try primary function
   try {
     Logger.log('Attempting primary function...');

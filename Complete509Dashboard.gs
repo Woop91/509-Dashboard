@@ -1795,7 +1795,7 @@ function SEED_5K_GRIEVANCES() {
   // Get member data ONCE before the loop (CRITICAL FIX)
   const memberLastRow = memberDir.getLastRow();
   if (memberLastRow < 2) {
-    ui.alert('Error', 'No members found. Please seed members first.', ui.ButtonSet.OK);
+    ui.alert('Error', 'No members found in Member Directory. Please seed members first.', ui.ButtonSet.OK);
     return;
   }
 
@@ -3692,31 +3692,33 @@ function calculateAllMetrics(memberData, grievanceData) {
 
   // Member metrics
   metrics.totalMembers = memberData.length - 1;
-  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row[10] === 'Active'; }).length;
-  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row[9] === 'Yes'; }).length;
-  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
-  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
+  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row && row.length > 10 && row[10] === 'Active'; }).length;
+  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row && row.length > 9 && row[9] === 'Yes'; }).length;
+  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row && row.length > 5 && row[5] === 'Unit 8'; }).length;
+  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row && row.length > 5 && row[5] === 'Unit 10'; }).length;
 
   // Grievance metrics
   metrics.totalGrievances = grievanceData.length - 1;
   metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision')).length;
+    return row && row.length > 4 && row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision');
+  }).length;
   metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && row[4].startsWith('Resolved')).length;
+    return row && row.length > 4 && row[4] && row[4].startsWith('Resolved');
+  }).length;
 
-  const resolvedData = grievanceData.slice(1).filter(function(row) { return row[4] && row[4].startsWith('Resolved'); });
-  metrics.grievancesWon = resolvedData.filter(function(row) { return row[24] && row[24].includes('Won'); }).length;
-  metrics.grievancesLost = resolvedData.filter(function(row) { return row[24] && row[24].includes('Lost'); }).length;
+  const resolvedData = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] && row[4].startsWith('Resolved'); });
+  metrics.grievancesWon = resolvedData.filter(function(row) { return row && row.length > 24 && row[24] && row[24].includes('Won'); }).length;
+  metrics.grievancesLost = resolvedData.filter(function(row) { return row && row.length > 24 && row[24] && row[24].includes('Lost'); }).length;
 
   metrics.winRate = metrics.resolvedGrievances > 0
     ? ((metrics.grievancesWon / metrics.resolvedGrievances) * 100).toFixed(1)
     : 0;
 
-  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) { return row[28] === 'YES'; }).length;
+  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) { return row && row.length > 28 && row[28] === 'YES'; }).length;
 
   // Additional metrics
-  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Mediation'; }).length;
-  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Arbitration'; }).length;
+  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] === 'In Mediation'; }).length;
+  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] === 'In Arbitration'; }).length;
 
   return metrics;
 }
@@ -3725,9 +3727,24 @@ function calculateAllMetrics(memberData, grievanceData) {
  * Update metric cards with current data and celebratory messages
  */
 function updateMetricCards(sheet, metrics) {
+  // Validate parameters
+  if (!sheet) {
+    throw new Error('updateMetricCards: sheet parameter is required');
+  }
+
+  if (!metrics || typeof metrics !== 'object') {
+    throw new Error('updateMetricCards: metrics parameter must be a valid object');
+  }
+
+  // Validate required metric fields with defaults
+  const totalMembers = metrics.totalMembers != null ? metrics.totalMembers : 0;
+  const activeGrievances = metrics.activeGrievances != null ? metrics.activeGrievances : 0;
+  const winRate = metrics.winRate != null ? metrics.winRate : 0;
+  const overdueGrievances = metrics.overdueGrievances != null ? metrics.overdueGrievances : 0;
+
   // Card 1: Total Members
   sheet.getRange("A15:E17").merge()
-    .setValue(formatNumber(metrics.totalMembers))
+    .setValue(formatNumber(totalMembers))
     .setNumberFormat("#,##0");
 
   // Add celebration message for members
@@ -3995,6 +4012,7 @@ function getChartDataForMetric(metricName, metrics) {
       // Count actual grievances by step from Grievance Log
       const stepCounts = {};
       grievanceData.slice(1).forEach(function(row) {
+        if (!row || row.length < 6) return;
         const status = row[4]; // Status column (E)
         const step = row[5];    // Current Step column (F)
         if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
@@ -4196,6 +4214,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const typeWon = {};
 
       grievanceData.slice(1).forEach(function(row) {
+        if (!row || row.length < 23) return;
         const type = row[22]; // Issue Category column (W)
         const status = row[4]; // Status column (E)
 
@@ -4235,6 +4254,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const locationWon = {};
 
       grievanceData.slice(1).forEach(function(row) {
+        if (!row || row.length < 26) return;
         const location = row[25]; // Work Location column (Z)
         const status = row[4]; // Status column (E)
 
@@ -4951,20 +4971,25 @@ function getMemberList() {
   // Get all member data (columns A-K: ID, First, Last, Job, Location, Unit, Office Days, Email, Phone, Is Steward, Status)
   const data = memberSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
-  return data.map(function((row, index) { return ({
-    rowIndex: index + 2,
-    memberId: row[0],
-    firstName: row[1],
-    lastName: row[2],
-    jobTitle: row[3],
-    location: row[4],
-    unit: row[5],
-    officeDays: row[6],
-    email: row[7],
-    phone: row[8],
-    isSteward: row[9],
-    status: row[10]
-  })).filter(function(member) { return member.memberId; }); // Filter out empty rows
+  return data.map(function(row, index) {
+    if (!row || row.length < 11) {
+      return null;
+    }
+    return {
+      rowIndex: index + 2,
+      memberId: row[0],
+      firstName: row[1],
+      lastName: row[2],
+      jobTitle: row[3],
+      location: row[4],
+      unit: row[5],
+      officeDays: row[6],
+      email: row[7],
+      phone: row[8],
+      isSteward: row[9],
+      status: row[10]
+    };
+  }).filter(function(member) { return member && member.memberId; }); // Filter out empty rows
 }
 
 /**
@@ -5185,7 +5210,16 @@ function generatePreFilledGrievanceForm(memberRowIndex) {
   }
 
   // Get member data
-  const memberData = memberSheet.getRange(memberRowIndex, 1, 1, 11).getValues()[0];
+  const memberDataArray = memberSheet.getRange(memberRowIndex, 1, 1, 11).getValues();
+  if (!memberDataArray || memberDataArray.length === 0 || !memberDataArray[0]) {
+    throw new Error('Member data not found at row ' + memberRowIndex);
+  }
+
+  const memberData = memberDataArray[0];
+  if (memberData.length < 11) {
+    throw new Error('Incomplete member data at row ' + memberRowIndex);
+  }
+
   const member = {
     id: memberData[0],
     firstName: memberData[1],
@@ -5324,6 +5358,12 @@ function addStewardContactInfoToConfig() {
  * 2. Add trigger: onGrievanceFormSubmit, From spreadsheet, On form submit
  */
 function onGrievanceFormSubmit(e) {
+  if (!e) {
+    Logger.log('Error: Form submission event is null or undefined');
+    SpreadsheetApp.getUi().alert('❌ Error: Invalid form submission event');
+    return;
+  }
+
   try {
     // Extract form responses
     const formData = extractFormData(e);
@@ -5347,6 +5387,10 @@ function onGrievanceFormSubmit(e) {
  * Extracts and structures data from form submission
  */
 function extractFormData(e) {
+  if (!e || !e.namedValues) {
+    throw new Error('Invalid form submission event: missing namedValues');
+  }
+
   const responses = e.namedValues;
 
   // Map form responses to grievance data structure
@@ -5489,6 +5533,122 @@ function findMemberRow(memberId) {
   const index = memberIds.indexOf(memberId);
 
   return index >= 0 ? index + 2 : -1;
+}
+
+/**
+ * Recalculates all formula columns for a specific grievance row
+ */
+function recalcGrievanceRow(rowNumber) {
+  if (!rowNumber || rowNumber < 2) return;
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceSheet) return;
+
+  const row = rowNumber;
+
+  // Filing Deadline (Column H = 8): Incident Date + 21 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.FILING_DEADLINE).setFormula(
+    `=IF(G${row}<>"",G${row}+21,"")`
+  );
+
+  // Step I Decision Due (Column J = 10): Date Filed + 30 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP1_DUE).setFormula(
+    `=IF(I${row}<>"",I${row}+30,"")`
+  );
+
+  // Step II Appeal Due (Column L = 12): Step I Decision Rcvd + 10 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP2_APPEAL_DUE).setFormula(
+    `=IF(K${row}<>"",K${row}+10,"")`
+  );
+
+  // Step II Decision Due (Column N = 14): Step II Appeal Filed + 30 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP2_DUE).setFormula(
+    `=IF(M${row}<>"",M${row}+30,"")`
+  );
+
+  // Step III Appeal Due (Column P = 16): Step II Decision Rcvd + 30 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP3_APPEAL_DUE).setFormula(
+    `=IF(O${row}<>"",O${row}+30,"")`
+  );
+
+  // Days Open (Column S = 19): Date Filed to Date Closed or TODAY
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.DAYS_OPEN).setFormula(
+    `=IF(I${row}<>"",IF(R${row}<>"",R${row}-I${row},TODAY()-I${row}),"")`
+  );
+
+  // Next Action Due (Column T = 20): Based on current step
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.NEXT_ACTION_DUE).setFormula(
+    `=IF(E${row}="Open",IF(F${row}="Step I",J${row},IF(F${row}="Step II",N${row},IF(F${row}="Step III",P${row},H${row}))),"")`
+  );
+
+  // Days to Deadline (Column U = 21): Next Action Due - TODAY
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.DAYS_TO_DEADLINE).setFormula(
+    `=IF(T${row}<>"",T${row}-TODAY(),"")`
+  );
+}
+
+/**
+ * Recalculates member directory snapshot columns for a specific member row
+ */
+function recalcMemberRow(rowNumber) {
+  if (!rowNumber || rowNumber < 2) return;
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) return;
+
+  const row = rowNumber;
+
+  // Get column letters for Grievance Log references
+  const memberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+
+  // Has Open Grievance? (Column Z = 26)
+  memberSheet.getRange(row, MEMBER_COLS.HAS_OPEN_GRIEVANCE).setFormula(
+    `=IF(COUNTIFS('Grievance Log'!${memberIdCol}:${memberIdCol},A${row},'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No")`
+  );
+
+  // Grievance Status Snapshot (Column AA = 27)
+  memberSheet.getRange(row, MEMBER_COLS.GRIEVANCE_STATUS).setFormula(
+    `=IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
+  );
+
+  // Next Grievance Deadline (Column AB = 28)
+  memberSheet.getRange(row, MEMBER_COLS.NEXT_DEADLINE).setFormula(
+    `=IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
+  );
+}
+
+/**
+ * Rebuilds all dashboard calculations
+ */
+function rebuildDashboard() {
+  try {
+    Logger.log('Rebuilding dashboard calculations...');
+
+    // Rebuild the interactive dashboard if it exists
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const interactiveDashboard = ss.getSheetByName('Interactive Dashboard');
+
+    if (interactiveDashboard) {
+      // Use existing rebuildInteractiveDashboard function if available
+      if (typeof rebuildInteractiveDashboard === 'function') {
+        rebuildInteractiveDashboard();
+      }
+    }
+
+    // Recalculate all formulas by forcing a recalculation
+    SpreadsheetApp.flush();
+
+    Logger.log('Dashboard rebuild complete');
+  } catch (error) {
+    Logger.log('Error in rebuildDashboard: ' + error.message);
+    // Don't throw - this is a best-effort function
+  }
 }
 
 /**
@@ -6985,12 +7145,13 @@ function populateStewardWorkload() {
   const stewards = {};
   for (let i = 1; i < memberData.length; i++) {
     const row = memberData[i];
+    if (!row || row.length < 10) continue;
     const isSteward = row[9]; // Column J - Is Steward
     if (isSteward === 'Yes') {
       const memberId = row[0];
-      const name = `${row[1]} ${row[2]}`; // First + Last name
-      const email = row[4];
-      const phone = row[5];
+      const name = `${row[1] || ''} ${row[2] || ''}`.trim(); // First + Last name
+      const email = row[7]; // Column H - Email
+      const phone = row[8]; // Column I - Phone
       stewards[memberId] = {
         name: name,
         email: email,
@@ -7294,13 +7455,14 @@ function setupMemberDirectoryValidations() {
     memberDir.getRange(2, 12, MAX_ROWS, 1).setDataValidation(managerRule);
   }
 
-  // Assigned Steward (Column M = 13)
+  // Assigned Steward (Column M = 13) and Steward Who Contacted Member (Column AD = 30)
   if (stewards.length > 0) {
     const stewardRule = SpreadsheetApp.newDataValidation()
       .requireValueInList(stewards, true)
       .setAllowInvalid(false)
       .build();
     memberDir.getRange(2, 13, MAX_ROWS, 1).setDataValidation(stewardRule);
+    memberDir.getRange(2, 30, MAX_ROWS, 1).setDataValidation(stewardRule);
   }
 
   // Interest: Local Actions (Column T = 20)
@@ -7327,11 +7489,6 @@ function setupMemberDirectoryValidations() {
     .setHelpText('Select one or enter multiple comma-separated')
     .build();
   memberDir.getRange(2, 25, MAX_ROWS, 1).setDataValidation(bestTimeRule);
-
-  // Steward Who Contacted Member (Column AD = 30)
-  if (stewards.length > 0) {
-    memberDir.getRange(2, 30, MAX_ROWS, 1).setDataValidation(stewardRule);
-  }
 
   // Add conditional formatting for empty email/phone
   // Email (Column H = 8) - Red background if empty

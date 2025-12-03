@@ -895,7 +895,12 @@ function resetADHDSettings() {
   const sheets = ss.getSheets();
 
   sheets.forEach(function(sheet) {
-    sheet.setFontSize(10);
+    // Reset font size for data range (setFontSize only works on ranges, not sheets)
+    const maxRows = sheet.getMaxRows();
+    const maxCols = sheet.getMaxColumns();
+    if (maxRows > 0 && maxCols > 0) {
+      sheet.getRange(1, 1, maxRows, maxCols).setFontSize(10);
+    }
     sheet.setHiddenGridlines(false);
     removeZebraStripes(sheet);
   });
