@@ -59,7 +59,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   const scoredStewards = stewards.map(function(steward) { return {
     ...steward,
     score: calculateAssignmentScore(steward, grievance, preferences)
-  }));
+  };});
 
   // Sort by score (descending)
   scoredStewards.sort(function(a, b) { return b.score - a.score; });

@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:12:30.467Z
+ * - Build Date: 2025-12-03T02:16:57.337Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -1142,7 +1142,7 @@ function getAuditLog(limit = 100, action = null) {
       level: row[4],
       details: row[5],
       ipAddress: row[6]
-    }));
+    };});
 
     return result;
   } catch (e) {
@@ -3042,7 +3042,7 @@ function seedGrievancesWithCount(count, toggleName) {
   }
 
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
-  const memberIDs = allMemberData.map(function(row) { return row[0]).filter(String; });
+  const memberIDs = allMemberData.map(function(row) { return row[0]; }).filter(String);
 
   // Updated config column references for new structure
   const statuses = config.getRange("K2:K8").getValues().flat().filter(String);       // Grievance Status (column K)
@@ -13551,7 +13551,7 @@ function getAllFAQs() {
     createdDate: row[8],
     lastUpdated: row[9],
     createdBy: row[10]
-  }));
+  };});
 }
 
 /**
@@ -16891,9 +16891,9 @@ function getGrievanceCoordinators() {
     const coordinatorData = configSheet.getRange(2, 16, 10, 3).getValues();
 
     // Get unique coordinator names
-    const coordinator1List = coordinatorData.map(function(row) { return row[0]).filter(String; });
-    const coordinator2List = coordinatorData.map(function(row) { return row[1]).filter(String; });
-    const coordinator3List = coordinatorData.map(function(row) { return row[2]).filter(String; });
+    const coordinator1List = coordinatorData.map(function(row) { return row[0]; }).filter(String);
+    const coordinator2List = coordinatorData.map(function(row) { return row[1]; }).filter(String);
+    const coordinator3List = coordinatorData.map(function(row) { return row[2]; }).filter(String);
 
     return {
       coordinator1: coordinator1List.length > 0 ? coordinator1List[0] : '',
@@ -26386,7 +26386,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   const scoredStewards = stewards.map(function(steward) { return {
     ...steward,
     score: calculateAssignmentScore(steward, grievance, preferences)
-  }));
+  };});
 
   // Sort by score (descending)
   scoredStewards.sort(function(a, b) { return b.score - a.score; });
@@ -28357,7 +28357,7 @@ function calculateStepEfficiency(grievances) {
     ...s,
     cases: stepData[s.name] || 0,
     caseload: Math.round(((stepData[s.name] || 0) / total) * 100)
-  }));
+  };});
 }
 
 function calculateEngagementRate(grievances, members) {

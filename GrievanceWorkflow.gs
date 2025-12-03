@@ -438,9 +438,9 @@ function getGrievanceCoordinators() {
     const coordinatorData = configSheet.getRange(2, 16, 10, 3).getValues();
 
     // Get unique coordinator names
-    const coordinator1List = coordinatorData.map(function(row) { return row[0]).filter(String; });
-    const coordinator2List = coordinatorData.map(function(row) { return row[1]).filter(String; });
-    const coordinator3List = coordinatorData.map(function(row) { return row[2]).filter(String; });
+    const coordinator1List = coordinatorData.map(function(row) { return row[0]; }).filter(String);
+    const coordinator2List = coordinatorData.map(function(row) { return row[1]; }).filter(String);
+    const coordinator3List = coordinatorData.map(function(row) { return row[2]; }).filter(String);
 
     return {
       coordinator1: coordinator1List.length > 0 ? coordinator1List[0] : '',

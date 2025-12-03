@@ -1625,7 +1625,7 @@ function seedGrievancesWithCount(count, toggleName) {
   }
 
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
-  const memberIDs = allMemberData.map(function(row) { return row[0]).filter(String; });
+  const memberIDs = allMemberData.map(function(row) { return row[0]; }).filter(String);
 
   // Updated config column references for new structure
   const statuses = config.getRange("K2:K8").getValues().flat().filter(String);       // Grievance Status (column K)

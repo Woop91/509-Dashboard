@@ -532,7 +532,7 @@ function getAllFAQs() {
     createdDate: row[8],
     lastUpdated: row[9],
     createdBy: row[10]
-  }));
+  };});
 }
 
 /**

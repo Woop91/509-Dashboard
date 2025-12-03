@@ -266,7 +266,7 @@ function calculateStepEfficiency(grievances) {
     ...s,
     cases: stepData[s.name] || 0,
     caseload: Math.round(((stepData[s.name] || 0) / total) * 100)
-  }));
+  };});
 }
 
 function calculateEngagementRate(grievances, members) {
