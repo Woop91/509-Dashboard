@@ -552,7 +552,7 @@ function showStewardWorkloadDashboard() {
   stewards.sort(function(a, b) { return b.currentCaseload - a.currentCaseload; });
 
   const stewardsList = stewards
-    .map(function(s) { return '
+    .map(function(s) { return `
       <div class="steward-item" style="border-left-color: ${getCaseloadColor(s.currentCaseload)}">
         <div class="steward-name">${s.name}</div>
         <div class="steward-details">
@@ -570,7 +570,7 @@ function showStewardWorkloadDashboard() {
             : 'No cases yet'}
         </div>
       </div>
-    `)
+    `; })
     .join('');
 
   const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0) / stewards.length;

@@ -490,7 +490,7 @@ function exportPageToCSV(page, pageSize) {
   var csv = '';
 
   // Headers
-  csv += data.headers.map(function(h) { return `"${h}"`).join(','; }) + '\n';
+  csv += data.headers.map(function(h) { return `"${h}"`; }).join(',') + '\n';
 
   // Rows
   data.rows.forEach(function(row) {

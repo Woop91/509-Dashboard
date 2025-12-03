@@ -515,7 +515,7 @@ function getRecentErrors(limit = 20) {
     stackTrace: row[5],
     user: row[6],
     recovered: row[7]
-  })).reverse();
+  };}).reverse();
 }
 
 /**

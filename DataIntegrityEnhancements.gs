@@ -367,8 +367,8 @@ function checkReferentialIntegrity() {
     );
   } else {
     const orphanedList = orphaned.slice(0, 10).map(function(o) {
-      `  Row ${o.row}: ${o.grievanceId} (Member ID: ${o.memberId})`
-    ).join('\n');
+      return `  Row ${o.row}: ${o.grievanceId} (Member ID: ${o.memberId})`;
+    }).join('\n');
 
     SpreadsheetApp.getUi().alert(
       '⚠️ Referential Integrity Issues Found',

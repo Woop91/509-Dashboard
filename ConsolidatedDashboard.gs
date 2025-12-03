@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:22:39.828Z
+ * - Build Date: 2025-12-03T02:33:51.894Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -10147,7 +10147,7 @@ function verifyBackup(backupFileId) {
     const verification = {
       valid: true,
       sheetCount: sheets.length,
-      sheets: sheets.map(function(s) { return s.getName()); },
+      sheets: sheets.map(function(s) { return s.getName(); }),
       dataRows: {}
     };
 
@@ -10531,14 +10531,14 @@ function showCacheStatusDashboard() {
   });
 
   const statusRows = cacheStatus
-    .map(function(s) { return '
+    .map(function(s) { return `
       <tr>
         <td>${s.name}</td>
         <td>${s.inMemory ? '✅ Yes' : '❌ No'}</td>
         <td>${s.inProps ? '✅ Yes' : '❌ No'}</td>
         <td>${s.age}</td>
       </tr>
-    `)
+    `; })
     .join('');
 
   const html = `
@@ -11028,8 +11028,8 @@ function checkReferentialIntegrity() {
     );
   } else {
     const orphanedList = orphaned.slice(0, 10).map(function(o) {
-      `  Row ${o.row}: ${o.grievanceId} (Member ID: ${o.memberId})`
-    ).join('\n');
+      return `  Row ${o.row}: ${o.grievanceId} (Member ID: ${o.memberId})`;
+    }).join('\n');
 
     SpreadsheetApp.getUi().alert(
       '⚠️ Referential Integrity Issues Found',
@@ -11569,7 +11569,7 @@ function exportPageToCSV(page, pageSize) {
   var csv = '';
 
   // Headers
-  csv += data.headers.map(function(h) { return `"${h}"`).join(','; }) + '\n';
+  csv += data.headers.map(function(h) { return `"${h}"`; }).join(',') + '\n';
 
   // Rows
   data.rows.forEach(function(row) {
@@ -11756,7 +11756,7 @@ function getPaginationStats() {
  *
  * Usage:
  *   const lock = new DistributedLock('resource-name');
- *   lock.executeWithLockfunction() {
+ *   lock.executeWithLock(function() {
  *     // Critical section code here
  *   });
  */
@@ -11901,7 +11901,7 @@ class DistributedLock {
 function recalcAllMembersThreadSafe() {
   const lock = new DistributedLock('recalc_members', 300000); // 5 minute timeout
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     // Call the actual recalculation function
     if (typeof recalcAllMembers === 'function') {
       return recalcAllMembers();
@@ -11917,7 +11917,7 @@ function recalcAllMembersThreadSafe() {
 function recalcAllGrievancesThreadSafe() {
   const lock = new DistributedLock('recalc_grievances', 300000); // 5 minute timeout
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     // Call the batched recalculation if available
     if (typeof recalcAllGrievancesBatched === 'function') {
       return recalcAllGrievancesBatched();
@@ -11933,7 +11933,7 @@ function recalcAllGrievancesThreadSafe() {
 function rebuildDashboardThreadSafe() {
   const lock = new DistributedLock('rebuild_dashboard', 300000); // 5 minute timeout
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     // Call the optimized rebuild if available, otherwise standard rebuild
     if (typeof rebuildDashboardOptimized === 'function') {
       return rebuildDashboardOptimized();
@@ -11952,7 +11952,7 @@ function rebuildDashboardThreadSafe() {
 function seedDataThreadSafe() {
   const lock = new DistributedLock('seed_data', 600000); // 10 minute timeout
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     if (typeof seedAllWithRollback === 'function') {
       return seedAllWithRollback();
     } else {
@@ -11974,7 +11974,7 @@ function seedDataThreadSafe() {
 function clearAllDataThreadSafe() {
   const lock = new DistributedLock('clear_data', 300000); // 5 minute timeout
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     if (typeof NUKE_ALL_DATA === 'function') {
       return NUKE_ALL_DATA();
     }
@@ -11994,7 +11994,7 @@ function makeThreadSafe(fn, resourceName, timeout = 30000) {
   return function(...args) {
     const lock = new DistributedLock(resourceName, timeout);
 
-    return lock.executeWithLockfunction() {
+    return lock.executeWithLock(function() {
       return fn.apply(this, args);
     });
   };
@@ -12163,7 +12163,7 @@ function CHECK_LOCK_STATUS() {
 function batchUpdateWithLock(updates) {
   const lock = new DistributedLock('batch_update', 600000); // 10 minutes
 
-  return lock.executeWithLockfunction() {
+  return lock.executeWithLock(function() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
@@ -12712,7 +12712,7 @@ function getRecentErrors(limit = 20) {
     stackTrace: row[5],
     user: row[6],
     recovered: row[7]
-  })).reverse();
+  };}).reverse();
 }
 
 /**
@@ -13389,9 +13389,9 @@ function createFAQSearchHTML() {
 
     <div class="categories">
       <div class="category-badge active" onclick="filterByCategory('')">All Categories</div>
-      ${categories.map(function(cat) { return '
+      ${categories.map(function(cat) { return `
         <div class="category-badge" onclick="filterByCategory('${cat}')">${cat}</div>
-      `).join('')}
+      `; }).join('')}
     </div>
 
     <div class="stats" id="stats">
@@ -13422,7 +13422,7 @@ function createFAQSearchHTML() {
       const stats = document.getElementById('stats');
       stats.innerHTML = \`
         <strong>📊 Knowledge Base Stats:</strong>
-        ${allFAQs.length} articles across ${new Set(allFAQs.map(function(f) { return f.category); }).size} categories
+        ${allFAQs.length} articles across ${new Set(allFAQs.map(function(f) { return f.category; })).size} categories
       \`;
     }
 
@@ -14833,14 +14833,14 @@ function showEmailTemplateManager() {
       {GRIEVANCE_ID}, {MEMBER_NAME}, {ISSUE_TYPE}, {STATUS}
     </div>
 
-    ${templates.map(function(t) { return '
+    ${templates.map(function(t) { return `
       <div class="template">
         <h3>${t.name}</h3>
         <strong>Subject:</strong> ${t.subject}<br><br>
         <strong>Body:</strong>
         <div class="template-body">${t.body}</div>
       </div>
-    `).join('')}
+    `; }).join('')}
   </div>
 </body>
 </html>
@@ -14881,13 +14881,13 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const commsList = grievanceComms
-    .map(function(row) { return '
+    .map(function(row) { return `
       <div style="background: #f8f9fa; padding: 12px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #1a73e8;">
         <strong>${row[2]}</strong> - ${row[0].toLocaleString()}<br>
         <em>By: ${row[3]}</em><br><br>
         <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[4]}</div>
       </div>
-    `)
+    `; })
     .join('');
 
   const html = `
@@ -26879,7 +26879,7 @@ function showStewardWorkloadDashboard() {
   stewards.sort(function(a, b) { return b.currentCaseload - a.currentCaseload; });
 
   const stewardsList = stewards
-    .map(function(s) { return '
+    .map(function(s) { return `
       <div class="steward-item" style="border-left-color: ${getCaseloadColor(s.currentCaseload)}">
         <div class="steward-name">${s.name}</div>
         <div class="steward-details">
@@ -26897,7 +26897,7 @@ function showStewardWorkloadDashboard() {
             : 'No cases yet'}
         </div>
       </div>
-    `)
+    `; })
     .join('');
 
   const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0) / stewards.length;
