@@ -17854,6 +17854,11 @@ function findMemberRow(memberId) {
  * Generates a PDF for a grievance
  */
 function generateGrievancePDF(grievanceId) {
+  // Validate grievance ID
+  if (!grievanceId) {
+    throw new Error('Grievance ID is required to generate PDF');
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
@@ -17873,7 +17878,7 @@ function generateGrievancePDF(grievanceId) {
   }
 
   if (grievanceRow === -1) {
-    throw new Error('Grievance not found');
+    throw new Error(`Grievance ${grievanceId} not found in log`);
   }
 
   const grievanceData = data[grievanceRow];
