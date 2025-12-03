@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-02T18:34:59.768Z
+ * - Build Date: 2025-12-03T01:46:02.952Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -4698,7 +4698,7 @@ function createADHDControlPanelHTML() {
       };
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Settings saved!');
           google.script.host.close();
         })
@@ -4708,7 +4708,7 @@ function createADHDControlPanelHTML() {
     function resetToDefaults() {
       if (confirm('Reset all ADHD settings to defaults?')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function(() {
             alert('✅ Settings reset!');
             location.reload();
           })
@@ -4965,7 +4965,7 @@ function showQuickCaptureNotepad() {
     function saveNotes() {
       const notes = document.getElementById('notes').value;
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Notes saved!');
         })
         .saveQuickCaptureNotes(notes);
@@ -5816,13 +5816,13 @@ function showNotificationSettings() {
       </ul>
     </div>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupDailyDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).setupDailyDeadlineNotifications()">
       ${isEnabled ? '🔄 Refresh Trigger' : '✅ Enable Notifications'}
     </button>
 
-    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
+    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).testDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).testDeadlineNotifications()">
       🧪 Test Now
     </button>
   </div>
@@ -6458,7 +6458,7 @@ function showReportAutomationSettings() {
     <div class="status ${monthlyEnabled ? 'enabled' : 'disabled'}">
       ${monthlyEnabled ? '✅ Monthly reports ENABLED (1st of month, 9 AM)' : '🔕 Monthly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupMonthlyReports()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).setupMonthlyReports()">
       ${monthlyEnabled ? '🔄 Refresh Monthly Trigger' : '✅ Enable Monthly Reports'}
     </button>
 
@@ -6466,21 +6466,21 @@ function showReportAutomationSettings() {
     <div class="status ${quarterlyEnabled ? 'enabled' : 'disabled'}">
       ${quarterlyEnabled ? '✅ Quarterly reports ENABLED (Jan/Apr/Jul/Oct, 10 AM)' : '🔕 Quarterly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupQuarterlyReports()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).setupQuarterlyReports()">
       ${quarterlyEnabled ? '🔄 Refresh Quarterly Trigger' : '✅ Enable Quarterly Reports'}
     </button>
 
     <hr style="margin: 30px 0;">
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).generateMonthlyReport()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).generateMonthlyReport()">
       🧪 Test Monthly Report
     </button>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).generateQuarterlyReport()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).generateQuarterlyReport()">
       🧪 Test Quarterly Report
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).disableAutomatedReports()">
+    <button class="danger" onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).disableAutomatedReports()">
       🔕 Disable All Reports
     </button>
   </div>
@@ -6891,31 +6891,31 @@ function showBatchOperationsMenu() {
 
   <script>
     function runBatchAssignSteward() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function(() {
         google.script.host.close();
       }).batchAssignSteward();
     }
 
     function runBatchUpdateStatus() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function(() {
         google.script.host.close();
       }).batchUpdateStatus();
     }
 
     function runBatchExportPDF() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function(() {
         google.script.host.close();
       }).batchExportPDF();
     }
 
     function runBatchEmail() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function(() {
         google.script.host.close();
       }).batchEmailNotifications();
     }
 
     function runBatchAddNotes() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function(() {
         google.script.host.close();
       }).batchAddNotes();
     }
@@ -8356,7 +8356,7 @@ function createReportBuilderHTML() {
       alert('Generating PDF report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ PDF report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -8372,7 +8372,7 @@ function createReportBuilderHTML() {
       }
 
       google.script.run
-        .withSuccessHandlerfunction((csvData) {
+        .withSuccessHandler(function((csvData) {
           downloadCSV(csvData);
         })
         .withFailureHandler(onError)
@@ -8390,7 +8390,7 @@ function createReportBuilderHTML() {
       alert('Generating Excel report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Excel report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -8414,7 +8414,7 @@ function createReportBuilderHTML() {
       if (!name) return;
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Template saved: ' + name);
         })
         .withFailureHandler(onError)
@@ -9283,7 +9283,7 @@ function createThemeManagerHTML() {
 
     function applySelectedTheme() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Theme applied successfully!');
           google.script.host.close();
         })
@@ -9292,7 +9292,7 @@ function createThemeManagerHTML() {
 
     function applyToAllSheets() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Theme applied to all sheets!');
           location.reload();
         })
@@ -9301,7 +9301,7 @@ function createThemeManagerHTML() {
 
     function applyToCurrentSheet() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Theme applied to current sheet!');
           location.reload();
         })
@@ -9310,7 +9310,7 @@ function createThemeManagerHTML() {
 
     function previewTheme() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('👁️ Preview applied! This is temporary.');
         })
         .previewTheme(selectedTheme);
@@ -9319,7 +9319,7 @@ function createThemeManagerHTML() {
     function resetTheme() {
       if (confirm('Reset to default light theme?')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function(() {
             alert('✅ Theme reset!');
             location.reload();
           })
@@ -9330,7 +9330,7 @@ function createThemeManagerHTML() {
     function toggleAutoSwitch() {
       const enabled = document.getElementById('autoSwitch').checked;
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert(enabled ? '✅ Auto dark mode enabled!' : '🔕 Auto dark mode disabled!');
         })
         .setAutoSwitch(enabled);
@@ -9967,10 +9967,10 @@ function createBackupManagerHTML() {
       <div class="status ${isAutomated ? 'enabled' : 'disabled'}">
         ${isAutomated ? '✅ Automated backups are ENABLED (Weekly, Sundays 2 AM)' : '🔕 Automated backups are DISABLED'}
       </div>
-      <button onclick="google.script.run.withSuccessHandlerfunction(() { return location.reload()).setupAutomatedBackups(; })">
+      <button onclick="google.script.run.withSuccessHandler(function(() { return location.reload()).setupAutomatedBackups(; })">
         ${isAutomated ? '🔄 Refresh Schedule' : '✅ Enable Automated Backups'}
       </button>
-      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { return location.reload()).disableAutomatedBackups(; })">🔕 Disable</button>' : ''}
+      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function(() { return location.reload()).disableAutomatedBackups(; })">🔕 Disable</button>' : ''}
     </div>
 
     <div class="section">
@@ -10008,10 +10008,10 @@ function createBackupManagerHTML() {
       alert('Creating backup... This may take a moment.');
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Backup created successfully!');
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function((error) {
           alert('❌ Backup failed: ' + error.message);
         })
         .createBackup(false);
@@ -10024,7 +10024,7 @@ function createBackupManagerHTML() {
 
     function showBackupLog() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('Opening Backup Log sheet...');
           google.script.host.close();
         })
@@ -10034,7 +10034,7 @@ function createBackupManagerHTML() {
     function exportGrievances() {
       alert('Exporting grievances to CSV...');
       google.script.run
-        .withSuccessHandlerfunction((csv) {
+        .withSuccessHandler(function((csv) {
           downloadCSV(csv, 'grievances.csv');
         })
         .exportGrievancesToCSV();
@@ -10043,7 +10043,7 @@ function createBackupManagerHTML() {
     function exportMembers() {
       alert('Exporting members to CSV...');
       google.script.run
-        .withSuccessHandlerfunction((csv) {
+        .withSuccessHandler(function((csv) {
           downloadCSV(csv, 'members.csv');
         })
         .exportMembersToCSV();
@@ -10587,11 +10587,11 @@ function showCacheStatusDashboard() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).warmUpCaches()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { location.reload(); }).warmUpCaches()">
       🔥 Warm Up All Caches
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).invalidateAllCaches()">
+    <button class="danger" onclick="google.script.run.withSuccessHandler(function(() { location.reload(); }).invalidateAllCaches()">
       🗑️ Clear All Caches
     </button>
   </div>
@@ -11498,7 +11498,7 @@ function createPaginatedViewerHTML() {
 
     function exportCurrentPage() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function((url) {
           alert('✅ Page exported!');
           window.open(url, '_blank');
         })
@@ -12476,7 +12476,7 @@ function createErrorDashboardHTML() {
   <script>
     function runHealthCheck() {
       google.script.run
-        .withSuccessHandlerfunction((result) {
+        .withSuccessHandler(function((result) {
           alert('🏥 Health Check Complete:\\n\\n' + result.summary);
           location.reload();
         })
@@ -12485,7 +12485,7 @@ function createErrorDashboardHTML() {
 
     function exportErrorLog() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function((url) {
           alert('✅ Error log exported!');
           window.open(url, '_blank');
         })
@@ -12495,7 +12495,7 @@ function createErrorDashboardHTML() {
     function clearErrorLog() {
       if (confirm('Clear all error logs? This cannot be undone.')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function(() {
             alert('✅ Error log cleared!');
             location.reload();
           })
@@ -12505,7 +12505,7 @@ function createErrorDashboardHTML() {
 
     function testErrorHandling() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Test error logged successfully!');
           location.reload();
         })
@@ -12514,7 +12514,7 @@ function createErrorDashboardHTML() {
 
     function viewErrorTrends() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function((url) {
           window.open(url, '_blank');
         })
         .createErrorTrendReport();
@@ -13506,7 +13506,7 @@ function createFAQSearchHTML() {
 
     function markHelpful(faqId, isHelpful) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           // Reload FAQs to get updated counts
           google.script.run
             .withSuccessHandler(onFAQsLoaded)
@@ -13662,11 +13662,11 @@ function createFAQAdminHTML() {
       }
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ FAQ saved successfully!');
           google.script.host.close();
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function((error) {
           alert('Error: ' + error.message);
         })
         .addNewFAQ(faq);
@@ -17252,7 +17252,7 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
       const folderUrl = '${folderUrl}';
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Sharing invitations sent successfully!');
           google.script.host.close();
         })
@@ -17791,7 +17791,7 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
       }
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Email sent successfully!');
           google.script.host.close();
         })
@@ -20475,7 +20475,7 @@ function showKeyboardShortcutsConfig() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { return google.script.host.close()).showKeyboardShortcuts(; })">
+    <button onclick="google.script.run.withSuccessHandler(function(() { return google.script.host.close()).showKeyboardShortcuts(; })">
       📖 View Shortcuts Guide
     </button>
   </div>
@@ -22121,7 +22121,7 @@ function createMemberSearchHTML() {
 
     function selectMember(row, memberId) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           google.script.host.close();
         })
         .navigateToMember(parseInt(row));
@@ -27648,11 +27648,11 @@ function createUndoRedoPanelHTML() {
   <script>
     function performUndo() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Action undone!');
           location.reload();
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function((error) {
           alert('❌ Cannot undo: ' + error.message);
         })
         .undoLastAction();
@@ -27660,11 +27660,11 @@ function createUndoRedoPanelHTML() {
 
     function performRedo() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Action redone!');
           location.reload();
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function((error) {
           alert('❌ Cannot redo: ' + error.message);
         })
         .redoLastAction();
@@ -27672,7 +27672,7 @@ function createUndoRedoPanelHTML() {
 
     function undoToAction(index) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Undo complete!');
           location.reload();
         })
@@ -27681,7 +27681,7 @@ function createUndoRedoPanelHTML() {
 
     function redoToAction(index) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Redo complete!');
           location.reload();
         })
@@ -27691,7 +27691,7 @@ function createUndoRedoPanelHTML() {
     function clearHistory() {
       if (confirm('Clear all undo/redo history? This cannot be undone.')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function(() {
             alert('✅ History cleared!');
             location.reload();
           })
@@ -27701,7 +27701,7 @@ function createUndoRedoPanelHTML() {
 
     function exportHistory() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function((url) {
           alert('✅ History exported!');
           window.open(url, '_blank');
         })

@@ -419,7 +419,7 @@ function createPaginatedViewerHTML() {
 
     function exportCurrentPage() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function((url) {
           alert('✅ Page exported!');
           window.open(url, '_blank');
         })

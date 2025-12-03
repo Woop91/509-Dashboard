@@ -614,7 +614,7 @@ function showReportAutomationSettings() {
     <div class="status ${monthlyEnabled ? 'enabled' : 'disabled'}">
       ${monthlyEnabled ? '✅ Monthly reports ENABLED (1st of month, 9 AM)' : '🔕 Monthly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupMonthlyReports()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).setupMonthlyReports()">
       ${monthlyEnabled ? '🔄 Refresh Monthly Trigger' : '✅ Enable Monthly Reports'}
     </button>
 
@@ -622,21 +622,21 @@ function showReportAutomationSettings() {
     <div class="status ${quarterlyEnabled ? 'enabled' : 'disabled'}">
       ${quarterlyEnabled ? '✅ Quarterly reports ENABLED (Jan/Apr/Jul/Oct, 10 AM)' : '🔕 Quarterly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).setupQuarterlyReports()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).setupQuarterlyReports()">
       ${quarterlyEnabled ? '🔄 Refresh Quarterly Trigger' : '✅ Enable Quarterly Reports'}
     </button>
 
     <hr style="margin: 30px 0;">
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).generateMonthlyReport()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).generateMonthlyReport()">
       🧪 Test Monthly Report
     </button>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).generateQuarterlyReport()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).generateQuarterlyReport()">
       🧪 Test Quarterly Report
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { google.script.host.close(); }).disableAutomatedReports()">
+    <button class="danger" onclick="google.script.run.withSuccessHandler(function(() { google.script.host.close(); }).disableAutomatedReports()">
       🔕 Disable All Reports
     </button>
   </div>

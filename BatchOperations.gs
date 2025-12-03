@@ -113,31 +113,31 @@ function showBatchOperationsMenu() {
 
   <script>
     function runBatchAssignSteward() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function(() {
         google.script.host.close();
       }).batchAssignSteward();
     }
 
     function runBatchUpdateStatus() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function(() {
         google.script.host.close();
       }).batchUpdateStatus();
     }
 
     function runBatchExportPDF() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function(() {
         google.script.host.close();
       }).batchExportPDF();
     }
 
     function runBatchEmail() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function(() {
         google.script.host.close();
       }).batchEmailNotifications();
     }
 
     function runBatchAddNotes() {
-      google.script.run.withSuccessHandlerfunction(() {
+      google.script.run.withSuccessHandler(function(() {
         google.script.host.close();
       }).batchAddNotes();
     }

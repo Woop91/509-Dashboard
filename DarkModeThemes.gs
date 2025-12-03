@@ -423,7 +423,7 @@ function createThemeManagerHTML() {
 
     function applySelectedTheme() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Theme applied successfully!');
           google.script.host.close();
         })
@@ -432,7 +432,7 @@ function createThemeManagerHTML() {
 
     function applyToAllSheets() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Theme applied to all sheets!');
           location.reload();
         })
@@ -441,7 +441,7 @@ function createThemeManagerHTML() {
 
     function applyToCurrentSheet() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Theme applied to current sheet!');
           location.reload();
         })
@@ -450,7 +450,7 @@ function createThemeManagerHTML() {
 
     function previewTheme() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('👁️ Preview applied! This is temporary.');
         })
         .previewTheme(selectedTheme);
@@ -459,7 +459,7 @@ function createThemeManagerHTML() {
     function resetTheme() {
       if (confirm('Reset to default light theme?')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function(() {
             alert('✅ Theme reset!');
             location.reload();
           })
@@ -470,7 +470,7 @@ function createThemeManagerHTML() {
     function toggleAutoSwitch() {
       const enabled = document.getElementById('autoSwitch').checked;
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert(enabled ? '✅ Auto dark mode enabled!' : '🔕 Auto dark mode disabled!');
         })
         .setAutoSwitch(enabled);

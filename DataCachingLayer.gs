@@ -405,11 +405,11 @@ function showCacheStatusDashboard() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).warmUpCaches()">
+    <button onclick="google.script.run.withSuccessHandler(function(() { location.reload(); }).warmUpCaches()">
       🔥 Warm Up All Caches
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { location.reload(); }).invalidateAllCaches()">
+    <button class="danger" onclick="google.script.run.withSuccessHandler(function(() { location.reload(); }).invalidateAllCaches()">
       🗑️ Clear All Caches
     </button>
   </div>

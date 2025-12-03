@@ -799,7 +799,7 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
       const folderUrl = '${folderUrl}';
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Sharing invitations sent successfully!');
           google.script.host.close();
         })
@@ -1338,7 +1338,7 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
       }
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Email sent successfully!');
           google.script.host.close();
         })

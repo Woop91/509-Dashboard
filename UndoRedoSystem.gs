@@ -254,11 +254,11 @@ function createUndoRedoPanelHTML() {
   <script>
     function performUndo() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Action undone!');
           location.reload();
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function((error) {
           alert('❌ Cannot undo: ' + error.message);
         })
         .undoLastAction();
@@ -266,11 +266,11 @@ function createUndoRedoPanelHTML() {
 
     function performRedo() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Action redone!');
           location.reload();
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function((error) {
           alert('❌ Cannot redo: ' + error.message);
         })
         .redoLastAction();
@@ -278,7 +278,7 @@ function createUndoRedoPanelHTML() {
 
     function undoToAction(index) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Undo complete!');
           location.reload();
         })
@@ -287,7 +287,7 @@ function createUndoRedoPanelHTML() {
 
     function redoToAction(index) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Redo complete!');
           location.reload();
         })
@@ -297,7 +297,7 @@ function createUndoRedoPanelHTML() {
     function clearHistory() {
       if (confirm('Clear all undo/redo history? This cannot be undone.')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function(() {
             alert('✅ History cleared!');
             location.reload();
           })
@@ -307,7 +307,7 @@ function createUndoRedoPanelHTML() {
 
     function exportHistory() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function((url) {
           alert('✅ History exported!');
           window.open(url, '_blank');
         })

@@ -471,7 +471,7 @@ function createReportBuilderHTML() {
       alert('Generating PDF report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ PDF report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -487,7 +487,7 @@ function createReportBuilderHTML() {
       }
 
       google.script.run
-        .withSuccessHandlerfunction((csvData) {
+        .withSuccessHandler(function((csvData) {
           downloadCSV(csvData);
         })
         .withFailureHandler(onError)
@@ -505,7 +505,7 @@ function createReportBuilderHTML() {
       alert('Generating Excel report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Excel report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -529,7 +529,7 @@ function createReportBuilderHTML() {
       if (!name) return;
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Template saved: ' + name);
         })
         .withFailureHandler(onError)

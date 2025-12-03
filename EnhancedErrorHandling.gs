@@ -279,7 +279,7 @@ function createErrorDashboardHTML() {
   <script>
     function runHealthCheck() {
       google.script.run
-        .withSuccessHandlerfunction((result) {
+        .withSuccessHandler(function((result) {
           alert('🏥 Health Check Complete:\\n\\n' + result.summary);
           location.reload();
         })
@@ -288,7 +288,7 @@ function createErrorDashboardHTML() {
 
     function exportErrorLog() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function((url) {
           alert('✅ Error log exported!');
           window.open(url, '_blank');
         })
@@ -298,7 +298,7 @@ function createErrorDashboardHTML() {
     function clearErrorLog() {
       if (confirm('Clear all error logs? This cannot be undone.')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function(() {
             alert('✅ Error log cleared!');
             location.reload();
           })
@@ -308,7 +308,7 @@ function createErrorDashboardHTML() {
 
     function testErrorHandling() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Test error logged successfully!');
           location.reload();
         })
@@ -317,7 +317,7 @@ function createErrorDashboardHTML() {
 
     function viewErrorTrends() {
       google.script.run
-        .withSuccessHandlerfunction((url) {
+        .withSuccessHandler(function((url) {
           window.open(url, '_blank');
         })
         .createErrorTrendReport();

@@ -401,7 +401,7 @@ function createADHDControlPanelHTML() {
       };
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Settings saved!');
           google.script.host.close();
         })
@@ -411,7 +411,7 @@ function createADHDControlPanelHTML() {
     function resetToDefaults() {
       if (confirm('Reset all ADHD settings to defaults?')) {
         google.script.run
-          .withSuccessHandlerfunction(() {
+          .withSuccessHandler(function(() {
             alert('✅ Settings reset!');
             location.reload();
           })
@@ -668,7 +668,7 @@ function showQuickCaptureNotepad() {
     function saveNotes() {
       const notes = document.getElementById('notes').value;
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Notes saved!');
         })
         .saveQuickCaptureNotes(notes);

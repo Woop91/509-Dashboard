@@ -326,10 +326,10 @@ function createBackupManagerHTML() {
       <div class="status ${isAutomated ? 'enabled' : 'disabled'}">
         ${isAutomated ? '✅ Automated backups are ENABLED (Weekly, Sundays 2 AM)' : '🔕 Automated backups are DISABLED'}
       </div>
-      <button onclick="google.script.run.withSuccessHandlerfunction(() { return location.reload()).setupAutomatedBackups(; })">
+      <button onclick="google.script.run.withSuccessHandler(function(() { return location.reload()).setupAutomatedBackups(; })">
         ${isAutomated ? '🔄 Refresh Schedule' : '✅ Enable Automated Backups'}
       </button>
-      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandlerfunction(() { return location.reload()).disableAutomatedBackups(; })">🔕 Disable</button>' : ''}
+      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function(() { return location.reload()).disableAutomatedBackups(; })">🔕 Disable</button>' : ''}
     </div>
 
     <div class="section">
@@ -367,10 +367,10 @@ function createBackupManagerHTML() {
       alert('Creating backup... This may take a moment.');
 
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('✅ Backup created successfully!');
         })
-        .withFailureHandlerfunction((error) {
+        .withFailureHandler(function((error) {
           alert('❌ Backup failed: ' + error.message);
         })
         .createBackup(false);
@@ -383,7 +383,7 @@ function createBackupManagerHTML() {
 
     function showBackupLog() {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           alert('Opening Backup Log sheet...');
           google.script.host.close();
         })
@@ -393,7 +393,7 @@ function createBackupManagerHTML() {
     function exportGrievances() {
       alert('Exporting grievances to CSV...');
       google.script.run
-        .withSuccessHandlerfunction((csv) {
+        .withSuccessHandler(function((csv) {
           downloadCSV(csv, 'grievances.csv');
         })
         .exportGrievancesToCSV();
@@ -402,7 +402,7 @@ function createBackupManagerHTML() {
     function exportMembers() {
       alert('Exporting members to CSV...');
       google.script.run
-        .withSuccessHandlerfunction((csv) {
+        .withSuccessHandler(function((csv) {
           downloadCSV(csv, 'members.csv');
         })
         .exportMembersToCSV();

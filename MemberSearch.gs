@@ -260,7 +260,7 @@ function createMemberSearchHTML() {
 
     function selectMember(row, memberId) {
       google.script.run
-        .withSuccessHandlerfunction(() {
+        .withSuccessHandler(function(() {
           google.script.host.close();
         })
         .navigateToMember(parseInt(row));
