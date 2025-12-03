@@ -254,7 +254,7 @@ function createWorkflowVisualizerHTML() {
           </div>
           ${state.allowedNextStates.length > 0
             ? `<div class="next-states">
-                <strong>Can transition to:</strong> ${state.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name).join(', '; })}
+                <strong>Can transition to:</strong> ${state.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name; }).join(', ')}
               </div>`
             : ''}
         </div>
@@ -303,7 +303,7 @@ function validateStateTransition(currentState, newState) {
   if (!current.allowedNextStates.includes(newState)) {
     return {
       valid: false,
-      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name).join(', '; })}`
+      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name; }).join(', ')}`
     };
   }
 

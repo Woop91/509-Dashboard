@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:49:49.393Z
+ * - Build Date: 2025-12-03T02:51:58.538Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -28428,8 +28428,8 @@ function calculateIssueDistribution(grievances) {
   });
 
   return {
-    disciplinary: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Discipline'; }).length,
-    contract: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Pay') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Workload'; }).length,
+    disciplinary: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Discipline'); }).length,
+    contract: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Pay') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Workload'); }).length,
     work: active.filter(function(g) { return (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Safety') || (g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '').includes('Scheduling'); }).length
   };
 }
@@ -28547,7 +28547,7 @@ function getSystemicRisks(grievances) {
       cases: data.total,
       lossRate: 0, // Would need historical data
       severity: data.total > 10 ? 'CRITICAL' : data.total > 5 ? 'WARNING' : 'NORMAL'
-    }))
+    };})
     .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
@@ -28578,7 +28578,7 @@ function getArbitrationTracker(grievances) {
     maxFinancialImpact: 125000,
     docCompliance: 78.5,
     pendingWitness: 3,
-    step3Cases: grievances.filter(function(g) { return (g[GRIEVANCE_COLS.CURRENT_STEP - 1] || '').includes('III'; }).length,
+    step3Cases: grievances.filter(function(g) { return (g[GRIEVANCE_COLS.CURRENT_STEP - 1] || '').includes('III'); }).length,
     highRiskCases: 2
   };
 }
@@ -28642,7 +28642,7 @@ function getLocationCaseload(grievances) {
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
-    }))
+    };})
     .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 10);
 }

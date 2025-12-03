@@ -454,7 +454,7 @@ function getSystemicRisks(grievances) {
       cases: data.total,
       lossRate: 0, // Would need historical data
       severity: data.total > 10 ? 'CRITICAL' : data.total > 5 ? 'WARNING' : 'NORMAL'
-    }))
+    };})
     .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
@@ -549,7 +549,7 @@ function getLocationCaseload(grievances) {
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
-    }))
+    };})
     .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 10);
 }
