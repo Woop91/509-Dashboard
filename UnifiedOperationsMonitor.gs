@@ -213,7 +213,7 @@ function calculateAvgDays(grievances) {
 
   if (closed.length === 0) return 0;
 
-  const totalDays = closed.reduce(function((sum, g) {
+  const totalDays = closed.reduce(function(sum, g) {
     const days = Math.floor((g[GRIEVANCE_COLS.DATE_CLOSED - 1] - g[GRIEVANCE_COLS.DATE_FILED - 1]) / (1000 * 60 * 60 * 24));
     return sum + days;
   }, 0);
@@ -311,7 +311,7 @@ function calculateAvgLoad(grievances) {
   const stewardCount = Object.keys(stewardLoad).length;
   if (stewardCount === 0) return 0;
 
-  const totalLoad = Object.values(stewardLoad).reduce(function((sum, load) { return sum + load, 0; });
+  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load, 0; });
   return totalLoad / stewardCount;
 }
 
@@ -368,7 +368,7 @@ function getTopProcesses(grievances, today, limit) {
                 daysUntilDue !== null && daysUntilDue <= 3 ? 'ALERT' : 'NORMAL'
       };
     })
-    .sort(function((a, b) { return a.due - b.due; })
+    .sort(function(a, b) { return a.due - b.due; })
     .slice(0, limit);
 }
 
@@ -448,14 +448,14 @@ function getSystemicRisks(grievances) {
   });
 
   return Object.entries(locationRisks)
-    .map(function(([location, data]) { return ({
+    .map(function([location, data]) { return ({
       entity: location,
       type: 'LOCATION',
       cases: data.total,
       lossRate: 0, // Would need historical data
       severity: data.total > 10 ? 'CRITICAL' : data.total > 5 ? 'WARNING' : 'NORMAL'
     }))
-    .sort(function((a, b) { return b.cases - a.cases; })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
 
@@ -501,7 +501,7 @@ function getContractTrends(grievances) {
   });
 
   return Object.entries(articleCounts)
-    .map(function(([article, count]) {
+    .map(function([article, count]) {
       // Calculate real win/loss rates for this article
       const articleGrievances = grievances.filter(function(g) { return g[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] === article; });  // Column W: Articles Violated
       const resolvedArticle = articleGrievances.filter(function(g) { return g[GRIEVANCE_COLS.STATUS - 1] && g[GRIEVANCE_COLS.STATUS - 1].toString().includes('Resolved'); });
@@ -516,7 +516,7 @@ function getContractTrends(grievances) {
         severity: count > 10 ? 'HIGH' : 'NORMAL'
       };
     })
-    .sort(function((a, b) { return b.cases - a.cases; })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
 
@@ -545,12 +545,12 @@ function getLocationCaseload(grievances) {
   });
 
   return Object.entries(locationData)
-    .map(function(([site, cases]) { return ({
+    .map(function([site, cases]) { return ({
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
     }))
-    .sort(function((a, b) { return b.cases - a.cases; })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 10);
 }
 

@@ -300,7 +300,7 @@ function createEmailComposerHTML(grievanceData) {
 
     function onEmailSent(result) {
       showStatus('✅ Email sent successfully!', 'success');
-      setTimeoutfunction(() {
+      setTimeout(function() {
         google.script.host.close();
       }, 2000);
     }

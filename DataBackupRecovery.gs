@@ -167,13 +167,13 @@ function cleanOldBackups() {
     }
 
     // Sort by date (oldest first)
-    backupFiles.sort(function((a, b) { return a.created - b.created; });
+    backupFiles.sort(function(a, b) { return a.created - b.created; });
 
     const now = new Date();
     const cutoffDate = new Date(now.getTime() - (RETENTION_DAYS * 24 * 60 * 60 * 1000));
 
     // Delete old backups
-    backupFiles.forEach(function((backup, index) {
+    backupFiles.forEach(function(backup, index) {
       // Keep if:
       // 1. Within retention period
       // 2. One of the most recent MAX_BACKUPS
@@ -326,10 +326,10 @@ function createBackupManagerHTML() {
       <div class="status ${isAutomated ? 'enabled' : 'disabled'}">
         ${isAutomated ? '✅ Automated backups are ENABLED (Weekly, Sundays 2 AM)' : '🔕 Automated backups are DISABLED'}
       </div>
-      <button onclick="google.script.run.withSuccessHandler(function(() { return location.reload()).setupAutomatedBackups(; })">
+      <button onclick="google.script.run.withSuccessHandler(function() { return location.reload()).setupAutomatedBackups(; })">
         ${isAutomated ? '🔄 Refresh Schedule' : '✅ Enable Automated Backups'}
       </button>
-      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function(() { return location.reload()).disableAutomatedBackups(; })">🔕 Disable</button>' : ''}
+      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function() { return location.reload()).disableAutomatedBackups(; })">🔕 Disable</button>' : ''}
     </div>
 
     <div class="section">
@@ -367,10 +367,10 @@ function createBackupManagerHTML() {
       alert('Creating backup... This may take a moment.');
 
       google.script.run
-        .withSuccessHandler(function(() {
+        .withSuccessHandler(function() {
           alert('✅ Backup created successfully!');
         })
-        .withFailureHandler(function((error) {
+        .withFailureHandler(function(error) {
           alert('❌ Backup failed: ' + error.message);
         })
         .createBackup(false);
@@ -383,7 +383,7 @@ function createBackupManagerHTML() {
 
     function showBackupLog() {
       google.script.run
-        .withSuccessHandler(function(() {
+        .withSuccessHandler(function() {
           alert('Opening Backup Log sheet...');
           google.script.host.close();
         })
@@ -393,7 +393,7 @@ function createBackupManagerHTML() {
     function exportGrievances() {
       alert('Exporting grievances to CSV...');
       google.script.run
-        .withSuccessHandler(function((csv) {
+        .withSuccessHandler(function(csv) {
           downloadCSV(csv, 'grievances.csv');
         })
         .exportGrievancesToCSV();
@@ -402,7 +402,7 @@ function createBackupManagerHTML() {
     function exportMembers() {
       alert('Exporting members to CSV...');
       google.script.run
-        .withSuccessHandler(function((csv) {
+        .withSuccessHandler(function(csv) {
           downloadCSV(csv, 'members.csv');
         })
         .exportMembersToCSV();

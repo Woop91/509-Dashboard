@@ -52,7 +52,7 @@ function createUndoRedoPanelHTML() {
   if (history.actions.length === 0) {
     historyRows = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #999;">No actions recorded yet</td></tr>';
   } else {
-    history.actions.slice().reverse().forEach(function((action, index) {
+    history.actions.slice().reverse().forEach(function(action, index) {
       const timestamp = new Date(action.timestamp).toLocaleString();
       const canUndo = index < history.actions.length - history.currentIndex;
       const canRedo = index >= history.actions.length - history.currentIndex;
@@ -254,11 +254,11 @@ function createUndoRedoPanelHTML() {
   <script>
     function performUndo() {
       google.script.run
-        .withSuccessHandler(function(() {
+        .withSuccessHandler(function() {
           alert('✅ Action undone!');
           location.reload();
         })
-        .withFailureHandler(function((error) {
+        .withFailureHandler(function(error) {
           alert('❌ Cannot undo: ' + error.message);
         })
         .undoLastAction();
@@ -266,11 +266,11 @@ function createUndoRedoPanelHTML() {
 
     function performRedo() {
       google.script.run
-        .withSuccessHandler(function(() {
+        .withSuccessHandler(function() {
           alert('✅ Action redone!');
           location.reload();
         })
-        .withFailureHandler(function((error) {
+        .withFailureHandler(function(error) {
           alert('❌ Cannot redo: ' + error.message);
         })
         .redoLastAction();
@@ -278,7 +278,7 @@ function createUndoRedoPanelHTML() {
 
     function undoToAction(index) {
       google.script.run
-        .withSuccessHandler(function(() {
+        .withSuccessHandler(function() {
           alert('✅ Undo complete!');
           location.reload();
         })
@@ -287,7 +287,7 @@ function createUndoRedoPanelHTML() {
 
     function redoToAction(index) {
       google.script.run
-        .withSuccessHandler(function(() {
+        .withSuccessHandler(function() {
           alert('✅ Redo complete!');
           location.reload();
         })
@@ -297,7 +297,7 @@ function createUndoRedoPanelHTML() {
     function clearHistory() {
       if (confirm('Clear all undo/redo history? This cannot be undone.')) {
         google.script.run
-          .withSuccessHandler(function(() {
+          .withSuccessHandler(function() {
             alert('✅ History cleared!');
             location.reload();
           })
@@ -307,7 +307,7 @@ function createUndoRedoPanelHTML() {
 
     function exportHistory() {
       google.script.run
-        .withSuccessHandler(function((url) {
+        .withSuccessHandler(function(url) {
           alert('✅ History exported!');
           window.open(url, '_blank');
         })
@@ -603,7 +603,7 @@ function exportUndoHistoryToSheet() {
 
   // Data
   if (history.actions.length > 0) {
-    const rows = history.actions.map(function((action, index) {
+    const rows = history.actions.map(function(action, index) {
       const status = index < history.currentIndex ? 'Applied' : 'Undone';
       return [
         index + 1,

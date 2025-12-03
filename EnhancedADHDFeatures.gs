@@ -356,22 +356,22 @@ function createADHDControlPanelHTML() {
 
     function toggleZebraStripes() {
       google.script.run.toggleZebraStripes();
-      setTimeoutfunction(() { return location.reload(), 1000; });
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function toggleGridlines() {
       google.script.run.toggleGridlinesADHD();
-      setTimeoutfunction(() { return location.reload(), 1000; });
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function toggleReducedMotion() {
       google.script.run.toggleReducedMotion();
-      setTimeoutfunction(() { return location.reload(), 1000; });
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function toggleComplexityIndicators() {
       google.script.run.toggleComplexityIndicators();
-      setTimeoutfunction(() { return location.reload(), 1000; });
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function activateFocusMode() {
@@ -401,7 +401,7 @@ function createADHDControlPanelHTML() {
       };
 
       google.script.run
-        .withSuccessHandler(function(() {
+        .withSuccessHandler(function() {
           alert('✅ Settings saved!');
           google.script.host.close();
         })
@@ -411,7 +411,7 @@ function createADHDControlPanelHTML() {
     function resetToDefaults() {
       if (confirm('Reset all ADHD settings to defaults?')) {
         google.script.run
-          .withSuccessHandler(function(() {
+          .withSuccessHandler(function() {
             alert('✅ Settings reset!');
             location.reload();
           })
@@ -668,7 +668,7 @@ function showQuickCaptureNotepad() {
     function saveNotes() {
       const notes = document.getElementById('notes').value;
       google.script.run
-        .withSuccessHandler(function(() {
+        .withSuccessHandler(function() {
           alert('✅ Notes saved!');
         })
         .saveQuickCaptureNotes(notes);
@@ -682,7 +682,7 @@ function showQuickCaptureNotepad() {
     }
 
     // Auto-save every 30 seconds
-    setIntervalfunction(() {
+    setInterval(function() {
       const notes = document.getElementById('notes').value;
       if (notes) {
         google.script.run.saveQuickCaptureNotes(notes);
@@ -770,7 +770,7 @@ function startPomodoroTimer() {
       isRunning = true;
       document.querySelector('button').textContent = '⏸️ Pause';
 
-      interval = setIntervalfunction(() {
+      interval = setInterval(function() {
         if (timeLeft > 0) {
           timeLeft--;
           updateDisplay();

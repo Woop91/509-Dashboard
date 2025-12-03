@@ -153,7 +153,7 @@ function testNextActionDueLogic() {
     }
   ];
 
-  testCases.forEach(function((testCase, index) {
+  testCases.forEach(function(testCase, index) {
     var nextAction;
     if (testCase.status === 'Open') {
       if (testCase.step === 'Step I') {

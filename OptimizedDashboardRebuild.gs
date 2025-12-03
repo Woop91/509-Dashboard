@@ -263,7 +263,7 @@ function calculateAllMetricsOptimized(dataCache) {
   metrics.avgDaysOpen = daysOpenCount > 0 ? (daysOpenSum / daysOpenCount) : 0;
 
   // Sort upcoming deadlines by date
-  metrics.upcomingDeadlines.sort(function((a, b) { return a.deadline - b.deadline; });
+  metrics.upcomingDeadlines.sort(function(a, b) { return a.deadline - b.deadline; });
 
   Logger.log('✅ Metrics calculated');
 
