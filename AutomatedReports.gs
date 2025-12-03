@@ -337,11 +337,11 @@ function createMonthlyReportDoc(data) {
     .setHeading(DocumentApp.ParagraphHeading.HEADING2);
 
   const issueTypes = Object.entries(data.byIssueType)
-    .sortfunction((a, b) { return b[1] - a[1]; })
+    .sort(function((a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const issueTable = [['Issue Type', 'Count']];
-  issueTypes.forEachfunction(([type, count]) {
+  issueTypes.forEach(function(([type, count]) {
     issueTable.push([type, count.toString()]);
   });
 
@@ -355,11 +355,11 @@ function createMonthlyReportDoc(data) {
     .setHeading(DocumentApp.ParagraphHeading.HEADING2);
 
   const stewards = Object.entries(data.bySteward)
-    .sortfunction((a, b) { return b[1] - a[1]; })
+    .sort(function((a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const stewardTable = [['Steward', 'Active Grievances']];
-  stewards.forEachfunction(([steward, count]) {
+  stewards.forEach(function(([steward, count]) {
     stewardTable.push([steward, count.toString()]);
   });
 
@@ -454,7 +454,7 @@ function createQuarterlyReportDoc(data) {
   const monthNames = ['Month 1', 'Month 2', 'Month 3'];
   const monthTable = [['Month', 'Grievances Filed']];
 
-  data.monthlyTrends.forEachfunction((count, index) {
+  data.monthlyTrends.forEach(function((count, index) {
     monthTable.push([monthNames[index], count.toString()]);
   });
 

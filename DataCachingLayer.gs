@@ -327,7 +327,7 @@ function showCacheStatusDashboard() {
 
   const cacheStatus = [];
 
-  Object.entries(CACHE_KEYS).forEachfunction(([name, key]) {
+  Object.entries(CACHE_KEYS).forEach(function(([name, key]) {
     const inMemory = memoryCache.get(key) !== null;
     const inProps = propsCache.getProperty(key) !== null;
 

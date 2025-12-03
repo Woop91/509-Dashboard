@@ -153,7 +153,7 @@ function createThemeManagerHTML() {
   const autoSwitch = getAutoSwitchSettings();
 
   var themeCards = '';
-  Object.entries(THEME_CONFIG.THEMES).forEachfunction(([key, theme]) {
+  Object.entries(THEME_CONFIG.THEMES).forEach(function(([key, theme]) {
     const isActive = currentTheme === key;
     themeCards += `
       <div class="theme-card ${isActive ? 'active' : ''}" onclick="selectTheme('${key}')">

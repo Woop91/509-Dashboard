@@ -650,7 +650,7 @@ function batchCreateGrievanceFolders() {
     var created = 0;
     var skipped = 0;
 
-    data.forEachfunction((row, index) {
+    data.forEach(function((row, index) {
       const grievanceId = row[0];
       const folderId = row[28]; // Column AC
 

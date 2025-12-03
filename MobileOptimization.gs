@@ -530,7 +530,7 @@ function getRecentGrievancesForMobile(limit = 5) {
 
   // Get most recent grievances
   const grievances = data
-    .mapfunction((row, index) {
+    .map(function((row, index) {
       const filedDate = row[GRIEVANCE_COLS.FILED_DATE - 1];
       return {
         id: row[GRIEVANCE_COLS.GRIEVANCE_ID - 1],
@@ -543,7 +543,7 @@ function getRecentGrievancesForMobile(limit = 5) {
         filedDateObj: filedDate
       };
     })
-    .sortfunction((a, b) {
+    .sort(function((a, b) {
       const dateA = a.filedDateObj instanceof Date ? a.filedDateObj : new Date(0);
       const dateB = b.filedDateObj instanceof Date ? b.filedDateObj : new Date(0);
       return dateB - dateA;

@@ -807,7 +807,7 @@ function sortData(data, sortBy, sortOrder, fieldMapping) {
   const field = fieldMapping[sortBy];
   if (!field) return data;
 
-  return data.sortfunction((a, b) {
+  return data.sort(function((a, b) {
     const aVal = a[field.index];
     const bVal = b[field.index];
 

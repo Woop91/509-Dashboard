@@ -91,16 +91,16 @@ function analyzeLocationClusters(data) {
   const totalGrievances = data.length;
   const hotspots = [];
 
-  Object.entries(locationStats).forEachfunction(([location, stats]) {
+  Object.entries(locationStats).forEach(function(([location, stats]) {
     const percentage = (stats.count / totalGrievances) * 100;
 
     if (percentage > 15) {
       // If a location has >15% of all grievances, it's a hotspot
       const topIssue = Object.entries(stats.issueTypes)
-        .sortfunction((a, b) { return b[1] - a[1]; })[0];
+        .sort(function((a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reducefunction((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       hotspots.push({
@@ -117,7 +117,7 @@ function analyzeLocationClusters(data) {
 
   return {
     totalLocations: Object.keys(locationStats).length,
-    hotspots: hotspots.sortfunction((a, b) { return b.count - a.count); },
+    hotspots: hotspots.sort(function((a, b) { return b.count - a.count); },
     allStats: locationStats
   };
 }
@@ -172,13 +172,13 @@ function analyzeManagerPatterns(data) {
   const avgGrievancesPerManager = data.length / Object.keys(managerStats).length;
   const concerningManagers = [];
 
-  Object.entries(managerStats).forEachfunction(([manager, stats]) {
+  Object.entries(managerStats).forEach(function(([manager, stats]) {
     if (stats.count > avgGrievancesPerManager * 2) {
       const topIssue = Object.entries(stats.issueTypes)
-        .sortfunction((a, b) { return b[1] - a[1]; })[0];
+        .sort(function((a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reducefunction((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       concerningManagers.push({
@@ -195,7 +195,7 @@ function analyzeManagerPatterns(data) {
   return {
     totalManagers: Object.keys(managerStats).length,
     avgPerManager: avgGrievancesPerManager.toFixed(1),
-    concerningManagers: concerningManagers.sortfunction((a, b) { return b.count - a.count); },
+    concerningManagers: concerningManagers.sort(function((a, b) { return b.count - a.count); },
     allStats: managerStats
   };
 }
@@ -257,10 +257,10 @@ function analyzeIssueTypePatterns(data) {
   // Identify systemic issues
   const systemicIssues = [];
 
-  Object.entries(issueTypeStats).forEachfunction(([issueType, stats]) {
+  Object.entries(issueTypeStats).forEach(function(([issueType, stats]) {
     // Check if concentrated in specific locations (>60% in one location)
     const topLocation = Object.entries(stats.locations)
-      .sortfunction((a, b) { return b[1] - a[1]; })[0];
+      .sort(function((a, b) { return b[1] - a[1]; })[0];
 
     const locationConcentration = topLocation
       ? (topLocation[1] / stats.count) * 100
@@ -268,7 +268,7 @@ function analyzeIssueTypePatterns(data) {
 
     if (locationConcentration > 60 || stats.count > data.length * 0.15) {
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reducefunction((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function((sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
         : 0;
 
       systemicIssues.push({
@@ -285,7 +285,7 @@ function analyzeIssueTypePatterns(data) {
 
   return {
     totalIssueTypes: Object.keys(issueTypeStats).length,
-    systemicIssues: systemicIssues.sortfunction((a, b) { return b.count - a.count); },
+    systemicIssues: systemicIssues.sort(function((a, b) { return b.count - a.count); },
     allStats: issueTypeStats
   };
 }
@@ -314,7 +314,7 @@ function analyzeTemporalPatterns(data) {
 
   // Find peak days
   const peakDay = Object.entries(dayOfWeekPatterns)
-    .sortfunction((a, b) { return b[1] - a[1]; })[0];
+    .sort(function((a, b) { return b[1] - a[1]; })[0];
 
   return {
     monthlyPatterns: monthlyPatterns,
@@ -345,7 +345,7 @@ function findCorrelations(data) {
     }
   });
 
-  Object.entries(managerIssueMatrix).forEachfunction(([key, count]) {
+  Object.entries(managerIssueMatrix).forEach(function(([key, count]) {
     if (count >= 5) {
       const [manager, issueType] = key.split('|||');
       correlations.push({
@@ -357,7 +357,7 @@ function findCorrelations(data) {
     }
   });
 
-  return correlations.sortfunction((a, b) { return b.count - a.count; });
+  return correlations.sort(function((a, b) { return b.count - a.count; });
 }
 
 /**
@@ -407,7 +407,7 @@ function generateRCARecommendations(data) {
     }
   });
 
-  return recommendations.sortfunction((a, b) {
+  return recommendations.sort(function((a, b) {
     const priorityOrder = { 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1 };
     return priorityOrder[b.priority] - priorityOrder[a.priority];
   });

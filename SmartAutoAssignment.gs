@@ -62,7 +62,7 @@ function autoAssignSteward(grievanceId, preferences = {}) {
   }));
 
   // Sort by score (descending)
-  scoredStewards.sortfunction((a, b) { return b.score - a.score; });
+  scoredStewards.sort(function((a, b) { return b.score - a.score; });
 
   // Get top candidate
   const selectedSteward = scoredStewards[0];
@@ -132,7 +132,7 @@ function getAllStewards() {
 
   const stewards = [];
 
-  data.forEachfunction((row, index) {
+  data.forEach(function((row, index) {
     const isSteward = row[9]; // Column J: Is Steward?
 
     if (isSteward === 'Yes') {
@@ -549,7 +549,7 @@ function showStewardWorkloadDashboard() {
   }
 
   // Sort by caseload (descending)
-  stewards.sortfunction((a, b) { return b.currentCaseload - a.currentCaseload; });
+  stewards.sort(function((a, b) { return b.currentCaseload - a.currentCaseload; });
 
   const stewardsList = stewards
     .map(function(s) { return '
@@ -563,9 +563,9 @@ function showStewardWorkloadDashboard() {
         <div class="steward-expertise">
           <strong>Expertise:</strong> ${Object.keys(s.expertise).length > 0
             ? Object.entries(s.expertise)
-                .sortfunction((a, b) { return b[1] - a[1]; })
+                .sort(function((a, b) { return b[1] - a[1]; })
                 .slice(0, 3)
-                .mapfunction(([type, count]) { return `${type} (${count})`; })
+                .map(function(([type, count]) { return `${type} (${count})`; })
                 .join(', ')
             : 'No cases yet'}
         </div>
@@ -573,7 +573,7 @@ function showStewardWorkloadDashboard() {
     `)
     .join('');
 
-  const avgCaseload = stewards.reducefunction((sum, s) { return sum + s.currentCaseload, 0; }) / stewards.length;
+  const avgCaseload = stewards.reduce(function((sum, s) { return sum + s.currentCaseload, 0; }) / stewards.length;
 
   const html = `
 <!DOCTYPE html>
@@ -598,7 +598,7 @@ function showStewardWorkloadDashboard() {
     <div class="summary">
       <strong>Total Stewards:</strong> ${stewards.length}<br>
       <strong>Average Caseload:</strong> ${avgCaseload.toFixed(1)} cases/steward<br>
-      <strong>Total Open Cases:</strong> ${stewards.reducefunction((sum, s) { return sum + s.currentCaseload, 0; })}
+      <strong>Total Open Cases:</strong> ${stewards.reduce(function((sum, s) { return sum + s.currentCaseload, 0; })}
     </div>
 
     <div style="max-height: 500px; overflow-y: auto;">
