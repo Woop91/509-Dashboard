@@ -564,7 +564,7 @@ function exportAuditLog() {
 
   // This would create a CSV file in Google Drive
   const data = auditSheet.getDataRange().getValues();
-  const csv = data.map(function(row) { return row.join(',')).join('\n'; });
+  const csv = data.map(function(row) { return row.join(','); }).join('\n');
 
   const folder = DriveApp.getRootFolder();
   const file = folder.createFile(
