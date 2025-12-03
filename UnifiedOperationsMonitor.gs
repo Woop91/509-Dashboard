@@ -262,7 +262,7 @@ function calculateStepEfficiency(grievances) {
     { name: 'Step III', team: 'ESCALATION', status: 'red' }
   ];
 
-  return steps.map(function(s) { return ({
+  return steps.map(function(s) { return {
     ...s,
     cases: stepData[s.name] || 0,
     caseload: Math.round(((stepData[s.name] || 0) / total) * 100)
@@ -448,7 +448,7 @@ function getSystemicRisks(grievances) {
   });
 
   return Object.entries(locationRisks)
-    .map(function([location, data]) { return ({
+    .map(function([location, data]) { return {
       entity: location,
       type: 'LOCATION',
       cases: data.total,
@@ -545,7 +545,7 @@ function getLocationCaseload(grievances) {
   });
 
   return Object.entries(locationData)
-    .map(function([site, cases]) { return ({
+    .map(function([site, cases]) { return {
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'

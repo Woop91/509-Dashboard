@@ -520,7 +520,7 @@ function getAllFAQs() {
 
   const data = faqSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
-  return data.map(function(row) { return ({
+  return data.map(function(row) { return {
     id: row[0],
     category: row[1],
     question: row[2],

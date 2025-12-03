@@ -506,7 +506,7 @@ function getRecentErrors(limit = 20) {
 
   const data = errorSheet.getRange(startRow, 1, numRows, 8).getValues();
 
-  return data.map(function(row) { return ({
+  return data.map(function(row) { return {
     timestamp: row[0],
     level: row[1],
     category: row[2],
