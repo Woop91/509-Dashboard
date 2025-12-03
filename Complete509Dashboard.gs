@@ -1795,7 +1795,7 @@ function SEED_5K_GRIEVANCES() {
   // Get member data ONCE before the loop (CRITICAL FIX)
   const memberLastRow = memberDir.getLastRow();
   if (memberLastRow < 2) {
-    ui.alert('Error', 'No members found. Please seed members first.', ui.ButtonSet.OK);
+    ui.alert('Error', 'No members found in Member Directory. Please seed members first.', ui.ButtonSet.OK);
     return;
   }
 
@@ -3692,31 +3692,33 @@ function calculateAllMetrics(memberData, grievanceData) {
 
   // Member metrics
   metrics.totalMembers = memberData.length - 1;
-  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row[10] === 'Active'; }).length;
-  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row[9] === 'Yes'; }).length;
-  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
-  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
+  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row && row.length > 10 && row[10] === 'Active'; }).length;
+  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row && row.length > 9 && row[9] === 'Yes'; }).length;
+  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row && row.length > 5 && row[5] === 'Unit 8'; }).length;
+  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row && row.length > 5 && row[5] === 'Unit 10'; }).length;
 
   // Grievance metrics
   metrics.totalGrievances = grievanceData.length - 1;
   metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision')).length;
+    return row && row.length > 4 && row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision');
+  }).length;
   metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
-    row[4] && row[4].startsWith('Resolved')).length;
+    return row && row.length > 4 && row[4] && row[4].startsWith('Resolved');
+  }).length;
 
-  const resolvedData = grievanceData.slice(1).filter(function(row) { return row[4] && row[4].startsWith('Resolved'); });
-  metrics.grievancesWon = resolvedData.filter(function(row) { return row[24] && row[24].includes('Won'); }).length;
-  metrics.grievancesLost = resolvedData.filter(function(row) { return row[24] && row[24].includes('Lost'); }).length;
+  const resolvedData = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] && row[4].startsWith('Resolved'); });
+  metrics.grievancesWon = resolvedData.filter(function(row) { return row && row.length > 24 && row[24] && row[24].includes('Won'); }).length;
+  metrics.grievancesLost = resolvedData.filter(function(row) { return row && row.length > 24 && row[24] && row[24].includes('Lost'); }).length;
 
   metrics.winRate = metrics.resolvedGrievances > 0
     ? ((metrics.grievancesWon / metrics.resolvedGrievances) * 100).toFixed(1)
     : 0;
 
-  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) { return row[28] === 'YES'; }).length;
+  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) { return row && row.length > 28 && row[28] === 'YES'; }).length;
 
   // Additional metrics
-  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Mediation'; }).length;
-  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Arbitration'; }).length;
+  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] === 'In Mediation'; }).length;
+  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] === 'In Arbitration'; }).length;
 
   return metrics;
 }
@@ -3995,6 +3997,7 @@ function getChartDataForMetric(metricName, metrics) {
       // Count actual grievances by step from Grievance Log
       const stepCounts = {};
       grievanceData.slice(1).forEach(function(row) {
+        if (!row || row.length < 6) return;
         const status = row[4]; // Status column (E)
         const step = row[5];    // Current Step column (F)
         if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
@@ -4196,6 +4199,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const typeWon = {};
 
       grievanceData.slice(1).forEach(function(row) {
+        if (!row || row.length < 23) return;
         const type = row[22]; // Issue Category column (W)
         const status = row[4]; // Status column (E)
 
@@ -4235,6 +4239,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const locationWon = {};
 
       grievanceData.slice(1).forEach(function(row) {
+        if (!row || row.length < 26) return;
         const location = row[25]; // Work Location column (Z)
         const status = row[4]; // Status column (E)
 
@@ -4951,20 +4956,25 @@ function getMemberList() {
   // Get all member data (columns A-K: ID, First, Last, Job, Location, Unit, Office Days, Email, Phone, Is Steward, Status)
   const data = memberSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
-  return data.map(function((row, index) { return ({
-    rowIndex: index + 2,
-    memberId: row[0],
-    firstName: row[1],
-    lastName: row[2],
-    jobTitle: row[3],
-    location: row[4],
-    unit: row[5],
-    officeDays: row[6],
-    email: row[7],
-    phone: row[8],
-    isSteward: row[9],
-    status: row[10]
-  })).filter(function(member) { return member.memberId; }); // Filter out empty rows
+  return data.map(function(row, index) {
+    if (!row || row.length < 11) {
+      return null;
+    }
+    return {
+      rowIndex: index + 2,
+      memberId: row[0],
+      firstName: row[1],
+      lastName: row[2],
+      jobTitle: row[3],
+      location: row[4],
+      unit: row[5],
+      officeDays: row[6],
+      email: row[7],
+      phone: row[8],
+      isSteward: row[9],
+      status: row[10]
+    };
+  }).filter(function(member) { return member && member.memberId; }); // Filter out empty rows
 }
 
 /**
@@ -5185,7 +5195,16 @@ function generatePreFilledGrievanceForm(memberRowIndex) {
   }
 
   // Get member data
-  const memberData = memberSheet.getRange(memberRowIndex, 1, 1, 11).getValues()[0];
+  const memberDataArray = memberSheet.getRange(memberRowIndex, 1, 1, 11).getValues();
+  if (!memberDataArray || memberDataArray.length === 0 || !memberDataArray[0]) {
+    throw new Error('Member data not found at row ' + memberRowIndex);
+  }
+
+  const memberData = memberDataArray[0];
+  if (memberData.length < 11) {
+    throw new Error('Incomplete member data at row ' + memberRowIndex);
+  }
+
   const member = {
     id: memberData[0],
     firstName: memberData[1],
@@ -7111,12 +7130,13 @@ function populateStewardWorkload() {
   const stewards = {};
   for (let i = 1; i < memberData.length; i++) {
     const row = memberData[i];
+    if (!row || row.length < 10) continue;
     const isSteward = row[9]; // Column J - Is Steward
     if (isSteward === 'Yes') {
       const memberId = row[0];
-      const name = `${row[1]} ${row[2]}`; // First + Last name
-      const email = row[4];
-      const phone = row[5];
+      const name = `${row[1] || ''} ${row[2] || ''}`.trim(); // First + Last name
+      const email = row[7]; // Column H - Email
+      const phone = row[8]; // Column I - Phone
       stewards[memberId] = {
         name: name,
         email: email,
