@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T02:07:36.333Z
+ * - Build Date: 2025-12-03T02:12:30.467Z
  * - Modules: 51 files
  *
  * ============================================================================
@@ -3395,7 +3395,7 @@ function populateStewardWorkload() {
     const s = stewards[stewardId];
     const winRate = s.resolvedCases > 0 ? (s.wonCases / s.resolvedCases * 100) : 0;
     const avgDays = s.resolutionDays.length > 0
-      ? s.resolutionDays.reduce(function(a, b) { return a + b; }, 0) }) / s.resolutionDays.length
+      ? s.resolutionDays.reduce(function(a, b) { return a + b; }, 0) / s.resolutionDays.length
       : 0;
 
     // Capacity status based on active cases
@@ -23663,7 +23663,7 @@ function createPerformanceMonitoringSheet() {
 
   perfSheet.getRange(summaryRow + 2, 1).setValue('Total Calls:');
   perfSheet.getRange(summaryRow + 2, 2).setValue(
-    rows.reduce(function(sum, row) { return sum + row[4], 0; })
+    rows.reduce(function(sum, row) { return sum + row[4]; }, 0)
   );
 
   perfSheet.getRange(summaryRow + 3, 1).setValue('Last Updated:');
@@ -24540,15 +24540,15 @@ function analyzeResolutionTimeTrend(data) {
   // Sort for median
   resolutionTimes.sort(function(a, b) { return a - b; });
 
-  const average = resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / resolutionTimes.length;
+  const average = resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / resolutionTimes.length;
   const median = resolutionTimes[Math.floor(resolutionTimes.length / 2)];
 
   // Recent vs older comparison
   const recent = resolutionTimes.slice(-10);
   const older = resolutionTimes.slice(0, -10);
 
-  const recentAvg = recent.reduce(function(sum, val) { return sum + val, 0; }) / recent.length;
-  const olderAvg = older.length > 0 ? older.reduce(function(sum, val) { return sum + val, 0; }) / older.length : recentAvg;
+  const recentAvg = recent.reduce(function(sum, val) { return sum + val; }, 0) / recent.length;
+  const olderAvg = older.length > 0 ? older.reduce(function(sum, val) { return sum + val; }, 0) / older.length : recentAvg;
 
   return {
     average: Math.round(average),
@@ -24693,7 +24693,7 @@ function detectAnomalies(data) {
     }
   });
 
-  const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val, 0; });
+  const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val; }, 0);
   Object.entries(locationCounts).forEach(function([location, count]) {
     if (count > totalCases * 0.4) {
       anomalies.push({
@@ -25309,7 +25309,7 @@ function analyzeLocationClusters(data) {
         .sort(function(a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
         : 0;
 
       hotspots.push({
@@ -25387,7 +25387,7 @@ function analyzeManagerPatterns(data) {
         .sort(function(a, b) { return b[1] - a[1]; })[0];
 
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
         : 0;
 
       concerningManagers.push({
@@ -25477,7 +25477,7 @@ function analyzeIssueTypePatterns(data) {
 
     if (locationConcentration > 60 || stats.count > data.length * 0.15) {
       const avgResTime = stats.resolutionTimes.length > 0
-        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val, 0; }) / stats.resolutionTimes.length
+        ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
         : 0;
 
       systemicIssues.push({
@@ -26900,7 +26900,7 @@ function showStewardWorkloadDashboard() {
     `)
     .join('');
 
-  const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload, 0; }) / stewards.length;
+  const avgCaseload = stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0) / stewards.length;
 
   const html = `
 <!DOCTYPE html>
@@ -26925,7 +26925,7 @@ function showStewardWorkloadDashboard() {
     <div class="summary">
       <strong>Total Stewards:</strong> ${stewards.length}<br>
       <strong>Average Caseload:</strong> ${avgCaseload.toFixed(1)} cases/steward<br>
-      <strong>Total Open Cases:</strong> ${stewards.reduce(function(sum, s) { return sum + s.currentCaseload, 0; })}
+      <strong>Total Open Cases:</strong> ${stewards.reduce(function(sum, s) { return sum + s.currentCaseload; }, 0)}
     </div>
 
     <div style="max-height: 500px; overflow-y: auto;">
@@ -28402,7 +28402,7 @@ function calculateAvgLoad(grievances) {
   const stewardCount = Object.keys(stewardLoad).length;
   if (stewardCount === 0) return 0;
 
-  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load, 0; });
+  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load; }, 0);
   return totalLoad / stewardCount;
 }
 

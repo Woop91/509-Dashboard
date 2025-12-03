@@ -1978,7 +1978,7 @@ function populateStewardWorkload() {
     const s = stewards[stewardId];
     const winRate = s.resolvedCases > 0 ? (s.wonCases / s.resolvedCases * 100) : 0;
     const avgDays = s.resolutionDays.length > 0
-      ? s.resolutionDays.reduce(function(a, b) { return a + b; }, 0) }) / s.resolutionDays.length
+      ? s.resolutionDays.reduce(function(a, b) { return a + b; }, 0) / s.resolutionDays.length
       : 0;
 
     // Capacity status based on active cases

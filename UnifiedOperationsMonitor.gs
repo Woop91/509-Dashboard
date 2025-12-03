@@ -311,7 +311,7 @@ function calculateAvgLoad(grievances) {
   const stewardCount = Object.keys(stewardLoad).length;
   if (stewardCount === 0) return 0;
 
-  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load, 0; });
+  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load; }, 0);
   return totalLoad / stewardCount;
 }
 
