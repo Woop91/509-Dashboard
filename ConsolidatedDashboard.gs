@@ -19449,6 +19449,16 @@ function rebuildInteractiveDashboard() {
  * Calculate all metrics from data
  */
 function calculateAllMetrics(memberData, grievanceData) {
+  // Validate input data
+  if (!memberData || !Array.isArray(memberData) || memberData.length === 0) {
+    Logger.log('calculateAllMetrics: Invalid memberData');
+    return {};
+  }
+  if (!grievanceData || !Array.isArray(grievanceData) || grievanceData.length === 0) {
+    Logger.log('calculateAllMetrics: Invalid grievanceData');
+    return {};
+  }
+
   const metrics = {};
 
   // Member metrics
@@ -19486,9 +19496,19 @@ function calculateAllMetrics(memberData, grievanceData) {
  * Update metric cards with current data and celebratory messages
  */
 function updateMetricCards(sheet, metrics) {
+  // Validate parameters
+  if (!sheet) {
+    Logger.log('updateMetricCards: sheet parameter is undefined');
+    return;
+  }
+  if (!metrics || typeof metrics !== 'object') {
+    Logger.log('updateMetricCards: metrics parameter is invalid');
+    return;
+  }
+
   // Card 1: Total Members
   sheet.getRange("A15:E17").merge()
-    .setValue(formatNumber(metrics.totalMembers))
+    .setValue(formatNumber(metrics.totalMembers || 0))
     .setNumberFormat("#,##0");
 
   // Add celebration message for members
@@ -19598,7 +19618,13 @@ function getOverdueCelebration(overdue, total) {
  * Get overall victory message based on all metrics
  */
 function getVictoryMessage(metrics) {
-  const winRate = parseFloat(metrics.winRate);
+  // Validate metrics parameter
+  if (!metrics || typeof metrics !== 'object') {
+    Logger.log('getVictoryMessage: metrics parameter is invalid');
+    return "📊 Keep up the good work!";
+  }
+
+  const winRate = parseFloat(metrics.winRate || 0);
   const messages = [];
 
   // Check for major victories
