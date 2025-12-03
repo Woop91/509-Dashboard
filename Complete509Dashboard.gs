@@ -3727,9 +3727,24 @@ function calculateAllMetrics(memberData, grievanceData) {
  * Update metric cards with current data and celebratory messages
  */
 function updateMetricCards(sheet, metrics) {
+  // Validate parameters
+  if (!sheet) {
+    throw new Error('updateMetricCards: sheet parameter is required');
+  }
+
+  if (!metrics || typeof metrics !== 'object') {
+    throw new Error('updateMetricCards: metrics parameter must be a valid object');
+  }
+
+  // Validate required metric fields with defaults
+  const totalMembers = metrics.totalMembers != null ? metrics.totalMembers : 0;
+  const activeGrievances = metrics.activeGrievances != null ? metrics.activeGrievances : 0;
+  const winRate = metrics.winRate != null ? metrics.winRate : 0;
+  const overdueGrievances = metrics.overdueGrievances != null ? metrics.overdueGrievances : 0;
+
   // Card 1: Total Members
   sheet.getRange("A15:E17").merge()
-    .setValue(formatNumber(metrics.totalMembers))
+    .setValue(formatNumber(totalMembers))
     .setNumberFormat("#,##0");
 
   // Add celebration message for members
