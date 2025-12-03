@@ -4986,6 +4986,11 @@ function toggleZebraStripes() {
  * @param {Sheet} sheet - Sheet to apply to
  */
 function applyZebraStripes(sheet) {
+  if (!sheet) {
+    Logger.log('applyZebraStripes: sheet parameter is undefined');
+    return;
+  }
+
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return;
 
@@ -5005,6 +5010,11 @@ function applyZebraStripes(sheet) {
  * @param {Sheet} sheet - Sheet to remove from
  */
 function removeZebraStripes(sheet) {
+  if (!sheet) {
+    Logger.log('removeZebraStripes: sheet parameter is undefined');
+    return;
+  }
+
   const bandings = sheet.getBandings();
   bandings.forEach(function(banding) { return banding.remove(); });
 }
@@ -9915,12 +9925,19 @@ function logBackup(backupName, fileId, automated) {
 }
 
 /**
- * Creates backup log sheet
+ * Creates backup log sheet (or returns existing one)
  * @returns {Sheet} Backup log sheet
  */
 function createBackupLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('💾 Backup Log');
+
+  // Check if sheet already exists
+  var sheet = ss.getSheetByName('💾 Backup Log');
+  if (sheet) {
+    return sheet;
+  }
+
+  sheet = ss.insertSheet('💾 Backup Log');
 
   const headers = [
     'Timestamp',
@@ -14894,12 +14911,19 @@ function logCommunication(grievanceId, type, details) {
 }
 
 /**
- * Creates Communications Log sheet
+ * Creates Communications Log sheet (or returns existing one)
  * @returns {Sheet} Communications Log sheet
  */
 function createCommunicationsLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('📞 Communications Log');
+
+  // Check if sheet already exists
+  var sheet = ss.getSheetByName('📞 Communications Log');
+  if (sheet) {
+    return sheet;
+  }
+
+  sheet = ss.insertSheet('📞 Communications Log');
 
   // Set headers
   const headers = [
