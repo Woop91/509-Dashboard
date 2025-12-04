@@ -18,7 +18,7 @@
  * Sheet names used throughout the application
  * @const {Object}
  */
-SHEETS = {
+const SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
   GRIEVANCE_LOG: "Grievance Log",
@@ -52,7 +52,7 @@ SHEETS = {
  * Color palette for consistent theming
  * @const {Object}
  */
-COLORS = {
+const COLORS = {
   // Primary brand colors
   PRIMARY_BLUE: "#7EC8E3",
   PRIMARY_PURPLE: "#7C3AED",
@@ -97,7 +97,7 @@ COLORS = {
  * Use getColumnLetter() to convert to letter notation
  * @const {Object}
  */
-MEMBER_COLS = {
+const MEMBER_COLS = {
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -138,7 +138,7 @@ MEMBER_COLS = {
  * Use getColumnLetter() to convert to letter notation
  * @const {Object}
  */
-GRIEVANCE_COLS = {
+const GRIEVANCE_COLS = {
   GRIEVANCE_ID: 1,      // A
   MEMBER_ID: 2,         // B
   FIRST_NAME: 3,        // C
@@ -176,7 +176,7 @@ GRIEVANCE_COLS = {
  * Based on standard union contract
  * @const {Object}
  */
-GRIEVANCE_TIMELINES = {
+const GRIEVANCE_TIMELINES = {
   FILING_DEADLINE_DAYS: 21,      // Days after incident to file
   STEP1_DECISION_DAYS: 30,       // Days for Step I decision
   STEP2_APPEAL_DAYS: 10,         // Days to appeal to Step II
@@ -193,7 +193,7 @@ GRIEVANCE_TIMELINES = {
  * Valid grievance status values
  * @const {Array<string>}
  */
-GRIEVANCE_STATUSES = [
+const GRIEVANCE_STATUSES = [
   'Open',
   'Pending Info',
   'Settled',
@@ -208,7 +208,7 @@ GRIEVANCE_STATUSES = [
  * Valid grievance step values
  * @const {Array<string>}
  */
-GRIEVANCE_STEPS = [
+const GRIEVANCE_STEPS = [
   'Informal',
   'Step I',
   'Step II',
@@ -221,7 +221,7 @@ GRIEVANCE_STEPS = [
  * Valid issue categories
  * @const {Array<string>}
  */
-ISSUE_CATEGORIES = [
+const ISSUE_CATEGORIES = [
   'Discipline',
   'Workload',
   'Scheduling',
@@ -243,7 +243,7 @@ ISSUE_CATEGORIES = [
  * Column mappings for Config sheet
  * @const {Object}
  */
-CONFIG_COLS = {
+const CONFIG_COLS = {
   JOB_TITLES: 1,           // A
   OFFICE_LOCATIONS: 2,     // B
   UNITS: 3,                // C
@@ -271,7 +271,7 @@ CONFIG_COLS = {
  * Cache configuration for performance optimization
  * @const {Object}
  */
-CACHE_CONFIG = {
+const CACHE_CONFIG = {
   MEMORY_TTL: 300,              // 5 minutes (in seconds)
   PROPERTIES_TTL: 3600,         // 1 hour (in seconds)
   DOCUMENT_TTL: 21600,          // 6 hours (in seconds)
@@ -283,14 +283,18 @@ CACHE_CONFIG = {
  * Cache keys used throughout the application
  * @const {Object}
  */
-CACHE_KEYS = {
+const CACHE_KEYS = {
   MEMBER_COUNT: 'member_count',
   GRIEVANCE_COUNT: 'grievance_count',
   STEWARD_WORKLOAD: 'steward_workload',
   MEMBER_LIST: 'member_list',
   CONFIG_DATA: 'config_data',
   DASHBOARD_METRICS: 'dashboard_metrics',
-  ANALYTICS_DATA: 'analytics_data'
+  ANALYTICS_DATA: 'analytics_data',
+  // Additional keys for data caching layer
+  ALL_GRIEVANCES: 'all_grievances',
+  ALL_MEMBERS: 'all_members',
+  ALL_STEWARDS: 'all_stewards'
 };
 
 /* --------------------= ERROR CONFIGURATION --------------------= */
@@ -299,7 +303,7 @@ CACHE_KEYS = {
  * Error handling and logging configuration
  * @const {Object}
  */
-ERROR_CONFIG = {
+const ERROR_CONFIG = {
   LOG_SHEET_NAME: 'Error_Log',
   MAX_LOG_ENTRIES: 1000,
   ERROR_LEVELS: {
@@ -318,7 +322,7 @@ ERROR_CONFIG = {
  * Error categories for classification
  * @const {Object}
  */
-ERROR_CATEGORIES = {
+const ERROR_CATEGORIES = {
   VALIDATION: 'VALIDATION',
   PERMISSION: 'PERMISSION',
   NETWORK: 'NETWORK',
@@ -335,7 +339,7 @@ ERROR_CATEGORIES = {
  * User interface configuration
  * @const {Object}
  */
-UI_CONFIG = {
+const UI_CONFIG = {
   TOAST_DURATION: 3,          // Seconds
   DIALOG_WIDTH: 700,          // Pixels
   DIALOG_HEIGHT: 500,         // Pixels
@@ -350,7 +354,7 @@ UI_CONFIG = {
  * Email configuration
  * @const {Object}
  */
-EMAIL_CONFIG = {
+const EMAIL_CONFIG = {
   FROM_NAME: 'SEIU Local 509',
   REPLY_TO: 'info@seiu509.org',
   GRIEVANCE_EMAIL: 'grievances@seiu509.org',
@@ -366,7 +370,7 @@ EMAIL_CONFIG = {
  * Performance and batch operation settings
  * @const {Object}
  */
-PERFORMANCE_CONFIG = {
+const PERFORMANCE_CONFIG = {
   BATCH_SIZE: 1000,           // Rows per batch for bulk operations
   MAX_EXECUTION_TIME: 300,    // Max execution time in seconds (5 min)
   LAZY_LOAD_THRESHOLD: 5000,  // Load data lazily after this many rows
@@ -380,7 +384,7 @@ PERFORMANCE_CONFIG = {
  * Feature flags for enabling/disabling features
  * @const {Object}
  */
-FEATURE_FLAGS = {
+const FEATURE_FLAGS = {
   ENABLE_DARK_MODE: true,
   ENABLE_KEYBOARD_SHORTCUTS: true,
   ENABLE_MOBILE_OPTIMIZATION: true,
@@ -402,7 +406,7 @@ FEATURE_FLAGS = {
  * Version information
  * @const {Object}
  */
-VERSION_INFO = {
+const VERSION_INFO = {
   MAJOR: 2,
   MINOR: 0,
   PATCH: 0,
@@ -520,3 +524,66 @@ function validateRequiredSheets() {
     missing: missing
   };
 }
+
+/* --------------------= CONFIGURATION REFERENCE --------------------= */
+
+/**
+ * CONFIGURATION REFERENCE
+ * =======================
+ *
+ * This section documents where all configuration is located for easy reference.
+ * All config should be defined ONCE and only in its designated module.
+ *
+ * SHEETS, COLORS, COLUMNS (this file - Constants.gs):
+ *   - SHEETS: Sheet name constants
+ *   - COLORS: Color palette
+ *   - MEMBER_COLS: Member Directory column positions
+ *   - GRIEVANCE_COLS: Grievance Log column positions
+ *   - CONFIG_COLS: Config sheet column positions
+ *   - GRIEVANCE_TIMELINES: Timeline rules for grievances
+ *   - GRIEVANCE_STATUSES: Valid status values
+ *   - GRIEVANCE_STEPS: Valid step values
+ *   - ISSUE_CATEGORIES: Valid issue categories
+ *
+ * CACHE & PERFORMANCE (this file - Constants.gs):
+ *   - CACHE_CONFIG: Cache TTL and size limits
+ *   - CACHE_KEYS: Cache key constants
+ *   - PERFORMANCE_CONFIG: Batch sizes, execution limits
+ *
+ * UI & EMAIL (this file - Constants.gs):
+ *   - UI_CONFIG: Dialog sizes, pagination, theme defaults
+ *   - EMAIL_CONFIG: Email settings and limits
+ *
+ * ERROR HANDLING (this file - Constants.gs):
+ *   - ERROR_CONFIG: Error logging configuration
+ *   - ERROR_CATEGORIES: Error classification
+ *
+ * FEATURE FLAGS (this file - Constants.gs):
+ *   - FEATURE_FLAGS: Enable/disable features
+ *   - VERSION_INFO: Version numbers and build info
+ *
+ * SECURITY & ROLES (SecurityUtils.gs):
+ *   - SECURITY_ROLES: Simple role enum (ADMIN, STEWARD, MEMBER, GUEST)
+ *   - ADMIN_EMAILS: List of admin email addresses
+ *   - AUDIT_LOG_SHEET: Audit log sheet name
+ *   - RATE_LIMITS: Rate limiting configuration
+ *
+ * ADVANCED ROLES (SecurityService.gs):
+ *   - ROLES: Detailed role definitions with permissions
+ *     Includes: ADMIN, STEWARD, COORDINATOR, MEMBER, VIEWER
+ *     Each role has: name, permissions[], description
+ *
+ * HOW TO UPDATE CONFIGURATION:
+ *   1. Find the constant in the appropriate module above
+ *   2. Edit ONLY in that module (never duplicate)
+ *   3. Run: node build.js
+ *   4. The build will fail if duplicates are detected
+ *
+ * HOW TO ADD ADMIN USERS:
+ *   1. Edit SecurityUtils.gs
+ *   2. Add email to ADMIN_EMAILS array
+ *   3. Run: node build.js
+ *
+ * @see SecurityUtils.gs for role/permission functions
+ * @see SecurityService.gs for advanced RBAC
+ */

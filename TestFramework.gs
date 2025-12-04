@@ -485,3 +485,151 @@ function cleanupTestData() {
     }
   }
 }
+
+/* --------------------= TEST CATEGORY RUNNERS --------------------= */
+
+/**
+ * Shows test results in a dialog
+ */
+function showTestResults() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const reportSheet = ss.getSheetByName('Test Results');
+
+  if (!reportSheet) {
+    SpreadsheetApp.getUi().alert(
+      'No Test Results',
+      'No test results found. Run some tests first using the Testing menu.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  reportSheet.activate();
+  SpreadsheetApp.getActiveSpreadsheet().toast('Showing test results', 'Test Results', 3);
+}
+
+/**
+ * Run all unit tests
+ */
+function runUnitTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running unit tests...', 'Tests', -1);
+
+  const unitTests = [
+    'testFilingDeadlineCalculation',
+    'testStepIDeadlineCalculation',
+    'testStepIIAppealDeadlineCalculation',
+    'testDaysOpenCalculation',
+    'testDaysOpenForClosedGrievance',
+    'testNextActionDueLogic',
+    'testMemberDirectoryFormulas',
+    'testOpenRateRange',
+    'testEmptySheetsHandling',
+    'testFutureDateHandling',
+    'testPastDeadlineHandling'
+  ];
+
+  runTestCategory('Unit Tests', unitTests);
+}
+
+/**
+ * Run all validation tests
+ */
+function runValidationTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running validation tests...', 'Tests', -1);
+
+  const validationTests = [
+    'testDataValidationSetup',
+    'testConfigDropdownValues',
+    'testMemberValidationRules',
+    'testGrievanceValidationRules',
+    'testMemberSeedingValidation',
+    'testGrievanceSeedingValidation',
+    'testMemberEmailFormat',
+    'testMemberIDUniqueness',
+    'testGrievanceMemberLinking'
+  ];
+
+  runTestCategory('Validation Tests', validationTests);
+}
+
+/**
+ * Run all integration tests
+ */
+function runIntegrationTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running integration tests...', 'Tests', -1);
+
+  const integrationTests = [
+    'testCompleteGrievanceWorkflow',
+    'testDashboardMetricsUpdate',
+    'testMemberGrievanceSnapshot',
+    'testConfigChangesPropagateToDropdowns',
+    'testMultipleGrievancesSameMember',
+    'testDashboardHandlesEmptyData',
+    'testGrievanceUpdatesTriggersRecalculation'
+  ];
+
+  runTestCategory('Integration Tests', integrationTests);
+}
+
+/**
+ * Run all performance tests
+ */
+function runPerformanceTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running performance tests...', 'Tests', -1);
+
+  const performanceTests = [
+    'testDashboardRefreshPerformance',
+    'testFormulaPerformanceWithData'
+  ];
+
+  runTestCategory('Performance Tests', performanceTests);
+}
+
+/**
+ * Run a category of tests
+ * @param {string} categoryName - Name of the test category
+ * @param {string[]} testNames - Array of test function names
+ */
+function runTestCategory(categoryName, testNames) {
+  // Reset results
+  TEST_RESULTS.passed = [];
+  TEST_RESULTS.failed = [];
+  TEST_RESULTS.skipped = [];
+
+  var passed = 0;
+  var failed = 0;
+  var skipped = 0;
+
+  testNames.forEach(function(testName) {
+    try {
+      const testFn = this[testName];
+      if (typeof testFn !== 'function') {
+        TEST_RESULTS.skipped.push({ name: testName, reason: 'Function not found' });
+        skipped++;
+        return;
+      }
+
+      testFn();
+      TEST_RESULTS.passed.push({ name: testName });
+      passed++;
+    } catch (error) {
+      TEST_RESULTS.failed.push({
+        name: testName,
+        error: error.message,
+        stack: error.stack
+      });
+      failed++;
+    }
+  });
+
+  // Generate report
+  generateTestReport();
+
+  // Show summary
+  const total = passed + failed + skipped;
+  SpreadsheetApp.getUi().alert(
+    categoryName + ' Complete',
+    `Results:\n✅ Passed: ${passed}/${total}\n❌ Failed: ${failed}/${total}\n⏭️ Skipped: ${skipped}/${total}\n\nView the Test Results sheet for details.`,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
