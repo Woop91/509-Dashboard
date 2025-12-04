@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-04T00:59:18.816Z
+ * - Build Date: 2025-12-04T01:28:10.800Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -31042,9 +31042,11 @@ function validateConfiguration() {
   });
 
   // Validate grievance form configuration if present
+  // NOTE: This is a warning, not an error - forms can be configured later
   if (typeof GRIEVANCE_FORM_CONFIG !== 'undefined') {
     if (GRIEVANCE_FORM_CONFIG.FORM_URL.includes('YOUR_FORM_ID')) {
-      errors.push('GRIEVANCE_FORM_CONFIG.FORM_URL contains placeholder - needs real form URL');
+      // Log warning but don't block - form URLs can be added later via Config tab
+      Logger.log('INFO: Grievance Form URL not yet configured. Add your form URL to the Config tab when ready.');
     }
   }
 
