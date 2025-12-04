@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-04T02:11:54.544Z
+ * - Build Date: 2025-12-04T02:23:48.521Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -2687,12 +2687,6 @@ function onOpen() {
       .addItem("📊 View Test Results", "showTestResults")
       .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP")
       .addItem("🏥 Run Health Check", "performSystemHealthCheck"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("🌱 Load Sample Data (Optional)")
-      .addItem("Seed Members (5,000)", "SEED_MEMBERS_TOGGLE_1")
-      .addItem("Seed Grievances (2,500)", "SEED_GRIEVANCES_TOGGLE_1")
-      .addSeparator()
-      .addItem("🗑️ Remove Sample Data", "nukeSeedData"))
     .addToUi();
 
   // ============ 👤 DAILY USE MENU ============
@@ -3366,6 +3360,16 @@ function seedMembersWithCount(count, toggleName) {
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
+  // Verify sheets exist
+  if (!memberDir) {
+    SpreadsheetApp.getUi().alert('Error', 'Member Directory sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+  if (!config) {
+    SpreadsheetApp.getUi().alert('Error', 'Config sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
     `Seed ${count} Members (${toggleName})`,
@@ -3412,16 +3416,28 @@ function seedMembersWithCount(count, toggleName) {
   }
   const times = ["Mornings", "Afternoons", "Evenings", "Weekends", "Flexible"];
 
-  // Validate config data
+  // Validate config data with detailed debugging
+  Logger.log('Seed Config Debug: jobTitles=' + jobTitles.length + ', locations=' + locations.length +
+             ', units=' + units.length + ', supervisors=' + supervisors.length +
+             ', managers=' + managers.length + ', stewards=' + stewards.length);
+
   if (jobTitles.length === 0 || locations.length === 0 || units.length === 0 ||
       supervisors.length === 0 || managers.length === 0 || stewards.length === 0) {
-    ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.', ui.ButtonSet.OK);
+    ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.\n\n' +
+             'Debug info:\n' +
+             '• Job Titles: ' + jobTitles.length + '\n' +
+             '• Locations: ' + locations.length + '\n' +
+             '• Units: ' + units.length + '\n' +
+             '• Supervisors: ' + supervisors.length + '\n' +
+             '• Managers: ' + managers.length + '\n' +
+             '• Stewards: ' + stewards.length, ui.ButtonSet.OK);
     return;
   }
 
   const BATCH_SIZE = 1000;
   var data = [];
   const startingRow = memberDir.getLastRow();
+  Logger.log('Seed starting at row: ' + startingRow);
 
   for (let i = 1; i <= count; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
@@ -3502,14 +3518,23 @@ function seedMembersWithCount(count, toggleName) {
   // Write remaining data
   if (data.length > 0) {
     try {
-      memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+      const writeRow = memberDir.getLastRow() + 1;
+      Logger.log('Writing final batch of ' + data.length + ' rows at row ' + writeRow);
+      memberDir.getRange(writeRow, 1, data.length, data[0].length).setValues(data);
     } catch (e) {
       Logger.log(`Error writing final member batch: ${e.message}`);
       throw new Error(`Failed to write final members: ${e.message}`);
     }
   }
 
-  SpreadsheetApp.getActive().toast(`✅ ${count} members added (${toggleName})!`, "Complete", 5);
+  // Force write to sheet
+  SpreadsheetApp.flush();
+
+  // Verify data was written
+  const finalRow = memberDir.getLastRow();
+  Logger.log('Seed complete. Member Directory now has ' + finalRow + ' rows (including header)');
+
+  SpreadsheetApp.getActive().toast(`✅ ${count} members added (${toggleName})! Sheet now has ${finalRow - 1} members.`, "Complete", 5);
 }
 
 /* --------------------- LEGACY: SEED 20,000 MEMBERS --------------------- */
@@ -3544,6 +3569,20 @@ function seedGrievancesWithCount(count, toggleName) {
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
+
+  // Verify sheets exist
+  if (!grievanceLog) {
+    SpreadsheetApp.getUi().alert('Error', 'Grievance Log sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+  if (!memberDir) {
+    SpreadsheetApp.getUi().alert('Error', 'Member Directory sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
+  if (!config) {
+    SpreadsheetApp.getUi().alert('Error', 'Config sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return;
+  }
 
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
@@ -3591,10 +3630,19 @@ function seedGrievancesWithCount(count, toggleName) {
   // Get deadline config values
   const deadlineConfig = getAllDeadlineConfig();
 
-  // Validate config data
+  // Validate config data with debugging
+  Logger.log('Grievance Seed Config Debug: statuses=' + statuses.length + ', steps=' + steps.length +
+             ', categories=' + categories.length + ', articles=' + articles.length + ', stewards=' + stewards.length);
+
   if (statuses.length === 0 || steps.length === 0 || articles.length === 0 ||
       categories.length === 0 || stewards.length === 0) {
-    ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.', ui.ButtonSet.OK);
+    ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.\n\n' +
+             'Debug info:\n' +
+             '• Statuses: ' + statuses.length + '\n' +
+             '• Steps: ' + steps.length + '\n' +
+             '• Categories: ' + categories.length + '\n' +
+             '• Articles: ' + articles.length + '\n' +
+             '• Stewards: ' + stewards.length, ui.ButtonSet.OK);
     return;
   }
 
@@ -3696,9 +3744,16 @@ function seedGrievancesWithCount(count, toggleName) {
     }
   }
 
-  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added (${toggleName})! Updating member snapshots...`, "Processing", 2);
+  // Force write to sheet
+  SpreadsheetApp.flush();
+
+  // Verify data was written
+  const finalRow = grievanceLog.getLastRow();
+  Logger.log('Grievance seed complete. Grievance Log now has ' + finalRow + ' rows (including header)');
+
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added (${toggleName})! Sheet now has ${finalRow - 1} total. Updating member snapshots...`, "Processing", 2);
   updateMemberDirectorySnapshots();
-  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added (${toggleName}) and member snapshots updated!`, "Complete", 5);
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added (${toggleName})! Total: ${finalRow - 1} grievances.`, "Complete", 5);
 }
 
 /* --------------------- LEGACY: SEED 5,000 GRIEVANCES --------------------- */
