@@ -401,6 +401,7 @@ function getStewardContactInfo() {
   const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
+    logWarning('getStewardContactInfo', 'Config sheet not found - steward contact info not available');
     return { name: '', email: '', phone: '', location: '' };
   }
 
@@ -410,14 +411,22 @@ function getStewardContactInfo() {
 
   try {
     const stewardData = configSheet.getRange(2, CONFIG_STEWARD_INFO_COL, 3, 1).getValues();
-    return {
+    const result = {
       name: stewardData[0][0] || '',
       email: stewardData[1][0] || '',
       phone: stewardData[2][0] || '',
       location: stewardData[0][0] || '' // Can be added if needed
     };
-  } catch (e) {
-    Logger.log('Error getting steward info: ' + e.message);
+
+    // Check if any data was found
+    if (!result.name && !result.email && !result.phone) {
+      logWarning('getStewardContactInfo', 'No steward contact information configured in Config sheet');
+    }
+
+    return result;
+  } catch (error) {
+    handleError(error, 'getStewardContactInfo', false, true);
+    logWarning('getStewardContactInfo', 'Error fetching steward contact info - returning empty values');
     return { name: '', email: '', phone: '', location: '' };
   }
 }
@@ -430,6 +439,7 @@ function getGrievanceCoordinators() {
   const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
+    logWarning('getGrievanceCoordinators', 'Config sheet not found - grievance coordinators not available');
     return { coordinator1: '', coordinator2: '', coordinator3: '' };
   }
 
@@ -442,13 +452,21 @@ function getGrievanceCoordinators() {
     const coordinator2List = coordinatorData.map(function(row) { return row[1]; }).filter(String);
     const coordinator3List = coordinatorData.map(function(row) { return row[2]; }).filter(String);
 
-    return {
+    const result = {
       coordinator1: coordinator1List.length > 0 ? coordinator1List[0] : '',
       coordinator2: coordinator2List.length > 0 ? coordinator2List[0] : '',
       coordinator3: coordinator3List.length > 0 ? coordinator3List[0] : ''
     };
-  } catch (e) {
-    Logger.log('Error getting grievance coordinators: ' + e.message);
+
+    // Check if any coordinators were found
+    if (!result.coordinator1 && !result.coordinator2 && !result.coordinator3) {
+      logWarning('getGrievanceCoordinators', 'No grievance coordinators configured in Config sheet');
+    }
+
+    return result;
+  } catch (error) {
+    handleError(error, 'getGrievanceCoordinators', false, true);
+    logWarning('getGrievanceCoordinators', 'Error fetching grievance coordinators - returning empty values');
     return { coordinator1: '', coordinator2: '', coordinator3: '' };
   }
 }
@@ -888,6 +906,15 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
  * Extracts and structures data from form submission
  */
 function extractFormData(e) {
+  // Validate event object
+  validateRequired(e, 'e', 'extractFormData');
+
+  if (!e.namedValues || typeof e.namedValues !== 'object') {
+    const error = new Error('Event object is missing namedValues property or it is not an object');
+    handleError(error, 'extractFormData', true, true);
+    throw error;
+  }
+
   const responses = e.namedValues;
 
   // Map form responses to grievance data structure
@@ -1099,18 +1126,36 @@ function generateUniqueGrievanceId() {
  * Finds member row by member ID
  */
 function findMemberRow(memberId) {
+  // Validate memberId parameter
+  validateMemberId(memberId, 'findMemberRow');
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-  if (!memberSheet) return -1;
+  if (!memberSheet) {
+    logWarning('findMemberRow', `Member Directory sheet not found when searching for member ID: ${memberId}`);
+    return -1;
+  }
 
   const lastRow = memberSheet.getLastRow();
-  if (lastRow < 2) return -1;
+  if (lastRow < 2) {
+    logWarning('findMemberRow', `Member Directory is empty - no member found for ID: ${memberId}`);
+    return -1;
+  }
 
-  const memberIds = memberSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
-  const index = memberIds.indexOf(memberId);
+  try {
+    const memberIds = memberSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
+    const index = memberIds.indexOf(memberId);
 
-  return index >= 0 ? index + 2 : -1;
+    if (index < 0) {
+      logWarning('findMemberRow', `Member ID ${memberId} not found in Member Directory`);
+    }
+
+    return index >= 0 ? index + 2 : -1;
+  } catch (error) {
+    handleError(error, `findMemberRow - searching for member ID: ${memberId}`, false, true);
+    return -1;
+  }
 }
 
 /**

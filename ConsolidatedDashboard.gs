@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-04T17:03:43.582Z
+ * - Build Date: 2025-12-04T17:27:50.504Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -674,6 +674,199 @@ function validateRequiredSheets() {
     valid: missing.length === 0,
     missing: missing
   };
+}
+
+/* --------------------= INPUT VALIDATION HELPERS --------------------= */
+
+/**
+ * Validates that a required parameter is not null/undefined/empty
+ * @param {*} value - The value to check
+ * @param {string} paramName - Name of the parameter (for error message)
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is null, undefined, or empty string
+ */
+function validateRequired(value, paramName, functionName) {
+  if (value === null || value === undefined || value === '') {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Required parameter '${paramName}' is missing${context}`);
+  }
+}
+
+/**
+ * Validates that a value is a non-empty string
+ * @param {*} value - The value to check
+ * @param {string} paramName - Name of the parameter
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is not a string or is empty
+ */
+function validateString(value, paramName, functionName) {
+  validateRequired(value, paramName, functionName);
+  if (typeof value !== 'string') {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Parameter '${paramName}' must be a string${context}, got ${typeof value}`);
+  }
+}
+
+/**
+ * Validates that a value is a positive integer
+ * @param {*} value - The value to check
+ * @param {string} paramName - Name of the parameter
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is not a positive integer
+ */
+function validatePositiveInt(value, paramName, functionName) {
+  validateRequired(value, paramName, functionName);
+  if (!Number.isInteger(value) || value < 1) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Parameter '${paramName}' must be a positive integer${context}, got ${value}`);
+  }
+}
+
+/**
+ * Validates that a value is a valid date
+ * @param {*} value - The value to check
+ * @param {string} paramName - Name of the parameter
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is not a valid date
+ */
+function validateDate(value, paramName, functionName) {
+  validateRequired(value, paramName, functionName);
+  if (!(value instanceof Date) || isNaN(value.getTime())) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Parameter '${paramName}' must be a valid Date${context}`);
+  }
+}
+
+/**
+ * Validates that a value is a non-empty array
+ * @param {*} value - The value to check
+ * @param {string} paramName - Name of the parameter
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is not an array or is empty
+ */
+function validateArray(value, paramName, functionName) {
+  validateRequired(value, paramName, functionName);
+  if (!Array.isArray(value)) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Parameter '${paramName}' must be an array${context}, got ${typeof value}`);
+  }
+}
+
+/**
+ * Validates a grievance ID format (G-XXXXXX)
+ * @param {string} grievanceId - The grievance ID to validate
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If grievance ID is invalid
+ */
+function validateGrievanceId(grievanceId, functionName) {
+  validateString(grievanceId, 'grievanceId', functionName);
+  if (!/^G-\d{6}$/.test(grievanceId)) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Invalid grievance ID format '${grievanceId}'${context}. Expected format: G-XXXXXX`);
+  }
+}
+
+/**
+ * Validates a member ID format (MXXXXXX)
+ * @param {string} memberId - The member ID to validate
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If member ID is invalid
+ */
+function validateMemberId(memberId, functionName) {
+  validateString(memberId, 'memberId', functionName);
+  if (!/^M\d{6}$/.test(memberId)) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Invalid member ID format '${memberId}'${context}. Expected format: MXXXXXX`);
+  }
+}
+
+/**
+ * Validates an email address format
+ * @param {string} email - The email to validate
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If email format is invalid
+ */
+function validateEmail(email, functionName) {
+  validateString(email, 'email', functionName);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Invalid email format '${email}'${context}`);
+  }
+}
+
+/**
+ * Validates that a value is one of the allowed values
+ * @param {*} value - The value to check
+ * @param {Array} allowedValues - Array of allowed values
+ * @param {string} paramName - Name of the parameter
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is not in allowed values
+ */
+function validateEnum(value, allowedValues, paramName, functionName) {
+  validateRequired(value, paramName, functionName);
+  if (!allowedValues.includes(value)) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Invalid ${paramName} '${value}'${context}. Allowed values: ${allowedValues.join(', ')}`);
+  }
+}
+
+/**
+ * Creates a validated wrapper for a function that validates parameters
+ * @param {Function} fn - The function to wrap
+ * @param {Array<Object>} validations - Array of {name, validator, required} objects
+ * @returns {Function} Wrapped function with validation
+ *
+ * @example
+ * const safeAddMember = withValidation(addMember, [
+ *   { name: 'memberId', validator: validateMemberId, required: true },
+ *   { name: 'email', validator: validateEmail, required: true }
+ * ]);
+ */
+function withValidation(fn, validations) {
+  return function() {
+    const args = Array.prototype.slice.call(arguments);
+    validations.forEach(function(v, i) {
+      if (v.required || args[i] !== undefined) {
+        try {
+          v.validator(args[i], v.name, fn.name);
+        } catch (e) {
+          throw e;
+        }
+      }
+    });
+    return fn.apply(this, args);
+  };
+}
+
+/**
+ * Safely executes a function and returns a result object
+ * @param {Function} fn - The function to execute
+ * @param {Object} [options] - Options for error handling
+ * @param {boolean} [options.silent=false] - If true, don't throw on error
+ * @param {*} [options.defaultValue=null] - Default value to return on error
+ * @param {string} [options.context] - Context string for error logging
+ * @returns {Object} {success: boolean, data: *, error: Error|null}
+ */
+function safeExecute(fn, options) {
+  options = options || {};
+  const silent = options.silent || false;
+  const defaultValue = options.hasOwnProperty('defaultValue') ? options.defaultValue : null;
+  const context = options.context || fn.name || 'unknown function';
+
+  try {
+    const result = fn();
+    return { success: true, data: result, error: null };
+  } catch (error) {
+    Logger.log(`Error in ${context}: ${error.message}`);
+    if (ERROR_CONFIG.LOG_TO_CONSOLE) {
+      console.error(`[${context}]`, error);
+    }
+    if (!silent) {
+      throw error;
+    }
+    return { success: false, data: defaultValue, error: error };
+  }
 }
 
 /* --------------------= CONFIGURATION REFERENCE --------------------= */
@@ -5097,6 +5290,7 @@ function getUserRole(userEmail) {
 
     if (!userRolesSheet) {
       // If sheet doesn't exist, create it and assign current user as admin
+      Logger.log('getUserRole: User Roles sheet not found. Creating and assigning ' + userEmail + ' as ADMIN');
       userRolesSheet = createUserRolesSheet();
       assignRole(userEmail, 'ADMIN');
       return 'ADMIN';
@@ -5106,13 +5300,20 @@ function getUserRole(userEmail) {
     const data = userRolesSheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
       if (data[i][0].toLowerCase() === userEmail.toLowerCase()) {
-        return data[i][1] || 'VIEWER';
+        const role = data[i][1] || 'VIEWER';
+        Logger.log('getUserRole: Found user ' + userEmail + ' with role ' + role);
+        return role;
       }
     }
 
-    // User not found, default to VIEWER
+    // User not found, default to VIEWER (this is expected behavior, not an error)
+    Logger.log('getUserRole: User ' + userEmail + ' not found in User Roles sheet. Defaulting to VIEWER');
     return 'VIEWER';
   } catch (error) {
+    // Distinguish between "user not found" (handled above) and "error occurred"
+    Logger.log('Error in getUserRole: Failed to retrieve role for user. UserEmail: ' + userEmail +
+               ', Error: ' + error.message +
+               ', Stack: ' + error.stack);
     handleError(error, 'getUserRole');
     return 'VIEWER';
   }
@@ -5126,8 +5327,32 @@ function getUserRole(userEmail) {
  */
 function assignRole(userEmail, role) {
   try {
+    // Validate email parameter
+    if (!userEmail || typeof userEmail !== 'string') {
+      const error = new Error('assignRole: userEmail parameter is required and must be a string');
+      Logger.log(error.message + '. Received: ' + JSON.stringify(userEmail));
+      throw error;
+    }
+
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userEmail)) {
+      const error = new Error('assignRole: Invalid email format');
+      Logger.log(error.message + '. Email provided: ' + userEmail);
+      throw error;
+    }
+
+    // Validate role parameter
+    if (!role || typeof role !== 'string') {
+      const error = new Error('assignRole: role parameter is required and must be a string');
+      Logger.log(error.message + '. Received: ' + JSON.stringify(role));
+      throw error;
+    }
+
     if (!ROLES[role]) {
-      throw new Error(`Invalid role: ${role}`);
+      const error = new Error(`assignRole: Invalid role "${role}". Valid roles: ${Object.keys(ROLES).join(', ')}`);
+      Logger.log(error.message);
+      throw error;
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -5135,6 +5360,9 @@ function assignRole(userEmail, role) {
 
     if (!userRolesSheet) {
       userRolesSheet = createUserRolesSheet();
+      if (!userRolesSheet) {
+        throw new Error('assignRole: Failed to create User Roles sheet');
+      }
     }
 
     // Check if user already exists
@@ -5153,9 +5381,11 @@ function assignRole(userEmail, role) {
 
     if (userRow > 0) {
       // Update existing user
+      Logger.log(`assignRole: Updating existing user ${userEmail} from row ${userRow} to role ${role}`);
       userRolesSheet.getRange(userRow, 2, 1, 3).setValues([[role, timestamp, assignedBy]]);
     } else {
       // Add new user
+      Logger.log(`assignRole: Adding new user ${userEmail} with role ${role}`);
       userRolesSheet.appendRow([userEmail, role, timestamp, assignedBy]);
     }
 
@@ -5163,11 +5393,18 @@ function assignRole(userEmail, role) {
     logAudit('ROLE_ASSIGNMENT', `Assigned role ${role} to ${userEmail}`, {
       userEmail: userEmail,
       role: role,
-      assignedBy: assignedBy
+      assignedBy: assignedBy,
+      operation: userRow > 0 ? 'UPDATE' : 'CREATE'
     });
 
     return true;
   } catch (error) {
+    // Provide detailed error context
+    Logger.log('Error in assignRole: Failed to assign role. UserEmail: ' + (userEmail || 'undefined') +
+               ', Role: ' + (role || 'undefined') +
+               ', Error: ' + error.message +
+               ', Stack: ' + error.stack);
+
     handleError(error, 'assignRole');
     return false;
   }
@@ -5205,15 +5442,33 @@ function createUserRolesSheet() {
  */
 function hasPermission(permission, userEmail) {
   try {
+    // Validate permission parameter
+    if (!permission || typeof permission !== 'string') {
+      Logger.log('Error in hasPermission: permission parameter is required and must be a string. Received: ' + JSON.stringify(permission));
+      return false;
+    }
+
     const role = getUserRole(userEmail);
     const roleConfig = ROLES[role];
 
     if (!roleConfig) {
+      // Role not found in ROLES configuration - this is unexpected
+      Logger.log('Error in hasPermission: Role "' + role + '" not found in ROLES configuration. UserEmail: ' + (userEmail || 'current user'));
       return false;
     }
 
-    return roleConfig.permissions.includes(permission);
+    const hasAccess = roleConfig.permissions.includes(permission);
+    Logger.log('hasPermission: User "' + (userEmail || Session.getActiveUser().getEmail()) +
+               '" with role "' + role + '" ' +
+               (hasAccess ? 'HAS' : 'DOES NOT HAVE') +
+               ' permission "' + permission + '"');
+
+    return hasAccess;
   } catch (error) {
+    Logger.log('Error in hasPermission: Failed to check permission. Permission: ' + (permission || 'undefined') +
+               ', UserEmail: ' + (userEmail || 'undefined') +
+               ', Error: ' + error.message +
+               ', Stack: ' + error.stack);
     handleError(error, 'hasPermission');
     return false;
   }
@@ -5258,13 +5513,45 @@ function withPermission(fn, requiredPermission, actionDescription) {
 /* --------------------= AUDIT LOGGING --------------------= */
 
 /**
+ * Valid audit event types
+ * @type {Array<string>}
+ */
+const VALID_AUDIT_EVENT_TYPES = [
+  'ACCESS',
+  'ACCESS_DENIED',
+  'DATA_CHANGE',
+  'ROLE_ASSIGNMENT',
+  'SEED_DATA',
+  'CLEAR_DATA',
+  'EXPORT_AUDIT_LOG',
+  'ERROR'
+];
+
+/**
  * Logs an audit event
- * @param {string} eventType - Type of event (LOGIN, DATA_CHANGE, ACCESS_DENIED, etc.)
+ * @param {string} eventType - Type of event (ACCESS, DATA_CHANGE, ACCESS_DENIED, etc.)
  * @param {string} description - Human-readable description
  * @param {Object} metadata - Additional metadata
  */
 function logAudit(eventType, description, metadata) {
   try {
+    // Validate eventType parameter
+    if (!eventType || typeof eventType !== 'string') {
+      Logger.log('Error in logAudit: eventType is required and must be a string. Received: ' + JSON.stringify(eventType));
+      return;
+    }
+
+    if (!VALID_AUDIT_EVENT_TYPES.includes(eventType)) {
+      Logger.log('Warning in logAudit: Invalid eventType "' + eventType + '". Valid types: ' + VALID_AUDIT_EVENT_TYPES.join(', '));
+      // Continue with logging anyway, but log the warning
+    }
+
+    // Validate description parameter
+    if (!description || typeof description !== 'string') {
+      Logger.log('Error in logAudit: description is required and must be a string. Received: ' + JSON.stringify(description));
+      return;
+    }
+
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let auditSheet = ss.getSheetByName('Audit Log');
 
@@ -5293,7 +5580,8 @@ function logAudit(eventType, description, metadata) {
     }
   } catch (error) {
     // Don't throw error in logging to avoid breaking functionality
-    Logger.log('Error in logAudit: ' + error.message);
+    // But provide better context about what failed
+    Logger.log('Error in logAudit: Failed to log audit event. EventType: ' + eventType + ', Error: ' + error.message + ', Stack: ' + error.stack);
   }
 }
 
@@ -18651,6 +18939,7 @@ function getStewardContactInfo() {
   const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
+    logWarning('getStewardContactInfo', 'Config sheet not found - steward contact info not available');
     return { name: '', email: '', phone: '', location: '' };
   }
 
@@ -18660,14 +18949,22 @@ function getStewardContactInfo() {
 
   try {
     const stewardData = configSheet.getRange(2, CONFIG_STEWARD_INFO_COL, 3, 1).getValues();
-    return {
+    const result = {
       name: stewardData[0][0] || '',
       email: stewardData[1][0] || '',
       phone: stewardData[2][0] || '',
       location: stewardData[0][0] || '' // Can be added if needed
     };
-  } catch (e) {
-    Logger.log('Error getting steward info: ' + e.message);
+
+    // Check if any data was found
+    if (!result.name && !result.email && !result.phone) {
+      logWarning('getStewardContactInfo', 'No steward contact information configured in Config sheet');
+    }
+
+    return result;
+  } catch (error) {
+    handleError(error, 'getStewardContactInfo', false, true);
+    logWarning('getStewardContactInfo', 'Error fetching steward contact info - returning empty values');
     return { name: '', email: '', phone: '', location: '' };
   }
 }
@@ -18680,6 +18977,7 @@ function getGrievanceCoordinators() {
   const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
+    logWarning('getGrievanceCoordinators', 'Config sheet not found - grievance coordinators not available');
     return { coordinator1: '', coordinator2: '', coordinator3: '' };
   }
 
@@ -18692,13 +18990,21 @@ function getGrievanceCoordinators() {
     const coordinator2List = coordinatorData.map(function(row) { return row[1]; }).filter(String);
     const coordinator3List = coordinatorData.map(function(row) { return row[2]; }).filter(String);
 
-    return {
+    const result = {
       coordinator1: coordinator1List.length > 0 ? coordinator1List[0] : '',
       coordinator2: coordinator2List.length > 0 ? coordinator2List[0] : '',
       coordinator3: coordinator3List.length > 0 ? coordinator3List[0] : ''
     };
-  } catch (e) {
-    Logger.log('Error getting grievance coordinators: ' + e.message);
+
+    // Check if any coordinators were found
+    if (!result.coordinator1 && !result.coordinator2 && !result.coordinator3) {
+      logWarning('getGrievanceCoordinators', 'No grievance coordinators configured in Config sheet');
+    }
+
+    return result;
+  } catch (error) {
+    handleError(error, 'getGrievanceCoordinators', false, true);
+    logWarning('getGrievanceCoordinators', 'Error fetching grievance coordinators - returning empty values');
     return { coordinator1: '', coordinator2: '', coordinator3: '' };
   }
 }
@@ -19138,6 +19444,15 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
  * Extracts and structures data from form submission
  */
 function extractFormData(e) {
+  // Validate event object
+  validateRequired(e, 'e', 'extractFormData');
+
+  if (!e.namedValues || typeof e.namedValues !== 'object') {
+    const error = new Error('Event object is missing namedValues property or it is not an object');
+    handleError(error, 'extractFormData', true, true);
+    throw error;
+  }
+
   const responses = e.namedValues;
 
   // Map form responses to grievance data structure
@@ -19349,18 +19664,36 @@ function generateUniqueGrievanceId() {
  * Finds member row by member ID
  */
 function findMemberRow(memberId) {
+  // Validate memberId parameter
+  validateMemberId(memberId, 'findMemberRow');
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-  if (!memberSheet) return -1;
+  if (!memberSheet) {
+    logWarning('findMemberRow', `Member Directory sheet not found when searching for member ID: ${memberId}`);
+    return -1;
+  }
 
   const lastRow = memberSheet.getLastRow();
-  if (lastRow < 2) return -1;
+  if (lastRow < 2) {
+    logWarning('findMemberRow', `Member Directory is empty - no member found for ID: ${memberId}`);
+    return -1;
+  }
 
-  const memberIds = memberSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
-  const index = memberIds.indexOf(memberId);
+  try {
+    const memberIds = memberSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
+    const index = memberIds.indexOf(memberId);
 
-  return index >= 0 ? index + 2 : -1;
+    if (index < 0) {
+      logWarning('findMemberRow', `Member ID ${memberId} not found in Member Directory`);
+    }
+
+    return index >= 0 ? index + 2 : -1;
+  } catch (error) {
+    handleError(error, `findMemberRow - searching for member ID: ${memberId}`, false, true);
+    return -1;
+  }
 }
 
 /**
@@ -34773,6 +35106,344 @@ function runColumnConstantTests() {
   testColumnIndexing();
 
   Logger.log('=== All Column Constant Tests Passed ===');
+}
+
+/* --------------------= INPUT VALIDATION TESTS --------------------= */
+
+/**
+ * Test: validateRequired throws on null/undefined/empty
+ */
+function testValidateRequired() {
+  // Should throw on null
+  Assert.assertThrows(
+    function() { validateRequired(null, 'testParam'); },
+    'validateRequired should throw on null'
+  );
+
+  // Should throw on undefined
+  Assert.assertThrows(
+    function() { validateRequired(undefined, 'testParam'); },
+    'validateRequired should throw on undefined'
+  );
+
+  // Should throw on empty string
+  Assert.assertThrows(
+    function() { validateRequired('', 'testParam'); },
+    'validateRequired should throw on empty string'
+  );
+
+  // Should NOT throw on valid values
+  Assert.assertNotThrows(
+    function() { validateRequired('value', 'testParam'); },
+    'validateRequired should not throw on valid string'
+  );
+
+  Assert.assertNotThrows(
+    function() { validateRequired(0, 'testParam'); },
+    'validateRequired should not throw on zero'
+  );
+
+  Logger.log('✅ validateRequired test passed');
+}
+
+/**
+ * Test: validateString validates string type
+ */
+function testValidateString() {
+  // Should throw on number
+  Assert.assertThrows(
+    function() { validateString(123, 'testParam'); },
+    'validateString should throw on number'
+  );
+
+  // Should NOT throw on valid string
+  Assert.assertNotThrows(
+    function() { validateString('valid', 'testParam'); },
+    'validateString should not throw on valid string'
+  );
+
+  Logger.log('✅ validateString test passed');
+}
+
+/**
+ * Test: validatePositiveInt validates positive integers
+ */
+function testValidatePositiveInt() {
+  // Should throw on negative
+  Assert.assertThrows(
+    function() { validatePositiveInt(-1, 'testParam'); },
+    'validatePositiveInt should throw on negative'
+  );
+
+  // Should throw on zero
+  Assert.assertThrows(
+    function() { validatePositiveInt(0, 'testParam'); },
+    'validatePositiveInt should throw on zero'
+  );
+
+  // Should NOT throw on positive integer
+  Assert.assertNotThrows(
+    function() { validatePositiveInt(1, 'testParam'); },
+    'validatePositiveInt should not throw on 1'
+  );
+
+  Logger.log('✅ validatePositiveInt test passed');
+}
+
+/**
+ * Test: validateGrievanceId validates G-XXXXXX format
+ */
+function testValidateGrievanceId() {
+  // Should throw on invalid format
+  Assert.assertThrows(
+    function() { validateGrievanceId('12345', 'testValidateGrievanceId'); },
+    'validateGrievanceId should throw on missing prefix'
+  );
+
+  Assert.assertThrows(
+    function() { validateGrievanceId('G-123', 'testValidateGrievanceId'); },
+    'validateGrievanceId should throw on short ID'
+  );
+
+  // Should NOT throw on valid format
+  Assert.assertNotThrows(
+    function() { validateGrievanceId('G-000001', 'testValidateGrievanceId'); },
+    'validateGrievanceId should not throw on valid ID'
+  );
+
+  Logger.log('✅ validateGrievanceId test passed');
+}
+
+/**
+ * Test: validateMemberId validates MXXXXXX format
+ */
+function testValidateMemberId() {
+  // Should throw on invalid format
+  Assert.assertThrows(
+    function() { validateMemberId('12345', 'testValidateMemberId'); },
+    'validateMemberId should throw on missing prefix'
+  );
+
+  // Should NOT throw on valid format
+  Assert.assertNotThrows(
+    function() { validateMemberId('M000001', 'testValidateMemberId'); },
+    'validateMemberId should not throw on valid ID'
+  );
+
+  Logger.log('✅ validateMemberId test passed');
+}
+
+/**
+ * Test: validateEmail validates email format
+ */
+function testValidateEmail() {
+  // Should throw on invalid emails
+  Assert.assertThrows(
+    function() { validateEmail('notanemail', 'testValidateEmail'); },
+    'validateEmail should throw on missing @'
+  );
+
+  // Should NOT throw on valid emails
+  Assert.assertNotThrows(
+    function() { validateEmail('user@example.com', 'testValidateEmail'); },
+    'validateEmail should not throw on valid email'
+  );
+
+  Logger.log('✅ validateEmail test passed');
+}
+
+/**
+ * Test: validateEnum validates against allowed values
+ */
+function testValidateEnum() {
+  const allowedStatuses = ['Open', 'Closed', 'Pending'];
+
+  // Should throw on invalid value
+  Assert.assertThrows(
+    function() { validateEnum('Invalid', allowedStatuses, 'status'); },
+    'validateEnum should throw on invalid value'
+  );
+
+  // Should NOT throw on valid values
+  Assert.assertNotThrows(
+    function() { validateEnum('Open', allowedStatuses, 'status'); },
+    'validateEnum should not throw on valid value'
+  );
+
+  Logger.log('✅ validateEnum test passed');
+}
+
+/**
+ * Test: safeExecute handles errors properly
+ */
+function testSafeExecute() {
+  // Test successful execution
+  const successResult = safeExecute(function() { return 42; }, { context: 'testSuccess' });
+  Assert.assertTrue(successResult.success, 'safeExecute should return success=true');
+  Assert.assertEquals(42, successResult.data, 'safeExecute should return correct data');
+
+  // Test error with silent mode
+  const errorResult = safeExecute(
+    function() { throw new Error('Test error'); },
+    { silent: true, defaultValue: 'default', context: 'testError' }
+  );
+  Assert.assertFalse(errorResult.success, 'safeExecute should return success=false on error');
+  Assert.assertEquals('default', errorResult.data, 'safeExecute should return defaultValue');
+
+  Logger.log('✅ safeExecute test passed');
+}
+
+/* --------------------= ERROR SCENARIO TESTS --------------------= */
+
+/**
+ * Test: Grievance status values are all valid
+ */
+function testGrievanceStatusValidation() {
+  GRIEVANCE_STATUSES.forEach(function(status) {
+    Assert.assertNotThrows(
+      function() { validateEnum(status, GRIEVANCE_STATUSES, 'status'); },
+      'Status "' + status + '" should be valid'
+    );
+  });
+
+  Assert.assertThrows(
+    function() { validateEnum('InvalidStatus', GRIEVANCE_STATUSES, 'status'); },
+    'Invalid status should throw'
+  );
+
+  Logger.log('✅ Grievance status validation test passed');
+}
+
+/**
+ * Test: Grievance step values are all valid
+ */
+function testGrievanceStepValidation() {
+  GRIEVANCE_STEPS.forEach(function(step) {
+    Assert.assertNotThrows(
+      function() { validateEnum(step, GRIEVANCE_STEPS, 'step'); },
+      'Step "' + step + '" should be valid'
+    );
+  });
+
+  Logger.log('✅ Grievance step validation test passed');
+}
+
+/**
+ * Test: Issue categories are all valid
+ */
+function testIssueCategoryValidation() {
+  ISSUE_CATEGORIES.forEach(function(category) {
+    Assert.assertNotThrows(
+      function() { validateEnum(category, ISSUE_CATEGORIES, 'category'); },
+      'Category "' + category + '" should be valid'
+    );
+  });
+
+  Logger.log('✅ Issue category validation test passed');
+}
+
+/**
+ * Test: Error messages include context when provided
+ */
+function testErrorMessageContext() {
+  try {
+    validateRequired(null, 'testParam', 'testFunction');
+    Assert.fail('Should have thrown');
+  } catch (e) {
+    Assert.assertTrue(
+      e.message.indexOf('testParam') >= 0,
+      'Error should include parameter name'
+    );
+    Assert.assertTrue(
+      e.message.indexOf('testFunction') >= 0,
+      'Error should include function name when provided'
+    );
+  }
+
+  Logger.log('✅ Error message context test passed');
+}
+
+/**
+ * Test: Date validation handles edge cases
+ */
+function testDateValidationEdgeCases() {
+  // Invalid date (NaN time)
+  Assert.assertThrows(
+    function() { validateDate(new Date('invalid'), 'testDate'); },
+    'validateDate should throw on invalid date string'
+  );
+
+  // Valid dates
+  Assert.assertNotThrows(
+    function() { validateDate(new Date(), 'testDate'); },
+    'validateDate should accept current date'
+  );
+
+  Logger.log('✅ Date validation edge cases test passed');
+}
+
+/**
+ * Test: Array validation
+ */
+function testArrayValidation() {
+  // Should throw on non-array
+  Assert.assertThrows(
+    function() { validateArray('string', 'testArray'); },
+    'validateArray should throw on string'
+  );
+
+  // Should NOT throw on arrays
+  Assert.assertNotThrows(
+    function() { validateArray([], 'testArray'); },
+    'validateArray should accept empty array'
+  );
+
+  Assert.assertNotThrows(
+    function() { validateArray([1, 2, 3], 'testArray'); },
+    'validateArray should accept populated array'
+  );
+
+  Logger.log('✅ Array validation test passed');
+}
+
+/**
+ * Run all validation tests
+ */
+function runValidationTests() {
+  Logger.log('=== Running Validation Tests ===');
+
+  testValidateRequired();
+  testValidateString();
+  testValidatePositiveInt();
+  testValidateGrievanceId();
+  testValidateMemberId();
+  testValidateEmail();
+  testValidateEnum();
+  testSafeExecute();
+  testGrievanceStatusValidation();
+  testGrievanceStepValidation();
+  testIssueCategoryValidation();
+  testErrorMessageContext();
+  testDateValidationEdgeCases();
+  testArrayValidation();
+
+  Logger.log('=== All Validation Tests Passed ===');
+}
+
+/**
+ * Run all tests
+ */
+function runAllTests() {
+  Logger.log('========================================');
+  Logger.log('  RUNNING ALL TESTS');
+  Logger.log('========================================');
+
+  runColumnConstantTests();
+  runValidationTests();
+
+  Logger.log('========================================');
+  Logger.log('  ALL TESTS COMPLETE');
+  Logger.log('========================================');
 }
 
 
