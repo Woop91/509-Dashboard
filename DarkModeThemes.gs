@@ -79,16 +79,16 @@ THEME_CONFIG = {
       accent: '#6d4c41'
     },
     PURPLE: {
-      name: 'MassAbility Purple',
+      name: '509 Purple',
       icon: '💜',
       background: '#ffffff',
-      headerBackground: '#6B5FED',
+      headerBackground: '#5B4B9E',
       headerText: '#ffffff',
-      evenRow: '#E8E5FD',
+      evenRow: '#E8E3F3',
       oddRow: '#ffffff',
       text: '#1F2937',
       border: '#D1D5DB',
-      accent: '#7C3AED'
+      accent: '#6B5CA5'
     },
     GREEN: {
       name: 'Union Green',
