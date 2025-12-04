@@ -171,18 +171,70 @@ function createConfigTab() {
      "", "", ""]
   ];
 
-  config.getRange(1, 1, configData.length, configData[0].length).setValues(configData);
+  // Add category header row first
+  const categoryRow = [
+    "── EMPLOYMENT INFO ──", "", "", "", "",
+    "── SUPERVISION ──", "", "", "", "",
+    "── GRIEVANCE SETTINGS ──", "", "", "", "",
+    "── LINKS & COORDINATORS ──", "", ""
+  ];
 
-  config.getRange(1, 1, 1, configData[0].length)
+  // Insert category row at top, then column headers, then data
+  config.getRange(1, 1, 1, categoryRow.length).setValues([categoryRow]);
+  config.getRange(2, 1, configData.length, configData[0].length).setValues(configData);
+
+  // Style category row (Row 1)
+  config.getRange(1, 1, 1, categoryRow.length)
     .setFontWeight("bold")
-    .setBackground("#4A5568")
+    .setFontSize(10)
+    .setHorizontalAlignment("center");
+
+  // Category colors for row 1
+  // Employment Info (cols 1-5) - Blue
+  config.getRange(1, 1, 1, 5)
+    .setBackground("#3B82F6")
     .setFontColor("#FFFFFF");
+  config.getRange(1, 1, 1, 1).merge(); // Merge first cell visually
+
+  // Supervision (cols 6-10) - Green
+  config.getRange(1, 6, 1, 5)
+    .setBackground("#10B981")
+    .setFontColor("#FFFFFF");
+
+  // Grievance Settings (cols 11-15) - Orange
+  config.getRange(1, 11, 1, 5)
+    .setBackground("#F59E0B")
+    .setFontColor("#FFFFFF");
+
+  // Links & Coordinators (cols 16-18) - Purple
+  config.getRange(1, 16, 1, 3)
+    .setBackground("#8B5CF6")
+    .setFontColor("#FFFFFF");
+
+  // Style column header row (Row 2) with matching lighter colors
+  config.getRange(2, 1, 1, configData[0].length)
+    .setFontWeight("bold")
+    .setFontSize(9);
+
+  // Light blue for Employment Info headers
+  config.getRange(2, 1, 1, 5).setBackground("#DBEAFE");
+  // Light green for Supervision headers
+  config.getRange(2, 6, 1, 5).setBackground("#D1FAE5");
+  // Light orange for Grievance Settings headers
+  config.getRange(2, 11, 1, 5).setBackground("#FEF3C7");
+  // Light purple for Links & Coordinators headers
+  config.getRange(2, 16, 1, 3).setBackground("#EDE9FE");
+
+  // Add borders between category groups
+  config.getRange(1, 5, configData.length + 1, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  config.getRange(1, 10, configData.length + 1, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  config.getRange(1, 15, configData.length + 1, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   for (let i = 1; i <= configData[0].length; i++) {
     config.autoResizeColumn(i);
   }
 
-  config.setFrozenRows(1);
+  config.setFrozenRows(2); // Freeze both category and header rows
   config.setTabColor("#2563EB");
 }
 
