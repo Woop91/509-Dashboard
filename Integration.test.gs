@@ -90,7 +90,7 @@ function testCompleteGrievanceWorkflow() {
 
     Assert.assertNotNull(memberRow, 'Member should exist');
 
-    const hasOpenGrievance = memberRow[25]; // Column Z (index 25)
+    const hasOpenGrievance = memberRow[MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1]; // Column Y (index 24)
     Assert.assertTrue(
       hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
       'Member should show as having open grievance'
@@ -131,7 +131,7 @@ function testCompleteGrievanceWorkflow() {
     const updatedMemberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const updatedMemberRow = updatedMemberData.find(function(row) { return row[0] === testMemberId; });
 
-    const updatedStatus = updatedMemberRow[26]; // Column AA (index 26)
+    const updatedStatus = updatedMemberRow[MEMBER_COLS.GRIEVANCE_STATUS - 1]; // Column Z (index 25)
     Assert.assertEquals(
       'Settled',
       updatedStatus,
@@ -234,8 +234,8 @@ function testMemberGrievanceSnapshot() {
 
     Assert.assertNotNull(memberRow, 'Member should exist');
 
-    // Check status snapshot (column AA, index 26)
-    const statusSnapshot = memberRow[26];
+    // Check status snapshot (column Z = 26, index 25)
+    const statusSnapshot = memberRow[MEMBER_COLS.GRIEVANCE_STATUS - 1];
     Assert.assertEquals(
       'Pending Info',
       statusSnapshot,
@@ -255,7 +255,7 @@ function testMemberGrievanceSnapshot() {
     const updatedMemberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const updatedMemberRow = updatedMemberData.find(function(row) { return row[0] === testMemberId; });
 
-    const updatedStatusSnapshot = updatedMemberRow[26];
+    const updatedStatusSnapshot = updatedMemberRow[MEMBER_COLS.GRIEVANCE_STATUS - 1];
     Assert.assertEquals(
       'Open',
       updatedStatusSnapshot,

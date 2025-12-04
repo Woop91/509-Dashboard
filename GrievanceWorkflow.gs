@@ -1043,17 +1043,17 @@ function recalcMemberRow(row) {
   const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
 
-  // Has Open Grievance? (Column Z / 26)
+  // Has Open Grievance? (Column Y / 25) - counts all active statuses
   memberDir.getRange(row, MEMBER_COLS.HAS_OPEN_GRIEVANCE).setFormula(
-    `=IF(COUNTIFS('Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},${memberIdCol}${row},'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No")`
+    `=IF(SUMPRODUCT(('Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol}=${memberIdCol}${row})*(('Grievance Log'!${statusCol}:${statusCol}="Open")+('Grievance Log'!${statusCol}:${statusCol}="Pending Info")+('Grievance Log'!${statusCol}:${statusCol}="Appealed")+('Grievance Log'!${statusCol}:${statusCol}="In Arbitration")))>0,"Yes","No")`
   );
 
-  // Grievance Status Snapshot (Column AA / 27)
+  // Grievance Status Snapshot (Column Z / 26)
   memberDir.getRange(row, MEMBER_COLS.GRIEVANCE_STATUS).setFormula(
     `=IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(${memberIdCol}${row},'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),"")`
   );
 
-  // Next Grievance Deadline (Column AB / 28)
+  // Next Grievance Deadline (Column AA / 27)
   memberDir.getRange(row, MEMBER_COLS.NEXT_DEADLINE).setFormula(
     `=IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(${memberIdCol}${row},'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),"")`
   );
