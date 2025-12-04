@@ -33765,15 +33765,17 @@ function testMemberDirectoryFormulas() {
       'Test member should exist in Member Directory'
     );
 
-    // Check "Has Open Grievance?" (column 26, index 25)
-    const hasOpenGrievance = memberData[testMemberRow][25];
+    // Check "Has Open Grievance?" using MEMBER_COLS constant (column Y = 25, 0-indexed = 24)
+    const hasOpenGrievanceIdx = MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1;
+    const hasOpenGrievance = memberData[testMemberRow][hasOpenGrievanceIdx];
     Assert.assertTrue(
       hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
       'Member with open grievance should show "Yes" in Has Open Grievance column'
     );
 
-    // Check "Grievance Status Snapshot" (column 27, index 26)
-    const statusSnapshot = memberData[testMemberRow][26];
+    // Check "Grievance Status Snapshot" using MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
+    const statusSnapshotIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
+    const statusSnapshot = memberData[testMemberRow][statusSnapshotIdx];
     Assert.assertEquals(
       'Open',
       statusSnapshot,
@@ -33816,8 +33818,9 @@ function testConfigDropdownValues() {
   const ss = SpreadsheetApp.getActive();
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  // Test Job Titles
-  const jobTitles = config.getRange('A2:A14').getValues().flat().filter(String);
+  // Test Job Titles using CONFIG_COLS constant (data starts at row 3)
+  const jobTitlesCol = getColumnLetter(CONFIG_COLS.JOB_TITLES);
+  const jobTitles = config.getRange(jobTitlesCol + '3:' + jobTitlesCol + '14').getValues().flat().filter(String);
   Assert.assertTrue(
     jobTitles.length > 0,
     'Config should have job titles defined'
@@ -33828,8 +33831,9 @@ function testConfigDropdownValues() {
     'Config should contain Coordinator job title'
   );
 
-  // Test Office Locations
-  const locations = config.getRange('B2:B14').getValues().flat().filter(String);
+  // Test Office Locations using CONFIG_COLS constant
+  const locationsCol = getColumnLetter(CONFIG_COLS.OFFICE_LOCATIONS);
+  const locations = config.getRange(locationsCol + '3:' + locationsCol + '14').getValues().flat().filter(String);
   Assert.assertTrue(
     locations.length > 0,
     'Config should have office locations defined'
@@ -33840,8 +33844,9 @@ function testConfigDropdownValues() {
     'Config should contain Boston HQ location'
   );
 
-  // Test Grievance Status
-  const statuses = config.getRange('I2:I8').getValues().flat().filter(String);
+  // Test Grievance Status using CONFIG_COLS constant (col J = 10)
+  const statusCol = getColumnLetter(CONFIG_COLS.GRIEVANCE_STATUS);
+  const statuses = config.getRange(statusCol + '3:' + statusCol + '10').getValues().flat().filter(String);
   Assert.assertTrue(
     statuses.length > 0,
     'Config should have grievance statuses defined'
@@ -34297,7 +34302,9 @@ function testCompleteGrievanceWorkflow() {
 
     Assert.assertNotNull(memberRow, 'Member should exist');
 
-    const hasOpenGrievance = memberRow[25]; // Column Z (index 25)
+    // Use MEMBER_COLS constant for 0-indexed access (column Y = 25, 0-indexed = 24)
+    const hasOpenGrievanceIdx = MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1;
+    const hasOpenGrievance = memberRow[hasOpenGrievanceIdx];
     Assert.assertTrue(
       hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
       'Member should show as having open grievance'
@@ -34338,7 +34345,9 @@ function testCompleteGrievanceWorkflow() {
     const updatedMemberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const updatedMemberRow = updatedMemberData.find(function(row) { return row[0] === testMemberId; });
 
-    const updatedStatus = updatedMemberRow[26]; // Column AA (index 26)
+    // Use MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
+    const statusSnapshotIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
+    const updatedStatus = updatedMemberRow[statusSnapshotIdx];
     Assert.assertEquals(
       'Settled',
       updatedStatus,
@@ -34441,8 +34450,9 @@ function testMemberGrievanceSnapshot() {
 
     Assert.assertNotNull(memberRow, 'Member should exist');
 
-    // Check status snapshot (column AA, index 26)
-    const statusSnapshot = memberRow[26];
+    // Check status snapshot using MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
+    const statusSnapshotIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
+    const statusSnapshot = memberRow[statusSnapshotIdx];
     Assert.assertEquals(
       'Pending Info',
       statusSnapshot,
@@ -34462,7 +34472,9 @@ function testMemberGrievanceSnapshot() {
     const updatedMemberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const updatedMemberRow = updatedMemberData.find(function(row) { return row[0] === testMemberId; });
 
-    const updatedStatusSnapshot = updatedMemberRow[26];
+    // Use MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
+    const updatedStatusSnapshotIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
+    const updatedStatusSnapshot = updatedMemberRow[updatedStatusSnapshotIdx];
     Assert.assertEquals(
       'Open',
       updatedStatusSnapshot,
@@ -34586,7 +34598,9 @@ function testMultipleGrievancesSameMember() {
     const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const memberRow = memberData.find(function(row) { return row[0] === testMemberId; });
 
-    const hasOpenGrievance = memberRow[25];
+    // Use MEMBER_COLS constant (column Y = 25, 0-indexed = 24)
+    const hasOpenGrievanceIdx = MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1;
+    const hasOpenGrievance = memberRow[hasOpenGrievanceIdx];
     Assert.assertTrue(
       hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
       'Member with multiple grievances should show as having open grievance'
@@ -34795,10 +34809,11 @@ function testGrievanceUpdatesTriggersRecalculation() {
     SpreadsheetApp.flush();
     Utilities.sleep(2000);
 
-    // Check initial state
+    // Check initial state - use MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
+    const statusIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
     const memberData1 = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const memberRow1 = memberData1.find(function(row) { return row[0] === testMemberId; });
-    const status1 = memberRow1[26];
+    const status1 = memberRow1[statusIdx];
 
     Assert.assertEquals('Open', status1, 'Initial status should be Open');
 
@@ -34811,7 +34826,7 @@ function testGrievanceUpdatesTriggersRecalculation() {
     // Check updated state
     const memberData2 = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const memberRow2 = memberData2.find(function(row) { return row[0] === testMemberId; });
-    const status2 = memberRow2[26];
+    const status2 = memberRow2[statusIdx];
 
     Assert.assertEquals(
       'Settled',

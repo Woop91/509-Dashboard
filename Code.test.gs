@@ -237,15 +237,17 @@ function testMemberDirectoryFormulas() {
       'Test member should exist in Member Directory'
     );
 
-    // Check "Has Open Grievance?" (column 26, index 25)
-    const hasOpenGrievance = memberData[testMemberRow][25];
+    // Check "Has Open Grievance?" using MEMBER_COLS constant (column Y = 25, 0-indexed = 24)
+    const hasOpenGrievanceIdx = MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1;
+    const hasOpenGrievance = memberData[testMemberRow][hasOpenGrievanceIdx];
     Assert.assertTrue(
       hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
       'Member with open grievance should show "Yes" in Has Open Grievance column'
     );
 
-    // Check "Grievance Status Snapshot" (column 27, index 26)
-    const statusSnapshot = memberData[testMemberRow][26];
+    // Check "Grievance Status Snapshot" using MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
+    const statusSnapshotIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
+    const statusSnapshot = memberData[testMemberRow][statusSnapshotIdx];
     Assert.assertEquals(
       'Open',
       statusSnapshot,
@@ -288,8 +290,9 @@ function testConfigDropdownValues() {
   const ss = SpreadsheetApp.getActive();
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  // Test Job Titles
-  const jobTitles = config.getRange('A2:A14').getValues().flat().filter(String);
+  // Test Job Titles using CONFIG_COLS constant (data starts at row 3)
+  const jobTitlesCol = getColumnLetter(CONFIG_COLS.JOB_TITLES);
+  const jobTitles = config.getRange(jobTitlesCol + '3:' + jobTitlesCol + '14').getValues().flat().filter(String);
   Assert.assertTrue(
     jobTitles.length > 0,
     'Config should have job titles defined'
@@ -300,8 +303,9 @@ function testConfigDropdownValues() {
     'Config should contain Coordinator job title'
   );
 
-  // Test Office Locations
-  const locations = config.getRange('B2:B14').getValues().flat().filter(String);
+  // Test Office Locations using CONFIG_COLS constant
+  const locationsCol = getColumnLetter(CONFIG_COLS.OFFICE_LOCATIONS);
+  const locations = config.getRange(locationsCol + '3:' + locationsCol + '14').getValues().flat().filter(String);
   Assert.assertTrue(
     locations.length > 0,
     'Config should have office locations defined'
@@ -312,8 +316,9 @@ function testConfigDropdownValues() {
     'Config should contain Boston HQ location'
   );
 
-  // Test Grievance Status
-  const statuses = config.getRange('I2:I8').getValues().flat().filter(String);
+  // Test Grievance Status using CONFIG_COLS constant (col J = 10)
+  const statusCol = getColumnLetter(CONFIG_COLS.GRIEVANCE_STATUS);
+  const statuses = config.getRange(statusCol + '3:' + statusCol + '10').getValues().flat().filter(String);
   Assert.assertTrue(
     statuses.length > 0,
     'Config should have grievance statuses defined'
