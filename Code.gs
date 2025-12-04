@@ -353,10 +353,15 @@ function createMemberDirectory() {
     "Next Grievance Deadline",
     "Most Recent Steward Contact Date",
     "Steward Who Contacted Member",
-    "Notes from Steward Contact"
+    "Notes from Steward Contact",
+    "Start Grievance"
   ];
 
   memberDir.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+  // Add checkboxes to Start Grievance column (column 32/AF)
+  // Will be applied after data is loaded; setting up initial range
+  memberDir.getRange(2, 32, 999, 1).insertCheckboxes();
 
   memberDir.getRange(1, 1, 1, headers.length)
     .setFontWeight("bold")
@@ -369,6 +374,7 @@ function createMemberDirectory() {
   memberDir.setColumnWidth(1, 90);
   memberDir.setColumnWidth(8, 180);
   memberDir.setColumnWidth(31, 250);
+  memberDir.setColumnWidth(32, 120);  // Start Grievance checkbox column
 
   memberDir.setTabColor("#059669");
 }
