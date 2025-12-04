@@ -159,3 +159,73 @@ function showAllMemberColumns() {
 
   SpreadsheetApp.getUi().alert('✅ All columns are now visible');
 }
+
+/* ==================== GRIEVANCE LOG COLUMN TOGGLES ==================== */
+
+/**
+ * Toggles visibility of Admin Message columns in Grievance Log
+ * Columns AD-AF: Admin Flag, Admin Message, Acknowledged
+ */
+function toggleAdminMessageColumns() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('Grievance Log sheet not found!');
+    return;
+  }
+
+  // Admin Message columns: 30-32 (AD-AF)
+  const firstCol = GRIEVANCE_COLS.ADMIN_FLAG;  // 30
+  const numCols = 3;  // ADMIN_FLAG, ADMIN_MESSAGE, MESSAGE_ACKNOWLEDGED
+
+  // Check if columns exist
+  const lastCol = sheet.getLastColumn();
+  if (lastCol < firstCol) {
+    // Columns don't exist yet - set them up
+    const response = SpreadsheetApp.getUi().alert(
+      'Admin Message columns not found',
+      'Would you like to set up the Admin Message columns now?',
+      SpreadsheetApp.getUi().ButtonSet.YES_NO
+    );
+
+    if (response === SpreadsheetApp.getUi().Button.YES) {
+      setupAdminMessageColumns();
+    }
+    return;
+  }
+
+  const isHidden = sheet.isColumnHiddenByUser(firstCol);
+
+  if (isHidden) {
+    sheet.showColumns(firstCol, numCols);
+    SpreadsheetApp.getUi().alert('Admin Message columns are now visible (AD-AF)');
+  } else {
+    sheet.hideColumns(firstCol, numCols);
+    SpreadsheetApp.getUi().alert('Admin Message columns are now hidden');
+  }
+}
+
+/**
+ * Shows all hidden columns in Grievance Log
+ */
+function showAllGrievanceColumns() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('Grievance Log sheet not found!');
+    return;
+  }
+
+  const lastCol = sheet.getLastColumn();
+
+  // Show all columns
+  for (let i = 1; i <= lastCol; i++) {
+    if (sheet.isColumnHiddenByUser(i)) {
+      sheet.showColumns(i);
+    }
+  }
+
+  SpreadsheetApp.getUi().alert('All Grievance Log columns are now visible');
+}
