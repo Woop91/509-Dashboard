@@ -408,8 +408,8 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
 
     if (memberData) {
       const stewardRow = memberData.find(function(row) {
-        row[7] && row[7].toLowerCase() === userEmail.toLowerCase()
-      );
+        return row[7] && row[7].toLowerCase() === userEmail.toLowerCase();
+      });
       if (stewardRow) {
         stewardName = `${stewardRow[1]} ${stewardRow[2]}`; // First + Last name
       }
