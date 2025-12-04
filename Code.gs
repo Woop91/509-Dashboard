@@ -100,7 +100,7 @@ function createConfigTab() {
   config.clear();
 
   const configData = [
-    // Row 1: Column Headers (29 columns total)
+    // Row 1: Column Headers (32 columns total)
     // Employment Info (1-5)
     ["Job Titles", "Office Locations", "Units", "Office Days", "Yes/No",
     // Supervision (6-8)
@@ -116,7 +116,9 @@ function createConfigTab() {
     // Integration (24-25)
      "Google Drive Folder ID", "Google Calendar ID",
     // Deadlines (26-29)
-     "Filing Deadline Days", "Step I Response Days", "Step II Appeal Days", "Step II Response Days"],
+     "Filing Deadline Days", "Step I Response Days", "Step II Appeal Days", "Step II Response Days",
+    // Multi-select Options (30-32)
+     "Committees", "Best Times to Contact", "Home Towns"],
 
     // Data rows - first row has default/example values for settings columns
     ["Coordinator", "Boston HQ", "Unit A - Administrative", "Monday", "Yes",
@@ -126,7 +128,8 @@ function createConfigTab() {
      "", "3, 7, 14", "",
      "SEIU Local 509", "509", "", "",
      "", "",
-     "21", "30", "10", "30"],
+     "21", "30", "10", "30",
+     "Grievance Committee", "Morning (8am-12pm)", "Boston"],
 
     ["Analyst", "Worcester Office", "Unit B - Technical", "Tuesday", "No",
      "Mike Wilson", "Lisa Anderson", "John Doe",
@@ -135,7 +138,8 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""],
+     "", "", "", "",
+     "Bargaining Committee", "Afternoon (12pm-5pm)", "Worcester"],
 
     ["Case Manager", "Springfield Branch", "Unit C - Support Services", "Wednesday", "",
      "Emily Davis", "Robert Brown", "Mary Johnson",
@@ -144,7 +148,8 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""],
+     "", "", "", "",
+     "Health & Safety Committee", "Evening (5pm-8pm)", "Springfield"],
 
     ["Specialist", "Cambridge Office", "Unit D - Operations", "Thursday", "",
      "Tom Harris", "Jennifer Lee", "Bob Wilson",
@@ -153,7 +158,8 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""],
+     "", "", "", "",
+     "Political Action Committee", "Weekends", "Cambridge"],
 
     ["Senior Analyst", "Lowell Center", "Unit E - Field Services", "Friday", "",
      "Amanda White", "David Martinez", "Alice Brown",
@@ -162,7 +168,8 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""],
+     "", "", "", "",
+     "Membership Committee", "Flexible", "Lowell"],
 
     ["Team Lead", "Quincy Station", "", "Saturday", "",
      "Chris Taylor", "Susan Garcia", "Tom Davis",
@@ -171,7 +178,8 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""],
+     "", "", "", "",
+     "Education Committee", "", "Quincy"],
 
     ["Director", "Remote/Hybrid", "", "Sunday", "",
      "Patricia Moore", "James Wilson", "Sarah Martinez",
@@ -180,7 +188,8 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""],
+     "", "", "", "",
+     "Executive Board", "", "Brockton"],
 
     ["Manager", "Brockton Office", "", "", "",
      "Kevin Anderson", "Nancy Taylor", "Kevin Jones",
@@ -189,7 +198,8 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""],
+     "", "", "", "",
+     "Contract Action Team", "", "Lynn"],
 
     ["Assistant", "Lynn Location", "", "", "",
      "Michelle Lee", "Richard White", "Linda Garcia",
@@ -198,7 +208,8 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""],
+     "", "", "", "",
+     "", "", "Salem"],
 
     ["Associate", "Salem Office", "", "", "",
      "Brandon Scott", "Angela Moore", "Daniel Kim",
@@ -207,7 +218,8 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""],
+     "", "", "", "",
+     "", "", "Framingham"],
 
     ["Technician", "", "", "", "",
      "Jessica Green", "Christopher Lee", "Rachel Adams",
@@ -216,7 +228,8 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""],
+     "", "", "", "",
+     "", "", "Newton"],
 
     ["Administrator", "", "", "", "",
      "Andrew Clark", "Melissa Wright", "",
@@ -225,7 +238,8 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""],
+     "", "", "", "",
+     "", "", "Somerville"],
 
     ["Support Staff", "", "", "", "",
      "Rachel Brown", "Timothy Davis", "",
@@ -234,10 +248,11 @@ function createConfigTab() {
      "", "", "",
      "", "", "", "",
      "", "",
-     "", "", "", ""]
+     "", "", "", "",
+     "", "", "Malden"]
   ];
 
-  // Add category header row first (8 categories, 29 columns)
+  // Add category header row first (9 categories, 32 columns)
   const categoryRow = [
     "── EMPLOYMENT INFO ──", "", "", "", "",
     "── SUPERVISION ──", "", "",
@@ -246,7 +261,8 @@ function createConfigTab() {
     "── NOTIFICATIONS ──", "", "",
     "── ORGANIZATION ──", "", "", "",
     "── INTEGRATION ──", "",
-    "── DEADLINES ──", "", "", ""
+    "── DEADLINES ──", "", "", "",
+    "── MULTI-SELECT OPTIONS ──", "", ""
   ];
 
   // Insert category row at top, then column headers, then data
@@ -259,7 +275,7 @@ function createConfigTab() {
     .setFontSize(10)
     .setHorizontalAlignment("center");
 
-  // Category colors for row 1 (dark colors) - 29 columns total
+  // Category colors for row 1 (dark colors) - 32 columns total
   // Employment Info (cols 1-5) - Blue
   config.getRange(1, 1, 1, 5).setBackground("#3B82F6").setFontColor("#FFFFFF");
   // Supervision (cols 6-8) - Green
@@ -276,13 +292,15 @@ function createConfigTab() {
   config.getRange(1, 24, 1, 2).setBackground("#6366F1").setFontColor("#FFFFFF");
   // Deadlines (cols 26-29) - Amber/Gold
   config.getRange(1, 26, 1, 4).setBackground("#D97706").setFontColor("#FFFFFF");
+  // Multi-select Options (cols 30-32) - Cyan
+  config.getRange(1, 30, 1, 3).setBackground("#06B6D4").setFontColor("#FFFFFF");
 
   // Style column header row (Row 2) with matching lighter colors
   config.getRange(2, 1, 1, configData[0].length)
     .setFontWeight("bold")
     .setFontSize(9);
 
-  // Light colors for column headers (Row 2) - 29 columns total
+  // Light colors for column headers (Row 2) - 32 columns total
   config.getRange(2, 1, 1, 5).setBackground("#DBEAFE");   // Light blue - Employment (1-5)
   config.getRange(2, 6, 1, 3).setBackground("#D1FAE5");   // Light green - Supervision (6-8)
   config.getRange(2, 9, 1, 5).setBackground("#FEF3C7");   // Light orange - Grievance Settings (9-13)
@@ -291,6 +309,7 @@ function createConfigTab() {
   config.getRange(2, 20, 1, 4).setBackground("#CCFBF1");  // Light teal - Organization (20-23)
   config.getRange(2, 24, 1, 2).setBackground("#E0E7FF");  // Light indigo - Integration (24-25)
   config.getRange(2, 26, 1, 4).setBackground("#FEF3C7");  // Light amber - Deadlines (26-29)
+  config.getRange(2, 30, 1, 3).setBackground("#CFFAFE");  // Light cyan - Multi-select Options (30-32)
 
   // Add borders between category groups (right border after last column of each category)
   const totalRows = configData.length + 1;
@@ -301,6 +320,7 @@ function createConfigTab() {
   config.getRange(1, 19, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);  // After Notifications
   config.getRange(1, 23, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);  // After Organization
   config.getRange(1, 25, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);  // After Integration
+  config.getRange(1, 29, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);  // After Deadlines
 
   for (let i = 1; i <= configData[0].length; i++) {
     config.autoResizeColumn(i);
@@ -321,8 +341,8 @@ function createMemberDirectory() {
   }
   memberDir = ss.insertSheet(SHEETS.MEMBER_DIR);
 
-  // Member Directory columns (27 total after removing unused columns)
-  // Removed: Last Survey, Last Email Open, Timestamp, Preferred Communication Methods, Best Time(s)
+  // Member Directory columns (31 total)
+  // Added: Committees, Home Town, Preferred Communication Method, Best Time to Contact
   const headers = [
     "Member ID",                       // A - 1
     "First Name",                      // B - 2
@@ -334,29 +354,33 @@ function createMemberDirectory() {
     "Email Address",                   // H - 8
     "Phone Number",                    // I - 9
     "Is Steward (Y/N)",                // J - 10
-    "Supervisor (Name)",               // K - 11
-    "Manager (Name)",                  // L - 12
-    "Assigned Steward (Name)",         // M - 13
-    "Last Virtual Mtg (Date)",         // N - 14
-    "Last In-Person Mtg (Date)",       // O - 15
-    "Open Rate (%)",                   // P - 16
-    "Volunteer Hours (YTD)",           // Q - 17
-    "Interest: Local Actions",         // R - 18
-    "Interest: Chapter Actions",       // S - 19
-    "Interest: Allied Chapter Actions",// T - 20
-    "Has Open Grievance?",             // U - 21
-    "Grievance Status Snapshot",       // V - 22
-    "Next Grievance Deadline",         // W - 23
-    "Most Recent Steward Contact Date",// X - 24
-    "Steward Who Contacted Member",    // Y - 25
-    "Notes from Steward Contact",      // Z - 26
-    "Start Grievance"                  // AA - 27
+    "Committees",                      // K - 11 (multi-select for stewards)
+    "Supervisor (Name)",               // L - 12
+    "Manager (Name)",                  // M - 13
+    "Assigned Steward (Name)",         // N - 14
+    "Preferred Communication",         // O - 15 (multi-select)
+    "Best Time to Contact",            // P - 16 (multi-select)
+    "Last Virtual Mtg (Date)",         // Q - 17
+    "Last In-Person Mtg (Date)",       // R - 18
+    "Open Rate (%)",                   // S - 19
+    "Volunteer Hours (YTD)",           // T - 20
+    "Interest: Local Actions",         // U - 21
+    "Home Town",                       // V - 22
+    "Interest: Chapter Actions",       // W - 23
+    "Interest: Allied Chapter Actions",// X - 24
+    "Has Open Grievance?",             // Y - 25
+    "Grievance Status Snapshot",       // Z - 26
+    "Next Grievance Deadline",         // AA - 27
+    "Most Recent Steward Contact Date",// AB - 28
+    "Steward Who Contacted Member",    // AC - 29
+    "Notes from Steward Contact",      // AD - 30
+    "Start Grievance"                  // AE - 31
   ];
 
   memberDir.getRange(1, 1, 1, headers.length).setValues([headers]);
 
-  // Add checkboxes to Start Grievance column (column 27/AA)
-  memberDir.getRange(2, 27, 999, 1).insertCheckboxes();
+  // Add checkboxes to Start Grievance column (column 31/AE)
+  memberDir.getRange(2, MEMBER_COLS.START_GRIEVANCE, 999, 1).insertCheckboxes();
 
   memberDir.getRange(1, 1, 1, headers.length)
     .setFontWeight("bold")
@@ -366,10 +390,14 @@ function createMemberDirectory() {
 
   memberDir.setFrozenRows(1);
   memberDir.setRowHeight(1, 50);
-  memberDir.setColumnWidth(1, 90);   // Member ID
-  memberDir.setColumnWidth(8, 180);  // Email Address
-  memberDir.setColumnWidth(26, 250); // Notes from Steward Contact
-  memberDir.setColumnWidth(27, 120); // Start Grievance checkbox column
+  memberDir.setColumnWidth(MEMBER_COLS.MEMBER_ID, 90);      // Member ID
+  memberDir.setColumnWidth(MEMBER_COLS.EMAIL, 180);         // Email Address
+  memberDir.setColumnWidth(MEMBER_COLS.COMMITTEES, 150);    // Committees (multi-select)
+  memberDir.setColumnWidth(MEMBER_COLS.PREFERRED_COMM, 150);// Preferred Communication
+  memberDir.setColumnWidth(MEMBER_COLS.BEST_TIME, 150);     // Best Time to Contact
+  memberDir.setColumnWidth(MEMBER_COLS.HOME_TOWN, 120);     // Home Town
+  memberDir.setColumnWidth(MEMBER_COLS.CONTACT_NOTES, 250); // Notes from Steward Contact
+  memberDir.setColumnWidth(MEMBER_COLS.START_GRIEVANCE, 120);// Start Grievance checkbox
 
   memberDir.setTabColor("#059669");
 }
@@ -379,41 +407,42 @@ function createGrievanceLog() {
   const ss = SpreadsheetApp.getActive();
   var grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  if (!grievanceLog) {
-    grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
+  // Delete existing sheet to remove any extra columns or formatting issues
+  if (grievanceLog) {
+    ss.deleteSheet(grievanceLog);
   }
-  grievanceLog.clear();
+  grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
 
-  // EXACT columns as specified by user
+  // EXACT 28 columns as specified - no extra columns
   const headers = [
-    "Grievance ID",
-    "Member ID",
-    "First Name",
-    "Last Name",
-    "Status",
-    "Current Step",
-    "Incident Date",
-    "Filing Deadline (21d)",
-    "Date Filed (Step I)",
-    "Step I Decision Due (30d)",
-    "Step I Decision Rcvd",
-    "Step II Appeal Due (10d)",
-    "Step II Appeal Filed",
-    "Step II Decision Due (30d)",
-    "Step II Decision Rcvd",
-    "Step III Appeal Due (30d)",
-    "Step III Appeal Filed",
-    "Date Closed",
-    "Days Open",
-    "Next Action Due",
-    "Days to Deadline",
-    "Articles Violated",
-    "Issue Category",
-    "Member Email",
-    "Unit",
-    "Work Location (Site)",
-    "Assigned Steward (Name)",
-    "Resolution Summary"
+    "Grievance ID",                    // A - 1
+    "Member ID",                       // B - 2
+    "First Name",                      // C - 3
+    "Last Name",                       // D - 4
+    "Status",                          // E - 5
+    "Current Step",                    // F - 6
+    "Incident Date",                   // G - 7
+    "Filing Deadline (21d)",           // H - 8 (auto-calculated)
+    "Date Filed (Step I)",             // I - 9
+    "Step I Decision Due (30d)",       // J - 10 (auto-calculated)
+    "Step I Decision Rcvd",            // K - 11
+    "Step II Appeal Due (10d)",        // L - 12 (auto-calculated)
+    "Step II Appeal Filed",            // M - 13
+    "Step II Decision Due (30d)",      // N - 14 (auto-calculated)
+    "Step II Decision Rcvd",           // O - 15
+    "Step III Appeal Due (30d)",       // P - 16 (auto-calculated)
+    "Step III Appeal Filed",           // Q - 17
+    "Date Closed",                     // R - 18
+    "Days Open",                       // S - 19 (auto-calculated)
+    "Next Action Due",                 // T - 20 (auto-calculated)
+    "Days to Deadline",                // U - 21 (auto-calculated)
+    "Articles Violated",               // V - 22
+    "Issue Category",                  // W - 23
+    "Member Email",                    // X - 24
+    "Unit",                            // Y - 25
+    "Work Location (Site)",            // Z - 26
+    "Assigned Steward (Name)",         // AA - 27
+    "Resolution Summary"               // AB - 28
   ];
 
   grievanceLog.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -426,9 +455,9 @@ function createGrievanceLog() {
 
   grievanceLog.setFrozenRows(1);
   grievanceLog.setRowHeight(1, 50);
-  grievanceLog.setColumnWidth(1, 110);
-  grievanceLog.setColumnWidth(22, 180);
-  grievanceLog.setColumnWidth(28, 250);
+  grievanceLog.setColumnWidth(GRIEVANCE_COLS.GRIEVANCE_ID, 110);  // Grievance ID
+  grievanceLog.setColumnWidth(GRIEVANCE_COLS.ARTICLES, 180);      // Articles Violated
+  grievanceLog.setColumnWidth(GRIEVANCE_COLS.RESOLUTION, 250);    // Resolution Summary
 
   grievanceLog.setTabColor("#DC2626");
 }
@@ -1022,20 +1051,21 @@ function setupDataValidations() {
   grievanceLog.getRange(2, 24, 5000, 1).setDataValidation(grievanceEmailRule);
 
   // Member Directory validations using MEMBER_COLS constants
-  // Columns updated after removing unused columns (27 total now)
+  // 31 columns total after adding: Committees, Home Town, Preferred Comm, Best Time
   const memberValidations = [
     { col: MEMBER_COLS.JOB_TITLE, configCol: CONFIG_COLS.JOB_TITLES },       // Job Title (4)
     { col: MEMBER_COLS.WORK_LOCATION, configCol: CONFIG_COLS.OFFICE_LOCATIONS }, // Work Location (5)
     { col: MEMBER_COLS.UNIT, configCol: CONFIG_COLS.UNITS },                 // Unit (6)
     { col: MEMBER_COLS.IS_STEWARD, configCol: CONFIG_COLS.YES_NO },          // Is Steward (10)
-    { col: MEMBER_COLS.ASSIGNED_STEWARD, configCol: CONFIG_COLS.STEWARDS },  // Assigned Steward (13)
-    { col: MEMBER_COLS.INTEREST_LOCAL, configCol: CONFIG_COLS.YES_NO },      // Interest: Local (18)
-    { col: MEMBER_COLS.INTEREST_CHAPTER, configCol: CONFIG_COLS.YES_NO },    // Interest: Chapter (19)
-    { col: MEMBER_COLS.INTEREST_ALLIED, configCol: CONFIG_COLS.YES_NO }      // Interest: Allied (20)
+    { col: MEMBER_COLS.ASSIGNED_STEWARD, configCol: CONFIG_COLS.STEWARDS },  // Assigned Steward (14)
+    { col: MEMBER_COLS.INTEREST_LOCAL, configCol: CONFIG_COLS.YES_NO },      // Interest: Local (21)
+    { col: MEMBER_COLS.HOME_TOWN, configCol: CONFIG_COLS.HOME_TOWNS },       // Home Town (22)
+    { col: MEMBER_COLS.INTEREST_CHAPTER, configCol: CONFIG_COLS.YES_NO },    // Interest: Chapter (23)
+    { col: MEMBER_COLS.INTEREST_ALLIED, configCol: CONFIG_COLS.YES_NO }      // Interest: Allied (24)
   ];
 
   memberValidations.forEach(function(v) {
-    const configRange = config.getRange(2, v.configCol, 50, 1);
+    const configRange = config.getRange(3, v.configCol, 50, 1);
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(configRange, true)
       .setAllowInvalid(false)
@@ -1050,17 +1080,41 @@ function setupDataValidations() {
     .setAllowInvalid(true)
     .setHelpText('Enter office days (e.g., "Monday, Wednesday, Friday" or select from Config tab)')
     .build();
-  memberDir.getRange(2, 7, 5000, 1).setDataValidation(officeDaysRule);
+  memberDir.getRange(2, MEMBER_COLS.OFFICE_DAYS, 5000, 1).setDataValidation(officeDaysRule);
 
   // Supervisor and Manager - allow text input since they're now first+last name combinations
-  // Users can manually type "FirstName LastName" or the seed function will populate them
   const nameRule = SpreadsheetApp.newDataValidation()
     .requireTextContains("")
     .setAllowInvalid(true)
     .setHelpText('Enter full name (e.g., "John Smith")')
     .build();
-  memberDir.getRange(2, 11, 5000, 1).setDataValidation(nameRule); // Supervisor
-  memberDir.getRange(2, 12, 5000, 1).setDataValidation(nameRule); // Manager
+  memberDir.getRange(2, MEMBER_COLS.SUPERVISOR, 5000, 1).setDataValidation(nameRule);
+  memberDir.getRange(2, MEMBER_COLS.MANAGER, 5000, 1).setDataValidation(nameRule);
+
+  // Multi-select columns - allow text input with help text showing available options
+  // Committees (column 11) - multi-select for stewards
+  const committeesRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter committees (comma-separated, e.g., "Grievance Committee, Bargaining Committee"). See Config tab column AD for options.')
+    .build();
+  memberDir.getRange(2, MEMBER_COLS.COMMITTEES, 5000, 1).setDataValidation(committeesRule);
+
+  // Preferred Communication (column 15) - multi-select
+  const prefCommRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter preferred methods (comma-separated, e.g., "Email, Phone, Text"). See Config tab column M for options.')
+    .build();
+  memberDir.getRange(2, MEMBER_COLS.PREFERRED_COMM, 5000, 1).setDataValidation(prefCommRule);
+
+  // Best Time to Contact (column 16) - multi-select
+  const bestTimeRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter best times (comma-separated, e.g., "Morning (8am-12pm), Evening (5pm-8pm)"). See Config tab column AE for options.')
+    .build();
+  memberDir.getRange(2, MEMBER_COLS.BEST_TIME, 5000, 1).setDataValidation(bestTimeRule);
 
   // Grievance Log validations (updated for new Config structure)
   // GRIEVANCE_COLS: STATUS=5, CURRENT_STEP=6, ARTICLES=22, ISSUE_CATEGORY=23, UNIT=25, LOCATION=26, STEWARD=27
@@ -1075,13 +1129,26 @@ function setupDataValidations() {
   ];
 
   grievanceValidations.forEach(function(v) {
-    const configRange = config.getRange(2, v.configCol, 50, 1);
+    const configRange = config.getRange(3, v.configCol, 50, 1);
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(configRange, true)
       .setAllowInvalid(false)
       .build();
     grievanceLog.getRange(2, v.col, 5000, 1).setDataValidation(rule);
   });
+
+  // ----- CONDITIONAL FORMATTING -----
+  // Light purple background for rows where Is Steward = "Yes"
+  const isStewardCol = getColumnLetter(MEMBER_COLS.IS_STEWARD);
+  const stewardRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=$' + isStewardCol + '2="Yes"')
+    .setBackground('#E8E3F3')  // Light purple (509 theme)
+    .setRanges([memberDir.getRange(2, 1, 5000, 31)])  // Apply to entire row
+    .build();
+
+  const existingRules = memberDir.getConditionalFormatRules();
+  existingRules.push(stewardRule);
+  memberDir.setConditionalFormatRules(existingRules);
 }
 
 /* --------------------- FORMULAS --------------------- */
@@ -1090,69 +1157,83 @@ function setupFormulasAndCalculations() {
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-  // Grievance Log formulas - ENHANCED: Now covers 1000 rows instead of 100
+  // ----- GRIEVANCE LOG FORMULAS -----
+  // All using dynamic column references from GRIEVANCE_COLS
+  const gIncidentDateCol = getColumnLetter(GRIEVANCE_COLS.INCIDENT_DATE);
+  const gFilingDeadlineCol = getColumnLetter(GRIEVANCE_COLS.FILING_DEADLINE);
+  const gDateFiledCol = getColumnLetter(GRIEVANCE_COLS.DATE_FILED);
+  const gStep1DueCol = getColumnLetter(GRIEVANCE_COLS.STEP1_DUE);
+  const gStep1RcvdCol = getColumnLetter(GRIEVANCE_COLS.STEP1_RCVD);
+  const gStep2AppealDueCol = getColumnLetter(GRIEVANCE_COLS.STEP2_APPEAL_DUE);
+  const gStep2AppealFiledCol = getColumnLetter(GRIEVANCE_COLS.STEP2_APPEAL_FILED);
+  const gStep2DueCol = getColumnLetter(GRIEVANCE_COLS.STEP2_DUE);
+  const gStep2RcvdCol = getColumnLetter(GRIEVANCE_COLS.STEP2_RCVD);
+  const gStep3AppealDueCol = getColumnLetter(GRIEVANCE_COLS.STEP3_APPEAL_DUE);
+  const gDateClosedCol = getColumnLetter(GRIEVANCE_COLS.DATE_CLOSED);
+  const gDaysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
+  const gNextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const gDaysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+  const gStatusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const gCurrentStepCol = getColumnLetter(GRIEVANCE_COLS.CURRENT_STEP);
+  const gMemberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
+
   // Filing Deadline (Incident Date + 21 days) - Column H
-  grievanceLog.getRange("H2").setFormula(
-    `=ARRAYFORMULA(IF(G2:G1000<>"",G2:G1000+21,""))`
+  grievanceLog.getRange(gFilingDeadlineCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gIncidentDateCol}2:${gIncidentDateCol}1000<>"",${gIncidentDateCol}2:${gIncidentDateCol}1000+21,""))`
   );
 
   // Step I Decision Due (Date Filed + 30 days) - Column J
-  grievanceLog.getRange("J2").setFormula(
-    `=ARRAYFORMULA(IF(I2:I1000<>"",I2:I1000+30,""))`
+  grievanceLog.getRange(gStep1DueCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",${gDateFiledCol}2:${gDateFiledCol}1000+30,""))`
   );
 
   // Step II Appeal Due (Step I Decision Rcvd + 10 days) - Column L
-  grievanceLog.getRange("L2").setFormula(
-    `=ARRAYFORMULA(IF(K2:K1000<>"",K2:K1000+10,""))`
+  grievanceLog.getRange(gStep2AppealDueCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gStep1RcvdCol}2:${gStep1RcvdCol}1000<>"",${gStep1RcvdCol}2:${gStep1RcvdCol}1000+10,""))`
   );
 
   // Step II Decision Due (Step II Appeal Filed + 30 days) - Column N
-  grievanceLog.getRange("N2").setFormula(
-    `=ARRAYFORMULA(IF(M2:M1000<>"",M2:M1000+30,""))`
+  grievanceLog.getRange(gStep2DueCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}1000<>"",${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}1000+30,""))`
   );
 
   // Step III Appeal Due (Step II Decision Rcvd + 30 days) - Column P
-  grievanceLog.getRange("P2").setFormula(
-    `=ARRAYFORMULA(IF(O2:O1000<>"",O2:O1000+30,""))`
+  grievanceLog.getRange(gStep3AppealDueCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gStep2RcvdCol}2:${gStep2RcvdCol}1000<>"",${gStep2RcvdCol}2:${gStep2RcvdCol}1000+30,""))`
   );
 
   // Days Open - Column S
-  grievanceLog.getRange("S2").setFormula(
-    `=ARRAYFORMULA(IF(I2:I1000<>"",IF(R2:R1000<>"",R2:R1000-I2:I1000,TODAY()-I2:I1000),""))`
+  grievanceLog.getRange(gDaysOpenCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",IF(${gDateClosedCol}2:${gDateClosedCol}1000<>"",${gDateClosedCol}2:${gDateClosedCol}1000-${gDateFiledCol}2:${gDateFiledCol}1000,TODAY()-${gDateFiledCol}2:${gDateFiledCol}1000),""))`
   );
 
-  // Next Action Due - Column T
-  grievanceLog.getRange("T2").setFormula(
-    `=ARRAYFORMULA(IF(E2:E1000="Open",IF(F2:F1000="Step I",J2:J1000,IF(F2:F1000="Step II",N2:N1000,IF(F2:F1000="Step III",P2:P1000,H2:H1000))),""))`
+  // Next Action Due - Column T (determines based on current step)
+  grievanceLog.getRange(gNextActionCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gStatusCol}2:${gStatusCol}1000="Open",IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step I",${gStep1DueCol}2:${gStep1DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step II",${gStep2DueCol}2:${gStep2DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step III",${gStep3AppealDueCol}2:${gStep3AppealDueCol}1000,${gFilingDeadlineCol}2:${gFilingDeadlineCol}1000))),""))`
   );
 
-  // Days to Deadline - Column U
-  grievanceLog.getRange("U2").setFormula(
-    `=ARRAYFORMULA(IF(T2:T1000<>"",T2:T1000-TODAY(),""))`
+  // Days to Deadline - Column U (Next Action Due - Today)
+  grievanceLog.getRange(gDaysToDeadlineCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}1000<>"",${gNextActionCol}2:${gNextActionCol}1000-TODAY(),""))`
   );
 
-  // Dynamic column references for Member Directory formulas
-  const memberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
-  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
-  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
-
-  // Member Directory formulas - Now using dynamic column references
-  // Has Open Grievance? - Column U (21)
+  // ----- MEMBER DIRECTORY FORMULAS -----
+  // Has Open Grievance? - Column Y (25)
   const hasGrievanceCol = getColumnLetter(MEMBER_COLS.HAS_OPEN_GRIEVANCE);
   memberDir.getRange(hasGrievanceCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IF(COUNTIFS('Grievance Log'!${memberIdCol}:${memberIdCol},A2:A1000,'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No"),""))`
+    `=ARRAYFORMULA(IF(A2:A1000<>"",IF(COUNTIFS('Grievance Log'!${gMemberIdCol}:${gMemberIdCol},A2:A1000,'Grievance Log'!${gStatusCol}:${gStatusCol},"Open")>0,"Yes","No"),""))`
   );
 
-  // Grievance Status Snapshot - Column V (22)
+  // Grievance Status Snapshot - Column Z (26)
   const statusSnapshotCol = getColumnLetter(MEMBER_COLS.GRIEVANCE_STATUS);
   memberDir.getRange(statusSnapshotCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A2:A1000,'Grievance Log'!${memberIdCol}:${memberIdCol},0)),""),""))`
+    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gStatusCol}:${gStatusCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
   );
 
-  // Next Grievance Deadline - Column W (23)
+  // Next Grievance Deadline - Column AA (27)
   const nextDeadlineCol = getColumnLetter(MEMBER_COLS.NEXT_DEADLINE);
   memberDir.getRange(nextDeadlineCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A2:A1000,'Grievance Log'!${memberIdCol}:${memberIdCol},0)),""),""))`
+    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gNextActionCol}:${gNextActionCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
   );
 }
 
