@@ -1520,7 +1520,16 @@ function onOpen() {
   // Validate configuration on startup
   const configValid = validateConfigurationOnOpen();
 
-  const ui = SpreadsheetApp.getUi();
+  // Wrap UI operations in try-catch to handle contexts where UI isn't available
+  // (e.g., when called from time-driven triggers or CREATE_509_DASHBOARD)
+  let ui;
+  try {
+    ui = SpreadsheetApp.getUi();
+  } catch (e) {
+    // UI not available in this context (trigger, API call, etc.) - skip menu creation
+    Logger.log('onOpen: UI not available, skipping menu creation. Context: ' + e.message);
+    return;
+  }
 
   // ============ 🚀 FIRST TIME SETUP MENU ============
   // Put this first so new users see it immediately
