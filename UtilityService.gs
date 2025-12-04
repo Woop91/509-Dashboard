@@ -277,9 +277,11 @@ function validateConfiguration() {
   });
 
   // Validate grievance form configuration if present
+  // NOTE: This is a warning, not an error - forms can be configured later
   if (typeof GRIEVANCE_FORM_CONFIG !== 'undefined') {
     if (GRIEVANCE_FORM_CONFIG.FORM_URL.includes('YOUR_FORM_ID')) {
-      errors.push('GRIEVANCE_FORM_CONFIG.FORM_URL contains placeholder - needs real form URL');
+      // Log warning but don't block - form URLs can be added later via Config tab
+      Logger.log('INFO: Grievance Form URL not yet configured. Add your form URL to the Config tab when ready.');
     }
   }
 

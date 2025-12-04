@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-04T00:59:18.816Z
+ * - Build Date: 2025-12-04T01:31:21.705Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -273,25 +273,28 @@ const ISSUE_CATEGORIES = [
  * @const {Object}
  */
 const CONFIG_COLS = {
-  JOB_TITLES: 1,           // A
-  OFFICE_LOCATIONS: 2,     // B
-  UNITS: 3,                // C
-  OFFICE_DAYS: 4,          // D
-  YES_NO: 5,               // E
-  SUPERVISORS: 6,          // F
-  MANAGERS: 7,             // G
-  STEWARDS: 8,             // H
-  GRIEVANCE_STATUS: 9,     // I
-  GRIEVANCE_STEP: 10,      // J
-  ISSUE_CATEGORY: 11,      // K
-  ARTICLES_VIOLATED: 12,   // L
-  COMM_METHODS: 13,        // M
-  COORDINATOR_1_NAME: 16,  // P
-  COORDINATOR_2_NAME: 17,  // Q
-  COORDINATOR_3_NAME: 18,  // R
-  COORDINATOR_1_EMAIL: 19, // S
-  COORDINATOR_2_EMAIL: 20, // T
-  COORDINATOR_3_EMAIL: 21  // U
+  // Employment Info (cols 1-5)
+  JOB_TITLES: 1,              // A
+  OFFICE_LOCATIONS: 2,        // B
+  UNITS: 3,                   // C
+  OFFICE_DAYS: 4,             // D
+  YES_NO: 5,                  // E
+  // Supervision (cols 6-10)
+  SUPERVISOR_FIRST: 6,        // F
+  SUPERVISOR_LAST: 7,         // G
+  MANAGER_FIRST: 8,           // H
+  MANAGER_LAST: 9,            // I
+  STEWARDS: 10,               // J
+  // Grievance Settings (cols 11-15)
+  GRIEVANCE_STATUS: 11,       // K
+  GRIEVANCE_STEP: 12,         // L
+  ISSUE_CATEGORY: 13,         // M
+  ARTICLES_VIOLATED: 14,      // N
+  COMM_METHODS: 15,           // O
+  // Links & Coordinators (cols 16-18)
+  GRIEVANCE_COORDINATORS: 16, // P - comma-separated list
+  GRIEVANCE_FORM_URL: 17,     // Q - URL to grievance intake form
+  CONTACT_FORM_URL: 18        // R - URL to contact form
 };
 
 /* --------------------= CACHE CONFIGURATION --------------------= */
@@ -2624,7 +2627,11 @@ function onOpen() {
     .addSeparator()
     .addSubMenu(ui.createMenu("👥 Member Tools")
       .addItem("👥 Mobile Member Browser", "showMobileMemberBrowser")
-      .addItem("🆔 Generate Next Member ID", "showNextMemberID")
+      .addItem("🆔 Generate Next Member ID", "showNextMemberID"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📝 Forms")
+      .addItem("📋 Open Grievance Form", "openGrievanceForm")
+      .addItem("📞 Open Contact Form", "openContactForm")
       .addSeparator()
       .addItem("📝 Open Member Google Form", "openMemberGoogleForm"))
     .addSeparator()
@@ -2948,6 +2955,102 @@ function recalcAllMembers() {
     duration: duration,
     message: `Processed ${processed} members in ${duration}ms (${errors} errors)`
   };
+}
+
+/* --------------------- FORM URL FUNCTIONS --------------------- */
+
+/**
+ * Reads a form URL from the Config tab
+ * @param {number} columnIndex - The column index (use CONFIG_COLS constants)
+ * @returns {string} The URL or empty string if not configured
+ */
+function getFormUrlFromConfig(columnIndex) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const config = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!config) {
+    Logger.log('Config sheet not found');
+    return '';
+  }
+
+  // Row 1 is category headers, Row 2 is column headers, Row 3+ is data
+  // Get first data row value for the URL column
+  const url = config.getRange(3, columnIndex).getValue();
+  return url ? url.toString().trim() : '';
+}
+
+/**
+ * Opens the Grievance Form in a new browser tab
+ * Reads URL from Config tab (Grievance Form URL column)
+ */
+function openGrievanceForm() {
+  const url = getFormUrlFromConfig(CONFIG_COLS.GRIEVANCE_FORM_URL);
+
+  if (!url || url === '') {
+    SpreadsheetApp.getUi().alert(
+      '📝 Grievance Form Not Configured',
+      'No Grievance Form URL has been added yet.\n\n' +
+      'To configure:\n' +
+      '1. Go to the Config tab\n' +
+      '2. Find the "Grievance Form URL" column (column Q)\n' +
+      '3. Paste your Google Form URL in row 3\n\n' +
+      'Tip: Create a Google Form for grievance intake, then copy its URL.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  // Open URL in new tab
+  const html = HtmlService.createHtmlOutput(
+    `<script>window.open('${url}', '_blank'); google.script.host.close();</script>`
+  ).setWidth(1).setHeight(1);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Opening Grievance Form...');
+}
+
+/**
+ * Opens the Contact Form in a new browser tab
+ * Reads URL from Config tab (Contact Form URL column)
+ */
+function openContactForm() {
+  const url = getFormUrlFromConfig(CONFIG_COLS.CONTACT_FORM_URL);
+
+  if (!url || url === '') {
+    SpreadsheetApp.getUi().alert(
+      '📝 Contact Form Not Configured',
+      'No Contact Form URL has been added yet.\n\n' +
+      'To configure:\n' +
+      '1. Go to the Config tab\n' +
+      '2. Find the "Contact Form URL" column (column R)\n' +
+      '3. Paste your Google Form URL in row 3\n\n' +
+      'Tip: Create a Google Form for member contact/intake, then copy its URL.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  // Open URL in new tab
+  const html = HtmlService.createHtmlOutput(
+    `<script>window.open('${url}', '_blank'); google.script.host.close();</script>`
+  ).setWidth(1).setHeight(1);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Opening Contact Form...');
+}
+
+/**
+ * Gets the Grievance Form URL from Config (for use by other functions)
+ * @returns {string} The configured URL or empty string
+ */
+function getGrievanceFormUrl() {
+  return getFormUrlFromConfig(CONFIG_COLS.GRIEVANCE_FORM_URL);
+}
+
+/**
+ * Gets the Contact Form URL from Config (for use by other functions)
+ * @returns {string} The configured URL or empty string
+ */
+function getContactFormUrl() {
+  return getFormUrlFromConfig(CONFIG_COLS.CONTACT_FORM_URL);
 }
 
 function goToDashboard() {
@@ -31042,9 +31145,11 @@ function validateConfiguration() {
   });
 
   // Validate grievance form configuration if present
+  // NOTE: This is a warning, not an error - forms can be configured later
   if (typeof GRIEVANCE_FORM_CONFIG !== 'undefined') {
     if (GRIEVANCE_FORM_CONFIG.FORM_URL.includes('YOUR_FORM_ID')) {
-      errors.push('GRIEVANCE_FORM_CONFIG.FORM_URL contains placeholder - needs real form URL');
+      // Log warning but don't block - form URLs can be added later via Config tab
+      Logger.log('INFO: Grievance Form URL not yet configured. Add your form URL to the Config tab when ready.');
     }
   }
 
