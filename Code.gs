@@ -103,42 +103,42 @@ function createConfigTab() {
     ["Job Titles", "Office Locations", "Units", "Office Days", "Yes/No",
      "Supervisor First Name", "Supervisor Last Name", "Manager First Name", "Manager Last Name", "Stewards",
      "Grievance Status", "Grievance Step", "Issue Category", "Articles Violated", "Communication Methods",
-     "Grievance Coordinator 1", "Grievance Coordinator 2", "Grievance Coordinator 3"],
+     "Grievance Coordinators", "Grievance Form URL", "Contact Form URL"],
 
     ["Coordinator", "Boston HQ", "Unit A - Administrative", "Monday", "Yes",
      "Sarah", "Johnson", "Michael", "Chen", "Jane Smith",
      "Open", "Informal", "Discipline", "Art. 1 - Recognition", "Email",
-     "Jane Smith", "John Doe", "Mary Johnson"],
+     "Jane Smith, John Doe, Mary Johnson", "", ""],
 
     ["Analyst", "Worcester Office", "Unit B - Technical", "Tuesday", "No",
      "Mike", "Wilson", "Lisa", "Anderson", "John Doe",
      "Pending Info", "Step I", "Workload", "Art. 2 - Union Security", "Phone",
-     "Bob Wilson", "Alice Brown", "Tom Davis"],
+     "Bob Wilson, Alice Brown", "", ""],
 
     ["Case Manager", "Springfield Branch", "Unit C - Support Services", "Wednesday", "",
      "Emily", "Davis", "Robert", "Brown", "Mary Johnson",
      "Settled", "Step II", "Scheduling", "Art. 3 - Management Rights", "Text",
-     "Sarah Martinez", "Kevin Jones", "Linda Garcia"],
+     "Sarah Martinez, Kevin Jones", "", ""],
 
     ["Specialist", "Cambridge Office", "Unit D - Operations", "Thursday", "",
      "Tom", "Harris", "Jennifer", "Lee", "Bob Wilson",
      "Withdrawn", "Step III", "Pay", "Art. 4 - No Discrimination", "In Person",
-     "Daniel Kim", "Rachel Adams", "Jane Smith"],
+     "Daniel Kim, Rachel Adams", "", ""],
 
     ["Senior Analyst", "Lowell Center", "Unit E - Field Services", "Friday", "",
      "Amanda", "White", "David", "Martinez", "Alice Brown",
      "Closed", "Mediation", "Discrimination", "Art. 5 - Union Business", "",
-     "John Doe", "Mary Johnson", "Bob Wilson"],
+     "John Doe, Mary Johnson", "", ""],
 
     ["Team Lead", "Quincy Station", "", "Saturday", "",
      "Chris", "Taylor", "Susan", "Garcia", "Tom Davis",
      "Appealed", "Arbitration", "Safety", "Art. 23 - Grievance Procedure", "",
-     "Alice Brown", "Tom Davis", "Sarah Martinez"],
+     "Alice Brown, Tom Davis", "", ""],
 
     ["Director", "Remote/Hybrid", "", "Sunday", "",
      "Patricia", "Moore", "James", "Wilson", "Sarah Martinez",
      "", "", "Benefits", "Art. 24 - Discipline", "",
-     "Kevin Jones", "Linda Garcia", "Daniel Kim"],
+     "Kevin Jones, Linda Garcia", "", ""],
 
     ["Manager", "Brockton Office", "", "", "",
      "Kevin", "Anderson", "Nancy", "Taylor", "Kevin Jones",
@@ -171,18 +171,70 @@ function createConfigTab() {
      "", "", ""]
   ];
 
-  config.getRange(1, 1, configData.length, configData[0].length).setValues(configData);
+  // Add category header row first
+  const categoryRow = [
+    "── EMPLOYMENT INFO ──", "", "", "", "",
+    "── SUPERVISION ──", "", "", "", "",
+    "── GRIEVANCE SETTINGS ──", "", "", "", "",
+    "── LINKS & COORDINATORS ──", "", ""
+  ];
 
-  config.getRange(1, 1, 1, configData[0].length)
+  // Insert category row at top, then column headers, then data
+  config.getRange(1, 1, 1, categoryRow.length).setValues([categoryRow]);
+  config.getRange(2, 1, configData.length, configData[0].length).setValues(configData);
+
+  // Style category row (Row 1)
+  config.getRange(1, 1, 1, categoryRow.length)
     .setFontWeight("bold")
-    .setBackground("#4A5568")
+    .setFontSize(10)
+    .setHorizontalAlignment("center");
+
+  // Category colors for row 1
+  // Employment Info (cols 1-5) - Blue
+  config.getRange(1, 1, 1, 5)
+    .setBackground("#3B82F6")
     .setFontColor("#FFFFFF");
+  config.getRange(1, 1, 1, 1).merge(); // Merge first cell visually
+
+  // Supervision (cols 6-10) - Green
+  config.getRange(1, 6, 1, 5)
+    .setBackground("#10B981")
+    .setFontColor("#FFFFFF");
+
+  // Grievance Settings (cols 11-15) - Orange
+  config.getRange(1, 11, 1, 5)
+    .setBackground("#F59E0B")
+    .setFontColor("#FFFFFF");
+
+  // Links & Coordinators (cols 16-18) - Purple
+  config.getRange(1, 16, 1, 3)
+    .setBackground("#8B5CF6")
+    .setFontColor("#FFFFFF");
+
+  // Style column header row (Row 2) with matching lighter colors
+  config.getRange(2, 1, 1, configData[0].length)
+    .setFontWeight("bold")
+    .setFontSize(9);
+
+  // Light blue for Employment Info headers
+  config.getRange(2, 1, 1, 5).setBackground("#DBEAFE");
+  // Light green for Supervision headers
+  config.getRange(2, 6, 1, 5).setBackground("#D1FAE5");
+  // Light orange for Grievance Settings headers
+  config.getRange(2, 11, 1, 5).setBackground("#FEF3C7");
+  // Light purple for Links & Coordinators headers
+  config.getRange(2, 16, 1, 3).setBackground("#EDE9FE");
+
+  // Add borders between category groups
+  config.getRange(1, 5, configData.length + 1, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  config.getRange(1, 10, configData.length + 1, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  config.getRange(1, 15, configData.length + 1, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
   for (let i = 1; i <= configData[0].length; i++) {
     config.autoResizeColumn(i);
   }
 
-  config.setFrozenRows(1);
+  config.setFrozenRows(2); // Freeze both category and header rows
   config.setTabColor("#2563EB");
 }
 
