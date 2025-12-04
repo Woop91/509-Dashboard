@@ -98,6 +98,7 @@ const COLORS = {
  * @const {Object}
  */
 const MEMBER_COLS = {
+  // 27 columns total (removed 5 unused: LAST_SURVEY, LAST_EMAIL_OPEN, TIMESTAMP, PREFERRED_COMM, BEST_TIME)
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -113,23 +114,18 @@ const MEMBER_COLS = {
   ASSIGNED_STEWARD: 13,            // M
   LAST_VIRTUAL_MTG: 14,            // N
   LAST_INPERSON_MTG: 15,           // O
-  LAST_SURVEY: 16,                 // P
-  LAST_EMAIL_OPEN: 17,             // Q
-  OPEN_RATE: 18,                   // R
-  VOLUNTEER_HOURS: 19,             // S
-  INTEREST_LOCAL: 20,              // T
-  INTEREST_CHAPTER: 21,            // U
-  INTEREST_ALLIED: 22,             // V
-  TIMESTAMP: 23,                   // W
-  PREFERRED_COMM: 24,              // X
-  BEST_TIME: 25,                   // Y
-  HAS_OPEN_GRIEVANCE: 26,          // Z
-  GRIEVANCE_STATUS: 27,            // AA
-  NEXT_DEADLINE: 28,               // AB
-  RECENT_CONTACT_DATE: 29,         // AC
-  CONTACT_STEWARD: 30,             // AD
-  CONTACT_NOTES: 31,               // AE
-  START_GRIEVANCE: 32              // AF - Checkbox to start grievance with prepopulated member info
+  OPEN_RATE: 16,                   // P
+  VOLUNTEER_HOURS: 17,             // Q
+  INTEREST_LOCAL: 18,              // R
+  INTEREST_CHAPTER: 19,            // S
+  INTEREST_ALLIED: 20,             // T
+  HAS_OPEN_GRIEVANCE: 21,          // U
+  GRIEVANCE_STATUS: 22,            // V
+  NEXT_DEADLINE: 23,               // W
+  RECENT_CONTACT_DATE: 24,         // X
+  CONTACT_STEWARD: 25,             // Y
+  CONTACT_NOTES: 26,               // Z
+  START_GRIEVANCE: 27              // AA - Checkbox to start grievance with prepopulated member info
 };
 
 /* --------------------= GRIEVANCE LOG COLUMNS --------------------= */

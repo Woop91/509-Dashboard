@@ -127,6 +127,7 @@ const COLORS = {
  * @const {Object}
  */
 const MEMBER_COLS = {
+  // 27 columns total (removed 5 unused: LAST_SURVEY, LAST_EMAIL_OPEN, TIMESTAMP, PREFERRED_COMM, BEST_TIME)
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -142,23 +143,18 @@ const MEMBER_COLS = {
   ASSIGNED_STEWARD: 13,            // M
   LAST_VIRTUAL_MTG: 14,            // N
   LAST_INPERSON_MTG: 15,           // O
-  LAST_SURVEY: 16,                 // P
-  LAST_EMAIL_OPEN: 17,             // Q
-  OPEN_RATE: 18,                   // R
-  VOLUNTEER_HOURS: 19,             // S
-  INTEREST_LOCAL: 20,              // T
-  INTEREST_CHAPTER: 21,            // U
-  INTEREST_ALLIED: 22,             // V
-  TIMESTAMP: 23,                   // W
-  PREFERRED_COMM: 24,              // X
-  BEST_TIME: 25,                   // Y
-  HAS_OPEN_GRIEVANCE: 26,          // Z
-  GRIEVANCE_STATUS: 27,            // AA
-  NEXT_DEADLINE: 28,               // AB
-  RECENT_CONTACT_DATE: 29,         // AC
-  CONTACT_STEWARD: 30,             // AD
-  CONTACT_NOTES: 31,               // AE
-  START_GRIEVANCE: 32              // AF - Checkbox to start grievance with prepopulated member info
+  OPEN_RATE: 16,                   // P
+  VOLUNTEER_HOURS: 17,             // Q
+  INTEREST_LOCAL: 18,              // R
+  INTEREST_CHAPTER: 19,            // S
+  INTEREST_ALLIED: 20,             // T
+  HAS_OPEN_GRIEVANCE: 21,          // U
+  GRIEVANCE_STATUS: 22,            // V
+  NEXT_DEADLINE: 23,               // W
+  RECENT_CONTACT_DATE: 24,         // X
+  CONTACT_STEWARD: 25,             // Y
+  CONTACT_NOTES: 26,               // Z
+  START_GRIEVANCE: 27              // AA - Checkbox to start grievance with prepopulated member info
 };
 
 /* --------------------= GRIEVANCE LOG COLUMNS --------------------= */
@@ -1826,47 +1822,42 @@ function createMemberDirectory() {
   }
   memberDir = ss.insertSheet(SHEETS.MEMBER_DIR);
 
-  // EXACT columns as specified by user
+  // Member Directory columns (27 total after removing unused columns)
+  // Removed: Last Survey, Last Email Open, Timestamp, Preferred Communication Methods, Best Time(s)
   const headers = [
-    "Member ID",
-    "First Name",
-    "Last Name",
-    "Job Title",
-    "Work Location (Site)",
-    "Unit",
-    "Office Days",
-    "Email Address",
-    "Phone Number",
-    "Is Steward (Y/N)",
-    "Supervisor (Name)",
-    "Manager (Name)",
-    "Assigned Steward (Name)",
-    "Last Virtual Mtg (Date)",
-    "Last In-Person Mtg (Date)",
-    "Last Survey (Date)",
-    "Last Email Open (Date)",
-    "Open Rate (%)",
-    "Volunteer Hours (YTD)",
-    "Interest: Local Actions",
-    "Interest: Chapter Actions",
-    "Interest: Allied Chapter Actions",
-    "Timestamp",
-    "Preferred Communication Methods",
-    "Best Time(s) to Reach Member",
-    "Has Open Grievance?",
-    "Grievance Status Snapshot",
-    "Next Grievance Deadline",
-    "Most Recent Steward Contact Date",
-    "Steward Who Contacted Member",
-    "Notes from Steward Contact",
-    "Start Grievance"
+    "Member ID",                       // A - 1
+    "First Name",                      // B - 2
+    "Last Name",                       // C - 3
+    "Job Title",                       // D - 4
+    "Work Location (Site)",            // E - 5
+    "Unit",                            // F - 6
+    "Office Days",                     // G - 7
+    "Email Address",                   // H - 8
+    "Phone Number",                    // I - 9
+    "Is Steward (Y/N)",                // J - 10
+    "Supervisor (Name)",               // K - 11
+    "Manager (Name)",                  // L - 12
+    "Assigned Steward (Name)",         // M - 13
+    "Last Virtual Mtg (Date)",         // N - 14
+    "Last In-Person Mtg (Date)",       // O - 15
+    "Open Rate (%)",                   // P - 16
+    "Volunteer Hours (YTD)",           // Q - 17
+    "Interest: Local Actions",         // R - 18
+    "Interest: Chapter Actions",       // S - 19
+    "Interest: Allied Chapter Actions",// T - 20
+    "Has Open Grievance?",             // U - 21
+    "Grievance Status Snapshot",       // V - 22
+    "Next Grievance Deadline",         // W - 23
+    "Most Recent Steward Contact Date",// X - 24
+    "Steward Who Contacted Member",    // Y - 25
+    "Notes from Steward Contact",      // Z - 26
+    "Start Grievance"                  // AA - 27
   ];
 
   memberDir.getRange(1, 1, 1, headers.length).setValues([headers]);
 
-  // Add checkboxes to Start Grievance column (column 32/AF)
-  // Will be applied after data is loaded; setting up initial range
-  memberDir.getRange(2, 32, 999, 1).insertCheckboxes();
+  // Add checkboxes to Start Grievance column (column 27/AA)
+  memberDir.getRange(2, 27, 999, 1).insertCheckboxes();
 
   memberDir.getRange(1, 1, 1, headers.length)
     .setFontWeight("bold")
@@ -1876,10 +1867,10 @@ function createMemberDirectory() {
 
   memberDir.setFrozenRows(1);
   memberDir.setRowHeight(1, 50);
-  memberDir.setColumnWidth(1, 90);
-  memberDir.setColumnWidth(8, 180);
-  memberDir.setColumnWidth(31, 250);
-  memberDir.setColumnWidth(32, 120);  // Start Grievance checkbox column
+  memberDir.setColumnWidth(1, 90);   // Member ID
+  memberDir.setColumnWidth(8, 180);  // Email Address
+  memberDir.setColumnWidth(26, 250); // Notes from Steward Contact
+  memberDir.setColumnWidth(27, 120); // Start Grievance checkbox column
 
   memberDir.setTabColor("#059669");
 }
@@ -2531,20 +2522,17 @@ function setupDataValidations() {
     .build();
   grievanceLog.getRange(2, 24, 5000, 1).setDataValidation(grievanceEmailRule);
 
-  // Member Directory validations (updated for new Config structure)
-  // Config columns: JOB_TITLES=1, OFFICE_LOCATIONS=2, UNITS=3, OFFICE_DAYS=4, YES_NO=5,
-  //                 SUPERVISORS=6, MANAGERS=7, STEWARDS=8, GRIEVANCE_STATUS=9, GRIEVANCE_STEP=10,
-  //                 ISSUE_CATEGORY=11, ARTICLES_VIOLATED=12, COMM_METHODS=13
+  // Member Directory validations using MEMBER_COLS constants
+  // Columns updated after removing unused columns (27 total now)
   const memberValidations = [
-    { col: 4, configCol: CONFIG_COLS.JOB_TITLES },       // Job Title
-    { col: 5, configCol: CONFIG_COLS.OFFICE_LOCATIONS }, // Work Location
-    { col: 6, configCol: CONFIG_COLS.UNITS },            // Unit
-    { col: 10, configCol: CONFIG_COLS.YES_NO },          // Is Steward
-    { col: 13, configCol: CONFIG_COLS.STEWARDS },        // Assigned Steward
-    { col: 20, configCol: CONFIG_COLS.YES_NO },          // Interest: Local
-    { col: 21, configCol: CONFIG_COLS.YES_NO },          // Interest: Chapter
-    { col: 22, configCol: CONFIG_COLS.YES_NO },          // Interest: Allied
-    { col: 24, configCol: CONFIG_COLS.COMM_METHODS }     // Comm Methods
+    { col: MEMBER_COLS.JOB_TITLE, configCol: CONFIG_COLS.JOB_TITLES },       // Job Title (4)
+    { col: MEMBER_COLS.WORK_LOCATION, configCol: CONFIG_COLS.OFFICE_LOCATIONS }, // Work Location (5)
+    { col: MEMBER_COLS.UNIT, configCol: CONFIG_COLS.UNITS },                 // Unit (6)
+    { col: MEMBER_COLS.IS_STEWARD, configCol: CONFIG_COLS.YES_NO },          // Is Steward (10)
+    { col: MEMBER_COLS.ASSIGNED_STEWARD, configCol: CONFIG_COLS.STEWARDS },  // Assigned Steward (13)
+    { col: MEMBER_COLS.INTEREST_LOCAL, configCol: CONFIG_COLS.YES_NO },      // Interest: Local (18)
+    { col: MEMBER_COLS.INTEREST_CHAPTER, configCol: CONFIG_COLS.YES_NO },    // Interest: Chapter (19)
+    { col: MEMBER_COLS.INTEREST_ALLIED, configCol: CONFIG_COLS.YES_NO }      // Interest: Allied (20)
   ];
 
   memberValidations.forEach(function(v) {
@@ -2649,19 +2637,22 @@ function setupFormulasAndCalculations() {
   const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
 
-  // Member Directory formulas - ENHANCED: Now covers 1000 rows instead of 100
-  // Has Open Grievance? - Column Z (26)
-  memberDir.getRange("Z2").setFormula(
+  // Member Directory formulas - Now using dynamic column references
+  // Has Open Grievance? - Column U (21)
+  const hasGrievanceCol = getColumnLetter(MEMBER_COLS.HAS_OPEN_GRIEVANCE);
+  memberDir.getRange(hasGrievanceCol + "2").setFormula(
     `=ARRAYFORMULA(IF(A2:A1000<>"",IF(COUNTIFS('Grievance Log'!${memberIdCol}:${memberIdCol},A2:A1000,'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No"),""))`
   );
 
-  // Grievance Status Snapshot - Column AA (27)
-  memberDir.getRange("AA2").setFormula(
+  // Grievance Status Snapshot - Column V (22)
+  const statusSnapshotCol = getColumnLetter(MEMBER_COLS.GRIEVANCE_STATUS);
+  memberDir.getRange(statusSnapshotCol + "2").setFormula(
     `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A2:A1000,'Grievance Log'!${memberIdCol}:${memberIdCol},0)),""),""))`
   );
 
-  // Next Grievance Deadline - Column AB (28)
-  memberDir.getRange("AB2").setFormula(
+  // Next Grievance Deadline - Column W (23)
+  const nextDeadlineCol = getColumnLetter(MEMBER_COLS.NEXT_DEADLINE);
+  memberDir.getRange(nextDeadlineCol + "2").setFormula(
     `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A2:A1000,'Grievance Log'!${memberIdCol}:${memberIdCol},0)),""),""))`
   );
 }
