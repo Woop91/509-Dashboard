@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-04T00:09:01.186Z
+ * - Build Date: 2025-12-04T00:21:15.283Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -4229,8 +4229,8 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
 
     if (memberData) {
       const stewardRow = memberData.find(function(row) {
-        row[7] && row[7].toLowerCase() === userEmail.toLowerCase()
-      );
+        return row[7] && row[7].toLowerCase() === userEmail.toLowerCase();
+      });
       if (stewardRow) {
         stewardName = `${stewardRow[1]} ${stewardRow[2]}`; // First + Last name
       }
