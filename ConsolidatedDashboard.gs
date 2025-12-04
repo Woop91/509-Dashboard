@@ -1823,12 +1823,12 @@ function createConfigTab() {
 function createMemberDirectory() {
   const ss = SpreadsheetApp.getActive();
   var memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const isNew = !memberDir;
 
-  // Delete existing sheet to remove any column groups or formatting issues
-  if (memberDir) {
-    ss.deleteSheet(memberDir);
+  // Only create sheet if it doesn't exist - PRESERVE EXISTING DATA
+  if (!memberDir) {
+    memberDir = ss.insertSheet(SHEETS.MEMBER_DIR);
   }
-  memberDir = ss.insertSheet(SHEETS.MEMBER_DIR);
 
   // Member Directory columns (31 total)
   // Added: Committees, Home Town, Preferred Communication Method, Best Time to Contact
@@ -1866,11 +1866,18 @@ function createMemberDirectory() {
     "Start Grievance"                  // AE - 31
   ];
 
+  // Update headers (row 1 only - preserves data in rows 2+)
   memberDir.getRange(1, 1, 1, headers.length).setValues([headers]);
 
-  // Add checkboxes to Start Grievance column (column 31/AE)
-  memberDir.getRange(2, MEMBER_COLS.START_GRIEVANCE, 999, 1).insertCheckboxes();
+  // Add checkboxes to Start Grievance column (column 31/AE) - only for rows without data
+  const lastRow = Math.max(memberDir.getLastRow(), 1);
+  if (lastRow > 1) {
+    memberDir.getRange(2, MEMBER_COLS.START_GRIEVANCE, lastRow - 1, 1).insertCheckboxes();
+  } else {
+    memberDir.getRange(2, MEMBER_COLS.START_GRIEVANCE, 999, 1).insertCheckboxes();
+  }
 
+  // Apply header formatting
   memberDir.getRange(1, 1, 1, headers.length)
     .setFontWeight("bold")
     .setBackground("#059669")
@@ -1896,11 +1903,10 @@ function createGrievanceLog() {
   const ss = SpreadsheetApp.getActive();
   var grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  // Delete existing sheet to remove any extra columns or formatting issues
-  if (grievanceLog) {
-    ss.deleteSheet(grievanceLog);
+  // Only create sheet if it doesn't exist - PRESERVE EXISTING DATA
+  if (!grievanceLog) {
+    grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
   }
-  grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
 
   // EXACT 28 columns as specified - no extra columns
   const headers = [
