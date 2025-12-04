@@ -672,3 +672,196 @@ function testPastDeadlineHandling() {
 
   Logger.log('✅ Past deadline handling test passed');
 }
+
+/* --------------------= COLUMN CONSTANTS TESTS --------------------= */
+
+/**
+ * Test: MEMBER_COLS constants are properly defined
+ */
+function testMemberColsConstants() {
+  // Verify all required columns exist
+  const requiredCols = [
+    'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'JOB_TITLE', 'WORK_LOCATION',
+    'UNIT', 'OFFICE_DAYS', 'EMAIL', 'PHONE', 'IS_STEWARD', 'COMMITTEES',
+    'SUPERVISOR', 'MANAGER', 'ASSIGNED_STEWARD', 'HAS_OPEN_GRIEVANCE',
+    'GRIEVANCE_STATUS', 'NEXT_DEADLINE'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof MEMBER_COLS[col] === 'number',
+      `MEMBER_COLS.${col} should be defined as a number`
+    );
+    Assert.assertTrue(
+      MEMBER_COLS[col] >= 1,
+      `MEMBER_COLS.${col} should be >= 1 (1-indexed)`
+    );
+  });
+
+  // Verify column ordering (first columns should be in expected order)
+  Assert.assertEquals(1, MEMBER_COLS.MEMBER_ID, 'MEMBER_ID should be column 1');
+  Assert.assertEquals(2, MEMBER_COLS.FIRST_NAME, 'FIRST_NAME should be column 2');
+  Assert.assertEquals(3, MEMBER_COLS.LAST_NAME, 'LAST_NAME should be column 3');
+  Assert.assertEquals(8, MEMBER_COLS.EMAIL, 'EMAIL should be column 8');
+  Assert.assertEquals(9, MEMBER_COLS.PHONE, 'PHONE should be column 9');
+
+  Logger.log('✅ MEMBER_COLS constants test passed');
+}
+
+/**
+ * Test: GRIEVANCE_COLS constants are properly defined
+ */
+function testGrievanceColsConstants() {
+  // Verify all required columns exist
+  const requiredCols = [
+    'GRIEVANCE_ID', 'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'STATUS',
+    'CURRENT_STEP', 'INCIDENT_DATE', 'FILING_DEADLINE', 'DATE_FILED',
+    'DATE_CLOSED', 'DAYS_OPEN', 'NEXT_ACTION_DUE', 'DAYS_TO_DEADLINE',
+    'ISSUE_CATEGORY', 'MEMBER_EMAIL', 'LOCATION', 'STEWARD', 'RESOLUTION'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof GRIEVANCE_COLS[col] === 'number',
+      `GRIEVANCE_COLS.${col} should be defined as a number`
+    );
+    Assert.assertTrue(
+      GRIEVANCE_COLS[col] >= 1,
+      `GRIEVANCE_COLS.${col} should be >= 1 (1-indexed)`
+    );
+  });
+
+  // Verify key column positions
+  Assert.assertEquals(1, GRIEVANCE_COLS.GRIEVANCE_ID, 'GRIEVANCE_ID should be column 1');
+  Assert.assertEquals(5, GRIEVANCE_COLS.STATUS, 'STATUS should be column 5');
+  Assert.assertEquals(9, GRIEVANCE_COLS.DATE_FILED, 'DATE_FILED should be column 9');
+  Assert.assertEquals(18, GRIEVANCE_COLS.DATE_CLOSED, 'DATE_CLOSED should be column 18');
+  Assert.assertEquals(27, GRIEVANCE_COLS.STEWARD, 'STEWARD should be column 27');
+
+  Logger.log('✅ GRIEVANCE_COLS constants test passed');
+}
+
+/**
+ * Test: CONFIG_COLS constants are properly defined
+ */
+function testConfigColsConstants() {
+  // Verify key config columns exist
+  const requiredCols = [
+    'JOB_TITLES', 'OFFICE_LOCATIONS', 'UNITS', 'STEWARDS',
+    'GRIEVANCE_STATUS', 'GRIEVANCE_STEP', 'ISSUE_CATEGORY'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof CONFIG_COLS[col] === 'number',
+      `CONFIG_COLS.${col} should be defined as a number`
+    );
+  });
+
+  Logger.log('✅ CONFIG_COLS constants test passed');
+}
+
+/**
+ * Test: Internal schema constants are properly defined
+ */
+function testInternalSchemaConstants() {
+  // Test AUDIT_LOG_COLS
+  Assert.assertTrue(typeof AUDIT_LOG_COLS === 'object', 'AUDIT_LOG_COLS should be defined');
+  Assert.assertEquals(1, AUDIT_LOG_COLS.TIMESTAMP, 'AUDIT_LOG_COLS.TIMESTAMP should be 1');
+  Assert.assertEquals(4, AUDIT_LOG_COLS.ACTION, 'AUDIT_LOG_COLS.ACTION should be 4');
+
+  // Test FAQ_COLS
+  Assert.assertTrue(typeof FAQ_COLS === 'object', 'FAQ_COLS should be defined');
+  Assert.assertEquals(1, FAQ_COLS.ID, 'FAQ_COLS.ID should be 1');
+  Assert.assertEquals(3, FAQ_COLS.QUESTION, 'FAQ_COLS.QUESTION should be 3');
+  Assert.assertEquals(4, FAQ_COLS.ANSWER, 'FAQ_COLS.ANSWER should be 4');
+
+  // Test ERROR_LOG_COLS
+  Assert.assertTrue(typeof ERROR_LOG_COLS === 'object', 'ERROR_LOG_COLS should be defined');
+  Assert.assertEquals(1, ERROR_LOG_COLS.TIMESTAMP, 'ERROR_LOG_COLS.TIMESTAMP should be 1');
+  Assert.assertEquals(2, ERROR_LOG_COLS.LEVEL, 'ERROR_LOG_COLS.LEVEL should be 2');
+
+  Logger.log('✅ Internal schema constants test passed');
+}
+
+/**
+ * Test: SHEETS constants match expected sheet names
+ */
+function testSheetsConstants() {
+  // Verify core sheets are defined
+  Assert.assertEquals('Config', SHEETS.CONFIG, 'SHEETS.CONFIG should be "Config"');
+  Assert.assertEquals('Member Directory', SHEETS.MEMBER_DIR, 'SHEETS.MEMBER_DIR should be "Member Directory"');
+  Assert.assertEquals('Grievance Log', SHEETS.GRIEVANCE_LOG, 'SHEETS.GRIEVANCE_LOG should be "Grievance Log"');
+  Assert.assertEquals('Dashboard', SHEETS.DASHBOARD, 'SHEETS.DASHBOARD should be "Dashboard"');
+
+  // Verify internal system sheets are defined
+  Assert.assertTrue(typeof SHEETS.AUDIT_LOG === 'string', 'SHEETS.AUDIT_LOG should be defined');
+  Assert.assertTrue(typeof SHEETS.FAQ_DATABASE === 'string', 'SHEETS.FAQ_DATABASE should be defined');
+  Assert.assertTrue(typeof SHEETS.ERROR_LOG === 'string', 'SHEETS.ERROR_LOG should be defined');
+
+  Logger.log('✅ SHEETS constants test passed');
+}
+
+/**
+ * Test: Column letter conversion utility
+ */
+function testColumnLetterConversion() {
+  // Test getColumnLetter
+  Assert.assertEquals('A', getColumnLetter(1), 'Column 1 should be A');
+  Assert.assertEquals('B', getColumnLetter(2), 'Column 2 should be B');
+  Assert.assertEquals('Z', getColumnLetter(26), 'Column 26 should be Z');
+  Assert.assertEquals('AA', getColumnLetter(27), 'Column 27 should be AA');
+  Assert.assertEquals('AB', getColumnLetter(28), 'Column 28 should be AB');
+
+  // Test getColumnNumber
+  Assert.assertEquals(1, getColumnNumber('A'), 'A should be column 1');
+  Assert.assertEquals(26, getColumnNumber('Z'), 'Z should be column 26');
+  Assert.assertEquals(27, getColumnNumber('AA'), 'AA should be column 27');
+
+  Logger.log('✅ Column letter conversion test passed');
+}
+
+/**
+ * Test: Column constants are used correctly (no off-by-one errors)
+ */
+function testColumnIndexing() {
+  // Verify that constants are 1-indexed (for spreadsheet columns)
+  // and that array access uses [CONSTANT - 1]
+
+  // Simulate a row of data
+  const mockRow = ['ID', 'First', 'Last', 'Title', 'Location'];
+
+  // Access using constant pattern (constant - 1 for 0-indexed array)
+  const firstElement = mockRow[1 - 1]; // Should be 'ID'
+  const secondElement = mockRow[2 - 1]; // Should be 'First'
+
+  Assert.assertEquals('ID', firstElement, 'First element accessed with [1-1] should be ID');
+  Assert.assertEquals('First', secondElement, 'Second element accessed with [2-1] should be First');
+
+  // Verify MEMBER_COLS pattern works
+  const mockMemberRow = new Array(31).fill('').map((_, i) => `col${i}`);
+  mockMemberRow[MEMBER_COLS.MEMBER_ID - 1] = 'M000001';
+  mockMemberRow[MEMBER_COLS.EMAIL - 1] = 'test@union.org';
+
+  Assert.assertEquals('M000001', mockMemberRow[MEMBER_COLS.MEMBER_ID - 1], 'MEMBER_ID access should work');
+  Assert.assertEquals('test@union.org', mockMemberRow[MEMBER_COLS.EMAIL - 1], 'EMAIL access should work');
+
+  Logger.log('✅ Column indexing test passed');
+}
+
+/**
+ * Run all column constant tests
+ */
+function runColumnConstantTests() {
+  Logger.log('=== Running Column Constant Tests ===');
+
+  testMemberColsConstants();
+  testGrievanceColsConstants();
+  testConfigColsConstants();
+  testInternalSchemaConstants();
+  testSheetsConstants();
+  testColumnLetterConversion();
+  testColumnIndexing();
+
+  Logger.log('=== All Column Constant Tests Passed ===');
+}

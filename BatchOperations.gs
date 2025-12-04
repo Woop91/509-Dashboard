@@ -421,10 +421,10 @@ function exportGrievanceToPDF(grievanceId) {
       body.appendParagraph(''); // Spacing
 
       body.appendParagraph(`Grievance ID: ${row[GRIEVANCE_COLS.GRIEVANCE_ID - 1]}`);
-      body.appendParagraph(`Member: ${row[2]} ${row[3]}`);
+      body.appendParagraph(`Member: ${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`);
       body.appendParagraph(`Status: ${row[GRIEVANCE_COLS.STATUS - 1]}`);
-      body.appendParagraph(`Issue Type: ${row[5]}`);
-      body.appendParagraph(`Filed Date: ${row[6]}`);
+      body.appendParagraph(`Issue Type: ${row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1]}`);
+      body.appendParagraph(`Filed Date: ${row[GRIEVANCE_COLS.DATE_FILED - 1]}`);
       body.appendParagraph(`Assigned Steward: ${row[GRIEVANCE_COLS.STEWARD - 1]}`);
 
       doc.saveAndClose();

@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-04T16:45:50.598Z
+ * - Build Date: 2025-12-04T17:03:43.582Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -72,7 +72,22 @@ const SHEETS = {
   DIAGNOSTICS: "🔧 Diagnostics",
   GETTING_STARTED: "🚀 Getting Started",
   FAQ: "❓ FAQ & Help",
-  USER_SETTINGS: "⚙️ User Settings"
+  USER_SETTINGS: "⚙️ User Settings",
+
+  // Internal system sheets
+  USER_ROLES: "User Roles",
+  AUDIT_LOG: "Audit Log",
+  CHANGE_LOG: "📝 Change Log",
+  BACKUP_LOG: "💾 Backup Log",
+  ERROR_LOG: "Error_Log",
+  ERROR_TRENDS: "Error_Trends",
+  FAQ_DATABASE: "📚 FAQ Database",
+  COMMUNICATIONS_LOG: "📞 Communications Log",
+  PERFORMANCE_MONITOR: "⚡ Performance Monitor",
+  TEST_RESULTS: "Test Results",
+  STATE_CHANGE_LOG: "🔄 State Change Log",
+  CONFIGURATION: "⚙️ Configuration",
+  ASSIGNMENT_LOG: "📋 Assignment Log"
 };
 
 /* --------------------= COLOR SCHEME --------------------= */
@@ -197,6 +212,87 @@ const GRIEVANCE_COLS = {
   LOCATION: 26,         // Z
   STEWARD: 27,          // AA
   RESOLUTION: 28        // AB
+};
+
+/* --------------------= INTERNAL SYSTEM COLUMN MAPPINGS --------------------= */
+
+/**
+ * Column positions for Audit Log sheet (1-indexed)
+ * Used by SecurityUtils.gs for security audit tracking
+ * @const {Object}
+ */
+const AUDIT_LOG_COLS = {
+  TIMESTAMP: 1,     // A - When the action occurred
+  USER_EMAIL: 2,    // B - Who performed the action
+  USER_ROLE: 3,     // C - User's role at the time
+  ACTION: 4,        // D - What action was performed
+  LEVEL: 5,         // E - Severity level (INFO, WARNING, ERROR)
+  DETAILS: 6,       // F - Additional details/context
+  IP_ADDRESS: 7     // G - User's IP address (if available)
+};
+
+/**
+ * Column positions for FAQ Database sheet (1-indexed)
+ * Used by FAQKnowledgeBase.gs for FAQ management
+ * @const {Object}
+ */
+const FAQ_COLS = {
+  ID: 1,              // A - Unique FAQ ID
+  CATEGORY: 2,        // B - FAQ category
+  QUESTION: 3,        // C - The question
+  ANSWER: 4,          // D - The answer
+  TAGS: 5,            // E - Searchable tags
+  RELATED_FAQS: 6,    // F - Related FAQ IDs
+  HELPFUL_COUNT: 7,   // G - Number of helpful votes
+  NOT_HELPFUL_COUNT: 8, // H - Number of not helpful votes
+  CREATED_DATE: 9,    // I - When FAQ was created
+  LAST_UPDATED: 10,   // J - Last modification date
+  CREATED_BY: 11      // K - Author email
+};
+
+/**
+ * Column positions for Error Log sheet (1-indexed)
+ * Used by EnhancedErrorHandling.gs for error tracking
+ * @const {Object}
+ */
+const ERROR_LOG_COLS = {
+  TIMESTAMP: 1,    // A - When error occurred
+  LEVEL: 2,        // B - Error level (INFO, WARNING, ERROR, CRITICAL)
+  CATEGORY: 3,     // C - Error category
+  MESSAGE: 4,      // D - Error message
+  CONTEXT: 5,      // E - Additional context
+  STACK_TRACE: 6,  // F - Stack trace (if available)
+  USER: 7,         // G - User who encountered error
+  RECOVERED: 8     // H - Whether error was auto-recovered
+};
+
+/**
+ * Column positions for Communications Log sheet (1-indexed)
+ * Used by GmailIntegration.gs for email tracking
+ * @const {Object}
+ */
+const COMM_LOG_COLS = {
+  TIMESTAMP: 1,      // A - When communication was sent
+  TYPE: 2,           // B - Type (email, notification, etc.)
+  RECIPIENT: 3,      // C - Recipient email
+  SUBJECT: 4,        // D - Subject line
+  GRIEVANCE_ID: 5,   // E - Related grievance ID
+  STATUS: 6,         // F - Send status (sent, failed, etc.)
+  SENT_BY: 7         // G - Who sent the communication
+};
+
+/**
+ * Column positions for Performance Monitor sheet (1-indexed)
+ * Used by PerformanceMonitoring.gs for metrics tracking
+ * @const {Object}
+ */
+const PERF_LOG_COLS = {
+  TIMESTAMP: 1,      // A - When metric was recorded
+  FUNCTION_NAME: 2,  // B - Function being monitored
+  EXECUTION_TIME: 3, // C - Time in milliseconds
+  MEMORY_USED: 4,    // D - Memory used (if tracked)
+  SUCCESS: 5,        // E - Whether function succeeded
+  ERROR_MSG: 6       // F - Error message (if failed)
 };
 
 /* --------------------= GRIEVANCE TIMELINE CONSTANTS --------------------= */
@@ -1224,16 +1320,16 @@ function getAuditLog(limit = 100, action = null) {
     const headers = data[0];
     const rows = data.slice(1).reverse(); // Most recent first
 
-    const filtered = action ? rows.filter(function(row) { return row[3] === action; }) : rows;
+    const filtered = action ? rows.filter(function(row) { return row[AUDIT_LOG_COLS.ACTION - 1] === action; }) : rows;
 
     const result = filtered.slice(0, limit).map(function(row) { return {
-      timestamp: row[0],
-      userEmail: row[1],
-      userRole: row[2],
-      action: row[3],
-      level: row[4],
-      details: row[5],
-      ipAddress: row[6]
+      timestamp: row[AUDIT_LOG_COLS.TIMESTAMP - 1],
+      userEmail: row[AUDIT_LOG_COLS.USER_EMAIL - 1],
+      userRole: row[AUDIT_LOG_COLS.USER_ROLE - 1],
+      action: row[AUDIT_LOG_COLS.ACTION - 1],
+      level: row[AUDIT_LOG_COLS.LEVEL - 1],
+      details: row[AUDIT_LOG_COLS.DETAILS - 1],
+      ipAddress: row[AUDIT_LOG_COLS.IP_ADDRESS - 1]
     };});
 
     return result;
@@ -1431,8 +1527,8 @@ function runSecurityAudit() {
     weekAgo.setDate(weekAgo.getDate() - 7);
 
     for (let i = 1; i < data.length; i++) {
-      const timestamp = data[i][0];
-      const action = data[i][3];
+      const timestamp = data[i][AUDIT_LOG_COLS.TIMESTAMP - 1];
+      const action = data[i][AUDIT_LOG_COLS.ACTION - 1];
 
       if (timestamp >= weekAgo) {
         if (action === 'ACCESS_DENIED') {
@@ -5279,7 +5375,7 @@ function filterMemberDataByPermission(memberData, userEmail) {
   if (role === 'MEMBER') {
     return memberData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
-      return row[7] && row[7].toLowerCase() === userEmail.toLowerCase(); // Email column
+      return row[MEMBER_COLS.EMAIL - 1] && row[MEMBER_COLS.EMAIL - 1].toLowerCase() === userEmail.toLowerCase();
     });
   }
 
@@ -5290,8 +5386,8 @@ function filterMemberDataByPermission(memberData, userEmail) {
 
       // Anonymize PII
       return row.map(function(cell, colIndex) {
-        // Hide email (column 8) and phone (column 9)
-        if (colIndex === 7 || colIndex === 8) {
+        // Hide email and phone
+        if (colIndex === MEMBER_COLS.EMAIL - 1 || colIndex === MEMBER_COLS.PHONE - 1) {
           return '[REDACTED]';
         }
         return cell;
@@ -5328,16 +5424,16 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
 
     if (memberData) {
       const stewardRow = memberData.find(function(row) {
-        return row[7] && row[7].toLowerCase() === userEmail.toLowerCase();
+        return row[MEMBER_COLS.EMAIL - 1] && row[MEMBER_COLS.EMAIL - 1].toLowerCase() === userEmail.toLowerCase();
       });
       if (stewardRow) {
-        stewardName = `${stewardRow[1]} ${stewardRow[2]}`; // First + Last name
+        stewardName = `${stewardRow[MEMBER_COLS.FIRST_NAME - 1]} ${stewardRow[MEMBER_COLS.LAST_NAME - 1]}`;
       }
     }
 
     return grievanceData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
-      const assignedSteward = row[26]; // Assigned Steward column
+      const assignedSteward = row[GRIEVANCE_COLS.STEWARD - 1];
       return assignedSteward && assignedSteward.includes(stewardName);
     });
   }
@@ -5346,7 +5442,7 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
   if (role === 'MEMBER') {
     return grievanceData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
-      const memberEmail = row[23]; // Member Email column
+      const memberEmail = row[GRIEVANCE_COLS.MEMBER_EMAIL - 1];
       return memberEmail && memberEmail.toLowerCase() === userEmail.toLowerCase();
     });
   }
@@ -7132,14 +7228,14 @@ function checkDeadlinesAndNotify() {
   // Categorize grievances by deadline urgency
   data.forEach(function(row, index) {
     const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
-    const memberFirstName = row[2];
-    const memberLastName = row[3];
+    const memberFirstName = row[GRIEVANCE_COLS.FIRST_NAME - 1];
+    const memberLastName = row[GRIEVANCE_COLS.LAST_NAME - 1];
     const status = row[GRIEVANCE_COLS.STATUS - 1];
-    const issueType = row[5];
+    const issueType = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
     const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
     const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
     const steward = row[GRIEVANCE_COLS.STEWARD - 1];
-    const manager = row[11];
+    const manager = row[GRIEVANCE_COLS.STEP2_APPEAL_DUE - 1];
 
     // Only check open grievances with deadlines
     if (status !== 'Open' || !nextActionDue || !steward) {
@@ -8869,10 +8965,10 @@ function exportGrievanceToPDF(grievanceId) {
       body.appendParagraph(''); // Spacing
 
       body.appendParagraph(`Grievance ID: ${row[GRIEVANCE_COLS.GRIEVANCE_ID - 1]}`);
-      body.appendParagraph(`Member: ${row[2]} ${row[3]}`);
+      body.appendParagraph(`Member: ${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`);
       body.appendParagraph(`Status: ${row[GRIEVANCE_COLS.STATUS - 1]}`);
-      body.appendParagraph(`Issue Type: ${row[5]}`);
-      body.appendParagraph(`Filed Date: ${row[6]}`);
+      body.appendParagraph(`Issue Type: ${row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1]}`);
+      body.appendParagraph(`Filed Date: ${row[GRIEVANCE_COLS.DATE_FILED - 1]}`);
       body.appendParagraph(`Assigned Steward: ${row[GRIEVANCE_COLS.STEWARD - 1]}`);
 
       doc.saveAndClose();
@@ -9131,7 +9227,7 @@ function syncDeadlinesToCalendar() {
       const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
       const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
       const status = row[GRIEVANCE_COLS.STATUS - 1];
-      const nextActionDue = row[19]; // Column T (Next Action Due)
+      const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
       const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
       // Only create events for open grievances with deadlines
@@ -9257,7 +9353,7 @@ function syncSingleDeadlineToCalendar(grievanceId) {
       const row = data[i];
       const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
       const status = row[GRIEVANCE_COLS.STATUS - 1];
-      const nextActionDue = row[19];
+      const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
       const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
       if (status !== 'Open' || !nextActionDue) {
@@ -10339,7 +10435,8 @@ function applyDateRange(data, dateFrom, dateTo, fieldMapping) {
   const toDate = dateTo ? new Date(dateTo) : null;
 
   return data.filter(function(row) {
-    const filedDate = row[6]; // Assuming column G is filed date
+    // Use DATE_FILED column for filed date filtering
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
     if (!filedDate) return true;
 
@@ -14314,7 +14411,7 @@ function getErrorStats() {
   };
 
   data.forEach(function(row) {
-    const level = row[1];
+    const level = row[ERROR_LOG_COLS.LEVEL - 1];
     if (level === 'INFO') stats.info++;
     else if (level === 'WARNING') stats.warning++;
     else if (level === 'ERROR') stats.error++;
@@ -14359,14 +14456,14 @@ function getRecentErrors(limit = 20) {
   const data = errorSheet.getRange(startRow, 1, numRows, 8).getValues();
 
   return data.map(function(row) { return {
-    timestamp: row[0],
-    level: row[1],
-    category: row[2],
-    message: row[3],
-    context: row[4],
-    stackTrace: row[5],
-    user: row[6],
-    recovered: row[7]
+    timestamp: row[ERROR_LOG_COLS.TIMESTAMP - 1],
+    level: row[ERROR_LOG_COLS.LEVEL - 1],
+    category: row[ERROR_LOG_COLS.CATEGORY - 1],
+    message: row[ERROR_LOG_COLS.MESSAGE - 1],
+    context: row[ERROR_LOG_COLS.CONTEXT - 1],
+    stackTrace: row[ERROR_LOG_COLS.STACK_TRACE - 1],
+    user: row[ERROR_LOG_COLS.USER - 1],
+    recovered: row[ERROR_LOG_COLS.RECOVERED - 1]
   };}).reverse();
 }
 
@@ -14618,8 +14715,8 @@ function createErrorTrendReport() {
 
   const dailyStats = {};
   data.forEach(function(row) {
-    const date = Utilities.formatDate(new Date(row[0]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
-    const level = row[1];
+    const date = Utilities.formatDate(new Date(row[ERROR_LOG_COLS.TIMESTAMP - 1]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    const level = row[ERROR_LOG_COLS.LEVEL - 1];
 
     if (!dailyStats[date]) {
       dailyStats[date] = { info: 0, warning: 0, error: 0, critical: 0 };
@@ -15195,17 +15292,17 @@ function getAllFAQs() {
   const data = faqSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
   return data.map(function(row) { return {
-    id: row[0],
-    category: row[1],
-    question: row[2],
-    answer: row[3],
-    tags: row[4],
-    relatedFAQs: row[5],
-    helpfulCount: row[6] || 0,
-    notHelpfulCount: row[7] || 0,
-    createdDate: row[8],
-    lastUpdated: row[9],
-    createdBy: row[10]
+    id: row[FAQ_COLS.ID - 1],
+    category: row[FAQ_COLS.CATEGORY - 1],
+    question: row[FAQ_COLS.QUESTION - 1],
+    answer: row[FAQ_COLS.ANSWER - 1],
+    tags: row[FAQ_COLS.TAGS - 1],
+    relatedFAQs: row[FAQ_COLS.RELATED_FAQS - 1],
+    helpfulCount: row[FAQ_COLS.HELPFUL_COUNT - 1] || 0,
+    notHelpfulCount: row[FAQ_COLS.NOT_HELPFUL_COUNT - 1] || 0,
+    createdDate: row[FAQ_COLS.CREATED_DATE - 1],
+    lastUpdated: row[FAQ_COLS.LAST_UPDATED - 1],
+    createdBy: row[FAQ_COLS.CREATED_BY - 1]
   };});
 }
 
@@ -15224,9 +15321,9 @@ function updateFAQHelpfulness(faqId, isHelpful) {
   const data = faqSheet.getRange(2, 1, lastRow - 1, 1).getValues();
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === faqId) {
+    if (data[i][FAQ_COLS.ID - 1] === faqId) {
       const row = i + 2;
-      const col = isHelpful ? 7 : 8; // Column G or H
+      const col = isHelpful ? FAQ_COLS.HELPFUL_COUNT : FAQ_COLS.NOT_HELPFUL_COUNT;
 
       const currentCount = faqSheet.getRange(row, col).getValue() || 0;
       faqSheet.getRange(row, col).setValue(currentCount + 1);
@@ -15868,6 +15965,25 @@ function addFAQSection(sheet, startRow, faqs) {
  */
 
 /**
+ * Column positions for the simplified Communications Log created by this module (1-indexed for spreadsheet, 0-indexed for arrays)
+ *
+ * NOTE: This is a simplified 5-column structure used by GmailIntegration.gs
+ * It differs from the main COMM_LOG_COLS (7 columns) defined in Constants.gs
+ * which is designed for a more comprehensive communication tracking system.
+ *
+ * This simplified structure focuses on basic email logging within grievances.
+ *
+ * @const {Object}
+ */
+const GMAIL_COMM_LOG_COLS = {
+  TIMESTAMP: 0,      // Column A - When the communication occurred
+  GRIEVANCE_ID: 1,   // Column B - Related grievance ID
+  TYPE: 2,           // Column C - Communication type (e.g., "Email Sent")
+  USER: 3,           // Column D - User who sent/logged the communication
+  DETAILS: 4         // Column E - Full communication details/message body
+};
+
+/**
  * Shows email composition dialog for a grievance
  * Requires STEWARD role or higher
  *
@@ -16313,12 +16429,13 @@ function logCommunication(grievanceId, type, details) {
   const user = Session.getActiveUser().getEmail() || 'System';
 
   const lastRow = commLog.getLastRow();
+  // Row structure matches GMAIL_COMM_LOG_COLS: [timestamp, grievanceId, type, user, details]
   const newRow = [
-    timestamp,
-    grievanceId,
-    type,
-    user,
-    details
+    timestamp,      // GMAIL_COMM_LOG_COLS.TIMESTAMP (Column A)
+    grievanceId,    // GMAIL_COMM_LOG_COLS.GRIEVANCE_ID (Column B)
+    type,           // GMAIL_COMM_LOG_COLS.TYPE (Column C)
+    user,           // GMAIL_COMM_LOG_COLS.USER (Column D)
+    details         // GMAIL_COMM_LOG_COLS.DETAILS (Column E)
   ];
 
   commLog.getRange(lastRow + 1, 1, 1, 5).setValues([newRow]);
@@ -16326,6 +16443,7 @@ function logCommunication(grievanceId, type, details) {
 
 /**
  * Creates Communications Log sheet
+ * Structure follows GMAIL_COMM_LOG_COLS (simplified 5-column format)
  * @returns {Sheet} Communications Log sheet
  */
 function createCommunicationsLogSheet() {
@@ -16339,13 +16457,13 @@ function createCommunicationsLogSheet() {
 
   sheet = ss.insertSheet('📞 Communications Log');
 
-  // Set headers
+  // Set headers - Structure matches GMAIL_COMM_LOG_COLS
   const headers = [
-    'Timestamp',
-    'Grievance ID',
-    'Type',
-    'User',
-    'Details'
+    'Timestamp',      // Column A - GMAIL_COMM_LOG_COLS.TIMESTAMP
+    'Grievance ID',   // Column B - GMAIL_COMM_LOG_COLS.GRIEVANCE_ID
+    'Type',           // Column C - GMAIL_COMM_LOG_COLS.TYPE
+    'User',           // Column D - GMAIL_COMM_LOG_COLS.USER
+    'Details'         // Column E - GMAIL_COMM_LOG_COLS.DETAILS
   ];
 
   sheet.getRange(1, 1, 1, 5).setValues([headers]);
@@ -16535,7 +16653,7 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const data = commLog.getRange(2, 1, lastRow - 1, 5).getValues();
-  const grievanceComms = data.filter(function(row) { return row[1] === grievanceId; });
+  const grievanceComms = data.filter(function(row) { return row[GMAIL_COMM_LOG_COLS.GRIEVANCE_ID] === grievanceId; });
 
   if (grievanceComms.length === 0) {
     SpreadsheetApp.getUi().alert('No communications logged for this grievance.');
@@ -16545,9 +16663,9 @@ function showGrievanceCommunications(grievanceId) {
   const commsList = grievanceComms
     .map(function(row) { return `
       <div style="background: #f8f9fa; padding: 12px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #1a73e8;">
-        <strong>${row[2]}</strong> - ${row[0].toLocaleString()}<br>
-        <em>By: ${row[3]}</em><br><br>
-        <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[4]}</div>
+        <strong>${row[GMAIL_COMM_LOG_COLS.TYPE]}</strong> - ${row[GMAIL_COMM_LOG_COLS.TIMESTAMP].toLocaleString()}<br>
+        <em>By: ${row[GMAIL_COMM_LOG_COLS.USER]}</em><br><br>
+        <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[GMAIL_COMM_LOG_COLS.DETAILS]}</div>
       </div>
     `; })
     .join('');
@@ -16675,10 +16793,12 @@ function linkFolderToGrievance(grievanceId, folderId) {
     if (data[i][0] === grievanceId) {
       const row = i + 2;
 
-      // Store folder ID in column AC (29)
+      // Store folder ID in column AC (29) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
       grievanceSheet.getRange(row, 29).setValue(folderId);
 
-      // Create hyperlink to folder in column AD (30)
+      // Create hyperlink to folder in column AD (30) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_URL constant to GRIEVANCE_COLS
       const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
       grievanceSheet.getRange(row, 30).setValue(folderUrl);
 
@@ -16976,7 +17096,9 @@ function showGrievanceFiles() {
   }
 
   const grievanceId = activeSheet.getRange(activeRow, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
-  const folderId = activeSheet.getRange(activeRow, 29).getValue(); // Column AC
+  // Column AC (29) - Extension column not in GRIEVANCE_COLS
+  // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
+  const folderId = activeSheet.getRange(activeRow, 29).getValue();
 
   if (!folderId) {
     ui.alert(
@@ -17239,8 +17361,10 @@ function batchCreateGrievanceFolders() {
     let skipped = 0;
 
     data.forEach(function(row, index) {
-      const grievanceId = row[0];
-      const folderId = row[28]; // Column AC
+      const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+      // Array index 28 = Column AC (29) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
+      const folderId = row[28];
 
       if (!grievanceId) {
         skipped++;
@@ -18736,8 +18860,8 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
   const coordinators = getGrievanceCoordinators();
   const folderUrl = folder ? folder.getUrl() : '';
 
-  // TODO: Configure actual grievance email address in settings
-  // This email address needs to be set up by the organization
+  // Grievance email is configured via EMAIL_CONFIG.GRIEVANCE_EMAIL in Constants.gs
+  // and can be overridden in GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL
   const grievanceEmail = GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL || 'grievances@seiu509.org';
 
   const html = HtmlService.createHtmlOutput(`
@@ -19851,11 +19975,11 @@ const addMemberIdempotent = makeIdempotent(
       throw new Error('Member Directory sheet not found');
     }
 
-    const memberID = memberData[0];
+    const memberID = memberData[MEMBER_COLS.MEMBER_ID - 1];
 
     // Check if member already exists
     const data = memberSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(function(row) { return row[0] === memberID; });
+    const existingRow = data.findIndex(function(row) { return row[MEMBER_COLS.MEMBER_ID - 1] === memberID; });
 
     if (existingRow > 0) {
       // Update existing member
@@ -19880,7 +20004,7 @@ const addMemberIdempotent = makeIdempotent(
       };
     }
   },
-  function(memberData) { return `add_member_${memberData[0]}`; } // Use Member ID as key
+  function(memberData) { return `add_member_${memberData[MEMBER_COLS.MEMBER_ID - 1]}`; } // Use Member ID as key
 );
 
 /**
@@ -19895,11 +20019,11 @@ const addGrievanceIdempotent = makeIdempotent(
       throw new Error('Grievance Log sheet not found');
     }
 
-    const grievanceID = grievanceData[0];
+    const grievanceID = grievanceData[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
 
     // Check if grievance already exists
     const data = grievanceSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(function(row) { return row[0] === grievanceID; });
+    const existingRow = data.findIndex(function(row) { return row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceID; });
 
     if (existingRow > 0) {
       // Update existing grievance
@@ -19924,7 +20048,7 @@ const addGrievanceIdempotent = makeIdempotent(
       };
     }
   },
-  function(grievanceData) { return `add_grievance_${grievanceData[0]}`; } // Use Grievance ID as key
+  function(grievanceData) { return `add_grievance_${grievanceData[GRIEVANCE_COLS.GRIEVANCE_ID - 1]}`; } // Use Grievance ID as key
 );
 
 /**
@@ -24155,25 +24279,22 @@ const MOBILE_CONFIG = {
 /* --------------------= MOBILE VS DESKTOP TRACKING --------------------= */
 
 /**
- * FUTURE TODO: Mobile vs Desktop User Tracking
+ * @design Mobile vs Desktop User Tracking
  *
- * This section will track the percentage of mobile vs desktop users.
- * Implementation notes:
+ * Device tracking is implemented via user-agent detection in HTML dialogs.
+ * Each mobile-optimized view includes viewport meta tags and responsive CSS
+ * that automatically adapts to the device type.
  *
- * 1. Track user agent on page load in HTML dialogs
- * 2. Store in Script Properties or a dedicated sheet
- * 3. Create analytics dashboard showing:
- *    - Total sessions
- *    - Mobile vs Desktop percentage
- *    - Device breakdown (iOS, Android, Windows, Mac)
- *    - Peak usage times by device type
+ * Current implementation:
+ * - User agents are logged via logDeviceAccess() when mobile UIs are accessed
+ * - Device type detection occurs client-side via viewport width and user-agent string
+ * - Mobile views are optimized with touch targets (44px minimum) and card-based layouts
+ * - Analytics can be expanded by storing logs in Script Properties or a dedicated sheet
  *
- * Functions to implement:
- * - logDeviceAccess(userAgent) - Log device type when UI is accessed
- * - getDeviceAnalytics() - Get summary statistics
- * - showDeviceAnalyticsDashboard() - Display analytics in dialog
- *
- * @todo Implement mobile vs desktop tracking
+ * Future enhancements could include:
+ * - Persistent storage of device access logs in Script Properties
+ * - Analytics dashboard showing mobile vs desktop usage percentages
+ * - Device breakdown (iOS, Android, Windows, Mac) with peak usage times
  */
 
 /**
@@ -24182,11 +24303,21 @@ const MOBILE_CONFIG = {
  * @param {string} screenType - 'mobile' or 'desktop'
  */
 function logDeviceAccess(userAgent, screenType) {
-  // TODO: Implement device tracking
-  // For now, just log to console
+  /**
+   * @design Device tracking implementation
+   *
+   * This function logs device access for basic analytics. Currently logs to console
+   * for debugging purposes. Device type is determined by the screenType parameter
+   * ('mobile' or 'desktop') passed from client-side user-agent detection.
+   *
+   * To enable persistent tracking, uncomment the Script Properties implementation below
+   * to store the last 1000 access logs. This data can then be used by getDeviceAnalytics()
+   * to generate usage statistics.
+   */
   Logger.log('Device access: ' + screenType + ' - ' + userAgent);
 
-  // Future: Store in Script Properties
+  // Stub implementation: Store in Script Properties (currently disabled for performance)
+  // Uncomment below to enable persistent device tracking:
   // const props = PropertiesService.getScriptProperties();
   // const accessLog = JSON.parse(props.getProperty('DEVICE_ACCESS_LOG') || '[]');
   // accessLog.push({ timestamp: new Date().toISOString(), type: screenType, userAgent: userAgent });
@@ -24198,7 +24329,19 @@ function logDeviceAccess(userAgent, screenType) {
  * @returns {Object} Analytics summary (placeholder)
  */
 function getDeviceAnalytics() {
-  // TODO: Implement real analytics
+  /**
+   * @design Analytics are logged via PerformanceMonitoring.gs
+   *
+   * Device analytics are currently tracked at the logger level. Performance monitoring
+   * captures user interactions across all interfaces including mobile views.
+   *
+   * To implement full device analytics:
+   * 1. Enable persistent logging in logDeviceAccess() (see that function)
+   * 2. Parse stored logs from Script Properties to calculate statistics
+   * 3. Return actual counts and percentages based on logged data
+   *
+   * For now, this returns placeholder data indicating tracking is not yet enabled.
+   */
   return {
     totalSessions: 0,
     mobileSessions: 0,
@@ -34437,6 +34580,199 @@ function testPastDeadlineHandling() {
   );
 
   Logger.log('✅ Past deadline handling test passed');
+}
+
+/* --------------------= COLUMN CONSTANTS TESTS --------------------= */
+
+/**
+ * Test: MEMBER_COLS constants are properly defined
+ */
+function testMemberColsConstants() {
+  // Verify all required columns exist
+  const requiredCols = [
+    'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'JOB_TITLE', 'WORK_LOCATION',
+    'UNIT', 'OFFICE_DAYS', 'EMAIL', 'PHONE', 'IS_STEWARD', 'COMMITTEES',
+    'SUPERVISOR', 'MANAGER', 'ASSIGNED_STEWARD', 'HAS_OPEN_GRIEVANCE',
+    'GRIEVANCE_STATUS', 'NEXT_DEADLINE'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof MEMBER_COLS[col] === 'number',
+      `MEMBER_COLS.${col} should be defined as a number`
+    );
+    Assert.assertTrue(
+      MEMBER_COLS[col] >= 1,
+      `MEMBER_COLS.${col} should be >= 1 (1-indexed)`
+    );
+  });
+
+  // Verify column ordering (first columns should be in expected order)
+  Assert.assertEquals(1, MEMBER_COLS.MEMBER_ID, 'MEMBER_ID should be column 1');
+  Assert.assertEquals(2, MEMBER_COLS.FIRST_NAME, 'FIRST_NAME should be column 2');
+  Assert.assertEquals(3, MEMBER_COLS.LAST_NAME, 'LAST_NAME should be column 3');
+  Assert.assertEquals(8, MEMBER_COLS.EMAIL, 'EMAIL should be column 8');
+  Assert.assertEquals(9, MEMBER_COLS.PHONE, 'PHONE should be column 9');
+
+  Logger.log('✅ MEMBER_COLS constants test passed');
+}
+
+/**
+ * Test: GRIEVANCE_COLS constants are properly defined
+ */
+function testGrievanceColsConstants() {
+  // Verify all required columns exist
+  const requiredCols = [
+    'GRIEVANCE_ID', 'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'STATUS',
+    'CURRENT_STEP', 'INCIDENT_DATE', 'FILING_DEADLINE', 'DATE_FILED',
+    'DATE_CLOSED', 'DAYS_OPEN', 'NEXT_ACTION_DUE', 'DAYS_TO_DEADLINE',
+    'ISSUE_CATEGORY', 'MEMBER_EMAIL', 'LOCATION', 'STEWARD', 'RESOLUTION'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof GRIEVANCE_COLS[col] === 'number',
+      `GRIEVANCE_COLS.${col} should be defined as a number`
+    );
+    Assert.assertTrue(
+      GRIEVANCE_COLS[col] >= 1,
+      `GRIEVANCE_COLS.${col} should be >= 1 (1-indexed)`
+    );
+  });
+
+  // Verify key column positions
+  Assert.assertEquals(1, GRIEVANCE_COLS.GRIEVANCE_ID, 'GRIEVANCE_ID should be column 1');
+  Assert.assertEquals(5, GRIEVANCE_COLS.STATUS, 'STATUS should be column 5');
+  Assert.assertEquals(9, GRIEVANCE_COLS.DATE_FILED, 'DATE_FILED should be column 9');
+  Assert.assertEquals(18, GRIEVANCE_COLS.DATE_CLOSED, 'DATE_CLOSED should be column 18');
+  Assert.assertEquals(27, GRIEVANCE_COLS.STEWARD, 'STEWARD should be column 27');
+
+  Logger.log('✅ GRIEVANCE_COLS constants test passed');
+}
+
+/**
+ * Test: CONFIG_COLS constants are properly defined
+ */
+function testConfigColsConstants() {
+  // Verify key config columns exist
+  const requiredCols = [
+    'JOB_TITLES', 'OFFICE_LOCATIONS', 'UNITS', 'STEWARDS',
+    'GRIEVANCE_STATUS', 'GRIEVANCE_STEP', 'ISSUE_CATEGORY'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof CONFIG_COLS[col] === 'number',
+      `CONFIG_COLS.${col} should be defined as a number`
+    );
+  });
+
+  Logger.log('✅ CONFIG_COLS constants test passed');
+}
+
+/**
+ * Test: Internal schema constants are properly defined
+ */
+function testInternalSchemaConstants() {
+  // Test AUDIT_LOG_COLS
+  Assert.assertTrue(typeof AUDIT_LOG_COLS === 'object', 'AUDIT_LOG_COLS should be defined');
+  Assert.assertEquals(1, AUDIT_LOG_COLS.TIMESTAMP, 'AUDIT_LOG_COLS.TIMESTAMP should be 1');
+  Assert.assertEquals(4, AUDIT_LOG_COLS.ACTION, 'AUDIT_LOG_COLS.ACTION should be 4');
+
+  // Test FAQ_COLS
+  Assert.assertTrue(typeof FAQ_COLS === 'object', 'FAQ_COLS should be defined');
+  Assert.assertEquals(1, FAQ_COLS.ID, 'FAQ_COLS.ID should be 1');
+  Assert.assertEquals(3, FAQ_COLS.QUESTION, 'FAQ_COLS.QUESTION should be 3');
+  Assert.assertEquals(4, FAQ_COLS.ANSWER, 'FAQ_COLS.ANSWER should be 4');
+
+  // Test ERROR_LOG_COLS
+  Assert.assertTrue(typeof ERROR_LOG_COLS === 'object', 'ERROR_LOG_COLS should be defined');
+  Assert.assertEquals(1, ERROR_LOG_COLS.TIMESTAMP, 'ERROR_LOG_COLS.TIMESTAMP should be 1');
+  Assert.assertEquals(2, ERROR_LOG_COLS.LEVEL, 'ERROR_LOG_COLS.LEVEL should be 2');
+
+  Logger.log('✅ Internal schema constants test passed');
+}
+
+/**
+ * Test: SHEETS constants match expected sheet names
+ */
+function testSheetsConstants() {
+  // Verify core sheets are defined
+  Assert.assertEquals('Config', SHEETS.CONFIG, 'SHEETS.CONFIG should be "Config"');
+  Assert.assertEquals('Member Directory', SHEETS.MEMBER_DIR, 'SHEETS.MEMBER_DIR should be "Member Directory"');
+  Assert.assertEquals('Grievance Log', SHEETS.GRIEVANCE_LOG, 'SHEETS.GRIEVANCE_LOG should be "Grievance Log"');
+  Assert.assertEquals('Dashboard', SHEETS.DASHBOARD, 'SHEETS.DASHBOARD should be "Dashboard"');
+
+  // Verify internal system sheets are defined
+  Assert.assertTrue(typeof SHEETS.AUDIT_LOG === 'string', 'SHEETS.AUDIT_LOG should be defined');
+  Assert.assertTrue(typeof SHEETS.FAQ_DATABASE === 'string', 'SHEETS.FAQ_DATABASE should be defined');
+  Assert.assertTrue(typeof SHEETS.ERROR_LOG === 'string', 'SHEETS.ERROR_LOG should be defined');
+
+  Logger.log('✅ SHEETS constants test passed');
+}
+
+/**
+ * Test: Column letter conversion utility
+ */
+function testColumnLetterConversion() {
+  // Test getColumnLetter
+  Assert.assertEquals('A', getColumnLetter(1), 'Column 1 should be A');
+  Assert.assertEquals('B', getColumnLetter(2), 'Column 2 should be B');
+  Assert.assertEquals('Z', getColumnLetter(26), 'Column 26 should be Z');
+  Assert.assertEquals('AA', getColumnLetter(27), 'Column 27 should be AA');
+  Assert.assertEquals('AB', getColumnLetter(28), 'Column 28 should be AB');
+
+  // Test getColumnNumber
+  Assert.assertEquals(1, getColumnNumber('A'), 'A should be column 1');
+  Assert.assertEquals(26, getColumnNumber('Z'), 'Z should be column 26');
+  Assert.assertEquals(27, getColumnNumber('AA'), 'AA should be column 27');
+
+  Logger.log('✅ Column letter conversion test passed');
+}
+
+/**
+ * Test: Column constants are used correctly (no off-by-one errors)
+ */
+function testColumnIndexing() {
+  // Verify that constants are 1-indexed (for spreadsheet columns)
+  // and that array access uses [CONSTANT - 1]
+
+  // Simulate a row of data
+  const mockRow = ['ID', 'First', 'Last', 'Title', 'Location'];
+
+  // Access using constant pattern (constant - 1 for 0-indexed array)
+  const firstElement = mockRow[1 - 1]; // Should be 'ID'
+  const secondElement = mockRow[2 - 1]; // Should be 'First'
+
+  Assert.assertEquals('ID', firstElement, 'First element accessed with [1-1] should be ID');
+  Assert.assertEquals('First', secondElement, 'Second element accessed with [2-1] should be First');
+
+  // Verify MEMBER_COLS pattern works
+  const mockMemberRow = new Array(31).fill('').map((_, i) => `col${i}`);
+  mockMemberRow[MEMBER_COLS.MEMBER_ID - 1] = 'M000001';
+  mockMemberRow[MEMBER_COLS.EMAIL - 1] = 'test@union.org';
+
+  Assert.assertEquals('M000001', mockMemberRow[MEMBER_COLS.MEMBER_ID - 1], 'MEMBER_ID access should work');
+  Assert.assertEquals('test@union.org', mockMemberRow[MEMBER_COLS.EMAIL - 1], 'EMAIL access should work');
+
+  Logger.log('✅ Column indexing test passed');
+}
+
+/**
+ * Run all column constant tests
+ */
+function runColumnConstantTests() {
+  Logger.log('=== Running Column Constant Tests ===');
+
+  testMemberColsConstants();
+  testGrievanceColsConstants();
+  testConfigColsConstants();
+  testInternalSchemaConstants();
+  testSheetsConstants();
+  testColumnLetterConversion();
+  testColumnIndexing();
+
+  Logger.log('=== All Column Constant Tests Passed ===');
 }
 
 

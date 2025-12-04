@@ -572,16 +572,16 @@ function getAuditLog(limit = 100, action = null) {
     const headers = data[0];
     const rows = data.slice(1).reverse(); // Most recent first
 
-    const filtered = action ? rows.filter(function(row) { return row[3] === action; }) : rows;
+    const filtered = action ? rows.filter(function(row) { return row[AUDIT_LOG_COLS.ACTION - 1] === action; }) : rows;
 
     const result = filtered.slice(0, limit).map(function(row) { return {
-      timestamp: row[0],
-      userEmail: row[1],
-      userRole: row[2],
-      action: row[3],
-      level: row[4],
-      details: row[5],
-      ipAddress: row[6]
+      timestamp: row[AUDIT_LOG_COLS.TIMESTAMP - 1],
+      userEmail: row[AUDIT_LOG_COLS.USER_EMAIL - 1],
+      userRole: row[AUDIT_LOG_COLS.USER_ROLE - 1],
+      action: row[AUDIT_LOG_COLS.ACTION - 1],
+      level: row[AUDIT_LOG_COLS.LEVEL - 1],
+      details: row[AUDIT_LOG_COLS.DETAILS - 1],
+      ipAddress: row[AUDIT_LOG_COLS.IP_ADDRESS - 1]
     };});
 
     return result;
@@ -779,8 +779,8 @@ function runSecurityAudit() {
     weekAgo.setDate(weekAgo.getDate() - 7);
 
     for (let i = 1; i < data.length; i++) {
-      const timestamp = data[i][0];
-      const action = data[i][3];
+      const timestamp = data[i][AUDIT_LOG_COLS.TIMESTAMP - 1];
+      const action = data[i][AUDIT_LOG_COLS.ACTION - 1];
 
       if (timestamp >= weekAgo) {
         if (action === 'ACCESS_DENIED') {

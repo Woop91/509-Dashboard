@@ -521,17 +521,17 @@ function getAllFAQs() {
   const data = faqSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
   return data.map(function(row) { return {
-    id: row[0],
-    category: row[1],
-    question: row[2],
-    answer: row[3],
-    tags: row[4],
-    relatedFAQs: row[5],
-    helpfulCount: row[6] || 0,
-    notHelpfulCount: row[7] || 0,
-    createdDate: row[8],
-    lastUpdated: row[9],
-    createdBy: row[10]
+    id: row[FAQ_COLS.ID - 1],
+    category: row[FAQ_COLS.CATEGORY - 1],
+    question: row[FAQ_COLS.QUESTION - 1],
+    answer: row[FAQ_COLS.ANSWER - 1],
+    tags: row[FAQ_COLS.TAGS - 1],
+    relatedFAQs: row[FAQ_COLS.RELATED_FAQS - 1],
+    helpfulCount: row[FAQ_COLS.HELPFUL_COUNT - 1] || 0,
+    notHelpfulCount: row[FAQ_COLS.NOT_HELPFUL_COUNT - 1] || 0,
+    createdDate: row[FAQ_COLS.CREATED_DATE - 1],
+    lastUpdated: row[FAQ_COLS.LAST_UPDATED - 1],
+    createdBy: row[FAQ_COLS.CREATED_BY - 1]
   };});
 }
 
@@ -550,9 +550,9 @@ function updateFAQHelpfulness(faqId, isHelpful) {
   const data = faqSheet.getRange(2, 1, lastRow - 1, 1).getValues();
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === faqId) {
+    if (data[i][FAQ_COLS.ID - 1] === faqId) {
       const row = i + 2;
-      const col = isHelpful ? 7 : 8; // Column G or H
+      const col = isHelpful ? FAQ_COLS.HELPFUL_COUNT : FAQ_COLS.NOT_HELPFUL_COUNT;
 
       const currentCount = faqSheet.getRange(row, col).getValue() || 0;
       faqSheet.getRange(row, col).setValue(currentCount + 1);

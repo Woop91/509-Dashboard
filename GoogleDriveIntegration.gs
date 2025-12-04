@@ -87,10 +87,12 @@ function linkFolderToGrievance(grievanceId, folderId) {
     if (data[i][0] === grievanceId) {
       const row = i + 2;
 
-      // Store folder ID in column AC (29)
+      // Store folder ID in column AC (29) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
       grievanceSheet.getRange(row, 29).setValue(folderId);
 
-      // Create hyperlink to folder in column AD (30)
+      // Create hyperlink to folder in column AD (30) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_URL constant to GRIEVANCE_COLS
       const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
       grievanceSheet.getRange(row, 30).setValue(folderUrl);
 
@@ -388,7 +390,9 @@ function showGrievanceFiles() {
   }
 
   const grievanceId = activeSheet.getRange(activeRow, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
-  const folderId = activeSheet.getRange(activeRow, 29).getValue(); // Column AC
+  // Column AC (29) - Extension column not in GRIEVANCE_COLS
+  // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
+  const folderId = activeSheet.getRange(activeRow, 29).getValue();
 
   if (!folderId) {
     ui.alert(
@@ -651,8 +655,10 @@ function batchCreateGrievanceFolders() {
     let skipped = 0;
 
     data.forEach(function(row, index) {
-      const grievanceId = row[0];
-      const folderId = row[28]; // Column AC
+      const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+      // Array index 28 = Column AC (29) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
+      const folderId = row[28];
 
       if (!grievanceId) {
         skipped++;

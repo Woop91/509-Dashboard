@@ -436,7 +436,7 @@ function getErrorStats() {
   };
 
   data.forEach(function(row) {
-    const level = row[1];
+    const level = row[ERROR_LOG_COLS.LEVEL - 1];
     if (level === 'INFO') stats.info++;
     else if (level === 'WARNING') stats.warning++;
     else if (level === 'ERROR') stats.error++;
@@ -481,14 +481,14 @@ function getRecentErrors(limit = 20) {
   const data = errorSheet.getRange(startRow, 1, numRows, 8).getValues();
 
   return data.map(function(row) { return {
-    timestamp: row[0],
-    level: row[1],
-    category: row[2],
-    message: row[3],
-    context: row[4],
-    stackTrace: row[5],
-    user: row[6],
-    recovered: row[7]
+    timestamp: row[ERROR_LOG_COLS.TIMESTAMP - 1],
+    level: row[ERROR_LOG_COLS.LEVEL - 1],
+    category: row[ERROR_LOG_COLS.CATEGORY - 1],
+    message: row[ERROR_LOG_COLS.MESSAGE - 1],
+    context: row[ERROR_LOG_COLS.CONTEXT - 1],
+    stackTrace: row[ERROR_LOG_COLS.STACK_TRACE - 1],
+    user: row[ERROR_LOG_COLS.USER - 1],
+    recovered: row[ERROR_LOG_COLS.RECOVERED - 1]
   };}).reverse();
 }
 
@@ -740,8 +740,8 @@ function createErrorTrendReport() {
 
   const dailyStats = {};
   data.forEach(function(row) {
-    const date = Utilities.formatDate(new Date(row[0]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
-    const level = row[1];
+    const date = Utilities.formatDate(new Date(row[ERROR_LOG_COLS.TIMESTAMP - 1]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    const level = row[ERROR_LOG_COLS.LEVEL - 1];
 
     if (!dailyStats[date]) {
       dailyStats[date] = { info: 0, warning: 0, error: 0, critical: 0 };

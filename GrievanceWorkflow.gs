@@ -610,8 +610,8 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
   const coordinators = getGrievanceCoordinators();
   const folderUrl = folder ? folder.getUrl() : '';
 
-  // TODO: Configure actual grievance email address in settings
-  // This email address needs to be set up by the organization
+  // Grievance email is configured via EMAIL_CONFIG.GRIEVANCE_EMAIL in Constants.gs
+  // and can be overridden in GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL
   const grievanceEmail = GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL || 'grievances@seiu509.org';
 
   const html = HtmlService.createHtmlOutput(`

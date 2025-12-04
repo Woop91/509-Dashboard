@@ -784,7 +784,8 @@ function applyDateRange(data, dateFrom, dateTo, fieldMapping) {
   const toDate = dateTo ? new Date(dateTo) : null;
 
   return data.filter(function(row) {
-    const filedDate = row[6]; // Assuming column G is filed date
+    // Use DATE_FILED column for filed date filtering
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
     if (!filedDate) return true;
 

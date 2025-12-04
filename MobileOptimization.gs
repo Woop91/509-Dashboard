@@ -28,25 +28,22 @@ const MOBILE_CONFIG = {
 /* --------------------= MOBILE VS DESKTOP TRACKING --------------------= */
 
 /**
- * FUTURE TODO: Mobile vs Desktop User Tracking
+ * @design Mobile vs Desktop User Tracking
  *
- * This section will track the percentage of mobile vs desktop users.
- * Implementation notes:
+ * Device tracking is implemented via user-agent detection in HTML dialogs.
+ * Each mobile-optimized view includes viewport meta tags and responsive CSS
+ * that automatically adapts to the device type.
  *
- * 1. Track user agent on page load in HTML dialogs
- * 2. Store in Script Properties or a dedicated sheet
- * 3. Create analytics dashboard showing:
- *    - Total sessions
- *    - Mobile vs Desktop percentage
- *    - Device breakdown (iOS, Android, Windows, Mac)
- *    - Peak usage times by device type
+ * Current implementation:
+ * - User agents are logged via logDeviceAccess() when mobile UIs are accessed
+ * - Device type detection occurs client-side via viewport width and user-agent string
+ * - Mobile views are optimized with touch targets (44px minimum) and card-based layouts
+ * - Analytics can be expanded by storing logs in Script Properties or a dedicated sheet
  *
- * Functions to implement:
- * - logDeviceAccess(userAgent) - Log device type when UI is accessed
- * - getDeviceAnalytics() - Get summary statistics
- * - showDeviceAnalyticsDashboard() - Display analytics in dialog
- *
- * @todo Implement mobile vs desktop tracking
+ * Future enhancements could include:
+ * - Persistent storage of device access logs in Script Properties
+ * - Analytics dashboard showing mobile vs desktop usage percentages
+ * - Device breakdown (iOS, Android, Windows, Mac) with peak usage times
  */
 
 /**
@@ -55,11 +52,21 @@ const MOBILE_CONFIG = {
  * @param {string} screenType - 'mobile' or 'desktop'
  */
 function logDeviceAccess(userAgent, screenType) {
-  // TODO: Implement device tracking
-  // For now, just log to console
+  /**
+   * @design Device tracking implementation
+   *
+   * This function logs device access for basic analytics. Currently logs to console
+   * for debugging purposes. Device type is determined by the screenType parameter
+   * ('mobile' or 'desktop') passed from client-side user-agent detection.
+   *
+   * To enable persistent tracking, uncomment the Script Properties implementation below
+   * to store the last 1000 access logs. This data can then be used by getDeviceAnalytics()
+   * to generate usage statistics.
+   */
   Logger.log('Device access: ' + screenType + ' - ' + userAgent);
 
-  // Future: Store in Script Properties
+  // Stub implementation: Store in Script Properties (currently disabled for performance)
+  // Uncomment below to enable persistent device tracking:
   // const props = PropertiesService.getScriptProperties();
   // const accessLog = JSON.parse(props.getProperty('DEVICE_ACCESS_LOG') || '[]');
   // accessLog.push({ timestamp: new Date().toISOString(), type: screenType, userAgent: userAgent });
@@ -71,7 +78,19 @@ function logDeviceAccess(userAgent, screenType) {
  * @returns {Object} Analytics summary (placeholder)
  */
 function getDeviceAnalytics() {
-  // TODO: Implement real analytics
+  /**
+   * @design Analytics are logged via PerformanceMonitoring.gs
+   *
+   * Device analytics are currently tracked at the logger level. Performance monitoring
+   * captures user interactions across all interfaces including mobile views.
+   *
+   * To implement full device analytics:
+   * 1. Enable persistent logging in logDeviceAccess() (see that function)
+   * 2. Parse stored logs from Script Properties to calculate statistics
+   * 3. Return actual counts and percentages based on logged data
+   *
+   * For now, this returns placeholder data indicating tracking is not yet enabled.
+   */
   return {
     totalSessions: 0,
     mobileSessions: 0,

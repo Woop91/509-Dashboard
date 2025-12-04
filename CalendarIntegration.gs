@@ -61,7 +61,7 @@ function syncDeadlinesToCalendar() {
       const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
       const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
       const status = row[GRIEVANCE_COLS.STATUS - 1];
-      const nextActionDue = row[19]; // Column T (Next Action Due)
+      const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
       const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
       // Only create events for open grievances with deadlines
@@ -187,7 +187,7 @@ function syncSingleDeadlineToCalendar(grievanceId) {
       const row = data[i];
       const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
       const status = row[GRIEVANCE_COLS.STATUS - 1];
-      const nextActionDue = row[19];
+      const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
       const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
       if (status !== 'Open' || !nextActionDue) {
