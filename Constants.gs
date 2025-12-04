@@ -244,25 +244,28 @@ const ISSUE_CATEGORIES = [
  * @const {Object}
  */
 const CONFIG_COLS = {
-  JOB_TITLES: 1,           // A
-  OFFICE_LOCATIONS: 2,     // B
-  UNITS: 3,                // C
-  OFFICE_DAYS: 4,          // D
-  YES_NO: 5,               // E
-  SUPERVISORS: 6,          // F
-  MANAGERS: 7,             // G
-  STEWARDS: 8,             // H
-  GRIEVANCE_STATUS: 9,     // I
-  GRIEVANCE_STEP: 10,      // J
-  ISSUE_CATEGORY: 11,      // K
-  ARTICLES_VIOLATED: 12,   // L
-  COMM_METHODS: 13,        // M
-  COORDINATOR_1_NAME: 16,  // P
-  COORDINATOR_2_NAME: 17,  // Q
-  COORDINATOR_3_NAME: 18,  // R
-  COORDINATOR_1_EMAIL: 19, // S
-  COORDINATOR_2_EMAIL: 20, // T
-  COORDINATOR_3_EMAIL: 21  // U
+  // Employment Info (cols 1-5)
+  JOB_TITLES: 1,              // A
+  OFFICE_LOCATIONS: 2,        // B
+  UNITS: 3,                   // C
+  OFFICE_DAYS: 4,             // D
+  YES_NO: 5,                  // E
+  // Supervision (cols 6-10)
+  SUPERVISOR_FIRST: 6,        // F
+  SUPERVISOR_LAST: 7,         // G
+  MANAGER_FIRST: 8,           // H
+  MANAGER_LAST: 9,            // I
+  STEWARDS: 10,               // J
+  // Grievance Settings (cols 11-15)
+  GRIEVANCE_STATUS: 11,       // K
+  GRIEVANCE_STEP: 12,         // L
+  ISSUE_CATEGORY: 13,         // M
+  ARTICLES_VIOLATED: 14,      // N
+  COMM_METHODS: 15,           // O
+  // Links & Coordinators (cols 16-18)
+  GRIEVANCE_COORDINATORS: 16, // P - comma-separated list
+  GRIEVANCE_FORM_URL: 17,     // Q - URL to grievance intake form
+  CONTACT_FORM_URL: 18        // R - URL to contact form
 };
 
 /* --------------------= CACHE CONFIGURATION --------------------= */

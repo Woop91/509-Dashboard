@@ -1138,7 +1138,11 @@ function onOpen() {
     .addSeparator()
     .addSubMenu(ui.createMenu("👥 Member Tools")
       .addItem("👥 Mobile Member Browser", "showMobileMemberBrowser")
-      .addItem("🆔 Generate Next Member ID", "showNextMemberID")
+      .addItem("🆔 Generate Next Member ID", "showNextMemberID"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📝 Forms")
+      .addItem("📋 Open Grievance Form", "openGrievanceForm")
+      .addItem("📞 Open Contact Form", "openContactForm")
       .addSeparator()
       .addItem("📝 Open Member Google Form", "openMemberGoogleForm"))
     .addSeparator()
@@ -1462,6 +1466,102 @@ function recalcAllMembers() {
     duration: duration,
     message: `Processed ${processed} members in ${duration}ms (${errors} errors)`
   };
+}
+
+/* --------------------- FORM URL FUNCTIONS --------------------- */
+
+/**
+ * Reads a form URL from the Config tab
+ * @param {number} columnIndex - The column index (use CONFIG_COLS constants)
+ * @returns {string} The URL or empty string if not configured
+ */
+function getFormUrlFromConfig(columnIndex) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const config = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!config) {
+    Logger.log('Config sheet not found');
+    return '';
+  }
+
+  // Row 1 is category headers, Row 2 is column headers, Row 3+ is data
+  // Get first data row value for the URL column
+  const url = config.getRange(3, columnIndex).getValue();
+  return url ? url.toString().trim() : '';
+}
+
+/**
+ * Opens the Grievance Form in a new browser tab
+ * Reads URL from Config tab (Grievance Form URL column)
+ */
+function openGrievanceForm() {
+  const url = getFormUrlFromConfig(CONFIG_COLS.GRIEVANCE_FORM_URL);
+
+  if (!url || url === '') {
+    SpreadsheetApp.getUi().alert(
+      '📝 Grievance Form Not Configured',
+      'No Grievance Form URL has been added yet.\n\n' +
+      'To configure:\n' +
+      '1. Go to the Config tab\n' +
+      '2. Find the "Grievance Form URL" column (column Q)\n' +
+      '3. Paste your Google Form URL in row 3\n\n' +
+      'Tip: Create a Google Form for grievance intake, then copy its URL.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  // Open URL in new tab
+  const html = HtmlService.createHtmlOutput(
+    `<script>window.open('${url}', '_blank'); google.script.host.close();</script>`
+  ).setWidth(1).setHeight(1);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Opening Grievance Form...');
+}
+
+/**
+ * Opens the Contact Form in a new browser tab
+ * Reads URL from Config tab (Contact Form URL column)
+ */
+function openContactForm() {
+  const url = getFormUrlFromConfig(CONFIG_COLS.CONTACT_FORM_URL);
+
+  if (!url || url === '') {
+    SpreadsheetApp.getUi().alert(
+      '📝 Contact Form Not Configured',
+      'No Contact Form URL has been added yet.\n\n' +
+      'To configure:\n' +
+      '1. Go to the Config tab\n' +
+      '2. Find the "Contact Form URL" column (column R)\n' +
+      '3. Paste your Google Form URL in row 3\n\n' +
+      'Tip: Create a Google Form for member contact/intake, then copy its URL.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  // Open URL in new tab
+  const html = HtmlService.createHtmlOutput(
+    `<script>window.open('${url}', '_blank'); google.script.host.close();</script>`
+  ).setWidth(1).setHeight(1);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Opening Contact Form...');
+}
+
+/**
+ * Gets the Grievance Form URL from Config (for use by other functions)
+ * @returns {string} The configured URL or empty string
+ */
+function getGrievanceFormUrl() {
+  return getFormUrlFromConfig(CONFIG_COLS.GRIEVANCE_FORM_URL);
+}
+
+/**
+ * Gets the Contact Form URL from Config (for use by other functions)
+ * @returns {string} The configured URL or empty string
+ */
+function getContactFormUrl() {
+  return getFormUrlFromConfig(CONFIG_COLS.CONTACT_FORM_URL);
 }
 
 function goToDashboard() {
