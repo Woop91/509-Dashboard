@@ -379,7 +379,7 @@ function testMultipleGrievancesSameMember() {
     const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const memberRow = memberData.find(function(row) { return row[0] === testMemberId; });
 
-    const hasOpenGrievance = memberRow[25];
+    const hasOpenGrievance = memberRow[MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1]; // Column Y (index 24)
     Assert.assertTrue(
       hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
       'Member with multiple grievances should show as having open grievance'
