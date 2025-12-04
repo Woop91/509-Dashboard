@@ -1636,6 +1636,184 @@ function getContactFormUrl() {
   return getFormUrlFromConfig(CONFIG_COLS.CONTACT_FORM_URL);
 }
 
+/* --------------------= DYNAMIC CONFIG HELPERS --------------------= */
+
+/**
+ * Gets all non-empty values from a Config column (for dropdown lists)
+ * @param {number} columnIndex - The column index from CONFIG_COLS
+ * @param {number} maxRows - Maximum rows to read (default: 100)
+ * @returns {Array<string>} Array of non-empty values
+ */
+function getConfigColumnValues(columnIndex, maxRows) {
+  maxRows = maxRows || 100;
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const config = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!config) {
+    Logger.log('Config sheet not found');
+    return [];
+  }
+
+  // Row 1 is category headers, Row 2 is column headers, Row 3+ is data
+  const colLetter = getColumnLetter(columnIndex);
+  const values = config.getRange(colLetter + "3:" + colLetter + (maxRows + 2))
+    .getValues()
+    .flat()
+    .filter(function(val) { return val !== '' && val !== null; })
+    .map(function(val) { return String(val).trim(); });
+
+  return values;
+}
+
+/**
+ * Gets a single config value from a specific column (first data row)
+ * @param {number} columnIndex - The column index from CONFIG_COLS
+ * @returns {string} The value or empty string
+ */
+function getConfigValue(columnIndex) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const config = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!config) {
+    Logger.log('Config sheet not found');
+    return '';
+  }
+
+  // Row 3 is first data row
+  const value = config.getRange(3, columnIndex).getValue();
+  return value ? String(value).trim() : '';
+}
+
+/**
+ * Gets a numeric config value with fallback default
+ * @param {number} columnIndex - The column index from CONFIG_COLS
+ * @param {number} defaultValue - Default value if not found or invalid
+ * @returns {number} The numeric value or default
+ */
+function getConfigNumber(columnIndex, defaultValue) {
+  const value = getConfigValue(columnIndex);
+  const num = parseInt(value, 10);
+  return isNaN(num) ? defaultValue : num;
+}
+
+/**
+ * Gets grievance timeline deadline value from Config or falls back to default
+ * @param {string} deadlineType - 'FILING', 'STEP1_RESPONSE', 'STEP2_APPEAL', or 'STEP2_RESPONSE'
+ * @returns {number} Days for the deadline
+ */
+function getDeadlineDays(deadlineType) {
+  const defaults = {
+    'FILING': GRIEVANCE_TIMELINES.FILING_DEADLINE_DAYS,
+    'STEP1_RESPONSE': GRIEVANCE_TIMELINES.STEP1_DECISION_DAYS,
+    'STEP2_APPEAL': GRIEVANCE_TIMELINES.STEP2_APPEAL_DAYS,
+    'STEP2_RESPONSE': GRIEVANCE_TIMELINES.STEP2_DECISION_DAYS
+  };
+
+  const configCols = {
+    'FILING': CONFIG_COLS.FILING_DEADLINE_DAYS,
+    'STEP1_RESPONSE': CONFIG_COLS.STEP1_RESPONSE_DAYS,
+    'STEP2_APPEAL': CONFIG_COLS.STEP2_APPEAL_DAYS,
+    'STEP2_RESPONSE': CONFIG_COLS.STEP2_RESPONSE_DAYS
+  };
+
+  const defaultVal = defaults[deadlineType] || 30;
+  const configCol = configCols[deadlineType];
+
+  if (!configCol) return defaultVal;
+
+  return getConfigNumber(configCol, defaultVal);
+}
+
+/**
+ * Gets all deadline configuration values
+ * @returns {Object} Object with all deadline values
+ */
+function getAllDeadlineConfig() {
+  return {
+    filingDeadlineDays: getDeadlineDays('FILING'),
+    step1ResponseDays: getDeadlineDays('STEP1_RESPONSE'),
+    step2AppealDays: getDeadlineDays('STEP2_APPEAL'),
+    step2ResponseDays: getDeadlineDays('STEP2_RESPONSE')
+  };
+}
+
+/**
+ * Gets organization info from Config
+ * @returns {Object} Organization configuration
+ */
+function getOrgConfig() {
+  return {
+    name: getConfigValue(CONFIG_COLS.ORG_NAME) || 'SEIU Local 509',
+    localNumber: getConfigValue(CONFIG_COLS.LOCAL_NUMBER) || '509',
+    address: getConfigValue(CONFIG_COLS.MAIN_ADDRESS) || '',
+    phone: getConfigValue(CONFIG_COLS.MAIN_PHONE) || ''
+  };
+}
+
+/**
+ * Gets integration IDs from Config
+ * @returns {Object} Integration configuration
+ */
+function getIntegrationConfig() {
+  return {
+    driveFolderId: getConfigValue(CONFIG_COLS.DRIVE_FOLDER_ID) || '',
+    calendarId: getConfigValue(CONFIG_COLS.CALENDAR_ID) || ''
+  };
+}
+
+/**
+ * Gets notification settings from Config
+ * @returns {Object} Notification configuration
+ */
+function getNotificationConfig() {
+  const alertDaysStr = getConfigValue(CONFIG_COLS.ALERT_DAYS);
+  const alertDays = alertDaysStr
+    ? alertDaysStr.split(',').map(function(d) { return parseInt(d.trim(), 10); }).filter(function(d) { return !isNaN(d); })
+    : [3, 7, 14];
+
+  return {
+    adminEmails: getConfigValue(CONFIG_COLS.ADMIN_EMAILS) || '',
+    alertDays: alertDays,
+    notificationRecipients: getConfigValue(CONFIG_COLS.NOTIFICATION_RECIPIENTS) || ''
+  };
+}
+
+/**
+ * Gets all dropdown list values for Member Directory validations
+ * Uses CONFIG_COLS for column positions
+ * @returns {Object} All dropdown values
+ */
+function getMemberDirectoryDropdownValues() {
+  return {
+    jobTitles: getConfigColumnValues(CONFIG_COLS.JOB_TITLES),
+    locations: getConfigColumnValues(CONFIG_COLS.OFFICE_LOCATIONS),
+    units: getConfigColumnValues(CONFIG_COLS.UNITS),
+    officeDays: getConfigColumnValues(CONFIG_COLS.OFFICE_DAYS),
+    supervisors: getConfigColumnValues(CONFIG_COLS.SUPERVISORS),
+    managers: getConfigColumnValues(CONFIG_COLS.MANAGERS),
+    stewards: getConfigColumnValues(CONFIG_COLS.STEWARDS)
+  };
+}
+
+/**
+ * Gets all dropdown list values for Grievance Log validations
+ * Uses CONFIG_COLS for column positions
+ * @returns {Object} All dropdown values
+ */
+function getGrievanceLogDropdownValues() {
+  return {
+    statuses: getConfigColumnValues(CONFIG_COLS.GRIEVANCE_STATUS),
+    steps: getConfigColumnValues(CONFIG_COLS.GRIEVANCE_STEP),
+    categories: getConfigColumnValues(CONFIG_COLS.ISSUE_CATEGORY),
+    articles: getConfigColumnValues(CONFIG_COLS.ARTICLES_VIOLATED),
+    commMethods: getConfigColumnValues(CONFIG_COLS.COMM_METHODS),
+    stewards: getConfigColumnValues(CONFIG_COLS.STEWARDS),
+    coordinators: getConfigColumnValues(CONFIG_COLS.GRIEVANCE_COORDINATORS)
+  };
+}
+
+/* --------------------= END DYNAMIC CONFIG HELPERS --------------------= */
+
 function goToDashboard() {
   const ss = SpreadsheetApp.getActive();
   ss.getSheetByName(SHEETS.DASHBOARD).activate();
@@ -1698,24 +1876,25 @@ function seedMembersWithCount(count, toggleName) {
   const firstNames = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley", "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle"];
   const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores"];
 
-  const jobTitles = config.getRange("A2:A14").getValues().flat().filter(String);
-  const locations = config.getRange("B2:B14").getValues().flat().filter(String);
-  const units = config.getRange("C2:C7").getValues().flat().filter(String);
-  const officeDays = config.getRange("D2:D8").getValues().flat().filter(String);
+  // Get dropdown values from Config using dynamic helpers
+  const dropdowns = getMemberDirectoryDropdownValues();
+  const jobTitles = dropdowns.jobTitles;
+  const locations = dropdowns.locations;
+  const units = dropdowns.units;
+  const officeDays = dropdowns.officeDays;
+  const supervisors = dropdowns.supervisors;  // Now combined full names
+  const managers = dropdowns.managers;        // Now combined full names
+  const stewards = dropdowns.stewards;
 
-  // Get supervisor and manager names (first and last name columns)
-  const supervisorFirstNames = config.getRange("F2:F14").getValues().flat().filter(String);
-  const supervisorLastNames = config.getRange("G2:G14").getValues().flat().filter(String);
-  const managerFirstNames = config.getRange("H2:H14").getValues().flat().filter(String);
-  const managerLastNames = config.getRange("I2:I14").getValues().flat().filter(String);
-  const stewards = config.getRange("J2:J14").getValues().flat().filter(String);
-
-  const commMethods = ["Email", "Phone", "Text", "In Person"];
+  const commMethods = getConfigColumnValues(CONFIG_COLS.COMM_METHODS);
+  if (commMethods.length === 0) {
+    commMethods.push("Email", "Phone", "Text", "In Person");  // Fallback defaults
+  }
   const times = ["Mornings", "Afternoons", "Evenings", "Weekends", "Flexible"];
 
   // Validate config data
   if (jobTitles.length === 0 || locations.length === 0 || units.length === 0 ||
-      supervisorFirstNames.length === 0 || managerFirstNames.length === 0 || stewards.length === 0) {
+      supervisors.length === 0 || managers.length === 0 || stewards.length === 0) {
     ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.', ui.ButtonSet.OK);
     return;
   }
@@ -1748,13 +1927,9 @@ function seedMembersWithCount(count, toggleName) {
     const phone = `(555) ${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
     const isSteward = Math.random() > 0.95 ? "Yes" : "No";
 
-    // Build full supervisor and manager names
-    const supervisorIdx = Math.floor(Math.random() * supervisorFirstNames.length);
-    const supervisor = `${supervisorFirstNames[supervisorIdx]} ${supervisorLastNames[supervisorIdx]}`;
-
-    const managerIdx = Math.floor(Math.random() * managerFirstNames.length);
-    const manager = `${managerFirstNames[managerIdx]} ${managerLastNames[managerIdx]}`;
-
+    // Select supervisor and manager names from Config (already combined full names)
+    const supervisor = supervisors[Math.floor(Math.random() * supervisors.length)];
+    const manager = managers[Math.floor(Math.random() * managers.length)];
     const assignedSteward = stewards[Math.floor(Math.random() * stewards.length)];
 
     const daysAgo = Math.floor(Math.random() * 90);
@@ -1871,12 +2046,16 @@ function seedGrievancesWithCount(count, toggleName) {
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
   const memberIDs = allMemberData.map(function(row) { return row[0]; }).filter(String);
 
-  // Updated config column references for new structure
-  const statuses = config.getRange("K2:K8").getValues().flat().filter(String);       // Grievance Status (column K)
-  const steps = config.getRange("L2:L7").getValues().flat().filter(String);          // Grievance Step (column L)
-  const categories = config.getRange("M2:M12").getValues().flat().filter(String);    // Issue Category (column M)
-  const articles = config.getRange("N2:N14").getValues().flat().filter(String);      // Articles Violated (column N)
-  const stewards = config.getRange("J2:J14").getValues().flat().filter(String);      // Stewards (column J)
+  // Get grievance dropdown values using dynamic helpers
+  const grievanceDropdowns = getGrievanceLogDropdownValues();
+  const statuses = grievanceDropdowns.statuses;
+  const steps = grievanceDropdowns.steps;
+  const categories = grievanceDropdowns.categories;
+  const articles = grievanceDropdowns.articles;
+  const stewards = grievanceDropdowns.stewards;
+
+  // Get deadline config values
+  const deadlineConfig = getAllDeadlineConfig();
 
   // Validate config data
   if (statuses.length === 0 || steps.length === 0 || articles.length === 0 ||
@@ -1919,16 +2098,17 @@ function seedGrievancesWithCount(count, toggleName) {
     const dateClosed = isClosed ? new Date(dateFiled.getTime() + Math.random() * 90 * 24 * 60 * 60 * 1000) : "";
     const resolution = isClosed ? ["Won - Resolved favorably", "Won - Full remedy granted", "Lost - No violation found", "Lost - Withdrawn by member", "Settled - Partial remedy", "Settled - Compromise reached"][Math.floor(Math.random() * 6)] : "";
 
-    // Calculate all deadline columns based on contract rules
-    const filingDeadline = new Date(incidentDate.getTime() + 21 * 24 * 60 * 60 * 1000);
-    const step1DecisionDue = new Date(dateFiled.getTime() + 30 * 24 * 60 * 60 * 1000);
-    const step1DecisionRcvd = (step !== "Informal" && Math.random() > 0.3) ? new Date(dateFiled.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
-    const step2AppealDue = step1DecisionRcvd ? new Date(step1DecisionRcvd.getTime() + 10 * 24 * 60 * 60 * 1000) : "";
-    const step2AppealFiled = (step === "Step II" || step === "Step III" || step === "Arbitration") && step2AppealDue ? new Date(step1DecisionRcvd.getTime() + Math.random() * 10 * 24 * 60 * 60 * 1000) : "";
-    const step2DecisionDue = step2AppealFiled ? new Date(step2AppealFiled.getTime() + 30 * 24 * 60 * 60 * 1000) : "";
-    const step2DecisionRcvd = (step === "Step III" || step === "Arbitration") && step2DecisionDue ? new Date(step2AppealFiled.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
-    const step3AppealDue = step2DecisionRcvd ? new Date(step2DecisionRcvd.getTime() + 30 * 24 * 60 * 60 * 1000) : "";
-    const step3AppealFiled = (step === "Step III" || step === "Arbitration") && step3AppealDue ? new Date(step2DecisionRcvd.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000) : "";
+    // Calculate all deadline columns based on contract rules (using dynamic config values)
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    const filingDeadline = new Date(incidentDate.getTime() + deadlineConfig.filingDeadlineDays * DAY_MS);
+    const step1DecisionDue = new Date(dateFiled.getTime() + deadlineConfig.step1ResponseDays * DAY_MS);
+    const step1DecisionRcvd = (step !== "Informal" && Math.random() > 0.3) ? new Date(dateFiled.getTime() + Math.random() * deadlineConfig.step1ResponseDays * DAY_MS) : "";
+    const step2AppealDue = step1DecisionRcvd ? new Date(step1DecisionRcvd.getTime() + deadlineConfig.step2AppealDays * DAY_MS) : "";
+    const step2AppealFiled = (step === "Step II" || step === "Step III" || step === "Arbitration") && step2AppealDue ? new Date(step1DecisionRcvd.getTime() + Math.random() * deadlineConfig.step2AppealDays * DAY_MS) : "";
+    const step2DecisionDue = step2AppealFiled ? new Date(step2AppealFiled.getTime() + deadlineConfig.step2ResponseDays * DAY_MS) : "";
+    const step2DecisionRcvd = (step === "Step III" || step === "Arbitration") && step2DecisionDue ? new Date(step2AppealFiled.getTime() + Math.random() * deadlineConfig.step2ResponseDays * DAY_MS) : "";
+    const step3AppealDue = step2DecisionRcvd ? new Date(step2DecisionRcvd.getTime() + GRIEVANCE_TIMELINES.STEP3_APPEAL_DAYS * DAY_MS) : "";
+    const step3AppealFiled = (step === "Step III" || step === "Arbitration") && step3AppealDue ? new Date(step2DecisionRcvd.getTime() + Math.random() * GRIEVANCE_TIMELINES.STEP3_APPEAL_DAYS * DAY_MS) : "";
     const daysOpen = isClosed && dateClosed ? Math.floor((dateClosed - dateFiled) / (1000 * 60 * 60 * 24)) : Math.floor((Date.now() - dateFiled.getTime()) / (1000 * 60 * 60 * 24));
     var nextActionDue = "";
     if (!isClosed) {
@@ -2400,20 +2580,20 @@ function hideDiagnosticsTab() {
 function setupMemberDirectoryValidations() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
-  const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  if (!memberDir || !config) {
-    SpreadsheetApp.getUi().alert('❌ Required sheets not found!');
+  if (!memberDir) {
+    SpreadsheetApp.getUi().alert('❌ Member Directory sheet not found!');
     return;
   }
 
-  // Get dropdown values from Config sheet
-  const jobTitles = config.getRange("A2:A100").getValues().flat().filter(String);
-  const locations = config.getRange("B2:B100").getValues().flat().filter(String);
-  const units = config.getRange("C2:C100").getValues().flat().filter(String);
-  const stewards = config.getRange("E2:E100").getValues().flat().filter(String);
-  const supervisors = config.getRange("F2:F100").getValues().flat().filter(String);
-  const managers = config.getRange("G2:G100").getValues().flat().filter(String);
+  // Get dropdown values from Config sheet using dynamic helpers
+  const dropdowns = getMemberDirectoryDropdownValues();
+  const jobTitles = dropdowns.jobTitles;
+  const locations = dropdowns.locations;
+  const units = dropdowns.units;
+  const supervisors = dropdowns.supervisors;
+  const managers = dropdowns.managers;
+  const stewards = dropdowns.stewards;
 
   // Define dropdown ranges (2 = first data row, 5000 = max rows)
   const MAX_ROWS = 5000;
