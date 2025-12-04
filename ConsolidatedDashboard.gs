@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-03T23:56:19.950Z
+ * - Build Date: 2025-12-04T00:09:01.186Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -2707,36 +2707,66 @@ function onOpen() {
     .addSeparator()
     .addSubMenu(ui.createMenu("📱 Mobile & Viewing")
       .addItem("📱 Mobile Dashboard", "showMobileDashboard")
-      .addItem("📋 Mobile Grievance List", "showMobileGrievanceList")
       .addSeparator()
+      .addItem("🔍 Mobile Search (Members & Grievances)", "showMobileUnifiedSearch")
+      .addItem("👥 Mobile Member Browser", "showMobileMemberBrowser")
+      .addItem("📋 Mobile Grievance Browser", "showMobileGrievanceBrowser")
+      .addSeparator()
+      .addItem("📋 Mobile Grievance List", "showMobileGrievanceList")
       .addItem("📄 Paginated Data Viewer", "showPaginatedViewer"))
     .addSeparator()
     .addSubMenu(ui.createMenu("🧪 Testing & Validation")
       .addItem("🧪 Run All Tests", "runAllTests")
+      .addItem("📊 View Test Results", "showTestResults")
       .addSeparator()
-      .addSubMenu(ui.createMenu("Unit Tests")
+      .addSubMenu(ui.createMenu("📐 Unit Tests")
+        .addItem("Run All Unit Tests", "runUnitTests")
+        .addSeparator()
         .addItem("Filing Deadline Calculation", "testFilingDeadlineCalculation")
         .addItem("Step I Deadline Calculation", "testStepIDeadlineCalculation")
         .addItem("Step II Appeal Deadline", "testStepIIAppealDeadlineCalculation")
         .addItem("Days Open Calculation", "testDaysOpenCalculation")
+        .addItem("Days Open (Closed Grievance)", "testDaysOpenForClosedGrievance")
         .addItem("Next Action Due Logic", "testNextActionDueLogic")
-        .addItem("Member Directory Formulas", "testMemberDirectoryFormulas"))
+        .addItem("Member Directory Formulas", "testMemberDirectoryFormulas")
+        .addItem("Open Rate Range", "testOpenRateRange")
+        .addItem("Empty Sheets Handling", "testEmptySheetsHandling")
+        .addItem("Future Date Handling", "testFutureDateHandling")
+        .addItem("Past Deadline Handling", "testPastDeadlineHandling"))
       .addSeparator()
-      .addSubMenu(ui.createMenu("Data Validation Tests")
+      .addSubMenu(ui.createMenu("✅ Data Validation Tests")
+        .addItem("Run All Validation Tests", "runValidationTests")
+        .addSeparator()
         .addItem("Data Validation Setup", "testDataValidationSetup")
         .addItem("Config Dropdown Values", "testConfigDropdownValues")
         .addItem("Member Validation Rules", "testMemberValidationRules")
-        .addItem("Grievance Validation Rules", "testGrievanceValidationRules"))
+        .addItem("Grievance Validation Rules", "testGrievanceValidationRules")
+        .addItem("Member Seeding Validation", "testMemberSeedingValidation")
+        .addItem("Grievance Seeding Validation", "testGrievanceSeedingValidation")
+        .addItem("Member Email Format", "testMemberEmailFormat")
+        .addItem("Member ID Uniqueness", "testMemberIDUniqueness")
+        .addItem("Grievance-Member Linking", "testGrievanceMemberLinking"))
       .addSeparator()
-      .addSubMenu(ui.createMenu("Integration Tests")
+      .addSubMenu(ui.createMenu("🔗 Integration Tests")
+        .addItem("Run All Integration Tests", "runIntegrationTests")
+        .addSeparator()
         .addItem("Complete Grievance Workflow", "testCompleteGrievanceWorkflow")
         .addItem("Dashboard Metrics Update", "testDashboardMetricsUpdate")
         .addItem("Member-Grievance Snapshot", "testMemberGrievanceSnapshot")
-        .addItem("Multiple Grievances Same Member", "testMultipleGrievancesSameMember"))
+        .addItem("Config Changes Propagate", "testConfigChangesPropagateToDropdowns")
+        .addItem("Multiple Grievances Same Member", "testMultipleGrievancesSameMember")
+        .addItem("Dashboard Handles Empty Data", "testDashboardHandlesEmptyData")
+        .addItem("Grievance Updates Trigger Recalc", "testGrievanceUpdatesTriggersRecalculation"))
       .addSeparator()
-      .addSubMenu(ui.createMenu("Performance Tests")
+      .addSubMenu(ui.createMenu("⚡ Performance Tests")
+        .addItem("Run All Performance Tests", "runPerformanceTests")
+        .addSeparator()
         .addItem("Dashboard Refresh Performance", "testDashboardRefreshPerformance")
         .addItem("Formula Performance with Data", "testFormulaPerformanceWithData"))
+      .addSeparator()
+      .addSubMenu(ui.createMenu("🛠️ System Tests")
+        .addItem("Error Logging", "testErrorLogging")
+        .addItem("Deadline Notifications", "testDeadlineNotifications"))
       .addSeparator()
       .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP")
       .addItem("⚙️ Shortcuts Configuration", "showKeyboardShortcutsConfig")
@@ -22757,12 +22787,89 @@ function quickMemberSearch() {
 /**
  * Mobile configuration
  */
-MOBILE_CONFIG = {
+const MOBILE_CONFIG = {
   MAX_COLUMNS_MOBILE: 8,  // Show max 8 columns on mobile
   CARD_LAYOUT_ENABLED: true,
   TOUCH_TARGET_SIZE: '44px',
-  SIMPLIFIED_MODE: true
+  SIMPLIFIED_MODE: true,
+  ENABLE_ANALYTICS: true  // Enable mobile vs desktop tracking
 };
+
+/* --------------------= MOBILE VS DESKTOP TRACKING --------------------= */
+
+/**
+ * FUTURE TODO: Mobile vs Desktop User Tracking
+ *
+ * This section will track the percentage of mobile vs desktop users.
+ * Implementation notes:
+ *
+ * 1. Track user agent on page load in HTML dialogs
+ * 2. Store in Script Properties or a dedicated sheet
+ * 3. Create analytics dashboard showing:
+ *    - Total sessions
+ *    - Mobile vs Desktop percentage
+ *    - Device breakdown (iOS, Android, Windows, Mac)
+ *    - Peak usage times by device type
+ *
+ * Functions to implement:
+ * - logDeviceAccess(userAgent) - Log device type when UI is accessed
+ * - getDeviceAnalytics() - Get summary statistics
+ * - showDeviceAnalyticsDashboard() - Display analytics in dialog
+ *
+ * @todo Implement mobile vs desktop tracking
+ */
+
+/**
+ * Logs device access for analytics
+ * @param {string} userAgent - Browser user agent string
+ * @param {string} screenType - 'mobile' or 'desktop'
+ */
+function logDeviceAccess(userAgent, screenType) {
+  // TODO: Implement device tracking
+  // For now, just log to console
+  Logger.log('Device access: ' + screenType + ' - ' + userAgent);
+
+  // Future: Store in Script Properties
+  // const props = PropertiesService.getScriptProperties();
+  // const accessLog = JSON.parse(props.getProperty('DEVICE_ACCESS_LOG') || '[]');
+  // accessLog.push({ timestamp: new Date().toISOString(), type: screenType, userAgent: userAgent });
+  // props.setProperty('DEVICE_ACCESS_LOG', JSON.stringify(accessLog.slice(-1000))); // Keep last 1000
+}
+
+/**
+ * Gets device analytics summary
+ * @returns {Object} Analytics summary (placeholder)
+ */
+function getDeviceAnalytics() {
+  // TODO: Implement real analytics
+  return {
+    totalSessions: 0,
+    mobileSessions: 0,
+    desktopSessions: 0,
+    mobilePercentage: 0,
+    desktopPercentage: 0,
+    message: 'Device tracking not yet implemented. Coming soon!'
+  };
+}
+
+/**
+ * Shows device analytics dashboard
+ */
+function showDeviceAnalyticsDashboard() {
+  const analytics = getDeviceAnalytics();
+
+  SpreadsheetApp.getUi().alert(
+    '📊 Device Analytics',
+    'Mobile vs Desktop Tracking\n\n' +
+    analytics.message + '\n\n' +
+    'This feature will track:\n' +
+    '• Total user sessions\n' +
+    '• Mobile vs Desktop percentage\n' +
+    '• Device type breakdown\n' +
+    '• Peak usage times',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
 
 /**
  * Shows mobile dashboard
@@ -23545,6 +23652,753 @@ function showMyAssignedGrievances() {
   }
 
   SpreadsheetApp.getUi().alert('My Cases', message, SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+/**
+ * Shows unified mobile search for members and grievances
+ */
+function showMobileUnifiedSearch() {
+  const html = createMobileUnifiedSearchHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(420)
+    .setHeight(700);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🔍 Search');
+}
+
+/**
+ * Creates HTML for unified mobile search
+ */
+function createMobileUnifiedSearchHTML() {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+    }
+    .header {
+      background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+      color: white;
+      padding: 15px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header h2 {
+      margin: 0 0 12px 0;
+      font-size: 20px;
+    }
+    .search-container {
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      padding: 14px 14px 14px 45px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      background: white;
+      outline: none;
+    }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+    }
+    .tabs {
+      display: flex;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .tab {
+      flex: 1;
+      padding: 14px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      min-height: 48px;
+    }
+    .tab.active {
+      color: #1a73e8;
+      border-bottom-color: #1a73e8;
+    }
+    .filters {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      overflow-x: auto;
+    }
+    .filter-chip {
+      padding: 8px 16px;
+      border-radius: 20px;
+      background: #f0f0f0;
+      border: none;
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+      min-height: 36px;
+    }
+    .filter-chip.active {
+      background: #1a73e8;
+      color: white;
+    }
+    .results {
+      padding: 12px;
+      min-height: 300px;
+    }
+    .result-card {
+      background: white;
+      padding: 16px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .result-card:active {
+      transform: scale(0.98);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a73e8;
+    }
+    .card-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .badge-steward { background: #e8f5e9; color: #2e7d32; }
+    .badge-open { background: #ffebee; color: #c62828; }
+    .badge-pending { background: #fff3e0; color: #ef6c00; }
+    .badge-settled { background: #e8f5e9; color: #2e7d32; }
+    .badge-closed { background: #e0e0e0; color: #616161; }
+    .card-row {
+      font-size: 14px;
+      color: #666;
+      margin: 6px 0;
+      display: flex;
+      gap: 8px;
+    }
+    .card-row-label {
+      color: #999;
+      min-width: 70px;
+    }
+    .card-row-value {
+      flex: 1;
+      color: #333;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #1a73e8;
+    }
+    .count-badge {
+      background: #e8f0fe;
+      color: #1a73e8;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2>🔍 Quick Search</h2>
+    <div class="search-container">
+      <span class="search-icon">🔎</span>
+      <input type="text" class="search-input" id="searchInput"
+             placeholder="Search members or grievances..." autofocus>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabMembers" onclick="switchTab('members')">
+      👥 Members <span class="count-badge" id="memberCount">0</span>
+    </button>
+    <button class="tab" id="tabGrievances" onclick="switchTab('grievances')">
+      📋 Grievances <span class="count-badge" id="grievanceCount">0</span>
+    </button>
+  </div>
+
+  <div class="filters" id="filtersContainer">
+    <button class="filter-chip active" onclick="filterResults('all')">All</button>
+  </div>
+
+  <div class="results" id="resultsContainer">
+    <div class="loading">Loading data...</div>
+  </div>
+
+  <script>
+    var allMembers = [];
+    var allGrievances = [];
+    var currentTab = 'members';
+    var currentFilter = 'all';
+
+    // Load data on page load
+    window.onload = function() {
+      loadAllData();
+      document.getElementById('searchInput').addEventListener('input', performSearch);
+    };
+
+    function loadAllData() {
+      google.script.run
+        .withSuccessHandler(function(data) {
+          allMembers = data.members || [];
+          allGrievances = data.grievances || [];
+          document.getElementById('memberCount').textContent = allMembers.length;
+          document.getElementById('grievanceCount').textContent = allGrievances.length;
+          updateFilters();
+          performSearch();
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById('resultsContainer').innerHTML =
+            '<div class="empty-state"><div class="empty-icon">❌</div>Error loading data</div>';
+        })
+        .getMobileSearchData();
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      currentFilter = 'all';
+
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+
+      updateFilters();
+      performSearch();
+    }
+
+    function updateFilters() {
+      var container = document.getElementById('filtersContainer');
+      var filters = ['all'];
+
+      if (currentTab === 'members') {
+        var locations = [...new Set(allMembers.map(function(m) { return m.location; }).filter(Boolean))];
+        filters = filters.concat(locations.slice(0, 5));
+      } else {
+        filters = ['all', 'Open', 'Pending', 'Settled', 'Closed'];
+      }
+
+      container.innerHTML = filters.map(function(f) {
+        var isActive = f === currentFilter ? 'active' : '';
+        var label = f === 'all' ? 'All' : f;
+        return '<button class="filter-chip ' + isActive + '" onclick="filterResults(\\'' + f + '\\')">' + label + '</button>';
+      }).join('');
+    }
+
+    function filterResults(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
+      event.target.classList.add('active');
+      performSearch();
+    }
+
+    function performSearch() {
+      var searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      var results = [];
+
+      if (currentTab === 'members') {
+        results = allMembers.filter(function(m) {
+          var matchesSearch = !searchTerm ||
+            m.name.toLowerCase().includes(searchTerm) ||
+            (m.id && m.id.toLowerCase().includes(searchTerm)) ||
+            (m.email && m.email.toLowerCase().includes(searchTerm)) ||
+            (m.location && m.location.toLowerCase().includes(searchTerm));
+
+          var matchesFilter = currentFilter === 'all' || m.location === currentFilter;
+
+          return matchesSearch && matchesFilter;
+        });
+        renderMembers(results);
+      } else {
+        results = allGrievances.filter(function(g) {
+          var matchesSearch = !searchTerm ||
+            g.id.toLowerCase().includes(searchTerm) ||
+            g.memberName.toLowerCase().includes(searchTerm) ||
+            (g.issueType && g.issueType.toLowerCase().includes(searchTerm));
+
+          var matchesFilter = currentFilter === 'all' || g.status === currentFilter;
+
+          return matchesSearch && matchesFilter;
+        });
+        renderGrievances(results);
+      }
+    }
+
+    function renderMembers(members) {
+      var container = document.getElementById('resultsContainer');
+
+      if (members.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div>No members found</div>';
+        return;
+      }
+
+      container.innerHTML = members.slice(0, 50).map(function(m) {
+        var badge = m.isSteward === 'Yes' ? '<span class="card-badge badge-steward">🛡️ Steward</span>' : '';
+        return '<div class="result-card" onclick="selectMember(' + m.row + ')">' +
+          '<div class="card-header">' +
+            '<div class="card-title">' + m.name + '</div>' +
+            badge +
+          '</div>' +
+          '<div class="card-row"><span class="card-row-label">ID</span><span class="card-row-value">' + (m.id || 'N/A') + '</span></div>' +
+          '<div class="card-row"><span class="card-row-label">Location</span><span class="card-row-value">' + (m.location || 'N/A') + '</span></div>' +
+          '<div class="card-row"><span class="card-row-label">Email</span><span class="card-row-value">' + (m.email || 'N/A') + '</span></div>' +
+        '</div>';
+      }).join('');
+
+      if (members.length > 50) {
+        container.innerHTML += '<div class="empty-state">Showing 50 of ' + members.length + ' results</div>';
+      }
+    }
+
+    function renderGrievances(grievances) {
+      var container = document.getElementById('resultsContainer');
+
+      if (grievances.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>No grievances found</div>';
+        return;
+      }
+
+      container.innerHTML = grievances.slice(0, 50).map(function(g) {
+        var statusClass = 'badge-' + (g.status || 'open').toLowerCase().replace(/\\s+/g, '-');
+        return '<div class="result-card" onclick="selectGrievance(\\'' + g.id + '\\')">' +
+          '<div class="card-header">' +
+            '<div class="card-title">#' + g.id + '</div>' +
+            '<span class="card-badge ' + statusClass + '">' + (g.status || 'Open') + '</span>' +
+          '</div>' +
+          '<div class="card-row"><span class="card-row-label">Member</span><span class="card-row-value">' + (g.memberName || 'N/A') + '</span></div>' +
+          '<div class="card-row"><span class="card-row-label">Issue</span><span class="card-row-value">' + (g.issueType || 'N/A') + '</span></div>' +
+          '<div class="card-row"><span class="card-row-label">Filed</span><span class="card-row-value">' + (g.filedDate || 'N/A') + '</span></div>' +
+        '</div>';
+      }).join('');
+
+      if (grievances.length > 50) {
+        container.innerHTML += '<div class="empty-state">Showing 50 of ' + grievances.length + ' results</div>';
+      }
+    }
+
+    function selectMember(row) {
+      google.script.run
+        .withSuccessHandler(function() { google.script.host.close(); })
+        .navigateToMember(row);
+    }
+
+    function selectGrievance(id) {
+      google.script.run
+        .withSuccessHandler(function() { google.script.host.close(); })
+        .navigateToGrievance(id);
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Gets data for mobile search (members and grievances)
+ * @returns {Object} Object with members and grievances arrays
+ */
+function getMobileSearchData() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const result = { members: [], grievances: [] };
+
+  // Get members
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (memberSheet && memberSheet.getLastRow() > 1) {
+    const memberData = memberSheet.getRange(2, 1, memberSheet.getLastRow() - 1, 13).getValues();
+    result.members = memberData.map(function(row, index) {
+      return {
+        row: index + 2,
+        id: row[0] || '',
+        name: ((row[1] || '') + ' ' + (row[2] || '')).trim(),
+        location: row[4] || '',
+        unit: row[5] || '',
+        email: row[7] || '',
+        isSteward: row[9] || ''
+      };
+    }).filter(function(m) { return m.id || m.name; });
+  }
+
+  // Get grievances
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (grievanceSheet && grievanceSheet.getLastRow() > 1) {
+    const grievanceData = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, 28).getValues();
+    result.grievances = grievanceData.map(function(row, index) {
+      var filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+      return {
+        row: index + 2,
+        id: row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] || '',
+        memberName: ((row[GRIEVANCE_COLS.FIRST_NAME - 1] || '') + ' ' + (row[GRIEVANCE_COLS.LAST_NAME - 1] || '')).trim(),
+        status: row[GRIEVANCE_COLS.STATUS - 1] || '',
+        issueType: row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '',
+        filedDate: filedDate instanceof Date ? Utilities.formatDate(filedDate, Session.getScriptTimeZone(), 'MMM d, yyyy') : ''
+      };
+    }).filter(function(g) { return g.id; });
+  }
+
+  return result;
+}
+
+/**
+ * Navigates to a grievance row in the Grievance Log
+ * @param {string} grievanceId - The grievance ID to navigate to
+ */
+function navigateToGrievance(grievanceId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceSheet) return;
+
+  const data = grievanceSheet.getDataRange().getValues();
+
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
+      ss.setActiveSheet(grievanceSheet);
+      grievanceSheet.setActiveRange(grievanceSheet.getRange(i + 1, 1, 1, 10));
+      SpreadsheetApp.getActiveSpreadsheet().toast(
+        'Navigated to grievance #' + grievanceId,
+        'Grievance Found',
+        3
+      );
+      return;
+    }
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast('Grievance not found', 'Not Found', 3);
+}
+
+/**
+ * Mobile member directory browser with large touch targets
+ */
+function showMobileMemberBrowser() {
+  const html = createMobileMemberBrowserHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(420)
+    .setHeight(700);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '👥 Member Directory');
+}
+
+/**
+ * Creates HTML for mobile member browser
+ */
+function createMobileMemberBrowserHTML() {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      margin: 0; padding: 0; background: #f5f5f5;
+    }
+    .header {
+      background: #1a73e8; color: white; padding: 15px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .search-box {
+      width: 100%; padding: 14px; border: none; border-radius: 8px;
+      font-size: 16px; margin-top: 10px;
+    }
+    .alphabet-bar {
+      display: flex; flex-wrap: wrap; padding: 8px;
+      background: white; border-bottom: 1px solid #e0e0e0; gap: 4px;
+    }
+    .letter-btn {
+      width: 32px; height: 32px; border: none; border-radius: 50%;
+      background: #f0f0f0; font-size: 12px; font-weight: bold;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .letter-btn.active { background: #1a73e8; color: white; }
+    .list { padding: 10px; }
+    .member-card {
+      background: white; padding: 16px; margin-bottom: 10px;
+      border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      display: flex; gap: 12px; align-items: center; min-height: 70px;
+    }
+    .avatar {
+      width: 50px; height: 50px; border-radius: 50%;
+      background: #e8f0fe; display: flex; align-items: center;
+      justify-content: center; font-size: 20px; font-weight: bold; color: #1a73e8;
+    }
+    .member-info { flex: 1; }
+    .member-name { font-weight: 600; font-size: 16px; color: #333; }
+    .member-detail { font-size: 13px; color: #666; margin-top: 4px; }
+    .steward-badge {
+      background: #e8f5e9; color: #2e7d32; padding: 2px 8px;
+      border-radius: 10px; font-size: 11px; font-weight: bold;
+    }
+    .empty { text-align: center; padding: 40px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2 style="margin: 0; font-size: 18px;">👥 Member Directory</h2>
+    <input type="text" class="search-box" id="searchInput" placeholder="Search by name...">
+  </div>
+
+  <div class="alphabet-bar" id="alphabetBar"></div>
+  <div class="list" id="memberList"><div class="empty">Loading...</div></div>
+
+  <script>
+    var allMembers = [];
+    var currentLetter = 'all';
+
+    window.onload = function() {
+      buildAlphabetBar();
+      google.script.run.withSuccessHandler(loadMembers).getAllMembers();
+      document.getElementById('searchInput').addEventListener('input', filterMembers);
+    };
+
+    function buildAlphabetBar() {
+      var bar = document.getElementById('alphabetBar');
+      var letters = ['All'].concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+      bar.innerHTML = letters.map(function(l) {
+        var key = l === 'All' ? 'all' : l;
+        return '<button class="letter-btn' + (key === 'all' ? ' active' : '') + '" onclick="filterByLetter(\\'' + key + '\\')">' + l + '</button>';
+      }).join('');
+    }
+
+    function loadMembers(members) {
+      allMembers = members;
+      renderMembers(members);
+    }
+
+    function filterByLetter(letter) {
+      currentLetter = letter;
+      document.querySelectorAll('.letter-btn').forEach(function(b) { b.classList.remove('active'); });
+      event.target.classList.add('active');
+      filterMembers();
+    }
+
+    function filterMembers() {
+      var search = document.getElementById('searchInput').value.toLowerCase();
+      var filtered = allMembers.filter(function(m) {
+        var matchesSearch = !search || m.name.toLowerCase().includes(search);
+        var matchesLetter = currentLetter === 'all' ||
+          (m.lastName && m.lastName.charAt(0).toUpperCase() === currentLetter);
+        return matchesSearch && matchesLetter;
+      });
+      renderMembers(filtered);
+    }
+
+    function renderMembers(members) {
+      var container = document.getElementById('memberList');
+      if (members.length === 0) {
+        container.innerHTML = '<div class="empty">No members found</div>';
+        return;
+      }
+      container.innerHTML = members.slice(0, 100).map(function(m) {
+        var initials = ((m.firstName || '').charAt(0) + (m.lastName || '').charAt(0)).toUpperCase() || '?';
+        var badge = m.isSteward === 'Yes' ? '<span class="steward-badge">Steward</span>' : '';
+        return '<div class="member-card" onclick="selectMember(' + m.row + ')">' +
+          '<div class="avatar">' + initials + '</div>' +
+          '<div class="member-info">' +
+            '<div class="member-name">' + m.name + ' ' + badge + '</div>' +
+            '<div class="member-detail">' + (m.location || 'No location') + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function selectMember(row) {
+      google.script.run.withSuccessHandler(function() { google.script.host.close(); }).navigateToMember(row);
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Mobile grievance browser with status filters
+ */
+function showMobileGrievanceBrowser() {
+  const html = createMobileGrievanceBrowserHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(420)
+    .setHeight(700);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📋 Grievance Log');
+}
+
+/**
+ * Creates HTML for mobile grievance browser
+ */
+function createMobileGrievanceBrowserHTML() {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      margin: 0; padding: 0; background: #f5f5f5;
+    }
+    .header { background: #1a73e8; color: white; padding: 15px; position: sticky; top: 0; z-index: 100; }
+    .search-box { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; margin-top: 10px; }
+    .status-tabs {
+      display: flex; overflow-x: auto; background: white;
+      border-bottom: 1px solid #e0e0e0; padding: 0 10px;
+    }
+    .status-tab {
+      flex-shrink: 0; padding: 14px 16px; border: none; background: none;
+      font-size: 14px; font-weight: 500; color: #666; cursor: pointer;
+      border-bottom: 3px solid transparent; min-height: 48px;
+    }
+    .status-tab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+    .list { padding: 10px; }
+    .grievance-card {
+      background: white; padding: 16px; margin-bottom: 12px;
+      border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      border-left: 4px solid #ccc;
+    }
+    .grievance-card.open { border-left-color: #dc2626; }
+    .grievance-card.pending { border-left-color: #f97316; }
+    .grievance-card.settled { border-left-color: #059669; }
+    .grievance-card.closed { border-left-color: #6b7280; }
+    .card-top { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .grievance-id { font-weight: bold; color: #1a73e8; font-size: 16px; }
+    .status-badge {
+      padding: 4px 10px; border-radius: 12px; font-size: 11px;
+      font-weight: bold; text-transform: uppercase;
+    }
+    .badge-open { background: #fee2e2; color: #dc2626; }
+    .badge-pending { background: #ffedd5; color: #ea580c; }
+    .badge-settled { background: #d1fae5; color: #059669; }
+    .badge-closed { background: #e5e7eb; color: #6b7280; }
+    .card-row { font-size: 14px; margin: 6px 0; display: flex; }
+    .card-label { color: #999; min-width: 80px; }
+    .card-value { color: #333; flex: 1; }
+    .deadline-warning { color: #dc2626; font-weight: bold; }
+    .empty { text-align: center; padding: 40px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2 style="margin: 0; font-size: 18px;">📋 Grievance Log</h2>
+    <input type="text" class="search-box" id="searchInput" placeholder="Search grievances...">
+  </div>
+
+  <div class="status-tabs">
+    <button class="status-tab active" onclick="filterByStatus('all')">All</button>
+    <button class="status-tab" onclick="filterByStatus('Open')">🔴 Open</button>
+    <button class="status-tab" onclick="filterByStatus('Pending Info')">🟠 Pending</button>
+    <button class="status-tab" onclick="filterByStatus('Settled')">🟢 Settled</button>
+    <button class="status-tab" onclick="filterByStatus('Closed')">⚫ Closed</button>
+  </div>
+
+  <div class="list" id="grievanceList"><div class="empty">Loading...</div></div>
+
+  <script>
+    var allGrievances = [];
+    var currentStatus = 'all';
+
+    window.onload = function() {
+      google.script.run.withSuccessHandler(loadGrievances).getRecentGrievancesForMobile(500);
+      document.getElementById('searchInput').addEventListener('input', filterGrievances);
+    };
+
+    function loadGrievances(grievances) {
+      allGrievances = grievances;
+      renderGrievances(grievances);
+    }
+
+    function filterByStatus(status) {
+      currentStatus = status;
+      document.querySelectorAll('.status-tab').forEach(function(t) { t.classList.remove('active'); });
+      event.target.classList.add('active');
+      filterGrievances();
+    }
+
+    function filterGrievances() {
+      var search = document.getElementById('searchInput').value.toLowerCase();
+      var filtered = allGrievances.filter(function(g) {
+        var matchesSearch = !search ||
+          g.id.toLowerCase().includes(search) ||
+          g.memberName.toLowerCase().includes(search) ||
+          (g.issueType && g.issueType.toLowerCase().includes(search));
+        var matchesStatus = currentStatus === 'all' || g.status === currentStatus;
+        return matchesSearch && matchesStatus;
+      });
+      renderGrievances(filtered);
+    }
+
+    function renderGrievances(grievances) {
+      var container = document.getElementById('grievanceList');
+      if (grievances.length === 0) {
+        container.innerHTML = '<div class="empty">No grievances found</div>';
+        return;
+      }
+      container.innerHTML = grievances.slice(0, 100).map(function(g) {
+        var statusKey = (g.status || 'open').toLowerCase().replace(/\\s+/g, '-');
+        var badgeClass = 'badge-' + statusKey.split('-')[0];
+        return '<div class="grievance-card ' + statusKey.split('-')[0] + '" onclick="selectGrievance(\\'' + g.id + '\\')">' +
+          '<div class="card-top">' +
+            '<span class="grievance-id">#' + g.id + '</span>' +
+            '<span class="status-badge ' + badgeClass + '">' + (g.status || 'Open') + '</span>' +
+          '</div>' +
+          '<div class="card-row"><span class="card-label">Member</span><span class="card-value">' + (g.memberName || 'N/A') + '</span></div>' +
+          '<div class="card-row"><span class="card-label">Issue</span><span class="card-value">' + (g.issueType || 'N/A') + '</span></div>' +
+          '<div class="card-row"><span class="card-label">Filed</span><span class="card-value">' + (g.filedDate || 'N/A') + '</span></div>' +
+          (g.deadline ? '<div class="card-row"><span class="card-label">Deadline</span><span class="card-value deadline-warning">' + g.deadline + '</span></div>' : '') +
+        '</div>';
+      }).join('');
+    }
+
+    function selectGrievance(id) {
+      google.script.run.withSuccessHandler(function() { google.script.host.close(); }).navigateToGrievance(id);
+    }
+  </script>
+</body>
+</html>
+  `;
 }
 
 
@@ -31394,6 +32248,154 @@ function cleanupTestData() {
       grievanceLog.deleteRow(i + 2);
     }
   }
+}
+
+/* --------------------= TEST CATEGORY RUNNERS --------------------= */
+
+/**
+ * Shows test results in a dialog
+ */
+function showTestResults() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const reportSheet = ss.getSheetByName('Test Results');
+
+  if (!reportSheet) {
+    SpreadsheetApp.getUi().alert(
+      'No Test Results',
+      'No test results found. Run some tests first using the Testing menu.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  reportSheet.activate();
+  SpreadsheetApp.getActiveSpreadsheet().toast('Showing test results', 'Test Results', 3);
+}
+
+/**
+ * Run all unit tests
+ */
+function runUnitTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running unit tests...', 'Tests', -1);
+
+  const unitTests = [
+    'testFilingDeadlineCalculation',
+    'testStepIDeadlineCalculation',
+    'testStepIIAppealDeadlineCalculation',
+    'testDaysOpenCalculation',
+    'testDaysOpenForClosedGrievance',
+    'testNextActionDueLogic',
+    'testMemberDirectoryFormulas',
+    'testOpenRateRange',
+    'testEmptySheetsHandling',
+    'testFutureDateHandling',
+    'testPastDeadlineHandling'
+  ];
+
+  runTestCategory('Unit Tests', unitTests);
+}
+
+/**
+ * Run all validation tests
+ */
+function runValidationTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running validation tests...', 'Tests', -1);
+
+  const validationTests = [
+    'testDataValidationSetup',
+    'testConfigDropdownValues',
+    'testMemberValidationRules',
+    'testGrievanceValidationRules',
+    'testMemberSeedingValidation',
+    'testGrievanceSeedingValidation',
+    'testMemberEmailFormat',
+    'testMemberIDUniqueness',
+    'testGrievanceMemberLinking'
+  ];
+
+  runTestCategory('Validation Tests', validationTests);
+}
+
+/**
+ * Run all integration tests
+ */
+function runIntegrationTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running integration tests...', 'Tests', -1);
+
+  const integrationTests = [
+    'testCompleteGrievanceWorkflow',
+    'testDashboardMetricsUpdate',
+    'testMemberGrievanceSnapshot',
+    'testConfigChangesPropagateToDropdowns',
+    'testMultipleGrievancesSameMember',
+    'testDashboardHandlesEmptyData',
+    'testGrievanceUpdatesTriggersRecalculation'
+  ];
+
+  runTestCategory('Integration Tests', integrationTests);
+}
+
+/**
+ * Run all performance tests
+ */
+function runPerformanceTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running performance tests...', 'Tests', -1);
+
+  const performanceTests = [
+    'testDashboardRefreshPerformance',
+    'testFormulaPerformanceWithData'
+  ];
+
+  runTestCategory('Performance Tests', performanceTests);
+}
+
+/**
+ * Run a category of tests
+ * @param {string} categoryName - Name of the test category
+ * @param {string[]} testNames - Array of test function names
+ */
+function runTestCategory(categoryName, testNames) {
+  // Reset results
+  TEST_RESULTS.passed = [];
+  TEST_RESULTS.failed = [];
+  TEST_RESULTS.skipped = [];
+
+  var passed = 0;
+  var failed = 0;
+  var skipped = 0;
+
+  testNames.forEach(function(testName) {
+    try {
+      const testFn = this[testName];
+      if (typeof testFn !== 'function') {
+        TEST_RESULTS.skipped.push({ name: testName, reason: 'Function not found' });
+        skipped++;
+        return;
+      }
+
+      testFn();
+      TEST_RESULTS.passed.push({ name: testName });
+      passed++;
+    } catch (error) {
+      TEST_RESULTS.failed.push({
+        name: testName,
+        error: error.message,
+        stack: error.stack
+      });
+      failed++;
+    }
+  });
+
+  // Generate report
+  generateTestReport();
+
+  // Show summary
+  const total = passed + failed + skipped;
+  SpreadsheetApp.getUi().alert(
+    categoryName + ' Complete',
+    `Results:\n✅ Passed: ${passed}/${total}\n❌ Failed: ${failed}/${total}\n⏭️ Skipped: ${skipped}/${total}\n\nView the Test Results sheet for details.`,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
 }
 
 
