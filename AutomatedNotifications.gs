@@ -43,7 +43,7 @@ function setupDailyDeadlineNotifications() {
  */
 function disableDailyDeadlineNotifications() {
   const triggers = ScriptApp.getProjectTriggers();
-  var removed = 0;
+  let removed = 0;
 
   triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'checkDeadlinesAndNotify') {
@@ -89,15 +89,15 @@ function checkDeadlinesAndNotify() {
 
   // Categorize grievances by deadline urgency
   data.forEach(function(row, index) {
-    const grievanceId = row[0];
-    const memberFirstName = row[2];
-    const memberLastName = row[3];
-    const status = row[4];
-    const issueType = row[5];
-    const nextActionDue = row[19];
-    const daysToDeadline = row[20];
-    const steward = row[13];
-    const manager = row[11];
+    const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+    const memberFirstName = row[GRIEVANCE_COLS.FIRST_NAME - 1];
+    const memberLastName = row[GRIEVANCE_COLS.LAST_NAME - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const issueType = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const manager = row[GRIEVANCE_COLS.STEP2_APPEAL_DUE - 1];
 
     // Only check open grievances with deadlines
     if (status !== 'Open' || !nextActionDue || !steward) {
@@ -125,7 +125,7 @@ function checkDeadlinesAndNotify() {
   });
 
   // Send notifications
-  var emailsSent = 0;
+  let emailsSent = 0;
 
   // Send overdue notifications
   notifications.overdue.forEach(function(grievance) {
@@ -234,7 +234,7 @@ function createEmailBody(grievance, priority) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const spreadsheetUrl = ss.getUrl();
 
-  var urgencyMessage = '';
+  let urgencyMessage = '';
 
   if (priority === 'OVERDUE') {
     urgencyMessage = `⚠️ THIS GRIEVANCE IS OVERDUE BY ${Math.abs(grievance.daysRemaining)} DAY(S)!\n\nImmediate action is required.`;

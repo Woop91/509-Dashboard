@@ -349,7 +349,7 @@ function getTopProcesses(grievances, today, limit) {
     })
     .map(function(g) {
       const nextDeadline = g[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-      var daysUntilDue = null;
+      let daysUntilDue = null;
 
       if (nextDeadline instanceof Date) {
         const deadline = new Date(nextDeadline);

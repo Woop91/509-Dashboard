@@ -50,7 +50,7 @@ function getGrievanceFloatState() {
 function setGrievanceFloatState(enabled) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var settingsSheet = ss.getSheetByName('User Settings');
+    let settingsSheet = ss.getSheetByName('User Settings');
 
     if (!settingsSheet) {
       // Create settings sheet if it doesn't exist
@@ -64,7 +64,7 @@ function setGrievanceFloatState(enabled) {
 
     // Find and update or add setting
     const settingsData = settingsSheet.getDataRange().getValues();
-    var found = false;
+    let found = false;
 
     for (let i = 0; i < settingsData.length; i++) {
       if (settingsData[i][0] === 'grievanceFloatEnabled') {

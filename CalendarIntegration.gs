@@ -54,15 +54,15 @@ function syncDeadlinesToCalendar() {
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
     const calendar = CalendarApp.getDefaultCalendar();
-    var eventsCreated = 0;
-    var eventsSkipped = 0;
+    let eventsCreated = 0;
+    let eventsSkipped = 0;
 
     data.forEach(function(row, index) {
-      const grievanceId = row[0]; // Column A
-      const memberName = `${row[2]} ${row[3]}`; // Columns C, D
-      const status = row[4]; // Column E
-      const nextActionDue = row[19]; // Column T (Next Action Due)
-      const daysToDeadline = row[20]; // Column U (Days to Deadline)
+      const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+      const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
+      const status = row[GRIEVANCE_COLS.STATUS - 1];
+      const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+      const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
       // Only create events for open grievances with deadlines
       if (status !== 'Open' || !nextActionDue) {
@@ -78,8 +78,8 @@ function syncDeadlinesToCalendar() {
       }
 
       // Determine priority and color
-      var color = CalendarApp.EventColor.BLUE; // Default: Due later
-      var priority = 'Normal';
+      let color = CalendarApp.EventColor.BLUE; // Default: Due later
+      let priority = 'Normal';
 
       if (daysToDeadline < 0) {
         color = CalendarApp.EventColor.RED;
@@ -183,12 +183,12 @@ function syncSingleDeadlineToCalendar(grievanceId) {
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === grievanceId) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       const row = data[i];
-      const memberName = `${row[2]} ${row[3]}`;
-      const status = row[4];
-      const nextActionDue = row[19];
-      const daysToDeadline = row[20];
+      const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
+      const status = row[GRIEVANCE_COLS.STATUS - 1];
+      const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+      const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
       if (status !== 'Open' || !nextActionDue) {
         return; // Skip if not open or no deadline
@@ -200,7 +200,7 @@ function syncSingleDeadlineToCalendar(grievanceId) {
       const existingEvent = checkCalendarEventExists(calendar, grievanceId);
       if (existingEvent) {
         // Update existing event
-        var color = CalendarApp.EventColor.BLUE;
+        let color = CalendarApp.EventColor.BLUE;
         if (daysToDeadline < 0) color = CalendarApp.EventColor.RED;
         else if (daysToDeadline <= 3) color = CalendarApp.EventColor.ORANGE;
         else if (daysToDeadline <= 7) color = CalendarApp.EventColor.YELLOW;
@@ -209,8 +209,8 @@ function syncSingleDeadlineToCalendar(grievanceId) {
         existingEvent.setTime(new Date(nextActionDue), new Date(nextActionDue));
       } else {
         // Create new event (same logic as syncDeadlinesToCalendar)
-        var color = CalendarApp.EventColor.BLUE;
-        var priority = 'Normal';
+        let color = CalendarApp.EventColor.BLUE;
+        let priority = 'Normal';
 
         if (daysToDeadline < 0) {
           color = CalendarApp.EventColor.RED;
@@ -289,7 +289,7 @@ function clearAllCalendarEvents() {
     const futureDate = new Date(now.getTime() + (365 * 24 * 60 * 60 * 1000));
 
     const events = calendar.getEvents(now, futureDate);
-    var removedCount = 0;
+    let removedCount = 0;
 
     events.forEach(function(event) {
       const tag = event.getTag('509Dashboard');

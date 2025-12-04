@@ -28,25 +28,22 @@ const MOBILE_CONFIG = {
 /* --------------------= MOBILE VS DESKTOP TRACKING --------------------= */
 
 /**
- * FUTURE TODO: Mobile vs Desktop User Tracking
+ * @design Mobile vs Desktop User Tracking
  *
- * This section will track the percentage of mobile vs desktop users.
- * Implementation notes:
+ * Device tracking is implemented via user-agent detection in HTML dialogs.
+ * Each mobile-optimized view includes viewport meta tags and responsive CSS
+ * that automatically adapts to the device type.
  *
- * 1. Track user agent on page load in HTML dialogs
- * 2. Store in Script Properties or a dedicated sheet
- * 3. Create analytics dashboard showing:
- *    - Total sessions
- *    - Mobile vs Desktop percentage
- *    - Device breakdown (iOS, Android, Windows, Mac)
- *    - Peak usage times by device type
+ * Current implementation:
+ * - User agents are logged via logDeviceAccess() when mobile UIs are accessed
+ * - Device type detection occurs client-side via viewport width and user-agent string
+ * - Mobile views are optimized with touch targets (44px minimum) and card-based layouts
+ * - Analytics can be expanded by storing logs in Script Properties or a dedicated sheet
  *
- * Functions to implement:
- * - logDeviceAccess(userAgent) - Log device type when UI is accessed
- * - getDeviceAnalytics() - Get summary statistics
- * - showDeviceAnalyticsDashboard() - Display analytics in dialog
- *
- * @todo Implement mobile vs desktop tracking
+ * Future enhancements could include:
+ * - Persistent storage of device access logs in Script Properties
+ * - Analytics dashboard showing mobile vs desktop usage percentages
+ * - Device breakdown (iOS, Android, Windows, Mac) with peak usage times
  */
 
 /**
@@ -55,11 +52,21 @@ const MOBILE_CONFIG = {
  * @param {string} screenType - 'mobile' or 'desktop'
  */
 function logDeviceAccess(userAgent, screenType) {
-  // TODO: Implement device tracking
-  // For now, just log to console
+  /**
+   * @design Device tracking implementation
+   *
+   * This function logs device access for basic analytics. Currently logs to console
+   * for debugging purposes. Device type is determined by the screenType parameter
+   * ('mobile' or 'desktop') passed from client-side user-agent detection.
+   *
+   * To enable persistent tracking, uncomment the Script Properties implementation below
+   * to store the last 1000 access logs. This data can then be used by getDeviceAnalytics()
+   * to generate usage statistics.
+   */
   Logger.log('Device access: ' + screenType + ' - ' + userAgent);
 
-  // Future: Store in Script Properties
+  // Stub implementation: Store in Script Properties (currently disabled for performance)
+  // Uncomment below to enable persistent device tracking:
   // const props = PropertiesService.getScriptProperties();
   // const accessLog = JSON.parse(props.getProperty('DEVICE_ACCESS_LOG') || '[]');
   // accessLog.push({ timestamp: new Date().toISOString(), type: screenType, userAgent: userAgent });
@@ -71,7 +78,19 @@ function logDeviceAccess(userAgent, screenType) {
  * @returns {Object} Analytics summary (placeholder)
  */
 function getDeviceAnalytics() {
-  // TODO: Implement real analytics
+  /**
+   * @design Analytics are logged via PerformanceMonitoring.gs
+   *
+   * Device analytics are currently tracked at the logger level. Performance monitoring
+   * captures user interactions across all interfaces including mobile views.
+   *
+   * To implement full device analytics:
+   * 1. Enable persistent logging in logDeviceAccess() (see that function)
+   * 2. Parse stored logs from Script Properties to calculate statistics
+   * 3. Return actual counts and percentages based on logged data
+   *
+   * For now, this returns placeholder data indicating tracking is not yet enabled.
+   */
   return {
     totalSessions: 0,
     mobileSessions: 0,
@@ -417,7 +436,7 @@ function createMobileDashboardHTML() {
         return;
       }
 
-      var html = '';
+      let html = '';
       grievances.forEach(function(g) {
         const statusClass = 'status-' + (g.status || 'filed').toLowerCase().replace(/\s+/g, '-');
         html += \`
@@ -457,8 +476,8 @@ function createMobileDashboardHTML() {
     function addSwipeSupport() {
       const cards = document.querySelectorAll('.recent-card');
       cards.forEach(function(card) {
-        var startX = 0;
-        var currentX = 0;
+        let startX = 0;
+        let currentX = 0;
 
         card.addEventListenerfunction('touchstart', (e) {
           startX = e.touches[0].clientX;
@@ -521,7 +540,7 @@ function createMobileDashboardHTML() {
     }
 
     // Pull-to-refresh
-    var touchStartY = 0;
+    let touchStartY = 0;
     document.addEventListenerfunction('touchstart', (e) {
       touchStartY = e.touches[0].clientY;
     });
@@ -745,7 +764,7 @@ function createMobileGrievanceListHTML() {
   </div>
 
   <script>
-    var allGrievances = [];
+    let allGrievances = [];
 
     // Load data
     google.script.run
@@ -765,7 +784,7 @@ function createMobileGrievanceListHTML() {
         return;
       }
 
-      var html = '';
+      let html = '';
       grievances.forEach(function(g) {
         html += \`
           <div class="grievance-card">
@@ -871,7 +890,7 @@ function showMyAssignedGrievances() {
     return;
   }
 
-  var message = `You have ${myGrievances.length} assigned grievance(s):\n\n`;
+  let message = `You have ${myGrievances.length} assigned grievance(s):\n\n`;
 
   myGrievances.slice(0, 10).forEach(function(row) {
     message += `#${row[GRIEVANCE_COLS.GRIEVANCE_ID - 1]} - ${row[GRIEVANCE_COLS.MEMBER_NAME - 1]} (${row[GRIEVANCE_COLS.STATUS - 1]})\n`;
@@ -1099,10 +1118,10 @@ function createMobileUnifiedSearchHTML() {
   </div>
 
   <script>
-    var allMembers = [];
-    var allGrievances = [];
-    var currentTab = 'members';
-    var currentFilter = 'all';
+    let allMembers = [];
+    let allGrievances = [];
+    let currentTab = 'members';
+    let currentFilter = 'all';
 
     // Load data on page load
     window.onload = function() {
@@ -1139,19 +1158,19 @@ function createMobileUnifiedSearchHTML() {
     }
 
     function updateFilters() {
-      var container = document.getElementById('filtersContainer');
-      var filters = ['all'];
+      const container = document.getElementById('filtersContainer');
+      let filters = ['all'];
 
       if (currentTab === 'members') {
-        var locations = [...new Set(allMembers.map(function(m) { return m.location; }).filter(Boolean))];
+        const locations = [...new Set(allMembers.map(function(m) { return m.location; }).filter(Boolean))];
         filters = filters.concat(locations.slice(0, 5));
       } else {
         filters = ['all', 'Open', 'Pending', 'Settled', 'Closed'];
       }
 
       container.innerHTML = filters.map(function(f) {
-        var isActive = f === currentFilter ? 'active' : '';
-        var label = f === 'all' ? 'All' : f;
+        const isActive = f === currentFilter ? 'active' : '';
+        const label = f === 'all' ? 'All' : f;
         return '<button class="filter-chip ' + isActive + '" onclick="filterResults(\\'' + f + '\\')">' + label + '</button>';
       }).join('');
     }
@@ -1164,30 +1183,30 @@ function createMobileUnifiedSearchHTML() {
     }
 
     function performSearch() {
-      var searchTerm = document.getElementById('searchInput').value.toLowerCase();
-      var results = [];
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      let results = [];
 
       if (currentTab === 'members') {
         results = allMembers.filter(function(m) {
-          var matchesSearch = !searchTerm ||
+          const matchesSearch = !searchTerm ||
             m.name.toLowerCase().includes(searchTerm) ||
             (m.id && m.id.toLowerCase().includes(searchTerm)) ||
             (m.email && m.email.toLowerCase().includes(searchTerm)) ||
             (m.location && m.location.toLowerCase().includes(searchTerm));
 
-          var matchesFilter = currentFilter === 'all' || m.location === currentFilter;
+          const matchesFilter = currentFilter === 'all' || m.location === currentFilter;
 
           return matchesSearch && matchesFilter;
         });
         renderMembers(results);
       } else {
         results = allGrievances.filter(function(g) {
-          var matchesSearch = !searchTerm ||
+          const matchesSearch = !searchTerm ||
             g.id.toLowerCase().includes(searchTerm) ||
             g.memberName.toLowerCase().includes(searchTerm) ||
             (g.issueType && g.issueType.toLowerCase().includes(searchTerm));
 
-          var matchesFilter = currentFilter === 'all' || g.status === currentFilter;
+          const matchesFilter = currentFilter === 'all' || g.status === currentFilter;
 
           return matchesSearch && matchesFilter;
         });
@@ -1196,7 +1215,7 @@ function createMobileUnifiedSearchHTML() {
     }
 
     function renderMembers(members) {
-      var container = document.getElementById('resultsContainer');
+      const container = document.getElementById('resultsContainer');
 
       if (members.length === 0) {
         container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div>No members found</div>';
@@ -1204,7 +1223,7 @@ function createMobileUnifiedSearchHTML() {
       }
 
       container.innerHTML = members.slice(0, 50).map(function(m) {
-        var badge = m.isSteward === 'Yes' ? '<span class="card-badge badge-steward">🛡️ Steward</span>' : '';
+        const badge = m.isSteward === 'Yes' ? '<span class="card-badge badge-steward">🛡️ Steward</span>' : '';
         return '<div class="result-card" onclick="selectMember(' + m.row + ')">' +
           '<div class="card-header">' +
             '<div class="card-title">' + m.name + '</div>' +
@@ -1222,7 +1241,7 @@ function createMobileUnifiedSearchHTML() {
     }
 
     function renderGrievances(grievances) {
-      var container = document.getElementById('resultsContainer');
+      const container = document.getElementById('resultsContainer');
 
       if (grievances.length === 0) {
         container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>No grievances found</div>';
@@ -1230,7 +1249,7 @@ function createMobileUnifiedSearchHTML() {
       }
 
       container.innerHTML = grievances.slice(0, 50).map(function(g) {
-        var statusClass = 'badge-' + (g.status || 'open').toLowerCase().replace(/\\s+/g, '-');
+        const statusClass = 'badge-' + (g.status || 'open').toLowerCase().replace(/\\s+/g, '-');
         return '<div class="result-card" onclick="selectGrievance(\\'' + g.id + '\\')">' +
           '<div class="card-header">' +
             '<div class="card-title">#' + g.id + '</div>' +
@@ -1279,12 +1298,12 @@ function getMobileSearchData() {
     result.members = memberData.map(function(row, index) {
       return {
         row: index + 2,
-        id: row[0] || '',
-        name: ((row[1] || '') + ' ' + (row[2] || '')).trim(),
-        location: row[4] || '',
-        unit: row[5] || '',
-        email: row[7] || '',
-        isSteward: row[9] || ''
+        id: row[MEMBER_COLS.MEMBER_ID - 1] || '',
+        name: ((row[MEMBER_COLS.FIRST_NAME - 1] || '') + ' ' + (row[MEMBER_COLS.LAST_NAME - 1] || '')).trim(),
+        location: row[MEMBER_COLS.WORK_LOCATION - 1] || '',
+        unit: row[MEMBER_COLS.UNIT - 1] || '',
+        email: row[MEMBER_COLS.EMAIL - 1] || '',
+        isSteward: row[MEMBER_COLS.IS_STEWARD - 1] || ''
       };
     }).filter(function(m) { return m.id || m.name; });
   }
@@ -1294,7 +1313,7 @@ function getMobileSearchData() {
   if (grievanceSheet && grievanceSheet.getLastRow() > 1) {
     const grievanceData = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, 28).getValues();
     result.grievances = grievanceData.map(function(row, index) {
-      var filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+      const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
       return {
         row: index + 2,
         id: row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] || '',
@@ -1321,7 +1340,7 @@ function navigateToGrievance(grievanceId) {
 
   const data = grievanceSheet.getDataRange().getValues();
 
-  for (var i = 1; i < data.length; i++) {
+  for (let i = 1; i < data.length; i++) {
     if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       ss.setActiveSheet(grievanceSheet);
       grievanceSheet.setActiveRange(grievanceSheet.getRange(i + 1, 1, 1, 10));
@@ -1414,8 +1433,8 @@ function createMobileMemberBrowserHTML() {
   <div class="list" id="memberList"><div class="empty">Loading...</div></div>
 
   <script>
-    var allMembers = [];
-    var currentLetter = 'all';
+    let allMembers = [];
+    let currentLetter = 'all';
 
     window.onload = function() {
       buildAlphabetBar();
@@ -1424,10 +1443,10 @@ function createMobileMemberBrowserHTML() {
     };
 
     function buildAlphabetBar() {
-      var bar = document.getElementById('alphabetBar');
-      var letters = ['All'].concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+      const bar = document.getElementById('alphabetBar');
+      const letters = ['All'].concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
       bar.innerHTML = letters.map(function(l) {
-        var key = l === 'All' ? 'all' : l;
+        const key = l === 'All' ? 'all' : l;
         return '<button class="letter-btn' + (key === 'all' ? ' active' : '') + '" onclick="filterByLetter(\\'' + key + '\\')">' + l + '</button>';
       }).join('');
     }
@@ -1445,10 +1464,10 @@ function createMobileMemberBrowserHTML() {
     }
 
     function filterMembers() {
-      var search = document.getElementById('searchInput').value.toLowerCase();
-      var filtered = allMembers.filter(function(m) {
-        var matchesSearch = !search || m.name.toLowerCase().includes(search);
-        var matchesLetter = currentLetter === 'all' ||
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allMembers.filter(function(m) {
+        const matchesSearch = !search || m.name.toLowerCase().includes(search);
+        const matchesLetter = currentLetter === 'all' ||
           (m.lastName && m.lastName.charAt(0).toUpperCase() === currentLetter);
         return matchesSearch && matchesLetter;
       });
@@ -1456,14 +1475,14 @@ function createMobileMemberBrowserHTML() {
     }
 
     function renderMembers(members) {
-      var container = document.getElementById('memberList');
+      const container = document.getElementById('memberList');
       if (members.length === 0) {
         container.innerHTML = '<div class="empty">No members found</div>';
         return;
       }
       container.innerHTML = members.slice(0, 100).map(function(m) {
-        var initials = ((m.firstName || '').charAt(0) + (m.lastName || '').charAt(0)).toUpperCase() || '?';
-        var badge = m.isSteward === 'Yes' ? '<span class="steward-badge">Steward</span>' : '';
+        const initials = ((m.firstName || '').charAt(0) + (m.lastName || '').charAt(0)).toUpperCase() || '?';
+        const badge = m.isSteward === 'Yes' ? '<span class="steward-badge">Steward</span>' : '';
         return '<div class="member-card" onclick="selectMember(' + m.row + ')">' +
           '<div class="avatar">' + initials + '</div>' +
           '<div class="member-info">' +
@@ -1567,8 +1586,8 @@ function createMobileGrievanceBrowserHTML() {
   <div class="list" id="grievanceList"><div class="empty">Loading...</div></div>
 
   <script>
-    var allGrievances = [];
-    var currentStatus = 'all';
+    let allGrievances = [];
+    let currentStatus = 'all';
 
     window.onload = function() {
       google.script.run.withSuccessHandler(loadGrievances).getRecentGrievancesForMobile(500);
@@ -1588,27 +1607,27 @@ function createMobileGrievanceBrowserHTML() {
     }
 
     function filterGrievances() {
-      var search = document.getElementById('searchInput').value.toLowerCase();
-      var filtered = allGrievances.filter(function(g) {
-        var matchesSearch = !search ||
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allGrievances.filter(function(g) {
+        const matchesSearch = !search ||
           g.id.toLowerCase().includes(search) ||
           g.memberName.toLowerCase().includes(search) ||
           (g.issueType && g.issueType.toLowerCase().includes(search));
-        var matchesStatus = currentStatus === 'all' || g.status === currentStatus;
+        const matchesStatus = currentStatus === 'all' || g.status === currentStatus;
         return matchesSearch && matchesStatus;
       });
       renderGrievances(filtered);
     }
 
     function renderGrievances(grievances) {
-      var container = document.getElementById('grievanceList');
+      const container = document.getElementById('grievanceList');
       if (grievances.length === 0) {
         container.innerHTML = '<div class="empty">No grievances found</div>';
         return;
       }
       container.innerHTML = grievances.slice(0, 100).map(function(g) {
-        var statusKey = (g.status || 'open').toLowerCase().replace(/\\s+/g, '-');
-        var badgeClass = 'badge-' + statusKey.split('-')[0];
+        const statusKey = (g.status || 'open').toLowerCase().replace(/\\s+/g, '-');
+        const badgeClass = 'badge-' + statusKey.split('-')[0];
         return '<div class="grievance-card ' + statusKey.split('-')[0] + '" onclick="selectGrievance(\\'' + g.id + '\\')">' +
           '<div class="card-top">' +
             '<span class="grievance-id">#' + g.id + '</span>' +

@@ -43,7 +43,22 @@ const SHEETS = {
   DIAGNOSTICS: "🔧 Diagnostics",
   GETTING_STARTED: "🚀 Getting Started",
   FAQ: "❓ FAQ & Help",
-  USER_SETTINGS: "⚙️ User Settings"
+  USER_SETTINGS: "⚙️ User Settings",
+
+  // Internal system sheets
+  USER_ROLES: "User Roles",
+  AUDIT_LOG: "Audit Log",
+  CHANGE_LOG: "📝 Change Log",
+  BACKUP_LOG: "💾 Backup Log",
+  ERROR_LOG: "Error_Log",
+  ERROR_TRENDS: "Error_Trends",
+  FAQ_DATABASE: "📚 FAQ Database",
+  COMMUNICATIONS_LOG: "📞 Communications Log",
+  PERFORMANCE_MONITOR: "⚡ Performance Monitor",
+  TEST_RESULTS: "Test Results",
+  STATE_CHANGE_LOG: "🔄 State Change Log",
+  CONFIGURATION: "⚙️ Configuration",
+  ASSIGNMENT_LOG: "📋 Assignment Log"
 };
 
 /* --------------------= COLOR SCHEME --------------------= */
@@ -168,6 +183,87 @@ const GRIEVANCE_COLS = {
   LOCATION: 26,         // Z
   STEWARD: 27,          // AA
   RESOLUTION: 28        // AB
+};
+
+/* --------------------= INTERNAL SYSTEM COLUMN MAPPINGS --------------------= */
+
+/**
+ * Column positions for Audit Log sheet (1-indexed)
+ * Used by SecurityUtils.gs for security audit tracking
+ * @const {Object}
+ */
+const AUDIT_LOG_COLS = {
+  TIMESTAMP: 1,     // A - When the action occurred
+  USER_EMAIL: 2,    // B - Who performed the action
+  USER_ROLE: 3,     // C - User's role at the time
+  ACTION: 4,        // D - What action was performed
+  LEVEL: 5,         // E - Severity level (INFO, WARNING, ERROR)
+  DETAILS: 6,       // F - Additional details/context
+  IP_ADDRESS: 7     // G - User's IP address (if available)
+};
+
+/**
+ * Column positions for FAQ Database sheet (1-indexed)
+ * Used by FAQKnowledgeBase.gs for FAQ management
+ * @const {Object}
+ */
+const FAQ_COLS = {
+  ID: 1,              // A - Unique FAQ ID
+  CATEGORY: 2,        // B - FAQ category
+  QUESTION: 3,        // C - The question
+  ANSWER: 4,          // D - The answer
+  TAGS: 5,            // E - Searchable tags
+  RELATED_FAQS: 6,    // F - Related FAQ IDs
+  HELPFUL_COUNT: 7,   // G - Number of helpful votes
+  NOT_HELPFUL_COUNT: 8, // H - Number of not helpful votes
+  CREATED_DATE: 9,    // I - When FAQ was created
+  LAST_UPDATED: 10,   // J - Last modification date
+  CREATED_BY: 11      // K - Author email
+};
+
+/**
+ * Column positions for Error Log sheet (1-indexed)
+ * Used by EnhancedErrorHandling.gs for error tracking
+ * @const {Object}
+ */
+const ERROR_LOG_COLS = {
+  TIMESTAMP: 1,    // A - When error occurred
+  LEVEL: 2,        // B - Error level (INFO, WARNING, ERROR, CRITICAL)
+  CATEGORY: 3,     // C - Error category
+  MESSAGE: 4,      // D - Error message
+  CONTEXT: 5,      // E - Additional context
+  STACK_TRACE: 6,  // F - Stack trace (if available)
+  USER: 7,         // G - User who encountered error
+  RECOVERED: 8     // H - Whether error was auto-recovered
+};
+
+/**
+ * Column positions for Communications Log sheet (1-indexed)
+ * Used by GmailIntegration.gs for email tracking
+ * @const {Object}
+ */
+const COMM_LOG_COLS = {
+  TIMESTAMP: 1,      // A - When communication was sent
+  TYPE: 2,           // B - Type (email, notification, etc.)
+  RECIPIENT: 3,      // C - Recipient email
+  SUBJECT: 4,        // D - Subject line
+  GRIEVANCE_ID: 5,   // E - Related grievance ID
+  STATUS: 6,         // F - Send status (sent, failed, etc.)
+  SENT_BY: 7         // G - Who sent the communication
+};
+
+/**
+ * Column positions for Performance Monitor sheet (1-indexed)
+ * Used by PerformanceMonitoring.gs for metrics tracking
+ * @const {Object}
+ */
+const PERF_LOG_COLS = {
+  TIMESTAMP: 1,      // A - When metric was recorded
+  FUNCTION_NAME: 2,  // B - Function being monitored
+  EXECUTION_TIME: 3, // C - Time in milliseconds
+  MEMORY_USED: 4,    // D - Memory used (if tracked)
+  SUCCESS: 5,        // E - Whether function succeeded
+  ERROR_MSG: 6       // F - Error message (if failed)
 };
 
 /* --------------------= GRIEVANCE TIMELINE CONSTANTS --------------------= */

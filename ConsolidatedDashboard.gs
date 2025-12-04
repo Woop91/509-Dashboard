@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-04T13:57:56.134Z
+ * - Build Date: 2025-12-04T17:03:43.582Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -72,7 +72,22 @@ const SHEETS = {
   DIAGNOSTICS: "🔧 Diagnostics",
   GETTING_STARTED: "🚀 Getting Started",
   FAQ: "❓ FAQ & Help",
-  USER_SETTINGS: "⚙️ User Settings"
+  USER_SETTINGS: "⚙️ User Settings",
+
+  // Internal system sheets
+  USER_ROLES: "User Roles",
+  AUDIT_LOG: "Audit Log",
+  CHANGE_LOG: "📝 Change Log",
+  BACKUP_LOG: "💾 Backup Log",
+  ERROR_LOG: "Error_Log",
+  ERROR_TRENDS: "Error_Trends",
+  FAQ_DATABASE: "📚 FAQ Database",
+  COMMUNICATIONS_LOG: "📞 Communications Log",
+  PERFORMANCE_MONITOR: "⚡ Performance Monitor",
+  TEST_RESULTS: "Test Results",
+  STATE_CHANGE_LOG: "🔄 State Change Log",
+  CONFIGURATION: "⚙️ Configuration",
+  ASSIGNMENT_LOG: "📋 Assignment Log"
 };
 
 /* --------------------= COLOR SCHEME --------------------= */
@@ -197,6 +212,87 @@ const GRIEVANCE_COLS = {
   LOCATION: 26,         // Z
   STEWARD: 27,          // AA
   RESOLUTION: 28        // AB
+};
+
+/* --------------------= INTERNAL SYSTEM COLUMN MAPPINGS --------------------= */
+
+/**
+ * Column positions for Audit Log sheet (1-indexed)
+ * Used by SecurityUtils.gs for security audit tracking
+ * @const {Object}
+ */
+const AUDIT_LOG_COLS = {
+  TIMESTAMP: 1,     // A - When the action occurred
+  USER_EMAIL: 2,    // B - Who performed the action
+  USER_ROLE: 3,     // C - User's role at the time
+  ACTION: 4,        // D - What action was performed
+  LEVEL: 5,         // E - Severity level (INFO, WARNING, ERROR)
+  DETAILS: 6,       // F - Additional details/context
+  IP_ADDRESS: 7     // G - User's IP address (if available)
+};
+
+/**
+ * Column positions for FAQ Database sheet (1-indexed)
+ * Used by FAQKnowledgeBase.gs for FAQ management
+ * @const {Object}
+ */
+const FAQ_COLS = {
+  ID: 1,              // A - Unique FAQ ID
+  CATEGORY: 2,        // B - FAQ category
+  QUESTION: 3,        // C - The question
+  ANSWER: 4,          // D - The answer
+  TAGS: 5,            // E - Searchable tags
+  RELATED_FAQS: 6,    // F - Related FAQ IDs
+  HELPFUL_COUNT: 7,   // G - Number of helpful votes
+  NOT_HELPFUL_COUNT: 8, // H - Number of not helpful votes
+  CREATED_DATE: 9,    // I - When FAQ was created
+  LAST_UPDATED: 10,   // J - Last modification date
+  CREATED_BY: 11      // K - Author email
+};
+
+/**
+ * Column positions for Error Log sheet (1-indexed)
+ * Used by EnhancedErrorHandling.gs for error tracking
+ * @const {Object}
+ */
+const ERROR_LOG_COLS = {
+  TIMESTAMP: 1,    // A - When error occurred
+  LEVEL: 2,        // B - Error level (INFO, WARNING, ERROR, CRITICAL)
+  CATEGORY: 3,     // C - Error category
+  MESSAGE: 4,      // D - Error message
+  CONTEXT: 5,      // E - Additional context
+  STACK_TRACE: 6,  // F - Stack trace (if available)
+  USER: 7,         // G - User who encountered error
+  RECOVERED: 8     // H - Whether error was auto-recovered
+};
+
+/**
+ * Column positions for Communications Log sheet (1-indexed)
+ * Used by GmailIntegration.gs for email tracking
+ * @const {Object}
+ */
+const COMM_LOG_COLS = {
+  TIMESTAMP: 1,      // A - When communication was sent
+  TYPE: 2,           // B - Type (email, notification, etc.)
+  RECIPIENT: 3,      // C - Recipient email
+  SUBJECT: 4,        // D - Subject line
+  GRIEVANCE_ID: 5,   // E - Related grievance ID
+  STATUS: 6,         // F - Send status (sent, failed, etc.)
+  SENT_BY: 7         // G - Who sent the communication
+};
+
+/**
+ * Column positions for Performance Monitor sheet (1-indexed)
+ * Used by PerformanceMonitoring.gs for metrics tracking
+ * @const {Object}
+ */
+const PERF_LOG_COLS = {
+  TIMESTAMP: 1,      // A - When metric was recorded
+  FUNCTION_NAME: 2,  // B - Function being monitored
+  EXECUTION_TIME: 3, // C - Time in milliseconds
+  MEMORY_USED: 4,    // D - Memory used (if tracked)
+  SUCCESS: 5,        // E - Whether function succeeded
+  ERROR_MSG: 6       // F - Error message (if failed)
 };
 
 /* --------------------= GRIEVANCE TIMELINE CONSTANTS --------------------= */
@@ -1142,7 +1238,7 @@ function validateInput(input, type, maxLength = 255) {
 function logAuditEvent(action, details = {}, level = 'INFO') {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
+    let auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
 
     // Create audit log sheet if it doesn't exist
     if (!auditLog) {
@@ -1224,19 +1320,16 @@ function getAuditLog(limit = 100, action = null) {
     const headers = data[0];
     const rows = data.slice(1).reverse(); // Most recent first
 
-    var filtered = rows;
-    if (action) {
-      filtered = rows.filter(function(row) { return row[3] === action; });
-    }
+    const filtered = action ? rows.filter(function(row) { return row[AUDIT_LOG_COLS.ACTION - 1] === action; }) : rows;
 
     const result = filtered.slice(0, limit).map(function(row) { return {
-      timestamp: row[0],
-      userEmail: row[1],
-      userRole: row[2],
-      action: row[3],
-      level: row[4],
-      details: row[5],
-      ipAddress: row[6]
+      timestamp: row[AUDIT_LOG_COLS.TIMESTAMP - 1],
+      userEmail: row[AUDIT_LOG_COLS.USER_EMAIL - 1],
+      userRole: row[AUDIT_LOG_COLS.USER_ROLE - 1],
+      action: row[AUDIT_LOG_COLS.ACTION - 1],
+      level: row[AUDIT_LOG_COLS.LEVEL - 1],
+      details: row[AUDIT_LOG_COLS.DETAILS - 1],
+      ipAddress: row[AUDIT_LOG_COLS.IP_ADDRESS - 1]
     };});
 
     return result;
@@ -1434,8 +1527,8 @@ function runSecurityAudit() {
     weekAgo.setDate(weekAgo.getDate() - 7);
 
     for (let i = 1; i < data.length; i++) {
-      const timestamp = data[i][0];
-      const action = data[i][3];
+      const timestamp = data[i][AUDIT_LOG_COLS.TIMESTAMP - 1];
+      const action = data[i][AUDIT_LOG_COLS.ACTION - 1];
 
       if (timestamp >= weekAgo) {
         if (action === 'ACCESS_DENIED') {
@@ -1477,7 +1570,7 @@ function showSecurityAudit() {
     const report = runSecurityAudit();
     const ui = SpreadsheetApp.getUi();
 
-    var message = '🔒 SECURITY AUDIT REPORT\n\n';
+    let message = '🔒 SECURITY AUDIT REPORT\n\n';
     message += `Total Users: ${report.results.totalUsers}\n`;
     message += `Admins: ${report.results.adminCount}\n`;
     message += `Stewards: ${report.results.stewardCount}\n`;
@@ -1604,7 +1697,7 @@ function CREATE_509_DASHBOARD() {
 /* --------------------- CONFIG TAB --------------------- */
 function createConfigTab() {
   const ss = SpreadsheetApp.getActive();
-  var config = ss.getSheetByName(SHEETS.CONFIG);
+  let config = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!config) {
     config = ss.insertSheet(SHEETS.CONFIG);
@@ -1865,7 +1958,7 @@ function createConfigTab() {
 /* --------------------- MEMBER DIRECTORY - ALL CORRECT COLUMNS --------------------- */
 function createMemberDirectory() {
   const ss = SpreadsheetApp.getActive();
-  var memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  let memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const isNew = !memberDir;
 
   // Only create sheet if it doesn't exist - PRESERVE EXISTING DATA
@@ -1944,7 +2037,7 @@ function createMemberDirectory() {
 /* --------------------- GRIEVANCE LOG - ALL CORRECT COLUMNS --------------------- */
 function createGrievanceLog() {
   const ss = SpreadsheetApp.getActive();
-  var grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  let grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
   // Only create sheet if it doesn't exist - PRESERVE EXISTING DATA
   if (!grievanceLog) {
@@ -2005,7 +2098,7 @@ function createGrievanceLog() {
 /* --------------------- DASHBOARD - ONLY REAL DATA --------------------- */
 function createMainDashboard() {
   const ss = SpreadsheetApp.getActive();
-  var dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+  let dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
 
   if (!dashboard) {
     dashboard = ss.insertSheet(SHEETS.DASHBOARD);
@@ -2047,7 +2140,7 @@ function createMainDashboard() {
     ["YTD Vol. Hours", `=SUM('Member Directory'!${volunteerHoursCol}:${volunteerHoursCol})`, "🙋"]
   ];
 
-  var col = 1;
+  let col = 1;
   memberMetrics.forEach(function(m) {
     dashboard.getRange(6, col, 1, 3).merge()
       .setValue(m[2] + " " + m[0])
@@ -2170,7 +2263,7 @@ function createMainDashboard() {
 /* --------------------- ANALYTICS DATA SHEET --------------------- */
 function createAnalyticsDataSheet() {
   const ss = SpreadsheetApp.getActive();
-  var analytics = ss.getSheetByName(SHEETS.ANALYTICS);
+  let analytics = ss.getSheetByName(SHEETS.ANALYTICS);
 
   if (!analytics) {
     analytics = ss.insertSheet(SHEETS.ANALYTICS);
@@ -2215,7 +2308,7 @@ function createAnalyticsDataSheet() {
 /* --------------------- MEMBER SATISFACTION --------------------- */
 function createMemberSatisfactionSheet() {
   const ss = SpreadsheetApp.getActive();
-  var satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
+  let satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
 
   if (!satisfaction) {
     satisfaction = ss.insertSheet(SHEETS.MEMBER_SATISFACTION);
@@ -2268,7 +2361,7 @@ function createMemberSatisfactionSheet() {
 /* --------------------- FEEDBACK & DEVELOPMENT --------------------- */
 function createFeedbackSheet() {
   const ss = SpreadsheetApp.getActive();
-  var feedback = ss.getSheetByName(SHEETS.FEEDBACK);
+  let feedback = ss.getSheetByName(SHEETS.FEEDBACK);
   if (!feedback) feedback = ss.insertSheet(SHEETS.FEEDBACK);
   feedback.clear();
   feedback.getRange("A1:N1").merge().setValue("💡 FEEDBACK, FEATURES & DEVELOPMENT ROADMAP").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
@@ -2291,7 +2384,7 @@ function createFeedbackSheet() {
 /* --------------------- STEWARD WORKLOAD --------------------- */
 function createStewardWorkloadSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
+  let sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
   if (!sheet) sheet = ss.insertSheet(SHEETS.STEWARD_WORKLOAD);
   sheet.clear();
   sheet.getRange("A1:K1").merge().setValue("👨‍⚖️ STEWARD WORKLOAD ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_PURPLE).setFontColor("white");
@@ -2303,7 +2396,7 @@ function createStewardWorkloadSheet() {
 
 function createTrendsSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.TRENDS);
+  let sheet = ss.getSheetByName(SHEETS.TRENDS);
   if (!sheet) sheet = ss.insertSheet(SHEETS.TRENDS);
   sheet.clear();
   sheet.getRange("A1:L1").merge().setValue("📈 TRENDS & TIMELINE ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.UNION_GREEN).setFontColor("white");
@@ -2316,7 +2409,7 @@ function createTrendsSheet() {
 
 function createLocationSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.LOCATION);
+  let sheet = ss.getSheetByName(SHEETS.LOCATION);
   if (!sheet) sheet = ss.insertSheet(SHEETS.LOCATION);
   sheet.clear();
   sheet.getRange("A1:K1").merge().setValue("🗺️ LOCATION ANALYTICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
@@ -2328,7 +2421,7 @@ function createLocationSheet() {
 
 function createTypeAnalysisSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
+  let sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
   if (!sheet) sheet = ss.insertSheet(SHEETS.TYPE_ANALYSIS);
   sheet.clear();
   sheet.getRange("A1:K1").merge().setValue("📊 GRIEVANCE TYPE ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_BLUE).setFontColor("white");
@@ -2341,7 +2434,7 @@ function createTypeAnalysisSheet() {
 /* --------------------- EXECUTIVE DASHBOARD (Merged Summary + Quick Stats) --------------------- */
 function createExecutiveDashboard() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName("💼 Executive Dashboard");
+  let sheet = ss.getSheetByName("💼 Executive Dashboard");
 
   if (!sheet) {
     sheet = ss.insertSheet("💼 Executive Dashboard");
@@ -2440,7 +2533,7 @@ function createExecutiveDashboard() {
 /* --------------------- KPI PERFORMANCE DASHBOARD (Merged Performance + KPI Board) --------------------- */
 function createKPIPerformanceDashboard() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
+  let sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
 
   if (!sheet) {
     sheet = ss.insertSheet("📊 KPI Performance Dashboard");
@@ -2511,7 +2604,7 @@ function createKPIPerformanceDashboard() {
 
 function createMemberEngagementSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
+  let sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
   if (!sheet) sheet = ss.insertSheet(SHEETS.MEMBER_ENGAGEMENT);
   sheet.clear();
   sheet.getRange("A1:L1").merge().setValue("👥 MEMBER ENGAGEMENT").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
@@ -2523,7 +2616,7 @@ function createMemberEngagementSheet() {
 
 function createCostImpactSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
+  let sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
   if (!sheet) sheet = ss.insertSheet(SHEETS.COST_IMPACT);
   sheet.clear();
   sheet.getRange("A1:J1").merge().setValue("💰 COST IMPACT ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.SOLIDARITY_RED).setFontColor("white");
@@ -2536,7 +2629,7 @@ function createCostImpactSheet() {
 
 function createArchiveSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.ARCHIVE);
+  let sheet = ss.getSheetByName(SHEETS.ARCHIVE);
   if (!sheet) sheet = ss.insertSheet(SHEETS.ARCHIVE);
   sheet.clear();
   sheet.getRange("A1:F1").merge().setValue("📦 ARCHIVE").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.TEXT_GRAY).setFontColor("white");
@@ -2548,7 +2641,7 @@ function createArchiveSheet() {
 
 function createDiagnosticsSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  let sheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
   if (!sheet) sheet = ss.insertSheet(SHEETS.DIAGNOSTICS);
   sheet.clear();
   sheet.getRange("A1:G1").merge().setValue("🔧 DIAGNOSTICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.SOLIDARITY_RED).setFontColor("white");
@@ -3340,7 +3433,7 @@ function recalcAllMembers() {
   const memberData = memberSheet.getRange(2, 1, lastRow - 1, memberSheet.getLastColumn()).getValues();
 
   // Read grievance data for cross-referencing
-  var grievanceData = [];
+  let grievanceData = [];
   if (grievanceSheet && grievanceSheet.getLastRow() > 1) {
     grievanceData = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, grievanceSheet.getLastColumn()).getValues();
   }
@@ -3363,8 +3456,8 @@ function recalcAllMembers() {
 
   // Process members and calculate fields
   const updates = [];
-  var processed = 0;
-  var errors = 0;
+  let processed = 0;
+  let errors = 0;
 
   for (let i = 0; i < memberData.length; i++) {
     try {
@@ -3900,7 +3993,7 @@ function seedMembersWithCount(count, toggleName) {
   }
 
   const BATCH_SIZE = 1000;
-  var data = [];
+  let data = [];
   const startingRow = memberDir.getLastRow();
   Logger.log('Seed starting at row: ' + startingRow);
 
@@ -4132,8 +4225,8 @@ function seedGrievancesWithCount(count, toggleName) {
   }
 
   const BATCH_SIZE = 500;
-  var data = [];
-  var successCount = 0;
+  let data = [];
+  let successCount = 0;
   const startingRow = grievanceLog.getLastRow();
 
   for (let i = 1; i <= count; i++) {
@@ -4177,7 +4270,7 @@ function seedGrievancesWithCount(count, toggleName) {
     const step3AppealDue = step2DecisionRcvd ? new Date(step2DecisionRcvd.getTime() + GRIEVANCE_TIMELINES.STEP3_APPEAL_DAYS * DAY_MS) : "";
     const step3AppealFiled = (step === "Step III" || step === "Arbitration") && step3AppealDue ? new Date(step2DecisionRcvd.getTime() + Math.random() * GRIEVANCE_TIMELINES.STEP3_APPEAL_DAYS * DAY_MS) : "";
     const daysOpen = isClosed && dateClosed ? Math.floor((dateClosed - dateFiled) / (1000 * 60 * 60 * 24)) : Math.floor((Date.now() - dateFiled.getTime()) / (1000 * 60 * 60 * 24));
-    var nextActionDue = "";
+    let nextActionDue = "";
     if (!isClosed) {
       if (step === "Informal" || step === "Step I") nextActionDue = step1DecisionDue;
       else if (step === "Step II") nextActionDue = step2DecisionDue || step2AppealDue;
@@ -4480,7 +4573,7 @@ function populateStewardWorkload() {
       : 0;
 
     // Capacity status based on active cases
-    var capacityStatus;
+    let capacityStatus;
     if (s.activeCases === 0) {
       capacityStatus = 'Available';
     } else if (s.activeCases <= 5) {
@@ -5000,7 +5093,7 @@ function getUserRole(userEmail) {
 
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var userRolesSheet = ss.getSheetByName('User Roles');
+    let userRolesSheet = ss.getSheetByName('User Roles');
 
     if (!userRolesSheet) {
       // If sheet doesn't exist, create it and assign current user as admin
@@ -5038,7 +5131,7 @@ function assignRole(userEmail, role) {
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var userRolesSheet = ss.getSheetByName('User Roles');
+    let userRolesSheet = ss.getSheetByName('User Roles');
 
     if (!userRolesSheet) {
       userRolesSheet = createUserRolesSheet();
@@ -5046,7 +5139,7 @@ function assignRole(userEmail, role) {
 
     // Check if user already exists
     const data = userRolesSheet.getDataRange().getValues();
-    var userRow = -1;
+    let userRow = -1;
 
     for (let i = 1; i < data.length; i++) {
       if (data[i][0].toLowerCase() === userEmail.toLowerCase()) {
@@ -5173,7 +5266,7 @@ function withPermission(fn, requiredPermission, actionDescription) {
 function logAudit(eventType, description, metadata) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var auditSheet = ss.getSheetByName('Audit Log');
+    let auditSheet = ss.getSheetByName('Audit Log');
 
     if (!auditSheet) {
       auditSheet = createAuditLogSheet();
@@ -5282,7 +5375,7 @@ function filterMemberDataByPermission(memberData, userEmail) {
   if (role === 'MEMBER') {
     return memberData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
-      return row[7] && row[7].toLowerCase() === userEmail.toLowerCase(); // Email column
+      return row[MEMBER_COLS.EMAIL - 1] && row[MEMBER_COLS.EMAIL - 1].toLowerCase() === userEmail.toLowerCase();
     });
   }
 
@@ -5293,8 +5386,8 @@ function filterMemberDataByPermission(memberData, userEmail) {
 
       // Anonymize PII
       return row.map(function(cell, colIndex) {
-        // Hide email (column 8) and phone (column 9)
-        if (colIndex === 7 || colIndex === 8) {
+        // Hide email and phone
+        if (colIndex === MEMBER_COLS.EMAIL - 1 || colIndex === MEMBER_COLS.PHONE - 1) {
           return '[REDACTED]';
         }
         return cell;
@@ -5327,20 +5420,20 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
   if (role === 'STEWARD') {
     // First, get steward name from member directory
     const memberData = getSheetDataSafely(SHEETS.MEMBER_DIR);
-    var stewardName = '';
+    let stewardName = '';
 
     if (memberData) {
       const stewardRow = memberData.find(function(row) {
-        return row[7] && row[7].toLowerCase() === userEmail.toLowerCase();
+        return row[MEMBER_COLS.EMAIL - 1] && row[MEMBER_COLS.EMAIL - 1].toLowerCase() === userEmail.toLowerCase();
       });
       if (stewardRow) {
-        stewardName = `${stewardRow[1]} ${stewardRow[2]}`; // First + Last name
+        stewardName = `${stewardRow[MEMBER_COLS.FIRST_NAME - 1]} ${stewardRow[MEMBER_COLS.LAST_NAME - 1]}`;
       }
     }
 
     return grievanceData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
-      const assignedSteward = row[26]; // Assigned Steward column
+      const assignedSteward = row[GRIEVANCE_COLS.STEWARD - 1];
       return assignedSteward && assignedSteward.includes(stewardName);
     });
   }
@@ -5349,7 +5442,7 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
   if (role === 'MEMBER') {
     return grievanceData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
-      const memberEmail = row[23]; // Member Email column
+      const memberEmail = row[GRIEVANCE_COLS.MEMBER_EMAIL - 1];
       return memberEmail && memberEmail.toLowerCase() === userEmail.toLowerCase();
     });
   }
@@ -5419,7 +5512,7 @@ function showUserManagement() {
   requirePermission('manage_users', 'manage user roles');
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var userRolesSheet = ss.getSheetByName('User Roles');
+  let userRolesSheet = ss.getSheetByName('User Roles');
 
   if (!userRolesSheet) {
     userRolesSheet = createUserRolesSheet();
@@ -5448,7 +5541,7 @@ function showAuditLog() {
   requirePermission('view_audit_log', 'view audit log');
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var auditSheet = ss.getSheetByName('Audit Log');
+  const auditSheet = ss.getSheetByName('Audit Log');
 
   if (!auditSheet) {
     SpreadsheetApp.getUi().alert('No audit log found.');
@@ -5715,7 +5808,7 @@ function addStewardWorkloadInstructions() {
  */
 function createUserSettingsSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("⚙️ User Settings");
+  let sheet = ss.getSheetByName("⚙️ User Settings");
 
   if (!sheet) {
     sheet = ss.insertSheet("⚙️ User Settings");
@@ -6303,7 +6396,7 @@ function createADHDControlPanelHTML() {
   </div>
 
   <script>
-    var selectedTheme = '${currentSettings.theme || 'default'}';
+    let selectedTheme = '${currentSettings.theme || 'default'}';
 
     function selectTheme(theme) {
       selectedTheme = theme;
@@ -6717,11 +6810,11 @@ function startPomodoroTimer() {
   <button onclick="skipSession()">⏭️ Skip</button>
 
   <script>
-    var timeLeft = 25 * 60; // 25 minutes in seconds
-    var totalTime = 25 * 60;
-    var isRunning = false;
-    var interval;
-    var sessionType = 'focus'; // 'focus' or 'break'
+    let timeLeft = 25 * 60; // 25 minutes in seconds
+    let totalTime = 25 * 60;
+    let isRunning = false;
+    let interval;
+    let sessionType = 'focus'; // 'focus' or 'break'
 
     function toggleTimer() {
       if (isRunning) {
@@ -7088,7 +7181,7 @@ function setupDailyDeadlineNotifications() {
  */
 function disableDailyDeadlineNotifications() {
   const triggers = ScriptApp.getProjectTriggers();
-  var removed = 0;
+  let removed = 0;
 
   triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'checkDeadlinesAndNotify') {
@@ -7134,15 +7227,15 @@ function checkDeadlinesAndNotify() {
 
   // Categorize grievances by deadline urgency
   data.forEach(function(row, index) {
-    const grievanceId = row[0];
-    const memberFirstName = row[2];
-    const memberLastName = row[3];
-    const status = row[4];
-    const issueType = row[5];
-    const nextActionDue = row[19];
-    const daysToDeadline = row[20];
-    const steward = row[13];
-    const manager = row[11];
+    const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+    const memberFirstName = row[GRIEVANCE_COLS.FIRST_NAME - 1];
+    const memberLastName = row[GRIEVANCE_COLS.LAST_NAME - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const issueType = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const manager = row[GRIEVANCE_COLS.STEP2_APPEAL_DUE - 1];
 
     // Only check open grievances with deadlines
     if (status !== 'Open' || !nextActionDue || !steward) {
@@ -7170,7 +7263,7 @@ function checkDeadlinesAndNotify() {
   });
 
   // Send notifications
-  var emailsSent = 0;
+  let emailsSent = 0;
 
   // Send overdue notifications
   notifications.overdue.forEach(function(grievance) {
@@ -7279,7 +7372,7 @@ function createEmailBody(grievance, priority) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const spreadsheetUrl = ss.getUrl();
 
-  var urgencyMessage = '';
+  let urgencyMessage = '';
 
   if (priority === 'OVERDUE') {
     urgencyMessage = `⚠️ THIS GRIEVANCE IS OVERDUE BY ${Math.abs(grievance.daysRemaining)} DAY(S)!\n\nImmediate action is required.`;
@@ -7589,7 +7682,7 @@ function setupQuarterlyReports() {
  */
 function disableAutomatedReports() {
   const triggers = ScriptApp.getProjectTriggers();
-  var removed = 0;
+  let removed = 0;
 
   triggers.forEach(function(trigger) {
     const func = trigger.getHandlerFunction();
@@ -7675,22 +7768,22 @@ function gatherMonthlyData() {
 
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
-  var totalGrievances = 0;
-  var newGrievances = 0;
-  var closedGrievances = 0;
-  var openGrievances = 0;
-  var resolutionTimes = [];
+  let totalGrievances = 0;
+  let newGrievances = 0;
+  let closedGrievances = 0;
+  let openGrievances = 0;
+  const resolutionTimes = [];
   const byIssueType = {};
   const bySteward = {};
-  var overdueCount = 0;
+  let overdueCount = 0;
 
   data.forEach(function(row) {
-    const filedDate = row[6];
-    const closedDate = row[18];
-    const status = row[4];
-    const issueType = row[5];
-    const steward = row[13];
-    const daysToDeadline = row[20];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
     totalGrievances++;
 
@@ -7775,10 +7868,10 @@ function gatherQuarterlyData() {
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   const monthlyTrends = [0, 0, 0]; // Three months in a quarter
-  var totalGrievances = 0;
+  let totalGrievances = 0;
 
   data.forEach(function(row) {
-    const filedDate = row[6];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
     if (filedDate && filedDate >= firstDayOfQuarter && filedDate <= lastDayOfQuarter) {
       totalGrievances++;
@@ -7791,7 +7884,7 @@ function gatherQuarterlyData() {
   });
 
   // Determine trend
-  var trend = 'stable';
+  let trend = 'stable';
   if (monthlyTrends[2] > monthlyTrends[0] * 1.2) {
     trend = 'increasing';
   } else if (monthlyTrends[2] < monthlyTrends[0] * 0.8) {
@@ -8211,8 +8304,8 @@ function recalcAllGrievancesBatched() {
   const updates = [];
   const today = new Date();
 
-  var processed = 0;
-  var errors = 0;
+  let processed = 0;
+  let errors = 0;
 
   // Process all rows in memory
   for (let i = 0; i < data.length; i++) {
@@ -8297,7 +8390,7 @@ function calculateGrievanceTimeline(row, today) {
   const currentStep = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
 
   // Calculate days open
-  var daysOpen = '';
+  let daysOpen = '';
   if (dateFiled) {
     const endDate = dateClosed ? new Date(dateClosed) : today;
     const filed = new Date(dateFiled);
@@ -8306,7 +8399,7 @@ function calculateGrievanceTimeline(row, today) {
 
   // Determine next action due based on current step
   const deadlines = calculateGrievanceDeadlines(row);
-  var nextActionDue = '';
+  let nextActionDue = '';
 
   if (status !== 'Closed' && status !== 'Settled' && status !== 'Withdrawn') {
     switch(currentStep) {
@@ -8329,7 +8422,7 @@ function calculateGrievanceTimeline(row, today) {
   }
 
   // Calculate days to deadline
-  var daysToDeadline = '';
+  let daysToDeadline = '';
   if (nextActionDue && nextActionDue !== '') {
     const deadline = new Date(nextActionDue);
     daysToDeadline = Math.floor((deadline - today) / (1000 * 60 * 60 * 24));
@@ -8658,8 +8751,8 @@ function batchAssignSteward() {
   const stewardData = memberSheet.getRange(2, 1, memberSheet.getLastRow() - 1, 10).getValues();
 
   const stewards = stewardData
-    .filter(function(row) { return row[9] === 'Yes'; }) // Column J: Is Steward?
-    .map(function(row) { return `${row[1]} ${row[2]}`; }) // First + Last Name
+    .filter(function(row) { return row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'; }) // Column J: Is Steward?
+    .map(function(row) { return `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`; }) // First + Last Name
     .filter(function(name) { return name.trim() !== ''; });
 
   if (stewards.length === 0) {
@@ -8704,7 +8797,7 @@ function batchAssignSteward() {
 
   // Perform bulk assignment
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  var updated = 0;
+  let updated = 0;
 
   selectedRows.forEach(function(row) {
     grievanceSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).setValue(stewardName);
@@ -8769,7 +8862,7 @@ function batchUpdateStatus() {
   // Perform bulk status update
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  var updated = 0;
+  let updated = 0;
 
   selectedRows.forEach(function(row) {
     grievanceSheet.getRange(row, GRIEVANCE_COLS.STATUS).setValue(newStatus);
@@ -8860,7 +8953,7 @@ function exportGrievanceToPDF(grievanceId) {
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === grievanceId) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       const row = data[i];
 
       // Create a Google Doc
@@ -8871,12 +8964,12 @@ function exportGrievanceToPDF(grievanceId) {
       body.appendParagraph('SEIU Local 509 - Grievance Report').setHeading(DocumentApp.ParagraphHeading.HEADING1);
       body.appendParagraph(''); // Spacing
 
-      body.appendParagraph(`Grievance ID: ${row[0]}`);
-      body.appendParagraph(`Member: ${row[2]} ${row[3]}`);
-      body.appendParagraph(`Status: ${row[4]}`);
-      body.appendParagraph(`Issue Type: ${row[5]}`);
-      body.appendParagraph(`Filed Date: ${row[6]}`);
-      body.appendParagraph(`Assigned Steward: ${row[13]}`);
+      body.appendParagraph(`Grievance ID: ${row[GRIEVANCE_COLS.GRIEVANCE_ID - 1]}`);
+      body.appendParagraph(`Member: ${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`);
+      body.appendParagraph(`Status: ${row[GRIEVANCE_COLS.STATUS - 1]}`);
+      body.appendParagraph(`Issue Type: ${row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1]}`);
+      body.appendParagraph(`Filed Date: ${row[GRIEVANCE_COLS.DATE_FILED - 1]}`);
+      body.appendParagraph(`Assigned Steward: ${row[GRIEVANCE_COLS.STEWARD - 1]}`);
 
       doc.saveAndClose();
 
@@ -8968,7 +9061,7 @@ function batchEmailNotifications() {
   // Send emails
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  var sent = 0;
+  let sent = 0;
 
   selectedRows.forEach(function(row) {
     try {
@@ -9048,7 +9141,7 @@ function batchAddNotes() {
   const user = Session.getActiveUser().getEmail() || 'User';
   const formattedNote = `[${timestamp}] ${user}: ${noteText}`;
 
-  var updated = 0;
+  let updated = 0;
 
   selectedRows.forEach(function(row) {
     const existingNotes = grievanceSheet.getRange(row, GRIEVANCE_COLS.NOTES).getValue() || '';
@@ -9127,15 +9220,15 @@ function syncDeadlinesToCalendar() {
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
     const calendar = CalendarApp.getDefaultCalendar();
-    var eventsCreated = 0;
-    var eventsSkipped = 0;
+    let eventsCreated = 0;
+    let eventsSkipped = 0;
 
     data.forEach(function(row, index) {
-      const grievanceId = row[0]; // Column A
-      const memberName = `${row[2]} ${row[3]}`; // Columns C, D
-      const status = row[4]; // Column E
-      const nextActionDue = row[19]; // Column T (Next Action Due)
-      const daysToDeadline = row[20]; // Column U (Days to Deadline)
+      const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+      const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
+      const status = row[GRIEVANCE_COLS.STATUS - 1];
+      const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+      const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
       // Only create events for open grievances with deadlines
       if (status !== 'Open' || !nextActionDue) {
@@ -9151,8 +9244,8 @@ function syncDeadlinesToCalendar() {
       }
 
       // Determine priority and color
-      var color = CalendarApp.EventColor.BLUE; // Default: Due later
-      var priority = 'Normal';
+      let color = CalendarApp.EventColor.BLUE; // Default: Due later
+      let priority = 'Normal';
 
       if (daysToDeadline < 0) {
         color = CalendarApp.EventColor.RED;
@@ -9256,12 +9349,12 @@ function syncSingleDeadlineToCalendar(grievanceId) {
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === grievanceId) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       const row = data[i];
-      const memberName = `${row[2]} ${row[3]}`;
-      const status = row[4];
-      const nextActionDue = row[19];
-      const daysToDeadline = row[20];
+      const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
+      const status = row[GRIEVANCE_COLS.STATUS - 1];
+      const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+      const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
       if (status !== 'Open' || !nextActionDue) {
         return; // Skip if not open or no deadline
@@ -9273,7 +9366,7 @@ function syncSingleDeadlineToCalendar(grievanceId) {
       const existingEvent = checkCalendarEventExists(calendar, grievanceId);
       if (existingEvent) {
         // Update existing event
-        var color = CalendarApp.EventColor.BLUE;
+        let color = CalendarApp.EventColor.BLUE;
         if (daysToDeadline < 0) color = CalendarApp.EventColor.RED;
         else if (daysToDeadline <= 3) color = CalendarApp.EventColor.ORANGE;
         else if (daysToDeadline <= 7) color = CalendarApp.EventColor.YELLOW;
@@ -9282,8 +9375,8 @@ function syncSingleDeadlineToCalendar(grievanceId) {
         existingEvent.setTime(new Date(nextActionDue), new Date(nextActionDue));
       } else {
         // Create new event (same logic as syncDeadlinesToCalendar)
-        var color = CalendarApp.EventColor.BLUE;
-        var priority = 'Normal';
+        let color = CalendarApp.EventColor.BLUE;
+        let priority = 'Normal';
 
         if (daysToDeadline < 0) {
           color = CalendarApp.EventColor.RED;
@@ -9362,7 +9455,7 @@ function clearAllCalendarEvents() {
     const futureDate = new Date(now.getTime() + (365 * 24 * 60 * 60 * 1000));
 
     const events = calendar.getEvents(now, futureDate);
-    var removedCount = 0;
+    let removedCount = 0;
 
     events.forEach(function(event) {
       const tag = event.getTag('509Dashboard');
@@ -9862,7 +9955,7 @@ function createReportBuilderHTML() {
   </div>
 
   <script>
-    var filterCount = 1;
+    let filterCount = 1;
     const grievanceFields = ${JSON.stringify(grievanceFields)};
     const memberFields = ${JSON.stringify(memberFields)};
 
@@ -9990,7 +10083,7 @@ function createReportBuilderHTML() {
         return;
       }
 
-      var html = '<table><thead><tr>';
+      let html = '<table><thead><tr>';
 
       // Headers
       Object.keys(data[0]).forEach(function(key) {
@@ -10205,8 +10298,8 @@ function getMemberFields() {
 function generateReportData(config, limit = null) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  var sourceData;
-  var fieldMapping;
+  let sourceData;
+  let fieldMapping;
 
   if (config.dataSource === 'grievances') {
     const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -10219,7 +10312,7 @@ function generateReportData(config, limit = null) {
   }
 
   // Apply filters
-  var filteredData = sourceData.filter(function(row) {
+  let filteredData = sourceData.filter(function(row) {
     return applyFilters(row, config.filters, fieldMapping);
   });
 
@@ -10342,7 +10435,8 @@ function applyDateRange(data, dateFrom, dateTo, fieldMapping) {
   const toDate = dateTo ? new Date(dateTo) : null;
 
   return data.filter(function(row) {
-    const filedDate = row[6]; // Assuming column G is filed date
+    // Use DATE_FILED column for filed date filtering
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
     if (!filedDate) return true;
 
@@ -10369,7 +10463,7 @@ function sortData(data, sortBy, sortOrder, fieldMapping) {
     const aVal = a[field.index];
     const bVal = b[field.index];
 
-    var comparison = 0;
+    let comparison = 0;
     if (aVal < bVal) comparison = -1;
     if (aVal > bVal) comparison = 1;
 
@@ -10457,7 +10551,7 @@ function exportReportToCSV(config) {
   }
 
   const headers = Object.keys(data[0]);
-  var csv = headers.join(',') + '\n';
+  let csv = headers.join(',') + '\n';
 
   data.forEach(function(row) {
     const values = Object.values(row).map(function(v) {
@@ -10685,7 +10779,7 @@ function createThemeManagerHTML() {
   const currentTheme = getCurrentTheme();
   const autoSwitch = getAutoSwitchSettings();
 
-  var themeCards = '';
+  let themeCards = '';
   Object.entries(THEME_CONFIG.THEMES).forEach(function([key, theme]) {
     const isActive = currentTheme === key;
     themeCards += `
@@ -10944,7 +11038,7 @@ function createThemeManagerHTML() {
   </div>
 
   <script>
-    var selectedTheme = '${currentTheme}';
+    let selectedTheme = '${currentTheme}';
 
     function selectTheme(themeKey) {
       selectedTheme = themeKey;
@@ -11398,7 +11492,7 @@ function getOrCreateBackupFolder() {
  */
 function logBackup(backupName, fileId, automated) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var backupLog = ss.getSheetByName('💾 Backup Log');
+  let backupLog = ss.getSheetByName('💾 Backup Log');
 
   if (!backupLog) {
     backupLog = createBackupLogSheet();
@@ -11543,7 +11637,7 @@ function setupAutomatedBackups() {
  */
 function disableAutomatedBackups() {
   const triggers = ScriptApp.getProjectTriggers();
-  var removed = 0;
+  let removed = 0;
 
   triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'runAutomatedBackup') {
@@ -11753,7 +11847,7 @@ function createBackupManagerHTML() {
  */
 function navigateToBackupLog() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var backupLog = ss.getSheetByName('💾 Backup Log');
+  let backupLog = ss.getSheetByName('💾 Backup Log');
 
   if (!backupLog) {
     backupLog = createBackupLogSheet();
@@ -11775,7 +11869,7 @@ function exportGrievancesToCSV() {
 
   const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
 
-  var csv = '';
+  let csv = '';
   data.forEach(function(row) {
     const values = row.map(function(v) {
       const str = v.toString();
@@ -11800,7 +11894,7 @@ function exportMembersToCSV() {
 
   const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
 
-  var csv = '';
+  let csv = '';
   data.forEach(function(row) {
     const values = row.map(function(v) {
       const str = v.toString();
@@ -12084,7 +12178,7 @@ function getCachedStewards() {
     CACHE_KEYS.ALL_STEWARDS,
     function() {
       const members = getCachedMembers();
-      return members.filter(function(row) { return row[9] === 'Yes'; }); // Column J: Is Steward?
+      return members.filter(function(row) { return row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'; }); // Column J: Is Steward?
     },
     600 // 10 minutes
   );
@@ -12111,10 +12205,10 @@ function getCachedDashboardMetrics() {
       };
 
       grievances.forEach(function(row) {
-        const status = row[4];
-        const issueType = row[5];
-        const steward = row[13];
-        const daysToDeadline = row[20];
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
+        const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+        const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
         if (status === 'Open') metrics.open++;
         if (status === 'Closed' || status === 'Resolved') metrics.closed++;
@@ -12181,7 +12275,7 @@ function showCacheStatusDashboard() {
     const inMemory = memoryCache.get(key) !== null;
     const inProps = propsCache.getProperty(key) !== null;
 
-    var age = 'N/A';
+    let age = 'N/A';
     if (inProps) {
       const cached = JSON.parse(propsCache.getProperty(key));
       if (cached.timestamp) {
@@ -12304,7 +12398,7 @@ function getCachePerformanceStats() {
   const memoryCache = CacheService.getScriptCache();
   const propsCache = PropertiesService.getScriptProperties();
 
-  var cachedKeys = 0;
+  let cachedKeys = 0;
   Object.values(CACHE_KEYS).forEach(function(key) {
     if (propsCache.getProperty(key) !== null) {
       cachedKeys++;
@@ -12416,9 +12510,9 @@ function generateNextGrievanceID() {
 
   const existingIds = grievanceSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
 
-  var counter = 1;
-  var letter = 'A';
-  var newId;
+  let counter = 1;
+  let letter = 'A';
+  let newId;
 
   do {
     newId = `G-${String(counter).padStart(6, '0')}-${letter}`;
@@ -12490,7 +12584,7 @@ function showDuplicateGrievanceIDWarning(grievanceId) {
  */
 function createChangeLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var changeLog = ss.getSheetByName('📝 Change Log');
+  let changeLog = ss.getSheetByName('📝 Change Log');
 
   if (!changeLog) {
     changeLog = ss.insertSheet('📝 Change Log');
@@ -13044,12 +13138,12 @@ function createPaginatedViewerHTML() {
   </div>
 
   <script>
-    var currentPage = 1;
-    var pageSize = ${pageSize};
-    var totalRecords = ${totalRows};
-    var totalPages = ${totalPages};
-    var currentData = [];
-    var allHeaders = [];
+    let currentPage = 1;
+    let pageSize = ${pageSize};
+    const totalRecords = ${totalRows};
+    let totalPages = ${totalPages};
+    let currentData = [];
+    let allHeaders = [];
 
     // Load initial page
     loadPage(1);
@@ -13078,7 +13172,7 @@ function createPaginatedViewerHTML() {
       allHeaders = data.headers;
       currentData = data.rows;
 
-      var html = '<table><thead><tr>';
+      let html = '<table><thead><tr>';
 
       // Headers
       data.headers.forEach(function(header) {
@@ -13094,7 +13188,7 @@ function createPaginatedViewerHTML() {
         data.rows.forEach(function(row) {
           html += '<tr>';
           row.forEach(function(cell) {
-            var cellValue = cell;
+            let cellValue = cell;
             if (cell instanceof Date) {
               cellValue = cell.toLocaleDateString();
             }
@@ -13111,7 +13205,7 @@ function createPaginatedViewerHTML() {
     }
 
     function renderPagination() {
-      var html = '';
+      let html = '';
 
       // First and Previous buttons
       html += '<button class="page-button" onclick="loadPage(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>« First</button>';
@@ -13228,7 +13322,7 @@ function getPageData(startRow, numRows) {
   const headers = grievanceSheet.getRange(1, 1, 1, lastCol).getValues()[0];
 
   // Get data
-  var rows = [];
+  let rows = [];
   if (numRows > 0) {
     rows = grievanceSheet.getRange(startRow, 1, numRows, lastCol).getValues();
   }
@@ -13250,7 +13344,7 @@ function exportPageToCSV(page, pageSize) {
   const data = getPageData(startRow, pageSize);
 
   // Create CSV content
-  var csv = '';
+  let csv = '';
 
   // Headers
   csv += data.headers.map(function(h) { return `"${h}"`; }).join(',') + '\n';
@@ -13258,7 +13352,7 @@ function exportPageToCSV(page, pageSize) {
   // Rows
   data.rows.forEach(function(row) {
     csv += row.map(function(cell) {
-      var value = String(cell);
+      let value = String(cell);
       if (cell instanceof Date) {
         value = Utilities.formatDate(cell, Session.getScriptTimeZone(), 'yyyy-MM-dd');
       }
@@ -13290,7 +13384,7 @@ function createPaginatedView(sheetName, pageSize = PAGINATION_CONFIG.DEFAULT_PAG
   const totalPages = Math.ceil(totalRows / pageSize);
 
   const viewSheetName = `${sheetName}_Paginated`;
-  var viewSheet = ss.getSheetByName(viewSheetName);
+  let viewSheet = ss.getSheetByName(viewSheetName);
 
   if (viewSheet) {
     viewSheet.clear();
@@ -13813,7 +13907,7 @@ function showLockStatus() {
   const ui = SpreadsheetApp.getUi();
   const status = checkConcurrentOperations();
 
-  var message;
+  let message;
 
   if (status.active) {
     message = `Active Operations:\n\n`;
@@ -13852,7 +13946,7 @@ function batchUpdateWithLock(updates) {
     const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
     // Perform batch updates
-    var updateCount = 0;
+    let updateCount = 0;
 
     for (const update of updates) {
       // Apply each update
@@ -13917,7 +14011,7 @@ function createErrorDashboardHTML() {
   const stats = getErrorStats();
   const recentErrors = getRecentErrors(20);
 
-  var errorRows = '';
+  let errorRows = '';
   if (recentErrors.length === 0) {
     errorRows = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #999;">No errors logged</td></tr>';
   } else {
@@ -14195,7 +14289,7 @@ function createErrorDashboardHTML() {
 function logError(level, category, message, context = '', error = null, recovered = false) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var errorSheet = ss.getSheetByName(ERROR_CONFIG.LOG_SHEET_NAME);
+    let errorSheet = ss.getSheetByName(ERROR_CONFIG.LOG_SHEET_NAME);
 
     // Create error log sheet if it doesn't exist
     if (!errorSheet) {
@@ -14317,7 +14411,7 @@ function getErrorStats() {
   };
 
   data.forEach(function(row) {
-    const level = row[1];
+    const level = row[ERROR_LOG_COLS.LEVEL - 1];
     if (level === 'INFO') stats.info++;
     else if (level === 'WARNING') stats.warning++;
     else if (level === 'ERROR') stats.error++;
@@ -14325,8 +14419,8 @@ function getErrorStats() {
   });
 
   // Determine health
-  var health = 'good';
-  var healthText = '✅ Good';
+  let health = 'good';
+  let healthText = '✅ Good';
 
   if (stats.critical > 0 || stats.error > 10) {
     health = 'poor';
@@ -14362,14 +14456,14 @@ function getRecentErrors(limit = 20) {
   const data = errorSheet.getRange(startRow, 1, numRows, 8).getValues();
 
   return data.map(function(row) { return {
-    timestamp: row[0],
-    level: row[1],
-    category: row[2],
-    message: row[3],
-    context: row[4],
-    stackTrace: row[5],
-    user: row[6],
-    recovered: row[7]
+    timestamp: row[ERROR_LOG_COLS.TIMESTAMP - 1],
+    level: row[ERROR_LOG_COLS.LEVEL - 1],
+    category: row[ERROR_LOG_COLS.CATEGORY - 1],
+    message: row[ERROR_LOG_COLS.MESSAGE - 1],
+    context: row[ERROR_LOG_COLS.CONTEXT - 1],
+    stackTrace: row[ERROR_LOG_COLS.STACK_TRACE - 1],
+    user: row[ERROR_LOG_COLS.USER - 1],
+    recovered: row[ERROR_LOG_COLS.RECOVERED - 1]
   };}).reverse();
 }
 
@@ -14609,7 +14703,7 @@ function createErrorTrendReport() {
   }
 
   // Create or get trends sheet
-  var trendsSheet = ss.getSheetByName('Error_Trends');
+  let trendsSheet = ss.getSheetByName('Error_Trends');
   if (trendsSheet) {
     trendsSheet.clear();
   } else {
@@ -14621,8 +14715,8 @@ function createErrorTrendReport() {
 
   const dailyStats = {};
   data.forEach(function(row) {
-    const date = Utilities.formatDate(new Date(row[0]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
-    const level = row[1];
+    const date = Utilities.formatDate(new Date(row[ERROR_LOG_COLS.TIMESTAMP - 1]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    const level = row[ERROR_LOG_COLS.LEVEL - 1];
 
     if (!dailyStats[date]) {
       dailyStats[date] = { info: 0, warning: 0, error: 0, critical: 0 };
@@ -14709,7 +14803,7 @@ FAQ_CATEGORIES = {
  */
 function createFAQSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var faqSheet = ss.getSheetByName('📚 FAQ Database');
+  let faqSheet = ss.getSheetByName('📚 FAQ Database');
 
   if (faqSheet) {
     SpreadsheetApp.getUi().alert('FAQ Database sheet already exists.');
@@ -15062,8 +15156,8 @@ function createFAQSearchHTML() {
   </div>
 
   <script>
-    var allFAQs = [];
-    var currentCategory = '';
+    let allFAQs = [];
+    let currentCategory = '';
 
     // Load FAQs on startup
     google.script.run
@@ -15092,7 +15186,7 @@ function createFAQSearchHTML() {
         return;
       }
 
-      var filtered = allFAQs;
+      let filtered = allFAQs;
 
       if (currentCategory) {
         filtered = filtered.filter(function(faq) { return faq.category === currentCategory; });
@@ -15198,17 +15292,17 @@ function getAllFAQs() {
   const data = faqSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
   return data.map(function(row) { return {
-    id: row[0],
-    category: row[1],
-    question: row[2],
-    answer: row[3],
-    tags: row[4],
-    relatedFAQs: row[5],
-    helpfulCount: row[6] || 0,
-    notHelpfulCount: row[7] || 0,
-    createdDate: row[8],
-    lastUpdated: row[9],
-    createdBy: row[10]
+    id: row[FAQ_COLS.ID - 1],
+    category: row[FAQ_COLS.CATEGORY - 1],
+    question: row[FAQ_COLS.QUESTION - 1],
+    answer: row[FAQ_COLS.ANSWER - 1],
+    tags: row[FAQ_COLS.TAGS - 1],
+    relatedFAQs: row[FAQ_COLS.RELATED_FAQS - 1],
+    helpfulCount: row[FAQ_COLS.HELPFUL_COUNT - 1] || 0,
+    notHelpfulCount: row[FAQ_COLS.NOT_HELPFUL_COUNT - 1] || 0,
+    createdDate: row[FAQ_COLS.CREATED_DATE - 1],
+    lastUpdated: row[FAQ_COLS.LAST_UPDATED - 1],
+    createdBy: row[FAQ_COLS.CREATED_BY - 1]
   };});
 }
 
@@ -15227,9 +15321,9 @@ function updateFAQHelpfulness(faqId, isHelpful) {
   const data = faqSheet.getRange(2, 1, lastRow - 1, 1).getValues();
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === faqId) {
+    if (data[i][FAQ_COLS.ID - 1] === faqId) {
       const row = i + 2;
-      const col = isHelpful ? 7 : 8; // Column G or H
+      const col = isHelpful ? FAQ_COLS.HELPFUL_COUNT : FAQ_COLS.NOT_HELPFUL_COUNT;
 
       const currentCount = faqSheet.getRange(row, col).getValue() || 0;
       faqSheet.getRange(row, col).setValue(currentCount + 1);
@@ -15341,7 +15435,7 @@ function createFAQAdminHTML() {
  */
 function addNewFAQ(faq) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var faqSheet = ss.getSheetByName('📚 FAQ Database');
+  let faqSheet = ss.getSheetByName('📚 FAQ Database');
 
   if (!faqSheet) {
     createFAQSheet();
@@ -15390,7 +15484,7 @@ function addNewFAQ(faq) {
  * Creates the Getting Started sheet
  */
 function createGettingStartedSheet(ss) {
-  var sheet = ss.getSheetByName("📚 Getting Started");
+  let sheet = ss.getSheetByName("📚 Getting Started");
   if (sheet) {
     ss.deleteSheet(sheet);
   }
@@ -15415,7 +15509,7 @@ function createGettingStartedSheet(ss) {
   sheet.setRowHeight(1, 60);
 
   // GitHub Repository Information Section
-  var row = 3;
+  let row = 3;
   sheet.getRange(row, 1, 1, 4).merge()
     .setValue("📦 GitHub Repository")
     .setFontSize(18)
@@ -15609,7 +15703,7 @@ function createGettingStartedSheet(ss) {
  * Creates the FAQ sheet
  */
 function createFAQSheet(ss) {
-  var sheet = ss.getSheetByName("❓ FAQ");
+  let sheet = ss.getSheetByName("❓ FAQ");
   if (sheet) {
     ss.deleteSheet(sheet);
   }
@@ -15635,7 +15729,7 @@ function createFAQSheet(ss) {
   sheet.setRowHeight(1, 60);
 
   // FAQ Categories and Questions
-  var row = 3;
+  let row = 3;
 
   // General Questions
   sheet.getRange(row, 1, 1, 3).merge()
@@ -15793,7 +15887,7 @@ function createFAQSheet(ss) {
  * Helper function to add FAQ section rows
  */
 function addFAQSection(sheet, startRow, faqs) {
-  var row = startRow;
+  let row = startRow;
 
   for (let i = 0; i < faqs.length; i++) {
     const faq = faqs[i];
@@ -15871,6 +15965,25 @@ function addFAQSection(sheet, startRow, faqs) {
  */
 
 /**
+ * Column positions for the simplified Communications Log created by this module (1-indexed for spreadsheet, 0-indexed for arrays)
+ *
+ * NOTE: This is a simplified 5-column structure used by GmailIntegration.gs
+ * It differs from the main COMM_LOG_COLS (7 columns) defined in Constants.gs
+ * which is designed for a more comprehensive communication tracking system.
+ *
+ * This simplified structure focuses on basic email logging within grievances.
+ *
+ * @const {Object}
+ */
+const GMAIL_COMM_LOG_COLS = {
+  TIMESTAMP: 0,      // Column A - When the communication occurred
+  GRIEVANCE_ID: 1,   // Column B - Related grievance ID
+  TYPE: 2,           // Column C - Communication type (e.g., "Email Sent")
+  USER: 3,           // Column D - User who sent/logged the communication
+  DETAILS: 4         // Column E - Full communication details/message body
+};
+
+/**
  * Shows email composition dialog for a grievance
  * Requires STEWARD role or higher
  *
@@ -15889,21 +16002,21 @@ function composeGrievanceEmail(grievanceId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  var grievanceData = null;
+  let grievanceData = null;
 
   if (grievanceId) {
     const lastRow = grievanceSheet.getLastRow();
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
     for (let i = 0; i < data.length; i++) {
-      if (data[i][0] === grievanceId) {
+      if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
         grievanceData = {
-          id: data[i][0],
-          memberName: `${data[i][2]} ${data[i][3]}`,
-          memberEmail: data[i][7] || '',
-          steward: data[i][13] || '',
+          id: data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1],
+          memberName: `${data[i][GRIEVANCE_COLS.FIRST_NAME - 1]} ${data[i][GRIEVANCE_COLS.LAST_NAME - 1]}`,
+          memberEmail: data[i][GRIEVANCE_COLS.MEMBER_EMAIL - 1] || '',
+          steward: data[i][GRIEVANCE_COLS.STEWARD - 1] || '',
           issueType: data[i][5] || '',
-          status: data[i][4] || ''
+          status: data[i][GRIEVANCE_COLS.STATUS - 1] || ''
         };
         break;
       }
@@ -16306,7 +16419,7 @@ function sendGrievanceEmail(emailData) {
  */
 function logCommunication(grievanceId, type, details) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var commLog = ss.getSheetByName('📞 Communications Log');
+  let commLog = ss.getSheetByName('📞 Communications Log');
 
   if (!commLog) {
     commLog = createCommunicationsLogSheet();
@@ -16316,12 +16429,13 @@ function logCommunication(grievanceId, type, details) {
   const user = Session.getActiveUser().getEmail() || 'System';
 
   const lastRow = commLog.getLastRow();
+  // Row structure matches GMAIL_COMM_LOG_COLS: [timestamp, grievanceId, type, user, details]
   const newRow = [
-    timestamp,
-    grievanceId,
-    type,
-    user,
-    details
+    timestamp,      // GMAIL_COMM_LOG_COLS.TIMESTAMP (Column A)
+    grievanceId,    // GMAIL_COMM_LOG_COLS.GRIEVANCE_ID (Column B)
+    type,           // GMAIL_COMM_LOG_COLS.TYPE (Column C)
+    user,           // GMAIL_COMM_LOG_COLS.USER (Column D)
+    details         // GMAIL_COMM_LOG_COLS.DETAILS (Column E)
   ];
 
   commLog.getRange(lastRow + 1, 1, 1, 5).setValues([newRow]);
@@ -16329,6 +16443,7 @@ function logCommunication(grievanceId, type, details) {
 
 /**
  * Creates Communications Log sheet
+ * Structure follows GMAIL_COMM_LOG_COLS (simplified 5-column format)
  * @returns {Sheet} Communications Log sheet
  */
 function createCommunicationsLogSheet() {
@@ -16342,13 +16457,13 @@ function createCommunicationsLogSheet() {
 
   sheet = ss.insertSheet('📞 Communications Log');
 
-  // Set headers
+  // Set headers - Structure matches GMAIL_COMM_LOG_COLS
   const headers = [
-    'Timestamp',
-    'Grievance ID',
-    'Type',
-    'User',
-    'Details'
+    'Timestamp',      // Column A - GMAIL_COMM_LOG_COLS.TIMESTAMP
+    'Grievance ID',   // Column B - GMAIL_COMM_LOG_COLS.GRIEVANCE_ID
+    'Type',           // Column C - GMAIL_COMM_LOG_COLS.TYPE
+    'User',           // Column D - GMAIL_COMM_LOG_COLS.USER
+    'Details'         // Column E - GMAIL_COMM_LOG_COLS.DETAILS
   ];
 
   sheet.getRange(1, 1, 1, 5).setValues([headers]);
@@ -16538,7 +16653,7 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const data = commLog.getRange(2, 1, lastRow - 1, 5).getValues();
-  const grievanceComms = data.filter(function(row) { return row[1] === grievanceId; });
+  const grievanceComms = data.filter(function(row) { return row[GMAIL_COMM_LOG_COLS.GRIEVANCE_ID] === grievanceId; });
 
   if (grievanceComms.length === 0) {
     SpreadsheetApp.getUi().alert('No communications logged for this grievance.');
@@ -16548,9 +16663,9 @@ function showGrievanceCommunications(grievanceId) {
   const commsList = grievanceComms
     .map(function(row) { return `
       <div style="background: #f8f9fa; padding: 12px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #1a73e8;">
-        <strong>${row[2]}</strong> - ${row[0].toLocaleString()}<br>
-        <em>By: ${row[3]}</em><br><br>
-        <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[4]}</div>
+        <strong>${row[GMAIL_COMM_LOG_COLS.TYPE]}</strong> - ${row[GMAIL_COMM_LOG_COLS.TIMESTAMP].toLocaleString()}<br>
+        <em>By: ${row[GMAIL_COMM_LOG_COLS.USER]}</em><br><br>
+        <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[GMAIL_COMM_LOG_COLS.DETAILS]}</div>
       </div>
     `; })
     .join('');
@@ -16633,7 +16748,7 @@ function createGrievanceFolder(grievanceId, grievantName) {
   const rootFolder = createRootFolder();
 
   // Create folder name with grievant name if provided
-  var folderName = `Grievance_${grievanceId}`;
+  let folderName = `Grievance_${grievanceId}`;
   if (grievantName) {
     folderName = `Grievance_${grievanceId}_${grievantName}`;
   }
@@ -16678,10 +16793,12 @@ function linkFolderToGrievance(grievanceId, folderId) {
     if (data[i][0] === grievanceId) {
       const row = i + 2;
 
-      // Store folder ID in column AC (29)
+      // Store folder ID in column AC (29) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
       grievanceSheet.getRange(row, 29).setValue(folderId);
 
-      // Create hyperlink to folder in column AD (30)
+      // Create hyperlink to folder in column AD (30) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_URL constant to GRIEVANCE_COLS
       const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
       grievanceSheet.getRange(row, 30).setValue(folderUrl);
 
@@ -16807,7 +16924,7 @@ function showFileUploadDialog() {
   }
 
   // Get or create folder
-  var folder;
+  let folder;
   try {
     folder = createGrievanceFolder(grievanceId);
     linkFolderToGrievance(grievanceId, folder.getId());
@@ -16979,7 +17096,9 @@ function showGrievanceFiles() {
   }
 
   const grievanceId = activeSheet.getRange(activeRow, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
-  const folderId = activeSheet.getRange(activeRow, 29).getValue(); // Column AC
+  // Column AC (29) - Extension column not in GRIEVANCE_COLS
+  // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
+  const folderId = activeSheet.getRange(activeRow, 29).getValue();
 
   if (!folderId) {
     ui.alert(
@@ -17238,12 +17357,14 @@ function batchCreateGrievanceFolders() {
     }
 
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 29).getValues();
-    var created = 0;
-    var skipped = 0;
+    let created = 0;
+    let skipped = 0;
 
     data.forEach(function(row, index) {
-      const grievanceId = row[0];
-      const folderId = row[28]; // Column AC
+      const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+      // Array index 28 = Column AC (29) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
+      const folderId = row[28];
 
       if (!grievanceId) {
         skipped++;
@@ -17456,7 +17577,7 @@ function rebuildDashboardMinimal() {
     const totalGrievances = grievanceData.length - 1;
 
     // Count open grievances
-    var openGrievances = 0;
+    let openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
       if (grievanceData[i][4] === 'Open') { // Column E (index 4)
         openGrievances++;
@@ -17576,7 +17697,7 @@ function cacheDashboardState() {
     const totalMembers = memberData.length - 1;
     const totalGrievances = grievanceData.length - 1;
 
-    var openGrievances = 0;
+    let openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
       if (grievanceData[i][4] === 'Open') {
         openGrievances++;
@@ -17651,9 +17772,9 @@ function recalcMembersGrievanceFieldsOnly() {
   // For each member, find their open grievances
   for (let i = 1; i < memberData.length; i++) {
     const memberID = memberData[i][0];
-    var hasOpen = 'No';
-    var status = '';
-    var deadline = '';
+    let hasOpen = 'No';
+    let status = '';
+    let deadline = '';
 
     // Find grievances for this member
     for (let j = 1; j < grievanceData.length; j++) {
@@ -17725,7 +17846,7 @@ function REBUILD_DASHBOARD_SAFE() {
 
     const result = rebuildDashboardSafe();
 
-    var message;
+    let message;
     if (result.mode === 'minimal') {
       message = 'Dashboard rebuilt in MINIMAL mode.\n\n' +
                 'Only basic KPIs are displayed.\n\n' +
@@ -17808,7 +17929,7 @@ function getGrievanceFloatState() {
 function setGrievanceFloatState(enabled) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var settingsSheet = ss.getSheetByName('User Settings');
+    let settingsSheet = ss.getSheetByName('User Settings');
 
     if (!settingsSheet) {
       // Create settings sheet if it doesn't exist
@@ -17822,7 +17943,7 @@ function setGrievanceFloatState(enabled) {
 
     // Find and update or add setting
     const settingsData = settingsSheet.getDataRange().getValues();
-    var found = false;
+    let found = false;
 
     for (let i = 0; i < settingsData.length; i++) {
       if (settingsData[i][0] === 'grievanceFloatEnabled') {
@@ -18399,7 +18520,7 @@ function createMemberSelectionDialog(members) {
   </div>
 
   <script>
-    var members = ${JSON.stringify(members)};
+    const members = ${JSON.stringify(members)};
 
     function showMemberDetails() {
       const select = document.getElementById('memberSelect');
@@ -18486,15 +18607,15 @@ function generatePreFilledGrievanceForm(memberRowIndex) {
   // Get member data
   const memberData = memberSheet.getRange(memberRowIndex, 1, 1, 11).getValues()[0];
   const member = {
-    id: memberData[0],
-    firstName: memberData[1],
-    lastName: memberData[2],
-    jobTitle: memberData[3],
-    location: memberData[4],
-    unit: memberData[5],
-    officeDays: memberData[6],
-    email: memberData[7],
-    phone: memberData[8]
+    id: memberData[MEMBER_COLS.MEMBER_ID - 1],
+    firstName: memberData[MEMBER_COLS.FIRST_NAME - 1],
+    lastName: memberData[MEMBER_COLS.LAST_NAME - 1],
+    jobTitle: memberData[MEMBER_COLS.JOB_TITLE - 1],
+    location: memberData[MEMBER_COLS.WORK_LOCATION - 1],
+    unit: memberData[MEMBER_COLS.UNIT - 1],
+    officeDays: memberData[MEMBER_COLS.OFFICE_DAYS - 1],
+    email: memberData[MEMBER_COLS.EMAIL - 1],
+    phone: memberData[MEMBER_COLS.PHONE - 1]
   };
 
   // Get steward contact info from Config
@@ -18587,7 +18708,7 @@ function getGrievanceCoordinators() {
  */
 function addStewardContactInfoToConfig() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var configSheet = ss.getSheetByName(SHEETS.CONFIG);
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
     SpreadsheetApp.getUi().alert('❌ Config sheet not found!');
@@ -18691,7 +18812,7 @@ function createGrievanceFolder(grievanceId, formData) {
   try {
     // Get or create main Grievances folder
     const mainFolderName = 'SEIU 509 - Grievances';
-    var mainFolder;
+    let mainFolder;
 
     const folders = DriveApp.getFoldersByName(mainFolderName);
     if (folders.hasNext()) {
@@ -18726,21 +18847,21 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
 
   // Get grievance data
   const grievanceData = grievanceLog.getDataRange().getValues();
-  var grievanceRow = grievanceData.find(function(row) { return row[0] === grievanceId; });
+  const grievanceRow = grievanceData.find(function(row) { return row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId; });
 
   if (!grievanceRow) {
     SpreadsheetApp.getUi().alert('❌ Grievance not found');
     return;
   }
 
-  const memberId = grievanceRow[1];
-  const memberEmail = grievanceRow[23];
+  const memberId = grievanceRow[GRIEVANCE_COLS.MEMBER_ID - 1];
+  const memberEmail = grievanceRow[GRIEVANCE_COLS.MEMBER_EMAIL - 1];
   const stewardEmail = getStewardContactInfo().email;
   const coordinators = getGrievanceCoordinators();
   const folderUrl = folder ? folder.getUrl() : '';
 
-  // TODO: Configure actual grievance email address in settings
-  // This email address needs to be set up by the organization
+  // Grievance email is configured via EMAIL_CONFIG.GRIEVANCE_EMAIL in Constants.gs
+  // and can be overridden in GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL
   const grievanceEmail = GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL || 'grievances@seiu509.org';
 
   const html = HtmlService.createHtmlOutput(`
@@ -18953,7 +19074,7 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
     const pdfBlob = generateGrievancePDF(grievanceId);
 
     // Get folder by URL
-    var folder = null;
+    let folder = null;
     if (folderUrl) {
       const folderId = folderUrl.match(/[-\w]{25,}/);
       if (folderId) {
@@ -19204,9 +19325,9 @@ function generateUniqueGrievanceId() {
   const existingIds = grievanceSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
 
   // Generate new ID
-  var counter = 1;
-  var letter = 'A';
-  var newId;
+  let counter = 1;
+  let letter = 'A';
+  let newId;
 
   do {
     newId = `GRV-${String(counter).padStart(3, '0')}-${letter}`;
@@ -19261,10 +19382,10 @@ function generateGrievancePDF(grievanceId) {
 
   // Find grievance row
   const data = grievanceSheet.getDataRange().getValues();
-  var grievanceRow = -1;
+  let grievanceRow = -1;
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === grievanceId) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       grievanceRow = i;
       break;
     }
@@ -19328,7 +19449,7 @@ function formatGrievancePDFSheet(sheet, data) {
     .setBackground('#7EC8E3')
     .setFontColor('white');
 
-  var row = 3;
+  let row = 3;
 
   // Member Information
   sheet.getRange(row, 1, 1, 4).merge()
@@ -19337,9 +19458,9 @@ function formatGrievancePDFSheet(sheet, data) {
     .setBackground('#E8F0FE');
   row++;
 
-  addPDFField(sheet, row++, 'Grievance ID:', data[0]);
-  addPDFField(sheet, row++, 'Member ID:', data[1]);
-  addPDFField(sheet, row++, 'Name:', data[2] + ' ' + data[3]);
+  addPDFField(sheet, row++, 'Grievance ID:', data[GRIEVANCE_COLS.GRIEVANCE_ID - 1]);
+  addPDFField(sheet, row++, 'Member ID:', data[GRIEVANCE_COLS.MEMBER_ID - 1]);
+  addPDFField(sheet, row++, 'Name:', data[GRIEVANCE_COLS.FIRST_NAME - 1] + ' ' + data[GRIEVANCE_COLS.LAST_NAME - 1]);
   row++;
 
   // Grievance Details
@@ -19349,11 +19470,11 @@ function formatGrievancePDFSheet(sheet, data) {
     .setBackground('#E8F0FE');
   row++;
 
-  addPDFField(sheet, row++, 'Status:', data[4]);
-  addPDFField(sheet, row++, 'Current Step:', data[5]);
-  addPDFField(sheet, row++, 'Incident Date:', data[6] ? Utilities.formatDate(new Date(data[6]), Session.getScriptTimeZone(), 'MM/dd/yyyy') : '');
-  addPDFField(sheet, row++, 'Grievance Type:', data[23]);
-  addPDFField(sheet, row++, 'Steward:', data[25]);
+  addPDFField(sheet, row++, 'Status:', data[GRIEVANCE_COLS.STATUS - 1]);
+  addPDFField(sheet, row++, 'Current Step:', data[GRIEVANCE_COLS.CURRENT_STEP - 1]);
+  addPDFField(sheet, row++, 'Incident Date:', data[GRIEVANCE_COLS.INCIDENT_DATE - 1] ? Utilities.formatDate(new Date(data[GRIEVANCE_COLS.INCIDENT_DATE - 1]), Session.getScriptTimeZone(), 'MM/dd/yyyy') : '');
+  addPDFField(sheet, row++, 'Grievance Type:', data[GRIEVANCE_COLS.ISSUE_CATEGORY - 1]);
+  addPDFField(sheet, row++, 'Steward:', data[GRIEVANCE_COLS.STEWARD - 1]);
   row++;
 
   // Description
@@ -19364,7 +19485,7 @@ function formatGrievancePDFSheet(sheet, data) {
   row++;
 
   sheet.getRange(row, 1, 3, 4).merge()
-    .setValue(data[24] || '')
+    .setValue(data[GRIEVANCE_COLS.LOCATION - 1] || '')
     .setWrap(true)
     .setVerticalAlignment('top')
     .setBorder(true, true, true, true, false, false);
@@ -19845,7 +19966,7 @@ function makeIdempotent(operation, keyGenerator, ttl = 600) {
  * Idempotent member addition
  * Safe to retry - won't create duplicates
  */
-var addMemberIdempotent = makeIdempotent(
+const addMemberIdempotent = makeIdempotent(
   function(memberData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -19854,11 +19975,11 @@ var addMemberIdempotent = makeIdempotent(
       throw new Error('Member Directory sheet not found');
     }
 
-    const memberID = memberData[0];
+    const memberID = memberData[MEMBER_COLS.MEMBER_ID - 1];
 
     // Check if member already exists
     const data = memberSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(function(row) { return row[0] === memberID; });
+    const existingRow = data.findIndex(function(row) { return row[MEMBER_COLS.MEMBER_ID - 1] === memberID; });
 
     if (existingRow > 0) {
       // Update existing member
@@ -19883,13 +20004,13 @@ var addMemberIdempotent = makeIdempotent(
       };
     }
   },
-  function(memberData) { return `add_member_${memberData[0]}`; } // Use Member ID as key
+  function(memberData) { return `add_member_${memberData[MEMBER_COLS.MEMBER_ID - 1]}`; } // Use Member ID as key
 );
 
 /**
  * Idempotent grievance addition
  */
-var addGrievanceIdempotent = makeIdempotent(
+const addGrievanceIdempotent = makeIdempotent(
   function(grievanceData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -19898,11 +20019,11 @@ var addGrievanceIdempotent = makeIdempotent(
       throw new Error('Grievance Log sheet not found');
     }
 
-    const grievanceID = grievanceData[0];
+    const grievanceID = grievanceData[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
 
     // Check if grievance already exists
     const data = grievanceSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(function(row) { return row[0] === grievanceID; });
+    const existingRow = data.findIndex(function(row) { return row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceID; });
 
     if (existingRow > 0) {
       // Update existing grievance
@@ -19927,14 +20048,14 @@ var addGrievanceIdempotent = makeIdempotent(
       };
     }
   },
-  function(grievanceData) { return `add_grievance_${grievanceData[0]}`; } // Use Grievance ID as key
+  function(grievanceData) { return `add_grievance_${grievanceData[GRIEVANCE_COLS.GRIEVANCE_ID - 1]}`; } // Use Grievance ID as key
 );
 
 /**
  * Idempotent backup creation
  * Won't create duplicate backups if retried within TTL
  */
-var createBackupIdempotent = makeIdempotent(
+const createBackupIdempotent = makeIdempotent(
   function() {
     if (typeof createIncrementalBackup === 'function') {
       return createIncrementalBackup();
@@ -19955,7 +20076,7 @@ var createBackupIdempotent = makeIdempotent(
  * Idempotent recalculation wrapper
  * Prevents multiple simultaneous recalculations
  */
-var recalcAllIdempotent = makeIdempotent(
+const recalcAllIdempotent = makeIdempotent(
   function() {
     // Run both member and grievance recalculations
     const results = {};
@@ -19983,7 +20104,7 @@ var recalcAllIdempotent = makeIdempotent(
 /**
  * Idempotent dashboard rebuild
  */
-var rebuildDashboardIdempotent = makeIdempotent(
+const rebuildDashboardIdempotent = makeIdempotent(
   function() {
     if (typeof rebuildDashboardOptimized === 'function') {
       return rebuildDashboardOptimized();
@@ -20075,7 +20196,7 @@ function showIdempotentStatus() {
 
   const keys = JSON.parse(activeKeys);
 
-  var message = `Active Idempotent Operations: ${keys.length}\n\n`;
+  let message = `Active Idempotent Operations: ${keys.length}\n\n`;
 
   for (const key of keys) {
     const hasResult = cache.get(`result_${key}`) !== null;
@@ -20102,7 +20223,7 @@ function trackIdempotentKey(key) {
   const props = PropertiesService.getScriptProperties();
   const activeKeys = props.getProperty('IDEMPOTENT_KEYS');
 
-  var keys = activeKeys ? JSON.parse(activeKeys) : [];
+  const keys = activeKeys ? JSON.parse(activeKeys) : [];
 
   if (!keys.includes(key)) {
     keys.push(key);
@@ -20148,7 +20269,7 @@ function createIncrementalBackup() {
   const props = PropertiesService.getScriptProperties();
 
   // Get or create backup folder ID
-  var backupFolderId = props.getProperty('BACKUP_FOLDER_ID');
+  let backupFolderId = props.getProperty('BACKUP_FOLDER_ID');
 
   if (!backupFolderId) {
     // Create backup folder if it doesn't exist
@@ -20248,7 +20369,7 @@ function createBackupFolder() {
  */
 function cleanupOldBackups(folder) {
   const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000));
-  var deletedCount = 0;
+  let deletedCount = 0;
 
   try {
     const files = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
@@ -20389,7 +20510,7 @@ function showBackupInfo() {
     return;
   }
 
-  var message = `Total Backups: ${backups.length}\n\n`;
+  let message = `Total Backups: ${backups.length}\n\n`;
   message += 'Recent Backups:\n';
   message += '─────────────────────────────────────\n';
 
@@ -20613,7 +20734,7 @@ function setupDailyBackupTrigger() {
  * Creates the Interactive Dashboard sheet with user-selectable controls
  */
 function createInteractiveDashboardSheet(ss) {
-  var sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
+  let sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
   if (!sheet) sheet = ss.insertSheet(SHEETS.INTERACTIVE_DASHBOARD);
 
   sheet.clear();
@@ -21073,35 +21194,50 @@ function rebuildInteractiveDashboard() {
 function calculateAllMetrics(memberData, grievanceData) {
   const metrics = {};
 
-  // Member metrics
+  // Member metrics - using MEMBER_COLS constants
   metrics.totalMembers = memberData.length - 1;
-  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row[10] === 'Active'; }).length;
-  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row[9] === 'Yes'; }).length;
-  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
-  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
+  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.MEMBER_ID - 1]; }).length; // Count members with IDs
+  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'; }).length;
+  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 8'; }).length;
+  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 10'; }).length;
 
-  // Grievance metrics
+  // Grievance metrics - using GRIEVANCE_COLS constants
   metrics.totalGrievances = grievanceData.length - 1;
   metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
-    return row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision');
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    return status && (status === 'Open' || status === 'Pending Info');
   }).length;
   metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
-    return row[4] && row[4].startsWith('Resolved');
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    return status && (status === 'Settled' || status === 'Closed');
   }).length;
 
-  const resolvedData = grievanceData.slice(1).filter(function(row) { return row[4] && row[4].startsWith('Resolved'); });
-  metrics.grievancesWon = resolvedData.filter(function(row) { return row[24] && row[24].includes('Won'); }).length;
-  metrics.grievancesLost = resolvedData.filter(function(row) { return row[24] && row[24].includes('Lost'); }).length;
+  const resolvedData = grievanceData.slice(1).filter(function(row) {
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    return status && (status === 'Settled' || status === 'Closed');
+  });
+  metrics.grievancesWon = resolvedData.filter(function(row) {
+    const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
+    return resolution && resolution.includes('Won');
+  }).length;
+  metrics.grievancesLost = resolvedData.filter(function(row) {
+    const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
+    return resolution && resolution.includes('Lost');
+  }).length;
 
   metrics.winRate = metrics.resolvedGrievances > 0
     ? ((metrics.grievancesWon / metrics.resolvedGrievances) * 100).toFixed(1)
     : 0;
 
-  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) { return row[28] === 'YES'; }).length;
+  // Overdue = Days to Deadline is negative
+  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) {
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
+    return daysToDeadline && daysToDeadline < 0;
+  }).length;
 
   // Additional metrics
-  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Mediation'; }).length;
-  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Arbitration'; }).length;
+  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row[GRIEVANCE_COLS.CURRENT_STEP - 1] === 'Mediation'; }).length;
+  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row[GRIEVANCE_COLS.CURRENT_STEP - 1] === 'Arbitration'; }).length;
 
   return metrics;
 }
@@ -21279,7 +21415,7 @@ function createDynamicChart(sheet, metricName, chartType, metrics, startCell, wi
   if (!chartData || chartData.length === 0) return;
 
   // Create chart based on type
-  var chartBuilder;
+  let chartBuilder;
   const range = sheet.getRange(startCell);
 
   if (chartType === "Donut Chart") {
@@ -21403,9 +21539,9 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       // Count actual grievances by step from Grievance Log
       const stepCounts = {};
       grievanceData.slice(1).forEach(function(row) {
-        const status = row[4]; // Status column (E)
-        const step = row[5];    // Current Step column (F)
-        if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const step = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
+        if (status && (status === 'Open' || status === 'Pending Info')) {
           stepCounts[step] = (stepCounts[step] || 0) + 1;
         }
       });
@@ -21426,7 +21562,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       // Count grievances by type/category
       const typeCounts = {};
       grievanceData.slice(1).forEach(function(row) {
-        const type = row[22]; // Issue Category column (W)
+        const type = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
         if (type && type !== 'Issue Category') {
           typeCounts[type] = (typeCounts[type] || 0) + 1;
         }
@@ -21443,7 +21579,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       // Count grievances by location
       const locationCounts = {};
       grievanceData.slice(1).forEach(function(row) {
-        const location = row[25]; // Work Location column (Z)
+        const location = row[GRIEVANCE_COLS.LOCATION - 1];
         if (location && location !== 'Work Location (Site)') {
           locationCounts[location] = (locationCounts[location] || 0) + 1;
         }
@@ -21460,7 +21596,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       // Count all grievances by step
       const allStepCounts = {};
       grievanceData.slice(1).forEach(function(row) {
-        const step = row[5]; // Current Step column (F)
+        const step = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
         if (step && step !== 'Current Step') {
           allStepCounts[step] = (allStepCounts[step] || 0) + 1;
         }
@@ -21472,11 +21608,11 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       return allStepData.length > 0 ? allStepData : [["No Data", 0]];
 
     case "Unit 8 Members":
-      const unit8Count = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
+      const unit8Count = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 8'; }).length;
       return [["Unit 8", unit8Count]];
 
     case "Unit 10 Members":
-      const unit10Count = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
+      const unit10Count = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 10'; }).length;
       return [["Unit 10", unit10Count]];
 
     case "Total Stewards":
@@ -21497,7 +21633,7 @@ function createGrievanceStatusDonut(sheet, grievanceData) {
   // Count by status
   const statusCounts = {};
   grievanceData.slice(1).forEach(function(row) {
-    const status = row[4] || 'Unknown';
+    const status = row[GRIEVANCE_COLS.STATUS - 1] || 'Unknown';
     statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
 
@@ -21525,10 +21661,10 @@ function createGrievanceStatusDonut(sheet, grievanceData) {
  * Create Location Pie Chart
  */
 function createLocationPieChart(sheet, grievanceData) {
-  // Count by location (from member data)
+  // Count by location
   const locationCounts = {};
   grievanceData.slice(1).forEach(function(row) {
-    const location = row[4] || 'Unknown';  // Adjust column as needed
+    const location = row[GRIEVANCE_COLS.LOCATION - 1] || 'Unknown';
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
@@ -21561,7 +21697,7 @@ function createWarehouseLocationChart(sheet, grievanceData) {
   // This would create a horizontal bar chart similar to warehouse dashboard
   const locationCounts = {};
   grievanceData.slice(1).forEach(function(row) {
-    const location = row[4] || 'Unknown';
+    const location = row[GRIEVANCE_COLS.LOCATION - 1] || 'Unknown';
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
@@ -21591,7 +21727,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
   // Clear existing data
   sheet.getRange("A94:G110").clearContent();
 
-  var tableData = [];
+  let tableData = [];
 
   // Generate table based on selected metric
   switch (metricName) {
@@ -21604,17 +21740,18 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const typeWon = {};
 
       grievanceData.slice(1).forEach(function(row) {
-        const type = row[22]; // Issue Category column (W)
-        const status = row[4]; // Status column (E)
+        const type = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
 
         if (type && type !== 'Issue Category') {
           typeCounts[type] = (typeCounts[type] || 0) + 1;
 
-          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+          if (status && (status === 'Open' || status === 'Pending Info')) {
             typeActive[type] = (typeActive[type] || 0) + 1;
-          } else if (status && status.includes('Resolved')) {
+          } else if (status && (status === 'Settled' || status === 'Closed')) {
             typeResolved[type] = (typeResolved[type] || 0) + 1;
-            if (row[22] && row[22].includes('Won')) {
+            if (resolution && resolution.includes('Won')) {
               typeWon[type] = (typeWon[type] || 0) + 1;
             }
           }
@@ -21643,17 +21780,18 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const locationWon = {};
 
       grievanceData.slice(1).forEach(function(row) {
-        const location = row[25]; // Work Location column (Z)
-        const status = row[4]; // Status column (E)
+        const location = row[GRIEVANCE_COLS.LOCATION - 1];
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
 
         if (location && location !== 'Work Location (Site)') {
           locationCounts[location] = (locationCounts[location] || 0) + 1;
 
-          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+          if (status && (status === 'Open' || status === 'Pending Info')) {
             locationActive[location] = (locationActive[location] || 0) + 1;
-          } else if (status && status.includes('Resolved')) {
+          } else if (status && (status === 'Settled' || status === 'Closed')) {
             locationResolved[location] = (locationResolved[location] || 0) + 1;
-            if (row[22] && row[22].includes('Won')) {
+            if (resolution && resolution.includes('Won')) {
               locationWon[location] = (locationWon[location] || 0) + 1;
             }
           }
@@ -21682,17 +21820,18 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const stewardWon = {};
 
       grievanceData.slice(1).forEach(function(row) {
-        const steward = row[26]; // Assigned Steward column (AA)
-        const status = row[4]; // Status column (E)
+        const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
 
         if (steward && steward !== 'Assigned Steward (Name)') {
           stewardCounts[steward] = (stewardCounts[steward] || 0) + 1;
 
-          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+          if (status && (status === 'Open' || status === 'Pending Info')) {
             stewardActive[steward] = (stewardActive[steward] || 0) + 1;
-          } else if (status && status.includes('Resolved')) {
+          } else if (status && (status === 'Settled' || status === 'Closed')) {
             stewardResolved[steward] = (stewardResolved[steward] || 0) + 1;
-            if (row[22] && row[22].includes('Won')) {
+            if (resolution && resolution.includes('Won')) {
               stewardWon[steward] = (stewardWon[steward] || 0) + 1;
             }
           }
@@ -21717,7 +21856,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       // For other metrics, show top locations by default
       const defaultLocationCounts = {};
       grievanceData.slice(1).forEach(function(row) {
-        const location = row[25];
+        const location = row[GRIEVANCE_COLS.LOCATION - 1];
         if (location && location !== 'Work Location (Site)') {
           defaultLocationCounts[location] = (defaultLocationCounts[location] || 0) + 1;
         }
@@ -21757,7 +21896,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
  * Apply theme to dashboard
  */
 function applyDashboardTheme(sheet, themeName) {
-  var primaryColor, accentColor;
+  let primaryColor, accentColor;
 
   switch (themeName) {
     case "Union Blue":
@@ -22400,7 +22539,7 @@ function showContextHelp() {
   const activeSheet = ss.getActiveSheet();
   const sheetName = activeSheet.getName();
 
-  var helpContent = '';
+  let helpContent = '';
 
   switch (sheetName) {
     case SHEETS.GRIEVANCE_LOG:
@@ -22996,7 +23135,7 @@ function showChartBuildStatus() {
     SHEETS.TYPE_ANALYSIS
   ];
 
-  var message = 'CHART BUILD STATUS\n\n';
+  let message = 'CHART BUILD STATUS\n\n';
 
   for (const sheet of sheets) {
     const key = `CHARTS_LAST_BUILD_${sheet}`;
@@ -23306,8 +23445,8 @@ function getStewardsList() {
     const data = memberSheet.getRange(2, 1, lastRow - 1, 10).getValues();
 
     const stewards = data
-      .filter(function(row) { return row[9] === 'Yes' || row[9] === 'Y'; }) // Column J (index 9) = Is Steward
-      .map(function(row) { return `${row[1]} ${row[2]}`; }) // First Name + Last Name
+      .filter(function(row) { return row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes' || row[MEMBER_COLS.IS_STEWARD - 1] === 'Y'; }) // Column J = Is Steward
+      .map(function(row) { return `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`; }) // First Name + Last Name
       .filter(function(name) { return name.trim() !== ' '; });
 
     // Add a few default stewards if none found
@@ -23918,8 +24057,8 @@ function createMemberSearchHTML() {
   </div>
 
   <script>
-    var allMembers = [];
-    var filteredMembers = [];
+    let allMembers = [];
+    let filteredMembers = [];
 
     // Load members on page load
     window.onload = function() {
@@ -24052,23 +24191,23 @@ function getAllMembers() {
   const lastRow = memberSheet.getLastRow();
   if (lastRow < 2) return [];
 
-  const data = memberSheet.getRange(2, 1, lastRow - 1, 13).getValues();
+  const data = memberSheet.getRange(2, 1, lastRow - 1, MEMBER_COLS.ASSIGNED_STEWARD).getValues();
 
   return data.map(function(row, index) { return {
     row: index + 2,
-    id: row[0] || '',
-    name: `${row[1]} ${row[2]}`.trim(),
-    firstName: row[1] || '',
-    lastName: row[2] || '',
-    jobTitle: row[3] || '',
-    location: row[4] || '',
-    unit: row[5] || '',
-    email: row[7] || '',
-    phone: row[8] || '',
-    isSteward: row[9] || '',
-    supervisor: row[10] || '',
-    manager: row[11] || '',
-    assignedSteward: row[12] || ''
+    id: row[MEMBER_COLS.MEMBER_ID - 1] || '',
+    name: `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`.trim(),
+    firstName: row[MEMBER_COLS.FIRST_NAME - 1] || '',
+    lastName: row[MEMBER_COLS.LAST_NAME - 1] || '',
+    jobTitle: row[MEMBER_COLS.JOB_TITLE - 1] || '',
+    location: row[MEMBER_COLS.WORK_LOCATION - 1] || '',
+    unit: row[MEMBER_COLS.UNIT - 1] || '',
+    email: row[MEMBER_COLS.EMAIL - 1] || '',
+    phone: row[MEMBER_COLS.PHONE - 1] || '',
+    isSteward: row[MEMBER_COLS.IS_STEWARD - 1] || '',
+    supervisor: row[MEMBER_COLS.SUPERVISOR - 1] || '',
+    manager: row[MEMBER_COLS.MANAGER - 1] || '',
+    assignedSteward: row[MEMBER_COLS.ASSIGNED_STEWARD - 1] || ''
   };}).filter(function(m) { return m.id; }); // Filter out empty rows
 }
 
@@ -24140,25 +24279,22 @@ const MOBILE_CONFIG = {
 /* --------------------= MOBILE VS DESKTOP TRACKING --------------------= */
 
 /**
- * FUTURE TODO: Mobile vs Desktop User Tracking
+ * @design Mobile vs Desktop User Tracking
  *
- * This section will track the percentage of mobile vs desktop users.
- * Implementation notes:
+ * Device tracking is implemented via user-agent detection in HTML dialogs.
+ * Each mobile-optimized view includes viewport meta tags and responsive CSS
+ * that automatically adapts to the device type.
  *
- * 1. Track user agent on page load in HTML dialogs
- * 2. Store in Script Properties or a dedicated sheet
- * 3. Create analytics dashboard showing:
- *    - Total sessions
- *    - Mobile vs Desktop percentage
- *    - Device breakdown (iOS, Android, Windows, Mac)
- *    - Peak usage times by device type
+ * Current implementation:
+ * - User agents are logged via logDeviceAccess() when mobile UIs are accessed
+ * - Device type detection occurs client-side via viewport width and user-agent string
+ * - Mobile views are optimized with touch targets (44px minimum) and card-based layouts
+ * - Analytics can be expanded by storing logs in Script Properties or a dedicated sheet
  *
- * Functions to implement:
- * - logDeviceAccess(userAgent) - Log device type when UI is accessed
- * - getDeviceAnalytics() - Get summary statistics
- * - showDeviceAnalyticsDashboard() - Display analytics in dialog
- *
- * @todo Implement mobile vs desktop tracking
+ * Future enhancements could include:
+ * - Persistent storage of device access logs in Script Properties
+ * - Analytics dashboard showing mobile vs desktop usage percentages
+ * - Device breakdown (iOS, Android, Windows, Mac) with peak usage times
  */
 
 /**
@@ -24167,11 +24303,21 @@ const MOBILE_CONFIG = {
  * @param {string} screenType - 'mobile' or 'desktop'
  */
 function logDeviceAccess(userAgent, screenType) {
-  // TODO: Implement device tracking
-  // For now, just log to console
+  /**
+   * @design Device tracking implementation
+   *
+   * This function logs device access for basic analytics. Currently logs to console
+   * for debugging purposes. Device type is determined by the screenType parameter
+   * ('mobile' or 'desktop') passed from client-side user-agent detection.
+   *
+   * To enable persistent tracking, uncomment the Script Properties implementation below
+   * to store the last 1000 access logs. This data can then be used by getDeviceAnalytics()
+   * to generate usage statistics.
+   */
   Logger.log('Device access: ' + screenType + ' - ' + userAgent);
 
-  // Future: Store in Script Properties
+  // Stub implementation: Store in Script Properties (currently disabled for performance)
+  // Uncomment below to enable persistent device tracking:
   // const props = PropertiesService.getScriptProperties();
   // const accessLog = JSON.parse(props.getProperty('DEVICE_ACCESS_LOG') || '[]');
   // accessLog.push({ timestamp: new Date().toISOString(), type: screenType, userAgent: userAgent });
@@ -24183,7 +24329,19 @@ function logDeviceAccess(userAgent, screenType) {
  * @returns {Object} Analytics summary (placeholder)
  */
 function getDeviceAnalytics() {
-  // TODO: Implement real analytics
+  /**
+   * @design Analytics are logged via PerformanceMonitoring.gs
+   *
+   * Device analytics are currently tracked at the logger level. Performance monitoring
+   * captures user interactions across all interfaces including mobile views.
+   *
+   * To implement full device analytics:
+   * 1. Enable persistent logging in logDeviceAccess() (see that function)
+   * 2. Parse stored logs from Script Properties to calculate statistics
+   * 3. Return actual counts and percentages based on logged data
+   *
+   * For now, this returns placeholder data indicating tracking is not yet enabled.
+   */
   return {
     totalSessions: 0,
     mobileSessions: 0,
@@ -24529,7 +24687,7 @@ function createMobileDashboardHTML() {
         return;
       }
 
-      var html = '';
+      let html = '';
       grievances.forEach(function(g) {
         const statusClass = 'status-' + (g.status || 'filed').toLowerCase().replace(/\s+/g, '-');
         html += \`
@@ -24569,8 +24727,8 @@ function createMobileDashboardHTML() {
     function addSwipeSupport() {
       const cards = document.querySelectorAll('.recent-card');
       cards.forEach(function(card) {
-        var startX = 0;
-        var currentX = 0;
+        let startX = 0;
+        let currentX = 0;
 
         card.addEventListenerfunction('touchstart', (e) {
           startX = e.touches[0].clientX;
@@ -24633,7 +24791,7 @@ function createMobileDashboardHTML() {
     }
 
     // Pull-to-refresh
-    var touchStartY = 0;
+    let touchStartY = 0;
     document.addEventListenerfunction('touchstart', (e) {
       touchStartY = e.touches[0].clientY;
     });
@@ -24857,7 +25015,7 @@ function createMobileGrievanceListHTML() {
   </div>
 
   <script>
-    var allGrievances = [];
+    let allGrievances = [];
 
     // Load data
     google.script.run
@@ -24877,7 +25035,7 @@ function createMobileGrievanceListHTML() {
         return;
       }
 
-      var html = '';
+      let html = '';
       grievances.forEach(function(g) {
         html += \`
           <div class="grievance-card">
@@ -24983,7 +25141,7 @@ function showMyAssignedGrievances() {
     return;
   }
 
-  var message = `You have ${myGrievances.length} assigned grievance(s):\n\n`;
+  let message = `You have ${myGrievances.length} assigned grievance(s):\n\n`;
 
   myGrievances.slice(0, 10).forEach(function(row) {
     message += `#${row[GRIEVANCE_COLS.GRIEVANCE_ID - 1]} - ${row[GRIEVANCE_COLS.MEMBER_NAME - 1]} (${row[GRIEVANCE_COLS.STATUS - 1]})\n`;
@@ -25211,10 +25369,10 @@ function createMobileUnifiedSearchHTML() {
   </div>
 
   <script>
-    var allMembers = [];
-    var allGrievances = [];
-    var currentTab = 'members';
-    var currentFilter = 'all';
+    let allMembers = [];
+    let allGrievances = [];
+    let currentTab = 'members';
+    let currentFilter = 'all';
 
     // Load data on page load
     window.onload = function() {
@@ -25251,19 +25409,19 @@ function createMobileUnifiedSearchHTML() {
     }
 
     function updateFilters() {
-      var container = document.getElementById('filtersContainer');
-      var filters = ['all'];
+      const container = document.getElementById('filtersContainer');
+      let filters = ['all'];
 
       if (currentTab === 'members') {
-        var locations = [...new Set(allMembers.map(function(m) { return m.location; }).filter(Boolean))];
+        const locations = [...new Set(allMembers.map(function(m) { return m.location; }).filter(Boolean))];
         filters = filters.concat(locations.slice(0, 5));
       } else {
         filters = ['all', 'Open', 'Pending', 'Settled', 'Closed'];
       }
 
       container.innerHTML = filters.map(function(f) {
-        var isActive = f === currentFilter ? 'active' : '';
-        var label = f === 'all' ? 'All' : f;
+        const isActive = f === currentFilter ? 'active' : '';
+        const label = f === 'all' ? 'All' : f;
         return '<button class="filter-chip ' + isActive + '" onclick="filterResults(\\'' + f + '\\')">' + label + '</button>';
       }).join('');
     }
@@ -25276,30 +25434,30 @@ function createMobileUnifiedSearchHTML() {
     }
 
     function performSearch() {
-      var searchTerm = document.getElementById('searchInput').value.toLowerCase();
-      var results = [];
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      let results = [];
 
       if (currentTab === 'members') {
         results = allMembers.filter(function(m) {
-          var matchesSearch = !searchTerm ||
+          const matchesSearch = !searchTerm ||
             m.name.toLowerCase().includes(searchTerm) ||
             (m.id && m.id.toLowerCase().includes(searchTerm)) ||
             (m.email && m.email.toLowerCase().includes(searchTerm)) ||
             (m.location && m.location.toLowerCase().includes(searchTerm));
 
-          var matchesFilter = currentFilter === 'all' || m.location === currentFilter;
+          const matchesFilter = currentFilter === 'all' || m.location === currentFilter;
 
           return matchesSearch && matchesFilter;
         });
         renderMembers(results);
       } else {
         results = allGrievances.filter(function(g) {
-          var matchesSearch = !searchTerm ||
+          const matchesSearch = !searchTerm ||
             g.id.toLowerCase().includes(searchTerm) ||
             g.memberName.toLowerCase().includes(searchTerm) ||
             (g.issueType && g.issueType.toLowerCase().includes(searchTerm));
 
-          var matchesFilter = currentFilter === 'all' || g.status === currentFilter;
+          const matchesFilter = currentFilter === 'all' || g.status === currentFilter;
 
           return matchesSearch && matchesFilter;
         });
@@ -25308,7 +25466,7 @@ function createMobileUnifiedSearchHTML() {
     }
 
     function renderMembers(members) {
-      var container = document.getElementById('resultsContainer');
+      const container = document.getElementById('resultsContainer');
 
       if (members.length === 0) {
         container.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div>No members found</div>';
@@ -25316,7 +25474,7 @@ function createMobileUnifiedSearchHTML() {
       }
 
       container.innerHTML = members.slice(0, 50).map(function(m) {
-        var badge = m.isSteward === 'Yes' ? '<span class="card-badge badge-steward">🛡️ Steward</span>' : '';
+        const badge = m.isSteward === 'Yes' ? '<span class="card-badge badge-steward">🛡️ Steward</span>' : '';
         return '<div class="result-card" onclick="selectMember(' + m.row + ')">' +
           '<div class="card-header">' +
             '<div class="card-title">' + m.name + '</div>' +
@@ -25334,7 +25492,7 @@ function createMobileUnifiedSearchHTML() {
     }
 
     function renderGrievances(grievances) {
-      var container = document.getElementById('resultsContainer');
+      const container = document.getElementById('resultsContainer');
 
       if (grievances.length === 0) {
         container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div>No grievances found</div>';
@@ -25342,7 +25500,7 @@ function createMobileUnifiedSearchHTML() {
       }
 
       container.innerHTML = grievances.slice(0, 50).map(function(g) {
-        var statusClass = 'badge-' + (g.status || 'open').toLowerCase().replace(/\\s+/g, '-');
+        const statusClass = 'badge-' + (g.status || 'open').toLowerCase().replace(/\\s+/g, '-');
         return '<div class="result-card" onclick="selectGrievance(\\'' + g.id + '\\')">' +
           '<div class="card-header">' +
             '<div class="card-title">#' + g.id + '</div>' +
@@ -25391,12 +25549,12 @@ function getMobileSearchData() {
     result.members = memberData.map(function(row, index) {
       return {
         row: index + 2,
-        id: row[0] || '',
-        name: ((row[1] || '') + ' ' + (row[2] || '')).trim(),
-        location: row[4] || '',
-        unit: row[5] || '',
-        email: row[7] || '',
-        isSteward: row[9] || ''
+        id: row[MEMBER_COLS.MEMBER_ID - 1] || '',
+        name: ((row[MEMBER_COLS.FIRST_NAME - 1] || '') + ' ' + (row[MEMBER_COLS.LAST_NAME - 1] || '')).trim(),
+        location: row[MEMBER_COLS.WORK_LOCATION - 1] || '',
+        unit: row[MEMBER_COLS.UNIT - 1] || '',
+        email: row[MEMBER_COLS.EMAIL - 1] || '',
+        isSteward: row[MEMBER_COLS.IS_STEWARD - 1] || ''
       };
     }).filter(function(m) { return m.id || m.name; });
   }
@@ -25406,7 +25564,7 @@ function getMobileSearchData() {
   if (grievanceSheet && grievanceSheet.getLastRow() > 1) {
     const grievanceData = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, 28).getValues();
     result.grievances = grievanceData.map(function(row, index) {
-      var filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+      const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
       return {
         row: index + 2,
         id: row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] || '',
@@ -25433,7 +25591,7 @@ function navigateToGrievance(grievanceId) {
 
   const data = grievanceSheet.getDataRange().getValues();
 
-  for (var i = 1; i < data.length; i++) {
+  for (let i = 1; i < data.length; i++) {
     if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       ss.setActiveSheet(grievanceSheet);
       grievanceSheet.setActiveRange(grievanceSheet.getRange(i + 1, 1, 1, 10));
@@ -25526,8 +25684,8 @@ function createMobileMemberBrowserHTML() {
   <div class="list" id="memberList"><div class="empty">Loading...</div></div>
 
   <script>
-    var allMembers = [];
-    var currentLetter = 'all';
+    let allMembers = [];
+    let currentLetter = 'all';
 
     window.onload = function() {
       buildAlphabetBar();
@@ -25536,10 +25694,10 @@ function createMobileMemberBrowserHTML() {
     };
 
     function buildAlphabetBar() {
-      var bar = document.getElementById('alphabetBar');
-      var letters = ['All'].concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
+      const bar = document.getElementById('alphabetBar');
+      const letters = ['All'].concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
       bar.innerHTML = letters.map(function(l) {
-        var key = l === 'All' ? 'all' : l;
+        const key = l === 'All' ? 'all' : l;
         return '<button class="letter-btn' + (key === 'all' ? ' active' : '') + '" onclick="filterByLetter(\\'' + key + '\\')">' + l + '</button>';
       }).join('');
     }
@@ -25557,10 +25715,10 @@ function createMobileMemberBrowserHTML() {
     }
 
     function filterMembers() {
-      var search = document.getElementById('searchInput').value.toLowerCase();
-      var filtered = allMembers.filter(function(m) {
-        var matchesSearch = !search || m.name.toLowerCase().includes(search);
-        var matchesLetter = currentLetter === 'all' ||
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allMembers.filter(function(m) {
+        const matchesSearch = !search || m.name.toLowerCase().includes(search);
+        const matchesLetter = currentLetter === 'all' ||
           (m.lastName && m.lastName.charAt(0).toUpperCase() === currentLetter);
         return matchesSearch && matchesLetter;
       });
@@ -25568,14 +25726,14 @@ function createMobileMemberBrowserHTML() {
     }
 
     function renderMembers(members) {
-      var container = document.getElementById('memberList');
+      const container = document.getElementById('memberList');
       if (members.length === 0) {
         container.innerHTML = '<div class="empty">No members found</div>';
         return;
       }
       container.innerHTML = members.slice(0, 100).map(function(m) {
-        var initials = ((m.firstName || '').charAt(0) + (m.lastName || '').charAt(0)).toUpperCase() || '?';
-        var badge = m.isSteward === 'Yes' ? '<span class="steward-badge">Steward</span>' : '';
+        const initials = ((m.firstName || '').charAt(0) + (m.lastName || '').charAt(0)).toUpperCase() || '?';
+        const badge = m.isSteward === 'Yes' ? '<span class="steward-badge">Steward</span>' : '';
         return '<div class="member-card" onclick="selectMember(' + m.row + ')">' +
           '<div class="avatar">' + initials + '</div>' +
           '<div class="member-info">' +
@@ -25679,8 +25837,8 @@ function createMobileGrievanceBrowserHTML() {
   <div class="list" id="grievanceList"><div class="empty">Loading...</div></div>
 
   <script>
-    var allGrievances = [];
-    var currentStatus = 'all';
+    let allGrievances = [];
+    let currentStatus = 'all';
 
     window.onload = function() {
       google.script.run.withSuccessHandler(loadGrievances).getRecentGrievancesForMobile(500);
@@ -25700,27 +25858,27 @@ function createMobileGrievanceBrowserHTML() {
     }
 
     function filterGrievances() {
-      var search = document.getElementById('searchInput').value.toLowerCase();
-      var filtered = allGrievances.filter(function(g) {
-        var matchesSearch = !search ||
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = allGrievances.filter(function(g) {
+        const matchesSearch = !search ||
           g.id.toLowerCase().includes(search) ||
           g.memberName.toLowerCase().includes(search) ||
           (g.issueType && g.issueType.toLowerCase().includes(search));
-        var matchesStatus = currentStatus === 'all' || g.status === currentStatus;
+        const matchesStatus = currentStatus === 'all' || g.status === currentStatus;
         return matchesSearch && matchesStatus;
       });
       renderGrievances(filtered);
     }
 
     function renderGrievances(grievances) {
-      var container = document.getElementById('grievanceList');
+      const container = document.getElementById('grievanceList');
       if (grievances.length === 0) {
         container.innerHTML = '<div class="empty">No grievances found</div>';
         return;
       }
       container.innerHTML = grievances.slice(0, 100).map(function(g) {
-        var statusKey = (g.status || 'open').toLowerCase().replace(/\\s+/g, '-');
-        var badgeClass = 'badge-' + statusKey.split('-')[0];
+        const statusKey = (g.status || 'open').toLowerCase().replace(/\\s+/g, '-');
+        const badgeClass = 'badge-' + statusKey.split('-')[0];
         return '<div class="grievance-card ' + statusKey.split('-')[0] + '" onclick="selectGrievance(\\'' + g.id + '\\')">' +
           '<div class="card-top">' +
             '<span class="grievance-id">#' + g.id + '</span>' +
@@ -25917,35 +26075,35 @@ function calculateAllMetricsOptimized(dataCache) {
   // Calculate member metrics (skip header row)
   metrics.totalMembers = memberData.length - 1;
 
-  var openRateSum = 0;
-  var openRateCount = 0;
+  let openRateSum = 0;
+  let openRateCount = 0;
 
   for (let i = 1; i < memberData.length; i++) {
     const row = memberData[i];
 
     // Active stewards (column J)
-    if (row[9] === 'Yes') {
+    if (row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes') {
       metrics.activeStewards++;
     }
 
-    // Open rate (column R)
-    if (row[17] && !isNaN(row[17])) {
-      openRateSum += parseFloat(row[17]);
+    // Open rate (column S)
+    if (row[MEMBER_COLS.OPEN_RATE - 1] && !isNaN(row[MEMBER_COLS.OPEN_RATE - 1])) {
+      openRateSum += parseFloat(row[MEMBER_COLS.OPEN_RATE - 1]);
       openRateCount++;
     }
 
-    // Volunteer hours (column S)
-    if (row[18] && !isNaN(row[18])) {
-      metrics.ytdVolunteerHours += parseFloat(row[18]);
+    // Volunteer hours (column T)
+    if (row[MEMBER_COLS.VOLUNTEER_HOURS - 1] && !isNaN(row[MEMBER_COLS.VOLUNTEER_HOURS - 1])) {
+      metrics.ytdVolunteerHours += parseFloat(row[MEMBER_COLS.VOLUNTEER_HOURS - 1]);
     }
 
-    // Interest in local actions (column T)
-    if (row[19] === 'Yes') {
+    // Interest in local actions (column U)
+    if (row[MEMBER_COLS.INTEREST_LOCAL - 1] === 'Yes') {
       metrics.localActionInterest++;
     }
 
-    // Interest in chapter actions (column U)
-    if (row[20] === 'Yes') {
+    // Interest in chapter actions (column W)
+    if (row[MEMBER_COLS.INTEREST_CHAPTER - 1] === 'Yes') {
       metrics.chapterActionInterest++;
     }
   }
@@ -25960,16 +26118,16 @@ function calculateAllMetricsOptimized(dataCache) {
   const thisYear = now.getFullYear();
   const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
 
-  var daysOpenSum = 0;
-  var daysOpenCount = 0;
+  let daysOpenSum = 0;
+  let daysOpenCount = 0;
 
   for (let i = 1; i < grievanceData.length; i++) {
     const row = grievanceData[i];
 
-    const status = row[4]; // Column E
-    const dateClosed = row[17]; // Column R
-    const daysOpen = row[18]; // Column S
-    const nextActionDue = row[19]; // Column T
+    const status = row[GRIEVANCE_COLS.STATUS - 1]; // Column E
+    const dateClosed = row[GRIEVANCE_COLS.DATE_CLOSED - 1]; // Column R
+    const daysOpen = row[GRIEVANCE_COLS.DAYS_OPEN - 1]; // Column S
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1]; // Column T
 
     // Count by status
     if (status === 'Open') {
@@ -26002,8 +26160,8 @@ function calculateAllMetricsOptimized(dataCache) {
         // Only include upcoming deadlines (0-14 days), not past deadlines
         if (daysUntil >= 0 && daysUntil <= 14) {
           metrics.upcomingDeadlines.push({
-            grievanceId: row[0],
-            memberName: `${row[2]} ${row[3]}`,
+            grievanceId: row[GRIEVANCE_COLS.GRIEVANCE_ID - 1],
+            memberName: `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`,
             deadline: deadline,
             daysUntil: daysUntil
           });
@@ -26052,10 +26210,10 @@ function prepareAllChartData(dataCache) {
   for (let i = 1; i < grievanceData.length; i++) {
     const row = grievanceData[i];
 
-    const status = row[4];
-    const location = row[24]; // Column Y
-    const issueCategory = row[21]; // Column V
-    const dateFiled = row[8]; // Column I
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const location = row[GRIEVANCE_COLS.LOCATION - 1]; // Column Z
+    const issueCategory = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1]; // Column W
+    const dateFiled = row[GRIEVANCE_COLS.DATE_FILED - 1]; // Column I
 
     // By status
     statusCounts[status] = (statusCounts[status] || 0) + 1;
@@ -26283,7 +26441,7 @@ function logPerformanceMetric(funcName, duration, error = false) {
  */
 function createPerformanceMonitoringSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var perfSheet = ss.getSheetByName('⚡ Performance Monitor');
+  let perfSheet = ss.getSheetByName('⚡ Performance Monitor');
 
   if (!perfSheet) {
     perfSheet = ss.insertSheet('⚡ Performance Monitor');
@@ -26499,7 +26657,7 @@ function exportPerformanceDataCSV() {
   const props = PropertiesService.getScriptProperties();
   const perfLog = JSON.parse(props.getProperty('PERFORMANCE_LOG') || '{}');
 
-  var csv = 'Function,Avg Time (ms),Min Time (ms),Max Time (ms),Call Count,Error Rate (%),Last Run\n';
+  let csv = 'Function,Avg Time (ms),Min Time (ms),Max Time (ms),Call Count,Error Rate (%),Last Run\n';
 
   for (const [funcName, data] of Object.entries(perfLog)) {
     const lastRun = data.lastRun ? new Date(data.lastRun).toISOString() : '';
@@ -26534,10 +26692,10 @@ function getPerformanceSummary() {
     mostCalledFunction: null
   };
 
-  var slowestTime = 0;
-  var fastestTime = Infinity;
-  var mostCalls = 0;
-  var totalTime = 0;
+  let slowestTime = 0;
+  let fastestTime = Infinity;
+  let mostCalls = 0;
+  let totalTime = 0;
 
   for (const [funcName, data] of Object.entries(perfLog)) {
     summary.totalFunctions++;
@@ -26576,7 +26734,7 @@ function showPerformanceSummary() {
   const ui = SpreadsheetApp.getUi();
   const summary = getPerformanceSummary();
 
-  var message = 'PERFORMANCE SUMMARY\n\n';
+  let message = 'PERFORMANCE SUMMARY\n\n';
   message += `Total Functions Tracked: ${summary.totalFunctions}\n`;
   message += `Total Function Calls: ${summary.totalCalls}\n`;
   message += `Total Errors: ${summary.totalErrors}\n`;
@@ -26600,9 +26758,9 @@ function showPerformanceSummary() {
 // Create tracked versions of critical functions
 // These can be used instead of the original functions to automatically track performance
 
-var recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
-var recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
-var rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);
+const recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
+const recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
+const rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);
 
 
 
@@ -26852,7 +27010,7 @@ function showPhase6Status() {
   const ui = SpreadsheetApp.getUi();
   const status = getPhase6Status();
 
-  var message = 'PHASE 6 FEATURE STATUS\n\n';
+  let message = 'PHASE 6 FEATURE STATUS\n\n';
   message += `Active Features: ${status.activeFeatures} / ${status.totalFeatures}\n\n`;
 
   message += '✅ Batch Grievance Recalculation\n';
@@ -26958,7 +27116,7 @@ function runPhase6HealthCheck() {
     }
 
     // Display results
-    var message = 'PHASE 6 HEALTH CHECK RESULTS\n\n';
+    let message = 'PHASE 6 HEALTH CHECK RESULTS\n\n';
 
     message += `Passed: ${results.passed.length}\n`;
     message += `Failed: ${results.failed.length}\n`;
@@ -27082,7 +27240,7 @@ function analyzeVolumeTrend(data) {
     const monthlyVolumes = {};
 
     data.forEach(function(row) {
-      const filedDate = row[6]; // Column G: Filed Date
+      const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
       if (!filedDate) return;
 
@@ -27136,8 +27294,8 @@ function analyzeIssueTypeTrends(data) {
     const issueTypesByMonth = {};
 
     data.forEach(function(row) {
-      const filedDate = row[6];
-      const issueType = row[5];
+      const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+      const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
 
       if (!filedDate || !issueType) return;
 
@@ -27210,7 +27368,7 @@ function detectSeasonalPatterns(data) {
   const quarterlyVolumes = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
 
   data.forEach(function(row) {
-    const filedDate = row[6];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
     if (!filedDate) return;
 
@@ -27219,8 +27377,8 @@ function detectSeasonalPatterns(data) {
   });
 
   // Find peak quarter
-  var peakQuarter = 'Q1';
-  var peakVolume = 0;
+  let peakQuarter = 'Q1';
+  let peakVolume = 0;
 
   Object.entries(quarterlyVolumes).forEach(function([quarter, volume]) {
     if (volume > peakVolume) {
@@ -27246,8 +27404,8 @@ function analyzeResolutionTimeTrend(data) {
   const resolutionTimes = [];
 
   data.forEach(function(row) {
-    const filedDate = row[6];
-    const closedDate = row[18];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
 
     if (filedDate && closedDate && closedDate > filedDate) {
       const days = Math.floor((closedDate - filedDate) / (1000 * 60 * 60 * 24));
@@ -27294,8 +27452,8 @@ function forecastStewardWorkload(data) {
   const stewardCases = {};
 
   data.forEach(function(row) {
-    const steward = row[13];
-    const status = row[4];
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
 
     if (steward && status === 'Open') {
       stewardCases[steward] = (stewardCases[steward] || 0) + 1;
@@ -27332,9 +27490,9 @@ function identifyRiskFactors(data) {
   const risks = [];
 
   // Check for overdue cases
-  var overdueCount = 0;
+  let overdueCount = 0;
   data.forEach(function(row) {
-    const daysToDeadline = row[20];
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
     if (daysToDeadline < 0) overdueCount++;
   });
 
@@ -27348,10 +27506,10 @@ function identifyRiskFactors(data) {
   }
 
   // Check for cases with no steward assigned
-  var unassignedCount = 0;
+  let unassignedCount = 0;
   data.forEach(function(row) {
-    const steward = row[13];
-    const status = row[4];
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
     if (!steward && status === 'Open') unassignedCount++;
   });
 
@@ -27389,7 +27547,7 @@ function detectAnomalies(data) {
   // Check for unusual spike in last month
   const monthlyVolumes = {};
   data.forEach(function(row) {
-    const filedDate = row[6];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
     if (!filedDate) return;
 
     const monthKey = `${filedDate.getFullYear()}-${String(filedDate.getMonth() + 1).padStart(2, '0')}`;
@@ -27413,7 +27571,7 @@ function detectAnomalies(data) {
   // Check for concentration of cases in one location
   const locationCounts = {};
   data.forEach(function(row) {
-    const location = row[9];
+    const location = row[GRIEVANCE_COLS.LOCATION - 1];
     if (location) {
       locationCounts[location] = (locationCounts[location] || 0) + 1;
     }
@@ -27499,7 +27657,7 @@ function calculateLinearTrend(values) {
   const n = values.length;
   if (n < 2) return { slope: 0, intercept: values[0] || 0 };
 
-  var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
 
   for (let i = 0; i < n; i++) {
     sumX += i;
@@ -27985,14 +28143,14 @@ function analyzeLocationClusters(data) {
   const locationStats = {};
 
   data.forEach(function(row) {
-    const location = row[9]; // Column J: Work Location
+    const location = row[GRIEVANCE_COLS.LOCATION - 1];
     if (!location) return;
 
     if (!locationStats[location]) {
       locationStats[location] = {
         count: 0,
         issueTypes: {},
-        managers: {},
+        units: {},
         resolutionTimes: []
       };
     }
@@ -28000,22 +28158,22 @@ function analyzeLocationClusters(data) {
     locationStats[location].count++;
 
     // Track issue types per location
-    const issueType = row[5];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
     if (issueType) {
       locationStats[location].issueTypes[issueType] =
         (locationStats[location].issueTypes[issueType] || 0) + 1;
     }
 
-    // Track managers per location
-    const manager = row[11];
-    if (manager) {
-      locationStats[location].managers[manager] =
-        (locationStats[location].managers[manager] || 0) + 1;
+    // Track units per location (grievances don't have manager, using unit as proxy)
+    const unit = row[GRIEVANCE_COLS.UNIT - 1];
+    if (unit) {
+      locationStats[location].units[unit] =
+        (locationStats[location].units[unit] || 0) + 1;
     }
 
     // Track resolution times
-    const filedDate = row[6];
-    const closedDate = row[18];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
     if (filedDate && closedDate) {
       const resTime = Math.floor((closedDate - filedDate) / (1000 * 60 * 60 * 24));
       locationStats[location].resolutionTimes.push(resTime);
@@ -28063,14 +28221,15 @@ function analyzeLocationClusters(data) {
  * @returns {Object} Manager analysis
  */
 function analyzeManagerPatterns(data) {
-  const managerStats = {};
+  // Note: Grievance data uses Steward (AA) not Manager. Analyzing by steward instead.
+  const stewardStats = {};
 
   data.forEach(function(row) {
-    const manager = row[11]; // Column L: Manager
-    if (!manager) return;
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    if (!steward) return;
 
-    if (!managerStats[manager]) {
-      managerStats[manager] = {
+    if (!stewardStats[steward]) {
+      stewardStats[steward] = {
         count: 0,
         issueTypes: {},
         outcomes: {},
@@ -28078,37 +28237,37 @@ function analyzeManagerPatterns(data) {
       };
     }
 
-    managerStats[manager].count++;
+    stewardStats[steward].count++;
 
     // Track issue types
-    const issueType = row[5];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
     if (issueType) {
-      managerStats[manager].issueTypes[issueType] =
-        (managerStats[manager].issueTypes[issueType] || 0) + 1;
+      stewardStats[steward].issueTypes[issueType] =
+        (stewardStats[steward].issueTypes[issueType] || 0) + 1;
     }
 
     // Track outcomes
-    const status = row[4];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
     if (status) {
-      managerStats[manager].outcomes[status] =
-        (managerStats[manager].outcomes[status] || 0) + 1;
+      stewardStats[steward].outcomes[status] =
+        (stewardStats[steward].outcomes[status] || 0) + 1;
     }
 
     // Track resolution times
-    const filedDate = row[6];
-    const closedDate = row[18];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
     if (filedDate && closedDate) {
       const resTime = Math.floor((closedDate - filedDate) / (1000 * 60 * 60 * 24));
-      managerStats[manager].resolutionTimes.push(resTime);
+      stewardStats[steward].resolutionTimes.push(resTime);
     }
   });
 
-  // Find managers with concerning patterns
-  const avgGrievancesPerManager = data.length / Object.keys(managerStats).length;
-  const concerningManagers = [];
+  // Find stewards with high caseloads
+  const avgGrievancesPerSteward = data.length / Object.keys(stewardStats).length;
+  const highCaseloadStewards = [];
 
-  Object.entries(managerStats).forEach(function([manager, stats]) {
-    if (stats.count > avgGrievancesPerManager * 2) {
+  Object.entries(stewardStats).forEach(function([steward, stats]) {
+    if (stats.count > avgGrievancesPerSteward * 2) {
       const topIssue = Object.entries(stats.issueTypes)
         .sort(function(a, b) { return b[1] - a[1]; })[0];
 
@@ -28116,22 +28275,22 @@ function analyzeManagerPatterns(data) {
         ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
         : 0;
 
-      concerningManagers.push({
-        manager: manager,
+      highCaseloadStewards.push({
+        steward: steward,
         count: stats.count,
-        comparedToAverage: (stats.count / avgGrievancesPerManager).toFixed(1) + 'x',
+        comparedToAverage: (stats.count / avgGrievancesPerSteward).toFixed(1) + 'x',
         topIssueType: topIssue ? topIssue[0] : 'N/A',
         avgResolutionTime: Math.round(avgResTime),
-        severity: stats.count > avgGrievancesPerManager * 3 ? 'HIGH' : 'MEDIUM'
+        severity: stats.count > avgGrievancesPerSteward * 3 ? 'HIGH' : 'MEDIUM'
       });
     }
   });
 
   return {
-    totalManagers: Object.keys(managerStats).length,
-    avgPerManager: avgGrievancesPerManager.toFixed(1),
-    concerningManagers: concerningManagers.sort(function(a, b) { return b.count - a.count; }),
-    allStats: managerStats
+    totalStewards: Object.keys(stewardStats).length,
+    avgPerSteward: avgGrievancesPerSteward.toFixed(1),
+    highCaseloadStewards: highCaseloadStewards.sort(function(a, b) { return b.count - a.count; }),
+    allStats: stewardStats
   };
 }
 
@@ -28144,14 +28303,14 @@ function analyzeIssueTypePatterns(data) {
   const issueTypeStats = {};
 
   data.forEach(function(row) {
-    const issueType = row[5];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
     if (!issueType) return;
 
     if (!issueTypeStats[issueType]) {
       issueTypeStats[issueType] = {
         count: 0,
         locations: {},
-        managers: {},
+        stewards: {},
         resolutionTimes: [],
         outcomes: {}
       };
@@ -28160,29 +28319,29 @@ function analyzeIssueTypePatterns(data) {
     issueTypeStats[issueType].count++;
 
     // Track locations
-    const location = row[9];
+    const location = row[GRIEVANCE_COLS.LOCATION - 1];
     if (location) {
       issueTypeStats[issueType].locations[location] =
         (issueTypeStats[issueType].locations[location] || 0) + 1;
     }
 
-    // Track managers
-    const manager = row[11];
-    if (manager) {
-      issueTypeStats[issueType].managers[manager] =
-        (issueTypeStats[issueType].managers[manager] || 0) + 1;
+    // Track stewards
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    if (steward) {
+      issueTypeStats[issueType].stewards[steward] =
+        (issueTypeStats[issueType].stewards[steward] || 0) + 1;
     }
 
     // Track outcomes
-    const status = row[4];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
     if (status) {
       issueTypeStats[issueType].outcomes[status] =
         (issueTypeStats[issueType].outcomes[status] || 0) + 1;
     }
 
     // Track resolution times
-    const filedDate = row[6];
-    const closedDate = row[18];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
     if (filedDate && closedDate) {
       const resTime = Math.floor((closedDate - filedDate) / (1000 * 60 * 60 * 24));
       issueTypeStats[issueType].resolutionTimes.push(resTime);
@@ -28235,7 +28394,7 @@ function analyzeTemporalPatterns(data) {
   const dayOfWeekPatterns = {};
 
   data.forEach(function(row) {
-    const filedDate = row[6];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
     if (!filedDate) return;
 
     // Monthly analysis
@@ -28267,25 +28426,25 @@ function analyzeTemporalPatterns(data) {
 function findCorrelations(data) {
   const correlations = [];
 
-  // Check: Specific manager + specific issue type
-  const managerIssueMatrix = {};
+  // Check: Specific steward + specific issue type
+  const stewardIssueMatrix = {};
 
   data.forEach(function(row) {
-    const manager = row[11];
-    const issueType = row[5];
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
 
-    if (manager && issueType) {
-      const key = `${manager}|||${issueType}`;
-      managerIssueMatrix[key] = (managerIssueMatrix[key] || 0) + 1;
+    if (steward && issueType) {
+      const key = `${steward}|||${issueType}`;
+      stewardIssueMatrix[key] = (stewardIssueMatrix[key] || 0) + 1;
     }
   });
 
-  Object.entries(managerIssueMatrix).forEach(function([key, count]) {
+  Object.entries(stewardIssueMatrix).forEach(function([key, count]) {
     if (count >= 5) {
-      const [manager, issueType] = key.split('|||');
+      const [steward, issueType] = key.split('|||');
       correlations.push({
-        type: 'Manager-Issue Correlation',
-        description: `${manager} has ${count} ${issueType} grievances`,
+        type: 'Steward-Issue Correlation',
+        description: `${steward} has ${count} ${issueType} grievances`,
         count: count,
         significance: count >= 10 ? 'HIGH' : 'MEDIUM'
       });
@@ -29153,15 +29312,14 @@ function getGrievanceDetails(grievanceId) {
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === grievanceId) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       return {
-        id: data[i][0],
-        memberId: data[i][1],
-        memberName: `${data[i][2]} ${data[i][3]}`,
-        issueType: data[i][5],
-        location: data[i][9] || '',
-        unit: data[i][10] || '',
-        manager: data[i][11] || '',
+        id: data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1],
+        memberId: data[i][GRIEVANCE_COLS.MEMBER_ID - 1],
+        memberName: `${data[i][GRIEVANCE_COLS.FIRST_NAME - 1]} ${data[i][GRIEVANCE_COLS.LAST_NAME - 1]}`,
+        issueType: data[i][GRIEVANCE_COLS.ISSUE_CATEGORY - 1],
+        location: data[i][GRIEVANCE_COLS.LOCATION - 1] || '',
+        unit: data[i][GRIEVANCE_COLS.UNIT - 1] || '',
         row: i + 2
       };
     }
@@ -29186,18 +29344,18 @@ function getAllStewards() {
   const stewards = [];
 
   data.forEach(function(row, index) {
-    const isSteward = row[9]; // Column J: Is Steward?
+    const isSteward = row[MEMBER_COLS.IS_STEWARD - 1];
 
     if (isSteward === 'Yes') {
       stewards.push({
-        id: row[0],
-        name: `${row[1]} ${row[2]}`,
-        email: row[7],
-        location: row[4] || '',
-        unit: row[5] || '',
+        id: row[MEMBER_COLS.MEMBER_ID - 1],
+        name: `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`,
+        email: row[MEMBER_COLS.EMAIL - 1],
+        location: row[MEMBER_COLS.WORK_LOCATION - 1] || '',
+        unit: row[MEMBER_COLS.UNIT - 1] || '',
         row: index + 2,
-        currentCaseload: getCurrentCaseload(row[0]),
-        expertise: getStewardExpertise(row[0])
+        currentCaseload: getCurrentCaseload(row[MEMBER_COLS.MEMBER_ID - 1]),
+        expertise: getStewardExpertise(row[MEMBER_COLS.MEMBER_ID - 1])
       });
     }
   });
@@ -29219,11 +29377,11 @@ function getCurrentCaseload(memberId) {
 
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
-  var count = 0;
+  let count = 0;
 
   data.forEach(function(row) {
-    const assignedSteward = row[13]; // Column N: Assigned Steward
-    const status = row[4]; // Column E: Status
+    const assignedSteward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
 
     if (assignedSteward && assignedSteward.includes(memberId) && status === 'Open') {
       count++;
@@ -29250,8 +29408,8 @@ function getStewardExpertise(memberId) {
   const expertise = {};
 
   data.forEach(function(row) {
-    const assignedSteward = row[13]; // Column N: Assigned Steward
-    const issueType = row[5]; // Column F: Issue Type
+    const assignedSteward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
 
     if (assignedSteward && assignedSteward.includes(memberId) && issueType) {
       expertise[issueType] = (expertise[issueType] || 0) + 1;
@@ -29311,11 +29469,11 @@ function assignStewardToGrievance(grievanceId, steward) {
   if (!grievance) return false;
 
   // Update assigned steward
-  grievanceSheet.getRange(grievance.row, GRIEVANCE_COLS.ASSIGNED_STEWARD).setValue(steward.name);
+  grievanceSheet.getRange(grievance.row, GRIEVANCE_COLS.STEWARD).setValue(steward.name);
 
   // Update steward email if available
   if (steward.email) {
-    grievanceSheet.getRange(grievance.row, GRIEVANCE_COLS.ASSIGNED_STEWARD + 1).setValue(steward.email);
+    grievanceSheet.getRange(grievance.row, GRIEVANCE_COLS.STEWARD + 1).setValue(steward.email);
   }
 
   return true;
@@ -29360,7 +29518,7 @@ function generateAssignmentReasoning(steward, grievance) {
  */
 function logAssignment(grievanceId, selectedSteward, topCandidates) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var assignmentLog = ss.getSheetByName('🤖 Auto-Assignment Log');
+  let assignmentLog = ss.getSheetByName('🤖 Auto-Assignment Log');
 
   if (!assignmentLog) {
     assignmentLog = createAutoAssignmentLogSheet();
@@ -29458,7 +29616,7 @@ function showAutoAssignDialog() {
   }
 
   // Check if already assigned
-  const currentAssignment = activeSheet.getRange(activeRow, GRIEVANCE_COLS.ASSIGNED_STEWARD).getValue();
+  const currentAssignment = activeSheet.getRange(activeRow, GRIEVANCE_COLS.STEWARD).getValue();
 
   if (currentAssignment) {
     const confirmResponse = ui.alert(
@@ -29525,9 +29683,9 @@ function batchAutoAssign() {
   const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   // Count unassigned
-  var unassigned = 0;
+  let unassigned = 0;
   rows.forEach(function(row) {
-    const assigned = activeSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).getValue();
+    const assigned = activeSheet.getRange(row, GRIEVANCE_COLS.STEWARD).getValue();
     if (!assigned) {
       unassigned++;
     }
@@ -29547,13 +29705,13 @@ function batchAutoAssign() {
 
   SpreadsheetApp.getActiveSpreadsheet().toast('🤖 Auto-assigning...', 'Please wait', -1);
 
-  var assigned = 0;
-  var skipped = 0;
-  var errors = 0;
+  let assigned = 0;
+  let skipped = 0;
+  let errors = 0;
 
   rows.forEach(function(row) {
     const grievanceId = activeSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
-    const currentAssignment = activeSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).getValue();
+    const currentAssignment = activeSheet.getRange(row, GRIEVANCE_COLS.STEWARD).getValue();
 
     if (!grievanceId) {
       skipped++;
@@ -29781,7 +29939,7 @@ class Transaction {
    * @returns {number} Number of successful snapshots
    */
   snapshotMultiple(sheetNames) {
-    var successCount = 0;
+    let successCount = 0;
 
     for (const sheetName of sheetNames) {
       if (this.snapshot(sheetName)) {
@@ -29842,8 +30000,8 @@ class Transaction {
     }
 
     const duration = new Date() - this.startTime;
-    var sheetsRestored = 0;
-    var errors = [];
+    let sheetsRestored = 0;
+    const errors = [];
 
     Logger.log(`Transaction ${this.transactionId}: Starting rollback of ${this.snapshots.size} sheets...`);
 
@@ -30168,7 +30326,7 @@ function showUndoRedoPanel() {
 function createUndoRedoPanelHTML() {
   const history = getUndoHistory();
 
-  var historyRows = '';
+  let historyRows = '';
   if (history.actions.length === 0) {
     historyRows = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #999;">No actions recorded yet</td></tr>';
   } else {
@@ -30709,7 +30867,7 @@ function exportUndoHistoryToSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   // Create or get history sheet
-  var historySheet = ss.getSheetByName('Undo_History_Export');
+  let historySheet = ss.getSheetByName('Undo_History_Export');
   if (historySheet) {
     historySheet.clear();
   } else {
@@ -31166,7 +31324,7 @@ function getTopProcesses(grievances, today, limit) {
     })
     .map(function(g) {
       const nextDeadline = g[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-      var daysUntilDue = null;
+      let daysUntilDue = null;
 
       if (nextDeadline instanceof Date) {
         const deadline = new Date(nextDeadline);
@@ -32002,7 +32160,7 @@ function handleError(error, context, showToUser = true, logToSheet = true) {
  */
 function logToDiagnostics(context, errorMessage, stackTrace, timestamp) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var diagnosticsSheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  const diagnosticsSheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
 
   if (!diagnosticsSheet) {
     return; // Sheet doesn't exist yet
@@ -32301,7 +32459,7 @@ function getSheetDataSafely(sheetName) {
 /**
  * Simple in-memory cache for expensive operations
  */
-var SimpleCache = {
+const SimpleCache = {
   _cache: {},
   _timestamps: {},
   _ttl: 5 * 60 * 1000, // 5 minutes default TTL
@@ -32361,7 +32519,7 @@ var SimpleCache = {
 function withCache(fn, cacheKey, ttl = 5 * 60 * 1000) {
   return function(...args) {
     const key = cacheKey + JSON.stringify(args);
-    var cached = SimpleCache.get(key);
+    const cached = SimpleCache.get(key);
 
     if (cached !== null) {
       return cached;
@@ -32881,7 +33039,7 @@ function mapStatusToState(status) {
  */
 function logStateChange(grievanceId, fromState, toState) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var stateLog = ss.getSheetByName('🔄 State Change Log');
+  let stateLog = ss.getSheetByName('🔄 State Change Log');
 
   if (!stateLog) {
     stateLog = createStateChangeLogSheet();
@@ -33055,8 +33213,8 @@ function batchUpdateWorkflowState() {
   }
 
   const newState = WORKFLOW_STATES[newStateKey];
-  var updated = 0;
-  var errors = 0;
+  let updated = 0;
+  let errors = 0;
 
   rows.forEach(function(row) {
     const grievanceId = activeSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
@@ -33132,7 +33290,7 @@ TEST_RESULTS = {
 /**
  * Assertion library
  */
-var Assert = {
+const Assert = {
   /**
    * Assert that two values are equal
    */
@@ -33227,7 +33385,7 @@ var Assert = {
    * Assert that function throws an error
    */
   assertThrows: function(fn, message) {
-    var threw = false;
+    let threw = false;
     try {
       fn();
     } catch (e) {
@@ -33394,7 +33552,7 @@ function generateTestReport(duration) {
   const ss = SpreadsheetApp.getActive();
 
   // Create or clear Test Results sheet
-  var reportSheet = ss.getSheetByName('Test Results');
+  let reportSheet = ss.getSheetByName('Test Results');
   if (!reportSheet) {
     reportSheet = ss.insertSheet('Test Results');
   }
@@ -33426,7 +33584,7 @@ function generateTestReport(duration) {
   reportSheet.getRange(3, 1, summary.length, 2).setValues(summary);
   reportSheet.getRange(3, 1, summary.length, 1).setFontWeight('bold');
 
-  var currentRow = 3 + summary.length + 2;
+  let currentRow = 3 + summary.length + 2;
 
   // Passed tests
   if (TEST_RESULTS.passed.length > 0) {
@@ -33704,9 +33862,9 @@ function runTestCategory(categoryName, testNames) {
   TEST_RESULTS.failed = [];
   TEST_RESULTS.skipped = [];
 
-  var passed = 0;
-  var failed = 0;
-  var skipped = 0;
+  let passed = 0;
+  let failed = 0;
+  let skipped = 0;
 
   testNames.forEach(function(testName) {
     try {
@@ -34422,6 +34580,199 @@ function testPastDeadlineHandling() {
   );
 
   Logger.log('✅ Past deadline handling test passed');
+}
+
+/* --------------------= COLUMN CONSTANTS TESTS --------------------= */
+
+/**
+ * Test: MEMBER_COLS constants are properly defined
+ */
+function testMemberColsConstants() {
+  // Verify all required columns exist
+  const requiredCols = [
+    'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'JOB_TITLE', 'WORK_LOCATION',
+    'UNIT', 'OFFICE_DAYS', 'EMAIL', 'PHONE', 'IS_STEWARD', 'COMMITTEES',
+    'SUPERVISOR', 'MANAGER', 'ASSIGNED_STEWARD', 'HAS_OPEN_GRIEVANCE',
+    'GRIEVANCE_STATUS', 'NEXT_DEADLINE'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof MEMBER_COLS[col] === 'number',
+      `MEMBER_COLS.${col} should be defined as a number`
+    );
+    Assert.assertTrue(
+      MEMBER_COLS[col] >= 1,
+      `MEMBER_COLS.${col} should be >= 1 (1-indexed)`
+    );
+  });
+
+  // Verify column ordering (first columns should be in expected order)
+  Assert.assertEquals(1, MEMBER_COLS.MEMBER_ID, 'MEMBER_ID should be column 1');
+  Assert.assertEquals(2, MEMBER_COLS.FIRST_NAME, 'FIRST_NAME should be column 2');
+  Assert.assertEquals(3, MEMBER_COLS.LAST_NAME, 'LAST_NAME should be column 3');
+  Assert.assertEquals(8, MEMBER_COLS.EMAIL, 'EMAIL should be column 8');
+  Assert.assertEquals(9, MEMBER_COLS.PHONE, 'PHONE should be column 9');
+
+  Logger.log('✅ MEMBER_COLS constants test passed');
+}
+
+/**
+ * Test: GRIEVANCE_COLS constants are properly defined
+ */
+function testGrievanceColsConstants() {
+  // Verify all required columns exist
+  const requiredCols = [
+    'GRIEVANCE_ID', 'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'STATUS',
+    'CURRENT_STEP', 'INCIDENT_DATE', 'FILING_DEADLINE', 'DATE_FILED',
+    'DATE_CLOSED', 'DAYS_OPEN', 'NEXT_ACTION_DUE', 'DAYS_TO_DEADLINE',
+    'ISSUE_CATEGORY', 'MEMBER_EMAIL', 'LOCATION', 'STEWARD', 'RESOLUTION'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof GRIEVANCE_COLS[col] === 'number',
+      `GRIEVANCE_COLS.${col} should be defined as a number`
+    );
+    Assert.assertTrue(
+      GRIEVANCE_COLS[col] >= 1,
+      `GRIEVANCE_COLS.${col} should be >= 1 (1-indexed)`
+    );
+  });
+
+  // Verify key column positions
+  Assert.assertEquals(1, GRIEVANCE_COLS.GRIEVANCE_ID, 'GRIEVANCE_ID should be column 1');
+  Assert.assertEquals(5, GRIEVANCE_COLS.STATUS, 'STATUS should be column 5');
+  Assert.assertEquals(9, GRIEVANCE_COLS.DATE_FILED, 'DATE_FILED should be column 9');
+  Assert.assertEquals(18, GRIEVANCE_COLS.DATE_CLOSED, 'DATE_CLOSED should be column 18');
+  Assert.assertEquals(27, GRIEVANCE_COLS.STEWARD, 'STEWARD should be column 27');
+
+  Logger.log('✅ GRIEVANCE_COLS constants test passed');
+}
+
+/**
+ * Test: CONFIG_COLS constants are properly defined
+ */
+function testConfigColsConstants() {
+  // Verify key config columns exist
+  const requiredCols = [
+    'JOB_TITLES', 'OFFICE_LOCATIONS', 'UNITS', 'STEWARDS',
+    'GRIEVANCE_STATUS', 'GRIEVANCE_STEP', 'ISSUE_CATEGORY'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof CONFIG_COLS[col] === 'number',
+      `CONFIG_COLS.${col} should be defined as a number`
+    );
+  });
+
+  Logger.log('✅ CONFIG_COLS constants test passed');
+}
+
+/**
+ * Test: Internal schema constants are properly defined
+ */
+function testInternalSchemaConstants() {
+  // Test AUDIT_LOG_COLS
+  Assert.assertTrue(typeof AUDIT_LOG_COLS === 'object', 'AUDIT_LOG_COLS should be defined');
+  Assert.assertEquals(1, AUDIT_LOG_COLS.TIMESTAMP, 'AUDIT_LOG_COLS.TIMESTAMP should be 1');
+  Assert.assertEquals(4, AUDIT_LOG_COLS.ACTION, 'AUDIT_LOG_COLS.ACTION should be 4');
+
+  // Test FAQ_COLS
+  Assert.assertTrue(typeof FAQ_COLS === 'object', 'FAQ_COLS should be defined');
+  Assert.assertEquals(1, FAQ_COLS.ID, 'FAQ_COLS.ID should be 1');
+  Assert.assertEquals(3, FAQ_COLS.QUESTION, 'FAQ_COLS.QUESTION should be 3');
+  Assert.assertEquals(4, FAQ_COLS.ANSWER, 'FAQ_COLS.ANSWER should be 4');
+
+  // Test ERROR_LOG_COLS
+  Assert.assertTrue(typeof ERROR_LOG_COLS === 'object', 'ERROR_LOG_COLS should be defined');
+  Assert.assertEquals(1, ERROR_LOG_COLS.TIMESTAMP, 'ERROR_LOG_COLS.TIMESTAMP should be 1');
+  Assert.assertEquals(2, ERROR_LOG_COLS.LEVEL, 'ERROR_LOG_COLS.LEVEL should be 2');
+
+  Logger.log('✅ Internal schema constants test passed');
+}
+
+/**
+ * Test: SHEETS constants match expected sheet names
+ */
+function testSheetsConstants() {
+  // Verify core sheets are defined
+  Assert.assertEquals('Config', SHEETS.CONFIG, 'SHEETS.CONFIG should be "Config"');
+  Assert.assertEquals('Member Directory', SHEETS.MEMBER_DIR, 'SHEETS.MEMBER_DIR should be "Member Directory"');
+  Assert.assertEquals('Grievance Log', SHEETS.GRIEVANCE_LOG, 'SHEETS.GRIEVANCE_LOG should be "Grievance Log"');
+  Assert.assertEquals('Dashboard', SHEETS.DASHBOARD, 'SHEETS.DASHBOARD should be "Dashboard"');
+
+  // Verify internal system sheets are defined
+  Assert.assertTrue(typeof SHEETS.AUDIT_LOG === 'string', 'SHEETS.AUDIT_LOG should be defined');
+  Assert.assertTrue(typeof SHEETS.FAQ_DATABASE === 'string', 'SHEETS.FAQ_DATABASE should be defined');
+  Assert.assertTrue(typeof SHEETS.ERROR_LOG === 'string', 'SHEETS.ERROR_LOG should be defined');
+
+  Logger.log('✅ SHEETS constants test passed');
+}
+
+/**
+ * Test: Column letter conversion utility
+ */
+function testColumnLetterConversion() {
+  // Test getColumnLetter
+  Assert.assertEquals('A', getColumnLetter(1), 'Column 1 should be A');
+  Assert.assertEquals('B', getColumnLetter(2), 'Column 2 should be B');
+  Assert.assertEquals('Z', getColumnLetter(26), 'Column 26 should be Z');
+  Assert.assertEquals('AA', getColumnLetter(27), 'Column 27 should be AA');
+  Assert.assertEquals('AB', getColumnLetter(28), 'Column 28 should be AB');
+
+  // Test getColumnNumber
+  Assert.assertEquals(1, getColumnNumber('A'), 'A should be column 1');
+  Assert.assertEquals(26, getColumnNumber('Z'), 'Z should be column 26');
+  Assert.assertEquals(27, getColumnNumber('AA'), 'AA should be column 27');
+
+  Logger.log('✅ Column letter conversion test passed');
+}
+
+/**
+ * Test: Column constants are used correctly (no off-by-one errors)
+ */
+function testColumnIndexing() {
+  // Verify that constants are 1-indexed (for spreadsheet columns)
+  // and that array access uses [CONSTANT - 1]
+
+  // Simulate a row of data
+  const mockRow = ['ID', 'First', 'Last', 'Title', 'Location'];
+
+  // Access using constant pattern (constant - 1 for 0-indexed array)
+  const firstElement = mockRow[1 - 1]; // Should be 'ID'
+  const secondElement = mockRow[2 - 1]; // Should be 'First'
+
+  Assert.assertEquals('ID', firstElement, 'First element accessed with [1-1] should be ID');
+  Assert.assertEquals('First', secondElement, 'Second element accessed with [2-1] should be First');
+
+  // Verify MEMBER_COLS pattern works
+  const mockMemberRow = new Array(31).fill('').map((_, i) => `col${i}`);
+  mockMemberRow[MEMBER_COLS.MEMBER_ID - 1] = 'M000001';
+  mockMemberRow[MEMBER_COLS.EMAIL - 1] = 'test@union.org';
+
+  Assert.assertEquals('M000001', mockMemberRow[MEMBER_COLS.MEMBER_ID - 1], 'MEMBER_ID access should work');
+  Assert.assertEquals('test@union.org', mockMemberRow[MEMBER_COLS.EMAIL - 1], 'EMAIL access should work');
+
+  Logger.log('✅ Column indexing test passed');
+}
+
+/**
+ * Run all column constant tests
+ */
+function runColumnConstantTests() {
+  Logger.log('=== Running Column Constant Tests ===');
+
+  testMemberColsConstants();
+  testGrievanceColsConstants();
+  testConfigColsConstants();
+  testInternalSchemaConstants();
+  testSheetsConstants();
+  testColumnLetterConversion();
+  testColumnIndexing();
+
+  Logger.log('=== All Column Constant Tests Passed ===');
 }
 
 

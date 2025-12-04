@@ -574,7 +574,7 @@ function showContextHelp() {
   const activeSheet = ss.getActiveSheet();
   const sheetName = activeSheet.getName();
 
-  var helpContent = '';
+  let helpContent = '';
 
   switch (sheetName) {
     case SHEETS.GRIEVANCE_LOG:

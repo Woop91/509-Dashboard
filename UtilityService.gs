@@ -61,7 +61,7 @@ function handleError(error, context, showToUser = true, logToSheet = true) {
  */
 function logToDiagnostics(context, errorMessage, stackTrace, timestamp) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var diagnosticsSheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  const diagnosticsSheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
 
   if (!diagnosticsSheet) {
     return; // Sheet doesn't exist yet
@@ -360,7 +360,7 @@ function getSheetDataSafely(sheetName) {
 /**
  * Simple in-memory cache for expensive operations
  */
-var SimpleCache = {
+const SimpleCache = {
   _cache: {},
   _timestamps: {},
   _ttl: 5 * 60 * 1000, // 5 minutes default TTL
@@ -420,7 +420,7 @@ var SimpleCache = {
 function withCache(fn, cacheKey, ttl = 5 * 60 * 1000) {
   return function(...args) {
     const key = cacheKey + JSON.stringify(args);
-    var cached = SimpleCache.get(key);
+    const cached = SimpleCache.get(key);
 
     if (cached !== null) {
       return cached;

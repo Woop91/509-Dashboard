@@ -61,7 +61,7 @@ function logPerformanceMetric(funcName, duration, error = false) {
  */
 function createPerformanceMonitoringSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var perfSheet = ss.getSheetByName('⚡ Performance Monitor');
+  let perfSheet = ss.getSheetByName('⚡ Performance Monitor');
 
   if (!perfSheet) {
     perfSheet = ss.insertSheet('⚡ Performance Monitor');
@@ -277,7 +277,7 @@ function exportPerformanceDataCSV() {
   const props = PropertiesService.getScriptProperties();
   const perfLog = JSON.parse(props.getProperty('PERFORMANCE_LOG') || '{}');
 
-  var csv = 'Function,Avg Time (ms),Min Time (ms),Max Time (ms),Call Count,Error Rate (%),Last Run\n';
+  let csv = 'Function,Avg Time (ms),Min Time (ms),Max Time (ms),Call Count,Error Rate (%),Last Run\n';
 
   for (const [funcName, data] of Object.entries(perfLog)) {
     const lastRun = data.lastRun ? new Date(data.lastRun).toISOString() : '';
@@ -312,10 +312,10 @@ function getPerformanceSummary() {
     mostCalledFunction: null
   };
 
-  var slowestTime = 0;
-  var fastestTime = Infinity;
-  var mostCalls = 0;
-  var totalTime = 0;
+  let slowestTime = 0;
+  let fastestTime = Infinity;
+  let mostCalls = 0;
+  let totalTime = 0;
 
   for (const [funcName, data] of Object.entries(perfLog)) {
     summary.totalFunctions++;
@@ -354,7 +354,7 @@ function showPerformanceSummary() {
   const ui = SpreadsheetApp.getUi();
   const summary = getPerformanceSummary();
 
-  var message = 'PERFORMANCE SUMMARY\n\n';
+  let message = 'PERFORMANCE SUMMARY\n\n';
   message += `Total Functions Tracked: ${summary.totalFunctions}\n`;
   message += `Total Function Calls: ${summary.totalCalls}\n`;
   message += `Total Errors: ${summary.totalErrors}\n`;
@@ -378,6 +378,6 @@ function showPerformanceSummary() {
 // Create tracked versions of critical functions
 // These can be used instead of the original functions to automatically track performance
 
-var recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
-var recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
-var rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);
+const recalcAllMembersTracked = trackPerformance('recalcAllMembers', recalcAllMembers);
+const recalcAllGrievancesTracked = trackPerformance('recalcAllGrievancesBatched', recalcAllGrievancesBatched);
+const rebuildDashboardTracked = trackPerformance('rebuildDashboardOptimized', rebuildDashboardOptimized);

@@ -461,7 +461,7 @@ function mapStatusToState(status) {
  */
 function logStateChange(grievanceId, fromState, toState) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var stateLog = ss.getSheetByName('🔄 State Change Log');
+  let stateLog = ss.getSheetByName('🔄 State Change Log');
 
   if (!stateLog) {
     stateLog = createStateChangeLogSheet();
@@ -635,8 +635,8 @@ function batchUpdateWorkflowState() {
   }
 
   const newState = WORKFLOW_STATES[newStateKey];
-  var updated = 0;
-  var errors = 0;
+  let updated = 0;
+  let errors = 0;
 
   rows.forEach(function(row) {
     const grievanceId = activeSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();

@@ -386,7 +386,7 @@ function showChartBuildStatus() {
     SHEETS.TYPE_ANALYSIS
   ];
 
-  var message = 'CHART BUILD STATUS\n\n';
+  let message = 'CHART BUILD STATUS\n\n';
 
   for (const sheet of sheets) {
     const key = `CHARTS_LAST_BUILD_${sheet}`;

@@ -77,7 +77,7 @@ function getUserRole(userEmail) {
 
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var userRolesSheet = ss.getSheetByName('User Roles');
+    let userRolesSheet = ss.getSheetByName('User Roles');
 
     if (!userRolesSheet) {
       // If sheet doesn't exist, create it and assign current user as admin
@@ -115,7 +115,7 @@ function assignRole(userEmail, role) {
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var userRolesSheet = ss.getSheetByName('User Roles');
+    let userRolesSheet = ss.getSheetByName('User Roles');
 
     if (!userRolesSheet) {
       userRolesSheet = createUserRolesSheet();
@@ -123,7 +123,7 @@ function assignRole(userEmail, role) {
 
     // Check if user already exists
     const data = userRolesSheet.getDataRange().getValues();
-    var userRow = -1;
+    let userRow = -1;
 
     for (let i = 1; i < data.length; i++) {
       if (data[i][0].toLowerCase() === userEmail.toLowerCase()) {
@@ -250,7 +250,7 @@ function withPermission(fn, requiredPermission, actionDescription) {
 function logAudit(eventType, description, metadata) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var auditSheet = ss.getSheetByName('Audit Log');
+    let auditSheet = ss.getSheetByName('Audit Log');
 
     if (!auditSheet) {
       auditSheet = createAuditLogSheet();
@@ -359,7 +359,7 @@ function filterMemberDataByPermission(memberData, userEmail) {
   if (role === 'MEMBER') {
     return memberData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
-      return row[7] && row[7].toLowerCase() === userEmail.toLowerCase(); // Email column
+      return row[MEMBER_COLS.EMAIL - 1] && row[MEMBER_COLS.EMAIL - 1].toLowerCase() === userEmail.toLowerCase();
     });
   }
 
@@ -370,8 +370,8 @@ function filterMemberDataByPermission(memberData, userEmail) {
 
       // Anonymize PII
       return row.map(function(cell, colIndex) {
-        // Hide email (column 8) and phone (column 9)
-        if (colIndex === 7 || colIndex === 8) {
+        // Hide email and phone
+        if (colIndex === MEMBER_COLS.EMAIL - 1 || colIndex === MEMBER_COLS.PHONE - 1) {
           return '[REDACTED]';
         }
         return cell;
@@ -404,20 +404,20 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
   if (role === 'STEWARD') {
     // First, get steward name from member directory
     const memberData = getSheetDataSafely(SHEETS.MEMBER_DIR);
-    var stewardName = '';
+    let stewardName = '';
 
     if (memberData) {
       const stewardRow = memberData.find(function(row) {
-        return row[7] && row[7].toLowerCase() === userEmail.toLowerCase();
+        return row[MEMBER_COLS.EMAIL - 1] && row[MEMBER_COLS.EMAIL - 1].toLowerCase() === userEmail.toLowerCase();
       });
       if (stewardRow) {
-        stewardName = `${stewardRow[1]} ${stewardRow[2]}`; // First + Last name
+        stewardName = `${stewardRow[MEMBER_COLS.FIRST_NAME - 1]} ${stewardRow[MEMBER_COLS.LAST_NAME - 1]}`;
       }
     }
 
     return grievanceData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
-      const assignedSteward = row[26]; // Assigned Steward column
+      const assignedSteward = row[GRIEVANCE_COLS.STEWARD - 1];
       return assignedSteward && assignedSteward.includes(stewardName);
     });
   }
@@ -426,7 +426,7 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
   if (role === 'MEMBER') {
     return grievanceData.filter(function(row, index) {
       if (index === 0) return true; // Keep header
-      const memberEmail = row[23]; // Member Email column
+      const memberEmail = row[GRIEVANCE_COLS.MEMBER_EMAIL - 1];
       return memberEmail && memberEmail.toLowerCase() === userEmail.toLowerCase();
     });
   }
@@ -496,7 +496,7 @@ function showUserManagement() {
   requirePermission('manage_users', 'manage user roles');
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var userRolesSheet = ss.getSheetByName('User Roles');
+  let userRolesSheet = ss.getSheetByName('User Roles');
 
   if (!userRolesSheet) {
     userRolesSheet = createUserRolesSheet();
@@ -525,7 +525,7 @@ function showAuditLog() {
   requirePermission('view_audit_log', 'view audit log');
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var auditSheet = ss.getSheetByName('Audit Log');
+  const auditSheet = ss.getSheetByName('Audit Log');
 
   if (!auditSheet) {
     SpreadsheetApp.getUi().alert('No audit log found.');

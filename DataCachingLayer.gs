@@ -222,7 +222,7 @@ function getCachedStewards() {
     CACHE_KEYS.ALL_STEWARDS,
     function() {
       const members = getCachedMembers();
-      return members.filter(function(row) { return row[9] === 'Yes'; }); // Column J: Is Steward?
+      return members.filter(function(row) { return row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'; }); // Column J: Is Steward?
     },
     600 // 10 minutes
   );
@@ -249,10 +249,10 @@ function getCachedDashboardMetrics() {
       };
 
       grievances.forEach(function(row) {
-        const status = row[4];
-        const issueType = row[5];
-        const steward = row[13];
-        const daysToDeadline = row[20];
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
+        const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+        const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
         if (status === 'Open') metrics.open++;
         if (status === 'Closed' || status === 'Resolved') metrics.closed++;
@@ -319,7 +319,7 @@ function showCacheStatusDashboard() {
     const inMemory = memoryCache.get(key) !== null;
     const inProps = propsCache.getProperty(key) !== null;
 
-    var age = 'N/A';
+    let age = 'N/A';
     if (inProps) {
       const cached = JSON.parse(propsCache.getProperty(key));
       if (cached.timestamp) {
@@ -442,7 +442,7 @@ function getCachePerformanceStats() {
   const memoryCache = CacheService.getScriptCache();
   const propsCache = PropertiesService.getScriptProperties();
 
-  var cachedKeys = 0;
+  let cachedKeys = 0;
   Object.values(CACHE_KEYS).forEach(function(key) {
     if (propsCache.getProperty(key) !== null) {
       cachedKeys++;

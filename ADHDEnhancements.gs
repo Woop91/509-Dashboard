@@ -201,7 +201,7 @@ function addStewardWorkloadInstructions() {
  */
 function createUserSettingsSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName("⚙️ User Settings");
+  let sheet = ss.getSheetByName("⚙️ User Settings");
 
   if (!sheet) {
     sheet = ss.insertSheet("⚙️ User Settings");

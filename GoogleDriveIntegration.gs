@@ -42,7 +42,7 @@ function createGrievanceFolder(grievanceId, grievantName) {
   const rootFolder = createRootFolder();
 
   // Create folder name with grievant name if provided
-  var folderName = `Grievance_${grievanceId}`;
+  let folderName = `Grievance_${grievanceId}`;
   if (grievantName) {
     folderName = `Grievance_${grievanceId}_${grievantName}`;
   }
@@ -87,10 +87,12 @@ function linkFolderToGrievance(grievanceId, folderId) {
     if (data[i][0] === grievanceId) {
       const row = i + 2;
 
-      // Store folder ID in column AC (29)
+      // Store folder ID in column AC (29) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
       grievanceSheet.getRange(row, 29).setValue(folderId);
 
-      // Create hyperlink to folder in column AD (30)
+      // Create hyperlink to folder in column AD (30) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_URL constant to GRIEVANCE_COLS
       const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
       grievanceSheet.getRange(row, 30).setValue(folderUrl);
 
@@ -216,7 +218,7 @@ function showFileUploadDialog() {
   }
 
   // Get or create folder
-  var folder;
+  let folder;
   try {
     folder = createGrievanceFolder(grievanceId);
     linkFolderToGrievance(grievanceId, folder.getId());
@@ -388,7 +390,9 @@ function showGrievanceFiles() {
   }
 
   const grievanceId = activeSheet.getRange(activeRow, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
-  const folderId = activeSheet.getRange(activeRow, 29).getValue(); // Column AC
+  // Column AC (29) - Extension column not in GRIEVANCE_COLS
+  // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
+  const folderId = activeSheet.getRange(activeRow, 29).getValue();
 
   if (!folderId) {
     ui.alert(
@@ -647,12 +651,14 @@ function batchCreateGrievanceFolders() {
     }
 
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 29).getValues();
-    var created = 0;
-    var skipped = 0;
+    let created = 0;
+    let skipped = 0;
 
     data.forEach(function(row, index) {
-      const grievanceId = row[0];
-      const folderId = row[28]; // Column AC
+      const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+      // Array index 28 = Column AC (29) - Extension column not in GRIEVANCE_COLS
+      // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
+      const folderId = row[28];
 
       if (!grievanceId) {
         skipped++;

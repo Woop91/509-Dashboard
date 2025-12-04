@@ -27,6 +27,25 @@
  */
 
 /**
+ * Column positions for the simplified Communications Log created by this module (1-indexed for spreadsheet, 0-indexed for arrays)
+ *
+ * NOTE: This is a simplified 5-column structure used by GmailIntegration.gs
+ * It differs from the main COMM_LOG_COLS (7 columns) defined in Constants.gs
+ * which is designed for a more comprehensive communication tracking system.
+ *
+ * This simplified structure focuses on basic email logging within grievances.
+ *
+ * @const {Object}
+ */
+const GMAIL_COMM_LOG_COLS = {
+  TIMESTAMP: 0,      // Column A - When the communication occurred
+  GRIEVANCE_ID: 1,   // Column B - Related grievance ID
+  TYPE: 2,           // Column C - Communication type (e.g., "Email Sent")
+  USER: 3,           // Column D - User who sent/logged the communication
+  DETAILS: 4         // Column E - Full communication details/message body
+};
+
+/**
  * Shows email composition dialog for a grievance
  * Requires STEWARD role or higher
  *
@@ -45,21 +64,21 @@ function composeGrievanceEmail(grievanceId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  var grievanceData = null;
+  let grievanceData = null;
 
   if (grievanceId) {
     const lastRow = grievanceSheet.getLastRow();
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
     for (let i = 0; i < data.length; i++) {
-      if (data[i][0] === grievanceId) {
+      if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
         grievanceData = {
-          id: data[i][0],
-          memberName: `${data[i][2]} ${data[i][3]}`,
-          memberEmail: data[i][7] || '',
-          steward: data[i][13] || '',
+          id: data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1],
+          memberName: `${data[i][GRIEVANCE_COLS.FIRST_NAME - 1]} ${data[i][GRIEVANCE_COLS.LAST_NAME - 1]}`,
+          memberEmail: data[i][GRIEVANCE_COLS.MEMBER_EMAIL - 1] || '',
+          steward: data[i][GRIEVANCE_COLS.STEWARD - 1] || '',
           issueType: data[i][5] || '',
-          status: data[i][4] || ''
+          status: data[i][GRIEVANCE_COLS.STATUS - 1] || ''
         };
         break;
       }
@@ -462,7 +481,7 @@ function sendGrievanceEmail(emailData) {
  */
 function logCommunication(grievanceId, type, details) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var commLog = ss.getSheetByName('📞 Communications Log');
+  let commLog = ss.getSheetByName('📞 Communications Log');
 
   if (!commLog) {
     commLog = createCommunicationsLogSheet();
@@ -472,12 +491,13 @@ function logCommunication(grievanceId, type, details) {
   const user = Session.getActiveUser().getEmail() || 'System';
 
   const lastRow = commLog.getLastRow();
+  // Row structure matches GMAIL_COMM_LOG_COLS: [timestamp, grievanceId, type, user, details]
   const newRow = [
-    timestamp,
-    grievanceId,
-    type,
-    user,
-    details
+    timestamp,      // GMAIL_COMM_LOG_COLS.TIMESTAMP (Column A)
+    grievanceId,    // GMAIL_COMM_LOG_COLS.GRIEVANCE_ID (Column B)
+    type,           // GMAIL_COMM_LOG_COLS.TYPE (Column C)
+    user,           // GMAIL_COMM_LOG_COLS.USER (Column D)
+    details         // GMAIL_COMM_LOG_COLS.DETAILS (Column E)
   ];
 
   commLog.getRange(lastRow + 1, 1, 1, 5).setValues([newRow]);
@@ -485,6 +505,7 @@ function logCommunication(grievanceId, type, details) {
 
 /**
  * Creates Communications Log sheet
+ * Structure follows GMAIL_COMM_LOG_COLS (simplified 5-column format)
  * @returns {Sheet} Communications Log sheet
  */
 function createCommunicationsLogSheet() {
@@ -498,13 +519,13 @@ function createCommunicationsLogSheet() {
 
   sheet = ss.insertSheet('📞 Communications Log');
 
-  // Set headers
+  // Set headers - Structure matches GMAIL_COMM_LOG_COLS
   const headers = [
-    'Timestamp',
-    'Grievance ID',
-    'Type',
-    'User',
-    'Details'
+    'Timestamp',      // Column A - GMAIL_COMM_LOG_COLS.TIMESTAMP
+    'Grievance ID',   // Column B - GMAIL_COMM_LOG_COLS.GRIEVANCE_ID
+    'Type',           // Column C - GMAIL_COMM_LOG_COLS.TYPE
+    'User',           // Column D - GMAIL_COMM_LOG_COLS.USER
+    'Details'         // Column E - GMAIL_COMM_LOG_COLS.DETAILS
   ];
 
   sheet.getRange(1, 1, 1, 5).setValues([headers]);
@@ -694,7 +715,7 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const data = commLog.getRange(2, 1, lastRow - 1, 5).getValues();
-  const grievanceComms = data.filter(function(row) { return row[1] === grievanceId; });
+  const grievanceComms = data.filter(function(row) { return row[GMAIL_COMM_LOG_COLS.GRIEVANCE_ID] === grievanceId; });
 
   if (grievanceComms.length === 0) {
     SpreadsheetApp.getUi().alert('No communications logged for this grievance.');
@@ -704,9 +725,9 @@ function showGrievanceCommunications(grievanceId) {
   const commsList = grievanceComms
     .map(function(row) { return `
       <div style="background: #f8f9fa; padding: 12px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #1a73e8;">
-        <strong>${row[2]}</strong> - ${row[0].toLocaleString()}<br>
-        <em>By: ${row[3]}</em><br><br>
-        <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[4]}</div>
+        <strong>${row[GMAIL_COMM_LOG_COLS.TYPE]}</strong> - ${row[GMAIL_COMM_LOG_COLS.TIMESTAMP].toLocaleString()}<br>
+        <em>By: ${row[GMAIL_COMM_LOG_COLS.USER]}</em><br><br>
+        <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[GMAIL_COMM_LOG_COLS.DETAILS]}</div>
       </div>
     `; })
     .join('');

@@ -78,7 +78,7 @@ function makeIdempotent(operation, keyGenerator, ttl = 600) {
  * Idempotent member addition
  * Safe to retry - won't create duplicates
  */
-var addMemberIdempotent = makeIdempotent(
+const addMemberIdempotent = makeIdempotent(
   function(memberData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -87,11 +87,11 @@ var addMemberIdempotent = makeIdempotent(
       throw new Error('Member Directory sheet not found');
     }
 
-    const memberID = memberData[0];
+    const memberID = memberData[MEMBER_COLS.MEMBER_ID - 1];
 
     // Check if member already exists
     const data = memberSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(function(row) { return row[0] === memberID; });
+    const existingRow = data.findIndex(function(row) { return row[MEMBER_COLS.MEMBER_ID - 1] === memberID; });
 
     if (existingRow > 0) {
       // Update existing member
@@ -116,13 +116,13 @@ var addMemberIdempotent = makeIdempotent(
       };
     }
   },
-  function(memberData) { return `add_member_${memberData[0]}`; } // Use Member ID as key
+  function(memberData) { return `add_member_${memberData[MEMBER_COLS.MEMBER_ID - 1]}`; } // Use Member ID as key
 );
 
 /**
  * Idempotent grievance addition
  */
-var addGrievanceIdempotent = makeIdempotent(
+const addGrievanceIdempotent = makeIdempotent(
   function(grievanceData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -131,11 +131,11 @@ var addGrievanceIdempotent = makeIdempotent(
       throw new Error('Grievance Log sheet not found');
     }
 
-    const grievanceID = grievanceData[0];
+    const grievanceID = grievanceData[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
 
     // Check if grievance already exists
     const data = grievanceSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(function(row) { return row[0] === grievanceID; });
+    const existingRow = data.findIndex(function(row) { return row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceID; });
 
     if (existingRow > 0) {
       // Update existing grievance
@@ -160,14 +160,14 @@ var addGrievanceIdempotent = makeIdempotent(
       };
     }
   },
-  function(grievanceData) { return `add_grievance_${grievanceData[0]}`; } // Use Grievance ID as key
+  function(grievanceData) { return `add_grievance_${grievanceData[GRIEVANCE_COLS.GRIEVANCE_ID - 1]}`; } // Use Grievance ID as key
 );
 
 /**
  * Idempotent backup creation
  * Won't create duplicate backups if retried within TTL
  */
-var createBackupIdempotent = makeIdempotent(
+const createBackupIdempotent = makeIdempotent(
   function() {
     if (typeof createIncrementalBackup === 'function') {
       return createIncrementalBackup();
@@ -188,7 +188,7 @@ var createBackupIdempotent = makeIdempotent(
  * Idempotent recalculation wrapper
  * Prevents multiple simultaneous recalculations
  */
-var recalcAllIdempotent = makeIdempotent(
+const recalcAllIdempotent = makeIdempotent(
   function() {
     // Run both member and grievance recalculations
     const results = {};
@@ -216,7 +216,7 @@ var recalcAllIdempotent = makeIdempotent(
 /**
  * Idempotent dashboard rebuild
  */
-var rebuildDashboardIdempotent = makeIdempotent(
+const rebuildDashboardIdempotent = makeIdempotent(
   function() {
     if (typeof rebuildDashboardOptimized === 'function') {
       return rebuildDashboardOptimized();
@@ -308,7 +308,7 @@ function showIdempotentStatus() {
 
   const keys = JSON.parse(activeKeys);
 
-  var message = `Active Idempotent Operations: ${keys.length}\n\n`;
+  let message = `Active Idempotent Operations: ${keys.length}\n\n`;
 
   for (const key of keys) {
     const hasResult = cache.get(`result_${key}`) !== null;
@@ -335,7 +335,7 @@ function trackIdempotentKey(key) {
   const props = PropertiesService.getScriptProperties();
   const activeKeys = props.getProperty('IDEMPOTENT_KEYS');
 
-  var keys = activeKeys ? JSON.parse(activeKeys) : [];
+  const keys = activeKeys ? JSON.parse(activeKeys) : [];
 
   if (!keys.includes(key)) {
     keys.push(key);
