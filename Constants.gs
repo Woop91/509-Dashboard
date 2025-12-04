@@ -128,7 +128,8 @@ const MEMBER_COLS = {
   NEXT_DEADLINE: 28,               // AB
   RECENT_CONTACT_DATE: 29,         // AC
   CONTACT_STEWARD: 30,             // AD
-  CONTACT_NOTES: 31                // AE
+  CONTACT_NOTES: 31,               // AE
+  START_GRIEVANCE: 32              // AF - Checkbox to start grievance with prepopulated member info
 };
 
 /* --------------------= GRIEVANCE LOG COLUMNS --------------------= */

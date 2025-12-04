@@ -229,6 +229,22 @@ function onEdit(e) {
   const sheet = e.range.getSheet();
   const sheetName = sheet.getName();
 
+  // Handle Start Grievance checkbox in Member Directory
+  if (sheetName === SHEETS.MEMBER_DIR) {
+    const row = e.range.getRow();
+    const col = e.range.getColumn();
+
+    // Check if Start Grievance checkbox was clicked (column 32/AF)
+    if (col === MEMBER_COLS.START_GRIEVANCE && row > 1 && e.value === true) {
+      // Reset checkbox immediately to allow re-use
+      e.range.setValue(false);
+
+      // Open grievance form with prepopulated member data
+      openGrievanceFormForMember(row);
+      return;
+    }
+  }
+
   // Only track changes to core data sheets
   if (sheetName !== SHEETS.MEMBER_DIR && sheetName !== SHEETS.GRIEVANCE_LOG) {
     return;

@@ -353,10 +353,15 @@ function createMemberDirectory() {
     "Next Grievance Deadline",
     "Most Recent Steward Contact Date",
     "Steward Who Contacted Member",
-    "Notes from Steward Contact"
+    "Notes from Steward Contact",
+    "Start Grievance"
   ];
 
   memberDir.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+  // Add checkboxes to Start Grievance column (column 32/AF)
+  // Will be applied after data is loaded; setting up initial range
+  memberDir.getRange(2, 32, 999, 1).insertCheckboxes();
 
   memberDir.getRange(1, 1, 1, headers.length)
     .setFontWeight("bold")
@@ -369,6 +374,7 @@ function createMemberDirectory() {
   memberDir.setColumnWidth(1, 90);
   memberDir.setColumnWidth(8, 180);
   memberDir.setColumnWidth(31, 250);
+  memberDir.setColumnWidth(32, 120);  // Start Grievance checkbox column
 
   memberDir.setTabColor("#059669");
 }
@@ -1021,16 +1027,19 @@ function setupDataValidations() {
   grievanceLog.getRange(2, 24, 5000, 1).setDataValidation(grievanceEmailRule);
 
   // Member Directory validations (updated for new Config structure)
+  // Config columns: JOB_TITLES=1, OFFICE_LOCATIONS=2, UNITS=3, OFFICE_DAYS=4, YES_NO=5,
+  //                 SUPERVISORS=6, MANAGERS=7, STEWARDS=8, GRIEVANCE_STATUS=9, GRIEVANCE_STEP=10,
+  //                 ISSUE_CATEGORY=11, ARTICLES_VIOLATED=12, COMM_METHODS=13
   const memberValidations = [
-    { col: 4, configCol: 1 },    // Job Title
-    { col: 5, configCol: 2 },    // Work Location
-    { col: 6, configCol: 3 },    // Unit
-    { col: 10, configCol: 5 },   // Is Steward
-    { col: 13, configCol: 10 },  // Assigned Steward
-    { col: 20, configCol: 5 },   // Interest: Local
-    { col: 21, configCol: 5 },   // Interest: Chapter
-    { col: 22, configCol: 5 },   // Interest: Allied
-    { col: 24, configCol: 15 }   // Comm Methods
+    { col: 4, configCol: CONFIG_COLS.JOB_TITLES },       // Job Title
+    { col: 5, configCol: CONFIG_COLS.OFFICE_LOCATIONS }, // Work Location
+    { col: 6, configCol: CONFIG_COLS.UNITS },            // Unit
+    { col: 10, configCol: CONFIG_COLS.YES_NO },          // Is Steward
+    { col: 13, configCol: CONFIG_COLS.STEWARDS },        // Assigned Steward
+    { col: 20, configCol: CONFIG_COLS.YES_NO },          // Interest: Local
+    { col: 21, configCol: CONFIG_COLS.YES_NO },          // Interest: Chapter
+    { col: 22, configCol: CONFIG_COLS.YES_NO },          // Interest: Allied
+    { col: 24, configCol: CONFIG_COLS.COMM_METHODS }     // Comm Methods
   ];
 
   memberValidations.forEach(function(v) {
@@ -1062,14 +1071,15 @@ function setupDataValidations() {
   memberDir.getRange(2, 12, 5000, 1).setDataValidation(nameRule); // Manager
 
   // Grievance Log validations (updated for new Config structure)
+  // GRIEVANCE_COLS: STATUS=5, CURRENT_STEP=6, ARTICLES=22, ISSUE_CATEGORY=23, UNIT=25, LOCATION=26, STEWARD=27
   const grievanceValidations = [
-    { col: 5, configCol: 11 },  // Status (now column K)
-    { col: 6, configCol: 12 },  // Current Step (now column L)
-    { col: 22, configCol: 14 }, // Articles Violated (now column N)
-    { col: 23, configCol: 13 }, // Issue Category (now column M)
-    { col: 25, configCol: 3 },  // Unit
-    { col: 26, configCol: 2 },  // Work Location
-    { col: 27, configCol: 10 }  // Assigned Steward (now column J)
+    { col: GRIEVANCE_COLS.STATUS, configCol: CONFIG_COLS.GRIEVANCE_STATUS },         // Status
+    { col: GRIEVANCE_COLS.CURRENT_STEP, configCol: CONFIG_COLS.GRIEVANCE_STEP },     // Current Step
+    { col: GRIEVANCE_COLS.ARTICLES, configCol: CONFIG_COLS.ARTICLES_VIOLATED },      // Articles Violated
+    { col: GRIEVANCE_COLS.ISSUE_CATEGORY, configCol: CONFIG_COLS.ISSUE_CATEGORY },   // Issue Category
+    { col: GRIEVANCE_COLS.UNIT, configCol: CONFIG_COLS.UNITS },                      // Unit
+    { col: GRIEVANCE_COLS.LOCATION, configCol: CONFIG_COLS.OFFICE_LOCATIONS },       // Work Location
+    { col: GRIEVANCE_COLS.STEWARD, configCol: CONFIG_COLS.STEWARDS }                 // Assigned Steward
   ];
 
   grievanceValidations.forEach(function(v) {

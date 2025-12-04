@@ -157,7 +157,8 @@ const MEMBER_COLS = {
   NEXT_DEADLINE: 28,               // AB
   RECENT_CONTACT_DATE: 29,         // AC
   CONTACT_STEWARD: 30,             // AD
-  CONTACT_NOTES: 31                // AE
+  CONTACT_NOTES: 31,               // AE
+  START_GRIEVANCE: 32              // AF - Checkbox to start grievance with prepopulated member info
 };
 
 /* --------------------= GRIEVANCE LOG COLUMNS --------------------= */
@@ -1857,10 +1858,15 @@ function createMemberDirectory() {
     "Next Grievance Deadline",
     "Most Recent Steward Contact Date",
     "Steward Who Contacted Member",
-    "Notes from Steward Contact"
+    "Notes from Steward Contact",
+    "Start Grievance"
   ];
 
   memberDir.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+  // Add checkboxes to Start Grievance column (column 32/AF)
+  // Will be applied after data is loaded; setting up initial range
+  memberDir.getRange(2, 32, 999, 1).insertCheckboxes();
 
   memberDir.getRange(1, 1, 1, headers.length)
     .setFontWeight("bold")
@@ -1873,6 +1879,7 @@ function createMemberDirectory() {
   memberDir.setColumnWidth(1, 90);
   memberDir.setColumnWidth(8, 180);
   memberDir.setColumnWidth(31, 250);
+  memberDir.setColumnWidth(32, 120);  // Start Grievance checkbox column
 
   memberDir.setTabColor("#059669");
 }
@@ -2525,16 +2532,19 @@ function setupDataValidations() {
   grievanceLog.getRange(2, 24, 5000, 1).setDataValidation(grievanceEmailRule);
 
   // Member Directory validations (updated for new Config structure)
+  // Config columns: JOB_TITLES=1, OFFICE_LOCATIONS=2, UNITS=3, OFFICE_DAYS=4, YES_NO=5,
+  //                 SUPERVISORS=6, MANAGERS=7, STEWARDS=8, GRIEVANCE_STATUS=9, GRIEVANCE_STEP=10,
+  //                 ISSUE_CATEGORY=11, ARTICLES_VIOLATED=12, COMM_METHODS=13
   const memberValidations = [
-    { col: 4, configCol: 1 },    // Job Title
-    { col: 5, configCol: 2 },    // Work Location
-    { col: 6, configCol: 3 },    // Unit
-    { col: 10, configCol: 5 },   // Is Steward
-    { col: 13, configCol: 10 },  // Assigned Steward
-    { col: 20, configCol: 5 },   // Interest: Local
-    { col: 21, configCol: 5 },   // Interest: Chapter
-    { col: 22, configCol: 5 },   // Interest: Allied
-    { col: 24, configCol: 15 }   // Comm Methods
+    { col: 4, configCol: CONFIG_COLS.JOB_TITLES },       // Job Title
+    { col: 5, configCol: CONFIG_COLS.OFFICE_LOCATIONS }, // Work Location
+    { col: 6, configCol: CONFIG_COLS.UNITS },            // Unit
+    { col: 10, configCol: CONFIG_COLS.YES_NO },          // Is Steward
+    { col: 13, configCol: CONFIG_COLS.STEWARDS },        // Assigned Steward
+    { col: 20, configCol: CONFIG_COLS.YES_NO },          // Interest: Local
+    { col: 21, configCol: CONFIG_COLS.YES_NO },          // Interest: Chapter
+    { col: 22, configCol: CONFIG_COLS.YES_NO },          // Interest: Allied
+    { col: 24, configCol: CONFIG_COLS.COMM_METHODS }     // Comm Methods
   ];
 
   memberValidations.forEach(function(v) {
@@ -2566,14 +2576,15 @@ function setupDataValidations() {
   memberDir.getRange(2, 12, 5000, 1).setDataValidation(nameRule); // Manager
 
   // Grievance Log validations (updated for new Config structure)
+  // GRIEVANCE_COLS: STATUS=5, CURRENT_STEP=6, ARTICLES=22, ISSUE_CATEGORY=23, UNIT=25, LOCATION=26, STEWARD=27
   const grievanceValidations = [
-    { col: 5, configCol: 11 },  // Status (now column K)
-    { col: 6, configCol: 12 },  // Current Step (now column L)
-    { col: 22, configCol: 14 }, // Articles Violated (now column N)
-    { col: 23, configCol: 13 }, // Issue Category (now column M)
-    { col: 25, configCol: 3 },  // Unit
-    { col: 26, configCol: 2 },  // Work Location
-    { col: 27, configCol: 10 }  // Assigned Steward (now column J)
+    { col: GRIEVANCE_COLS.STATUS, configCol: CONFIG_COLS.GRIEVANCE_STATUS },         // Status
+    { col: GRIEVANCE_COLS.CURRENT_STEP, configCol: CONFIG_COLS.GRIEVANCE_STEP },     // Current Step
+    { col: GRIEVANCE_COLS.ARTICLES, configCol: CONFIG_COLS.ARTICLES_VIOLATED },      // Articles Violated
+    { col: GRIEVANCE_COLS.ISSUE_CATEGORY, configCol: CONFIG_COLS.ISSUE_CATEGORY },   // Issue Category
+    { col: GRIEVANCE_COLS.UNIT, configCol: CONFIG_COLS.UNITS },                      // Unit
+    { col: GRIEVANCE_COLS.LOCATION, configCol: CONFIG_COLS.OFFICE_LOCATIONS },       // Work Location
+    { col: GRIEVANCE_COLS.STEWARD, configCol: CONFIG_COLS.STEWARDS }                 // Assigned Steward
   ];
 
   grievanceValidations.forEach(function(v) {
@@ -10232,16 +10243,16 @@ THEME_CONFIG = {
       accent: '#6d4c41'
     },
     PURPLE: {
-      name: 'MassAbility Purple',
+      name: '509 Purple',
       icon: '💜',
       background: '#ffffff',
-      headerBackground: '#6B5FED',
+      headerBackground: '#5B4B9E',
       headerText: '#ffffff',
-      evenRow: '#E8E5FD',
+      evenRow: '#E8E3F3',
       oddRow: '#ffffff',
       text: '#1F2937',
       border: '#D1D5DB',
-      accent: '#7C3AED'
+      accent: '#6B5CA5'
     },
     GREEN: {
       name: 'Union Green',
@@ -12177,6 +12188,22 @@ function onEdit(e) {
   const ss = e.source;
   const sheet = e.range.getSheet();
   const sheetName = sheet.getName();
+
+  // Handle Start Grievance checkbox in Member Directory
+  if (sheetName === SHEETS.MEMBER_DIR) {
+    const row = e.range.getRow();
+    const col = e.range.getColumn();
+
+    // Check if Start Grievance checkbox was clicked (column 32/AF)
+    if (col === MEMBER_COLS.START_GRIEVANCE && row > 1 && e.value === true) {
+      // Reset checkbox immediately to allow re-use
+      e.range.setValue(false);
+
+      // Open grievance form with prepopulated member data
+      openGrievanceFormForMember(row);
+      return;
+    }
+  }
 
   // Only track changes to core data sheets
   if (sheetName !== SHEETS.MEMBER_DIR && sheetName !== SHEETS.GRIEVANCE_LOG) {
@@ -19136,6 +19163,230 @@ function getGrievancePDFUrl(grievanceId) {
     '&portrait=true' +
     '&fitw=true' +
     '&gid=' + sheetId;
+}
+
+/* --------------------= START GRIEVANCE FROM MEMBER DIRECTORY --------------------= */
+
+/**
+ * Opens the grievance intake form with prepopulated member information
+ * Called when user clicks the Start Grievance checkbox in Member Directory
+ * @param {number} memberRow - The row number of the member in Member Directory
+ */
+function openGrievanceFormForMember(memberRow) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) {
+    SpreadsheetApp.getUi().alert('❌ Member Directory not found!');
+    return;
+  }
+
+  // Get grievance form URL from Config sheet
+  const formUrl = getGrievanceIntakeFormUrl();
+
+  if (!formUrl) {
+    SpreadsheetApp.getUi().alert(
+      '📝 Grievance Intake Form URL Not Configured',
+      'No Grievance Form URL has been added to the Config tab.\n\n' +
+      'To configure:\n' +
+      '1. Go to the Config tab\n' +
+      '2. Find the "Grievance Form URL" column (column O)\n' +
+      '3. Paste your Google Form URL in row 3\n\n' +
+      'The form URL should look like:\n' +
+      'https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  // Get member data from the row
+  const memberData = memberSheet.getRange(memberRow, 1, 1, MEMBER_COLS.START_GRIEVANCE).getValues()[0];
+  const member = {
+    id: memberData[MEMBER_COLS.MEMBER_ID - 1] || '',
+    firstName: memberData[MEMBER_COLS.FIRST_NAME - 1] || '',
+    lastName: memberData[MEMBER_COLS.LAST_NAME - 1] || '',
+    jobTitle: memberData[MEMBER_COLS.JOB_TITLE - 1] || '',
+    location: memberData[MEMBER_COLS.WORK_LOCATION - 1] || '',
+    unit: memberData[MEMBER_COLS.UNIT - 1] || '',
+    email: memberData[MEMBER_COLS.EMAIL - 1] || '',
+    phone: memberData[MEMBER_COLS.PHONE - 1] || '',
+    supervisor: memberData[MEMBER_COLS.SUPERVISOR - 1] || '',
+    manager: memberData[MEMBER_COLS.MANAGER - 1] || '',
+    assignedSteward: memberData[MEMBER_COLS.ASSIGNED_STEWARD - 1] || ''
+  };
+
+  // Build pre-filled form URL
+  const preFilledUrl = buildPreFilledGrievanceUrl(formUrl, member);
+
+  // Show dialog with member info and open form button
+  const html = HtmlService.createHtmlOutput(`
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #5B4B9E;
+      margin-top: 0;
+      border-bottom: 3px solid #5B4B9E;
+      padding-bottom: 10px;
+    }
+    .member-info {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+      border-left: 4px solid #5B4B9E;
+    }
+    .info-row {
+      margin: 8px 0;
+      display: flex;
+    }
+    .info-label {
+      font-weight: bold;
+      width: 120px;
+      color: #333;
+    }
+    .info-value {
+      color: #555;
+    }
+    .button-group {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #5B4B9E;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #4a3d82;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(91, 75, 158, 0.4);
+    }
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+    .note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 15px;
+      padding: 10px;
+      background: #e8f4fd;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📋 Start Grievance for Member</h2>
+
+    <div class="member-info">
+      <div class="info-row"><span class="info-label">Name:</span><span class="info-value">${escapeHtml(member.firstName)} ${escapeHtml(member.lastName)}</span></div>
+      <div class="info-row"><span class="info-label">Member ID:</span><span class="info-value">${escapeHtml(member.id)}</span></div>
+      <div class="info-row"><span class="info-label">Email:</span><span class="info-value">${escapeHtml(member.email) || 'Not provided'}</span></div>
+      <div class="info-row"><span class="info-label">Phone:</span><span class="info-value">${escapeHtml(member.phone) || 'Not provided'}</span></div>
+      <div class="info-row"><span class="info-label">Job Title:</span><span class="info-value">${escapeHtml(member.jobTitle)}</span></div>
+      <div class="info-row"><span class="info-label">Location:</span><span class="info-value">${escapeHtml(member.location)}</span></div>
+      <div class="info-row"><span class="info-label">Unit:</span><span class="info-value">${escapeHtml(member.unit)}</span></div>
+    </div>
+
+    <div class="note">
+      ℹ️ Clicking "Open Grievance Form" will open the grievance intake form in a new window with the member's information pre-filled.
+    </div>
+
+    <div class="button-group">
+      <button class="btn-primary" onclick="openForm()">📝 Open Grievance Form</button>
+      <button class="btn-secondary" onclick="google.script.host.close()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    function openForm() {
+      window.open('${preFilledUrl}', '_blank');
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>
+  `).setWidth(500).setHeight(450);
+
+  SpreadsheetApp.getUi().showModalDialog(html, '📋 Start Grievance');
+}
+
+/**
+ * Gets the Grievance Intake Form URL from the Config sheet
+ * @returns {string} The form URL or empty string if not configured
+ */
+function getGrievanceIntakeFormUrl() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!configSheet) {
+    Logger.log('Config sheet not found');
+    return '';
+  }
+
+  // Grievance Form URL is in column O (15), row 3 (first data row)
+  const url = configSheet.getRange(3, CONFIG_COLS.GRIEVANCE_FORM_URL).getValue();
+  return url ? url.toString().trim() : '';
+}
+
+/**
+ * Builds a pre-filled Google Form URL with member information
+ * @param {string} baseUrl - The base Google Form URL
+ * @param {Object} member - Member data object
+ * @returns {string} Pre-filled form URL
+ */
+function buildPreFilledGrievanceUrl(baseUrl, member) {
+  // If form field IDs are configured, use them
+  const fieldIds = GRIEVANCE_FORM_CONFIG.FIELD_IDS;
+
+  const params = new URLSearchParams();
+  params.append(fieldIds.MEMBER_ID, member.id);
+  params.append(fieldIds.MEMBER_FIRST_NAME, member.firstName);
+  params.append(fieldIds.MEMBER_LAST_NAME, member.lastName);
+  params.append(fieldIds.MEMBER_EMAIL, member.email);
+  params.append(fieldIds.MEMBER_PHONE, member.phone);
+  params.append(fieldIds.MEMBER_JOB_TITLE, member.jobTitle);
+  params.append(fieldIds.MEMBER_LOCATION, member.location);
+  params.append(fieldIds.MEMBER_UNIT, member.unit);
+
+  // Get steward info if available
+  const steward = getStewardContactInfo();
+  if (steward.name) {
+    params.append(fieldIds.STEWARD_NAME, steward.name);
+  }
+  if (steward.email) {
+    params.append(fieldIds.STEWARD_EMAIL, steward.email);
+  }
+
+  return baseUrl + '?' + params.toString();
 }
 
 
