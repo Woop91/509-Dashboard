@@ -2704,10 +2704,10 @@ function setupFormulasAndCalculations() {
   const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
 
   // Member Directory formulas - Now using dynamic column references
-  // Has Open Grievance? - Column U (21)
+  // Has Open Grievance? - Column Y (25) - counts all active statuses
   const hasGrievanceCol = getColumnLetter(MEMBER_COLS.HAS_OPEN_GRIEVANCE);
   memberDir.getRange(hasGrievanceCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IF(COUNTIFS('Grievance Log'!${memberIdCol}:${memberIdCol},A2:A1000,'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No"),""))`
+    `=ARRAYFORMULA(IF(A2:A1000<>"",IF(SUMPRODUCT((('Grievance Log'!${memberIdCol}:${memberIdCol}=A2:A1000)*(('Grievance Log'!${statusCol}:${statusCol}="Open")+('Grievance Log'!${statusCol}:${statusCol}="Pending Info")+('Grievance Log'!${statusCol}:${statusCol}="Appealed")+('Grievance Log'!${statusCol}:${statusCol}="In Arbitration"))))>0,"Yes","No"),""))`
   );
 
   // Grievance Status Snapshot - Column V (22)
@@ -18949,17 +18949,17 @@ function recalcMemberRow(row) {
   const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
 
-  // Has Open Grievance? (Column Z / 26)
+  // Has Open Grievance? (Column Y / 25) - counts all active statuses
   memberDir.getRange(row, MEMBER_COLS.HAS_OPEN_GRIEVANCE).setFormula(
-    `=IF(COUNTIFS('Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},${memberIdCol}${row},'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No")`
+    `=IF(SUMPRODUCT(('Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol}=${memberIdCol}${row})*(('Grievance Log'!${statusCol}:${statusCol}="Open")+('Grievance Log'!${statusCol}:${statusCol}="Pending Info")+('Grievance Log'!${statusCol}:${statusCol}="Appealed")+('Grievance Log'!${statusCol}:${statusCol}="In Arbitration")))>0,"Yes","No")`
   );
 
-  // Grievance Status Snapshot (Column AA / 27)
+  // Grievance Status Snapshot (Column Z / 26)
   memberDir.getRange(row, MEMBER_COLS.GRIEVANCE_STATUS).setFormula(
     `=IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(${memberIdCol}${row},'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),"")`
   );
 
-  // Next Grievance Deadline (Column AB / 28)
+  // Next Grievance Deadline (Column AA / 27)
   memberDir.getRange(row, MEMBER_COLS.NEXT_DEADLINE).setFormula(
     `=IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(${memberIdCol}${row},'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),"")`
   );
@@ -33765,17 +33765,15 @@ function testMemberDirectoryFormulas() {
       'Test member should exist in Member Directory'
     );
 
-    // Check "Has Open Grievance?" using MEMBER_COLS constant (column Y = 25, 0-indexed = 24)
-    const hasOpenGrievanceIdx = MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1;
-    const hasOpenGrievance = memberData[testMemberRow][hasOpenGrievanceIdx];
+    // Check "Has Open Grievance?" (column Y = 25, index 24)
+    const hasOpenGrievance = memberData[testMemberRow][MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1];
     Assert.assertTrue(
       hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
       'Member with open grievance should show "Yes" in Has Open Grievance column'
     );
 
-    // Check "Grievance Status Snapshot" using MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
-    const statusSnapshotIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
-    const statusSnapshot = memberData[testMemberRow][statusSnapshotIdx];
+    // Check "Grievance Status Snapshot" (column Z = 26, index 25)
+    const statusSnapshot = memberData[testMemberRow][MEMBER_COLS.GRIEVANCE_STATUS - 1];
     Assert.assertEquals(
       'Open',
       statusSnapshot,
@@ -34302,9 +34300,7 @@ function testCompleteGrievanceWorkflow() {
 
     Assert.assertNotNull(memberRow, 'Member should exist');
 
-    // Use MEMBER_COLS constant for 0-indexed access (column Y = 25, 0-indexed = 24)
-    const hasOpenGrievanceIdx = MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1;
-    const hasOpenGrievance = memberRow[hasOpenGrievanceIdx];
+    const hasOpenGrievance = memberRow[MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1]; // Column Y (index 24)
     Assert.assertTrue(
       hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
       'Member should show as having open grievance'
@@ -34345,9 +34341,7 @@ function testCompleteGrievanceWorkflow() {
     const updatedMemberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const updatedMemberRow = updatedMemberData.find(function(row) { return row[0] === testMemberId; });
 
-    // Use MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
-    const statusSnapshotIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
-    const updatedStatus = updatedMemberRow[statusSnapshotIdx];
+    const updatedStatus = updatedMemberRow[MEMBER_COLS.GRIEVANCE_STATUS - 1]; // Column Z (index 25)
     Assert.assertEquals(
       'Settled',
       updatedStatus,
@@ -34450,9 +34444,8 @@ function testMemberGrievanceSnapshot() {
 
     Assert.assertNotNull(memberRow, 'Member should exist');
 
-    // Check status snapshot using MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
-    const statusSnapshotIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
-    const statusSnapshot = memberRow[statusSnapshotIdx];
+    // Check status snapshot (column Z = 26, index 25)
+    const statusSnapshot = memberRow[MEMBER_COLS.GRIEVANCE_STATUS - 1];
     Assert.assertEquals(
       'Pending Info',
       statusSnapshot,
@@ -34472,9 +34465,7 @@ function testMemberGrievanceSnapshot() {
     const updatedMemberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const updatedMemberRow = updatedMemberData.find(function(row) { return row[0] === testMemberId; });
 
-    // Use MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
-    const updatedStatusSnapshotIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
-    const updatedStatusSnapshot = updatedMemberRow[updatedStatusSnapshotIdx];
+    const updatedStatusSnapshot = updatedMemberRow[MEMBER_COLS.GRIEVANCE_STATUS - 1];
     Assert.assertEquals(
       'Open',
       updatedStatusSnapshot,
@@ -34598,9 +34589,7 @@ function testMultipleGrievancesSameMember() {
     const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const memberRow = memberData.find(function(row) { return row[0] === testMemberId; });
 
-    // Use MEMBER_COLS constant (column Y = 25, 0-indexed = 24)
-    const hasOpenGrievanceIdx = MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1;
-    const hasOpenGrievance = memberRow[hasOpenGrievanceIdx];
+    const hasOpenGrievance = memberRow[MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1]; // Column Y (index 24)
     Assert.assertTrue(
       hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
       'Member with multiple grievances should show as having open grievance'

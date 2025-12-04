@@ -237,17 +237,15 @@ function testMemberDirectoryFormulas() {
       'Test member should exist in Member Directory'
     );
 
-    // Check "Has Open Grievance?" using MEMBER_COLS constant (column Y = 25, 0-indexed = 24)
-    const hasOpenGrievanceIdx = MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1;
-    const hasOpenGrievance = memberData[testMemberRow][hasOpenGrievanceIdx];
+    // Check "Has Open Grievance?" (column Y = 25, index 24)
+    const hasOpenGrievance = memberData[testMemberRow][MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1];
     Assert.assertTrue(
       hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
       'Member with open grievance should show "Yes" in Has Open Grievance column'
     );
 
-    // Check "Grievance Status Snapshot" using MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
-    const statusSnapshotIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
-    const statusSnapshot = memberData[testMemberRow][statusSnapshotIdx];
+    // Check "Grievance Status Snapshot" (column Z = 26, index 25)
+    const statusSnapshot = memberData[testMemberRow][MEMBER_COLS.GRIEVANCE_STATUS - 1];
     Assert.assertEquals(
       'Open',
       statusSnapshot,
