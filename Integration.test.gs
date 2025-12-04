@@ -588,10 +588,11 @@ function testGrievanceUpdatesTriggersRecalculation() {
     SpreadsheetApp.flush();
     Utilities.sleep(2000);
 
-    // Check initial state
+    // Check initial state - use MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
+    const statusIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
     const memberData1 = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const memberRow1 = memberData1.find(function(row) { return row[0] === testMemberId; });
-    const status1 = memberRow1[26];
+    const status1 = memberRow1[statusIdx];
 
     Assert.assertEquals('Open', status1, 'Initial status should be Open');
 
@@ -604,7 +605,7 @@ function testGrievanceUpdatesTriggersRecalculation() {
     // Check updated state
     const memberData2 = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const memberRow2 = memberData2.find(function(row) { return row[0] === testMemberId; });
-    const status2 = memberRow2[26];
+    const status2 = memberRow2[statusIdx];
 
     Assert.assertEquals(
       'Settled',

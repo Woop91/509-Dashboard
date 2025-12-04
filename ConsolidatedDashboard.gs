@@ -33816,8 +33816,9 @@ function testConfigDropdownValues() {
   const ss = SpreadsheetApp.getActive();
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  // Test Job Titles
-  const jobTitles = config.getRange('A2:A14').getValues().flat().filter(String);
+  // Test Job Titles using CONFIG_COLS constant (data starts at row 3)
+  const jobTitlesCol = getColumnLetter(CONFIG_COLS.JOB_TITLES);
+  const jobTitles = config.getRange(jobTitlesCol + '3:' + jobTitlesCol + '14').getValues().flat().filter(String);
   Assert.assertTrue(
     jobTitles.length > 0,
     'Config should have job titles defined'
@@ -33828,8 +33829,9 @@ function testConfigDropdownValues() {
     'Config should contain Coordinator job title'
   );
 
-  // Test Office Locations
-  const locations = config.getRange('B2:B14').getValues().flat().filter(String);
+  // Test Office Locations using CONFIG_COLS constant
+  const locationsCol = getColumnLetter(CONFIG_COLS.OFFICE_LOCATIONS);
+  const locations = config.getRange(locationsCol + '3:' + locationsCol + '14').getValues().flat().filter(String);
   Assert.assertTrue(
     locations.length > 0,
     'Config should have office locations defined'
@@ -33840,8 +33842,9 @@ function testConfigDropdownValues() {
     'Config should contain Boston HQ location'
   );
 
-  // Test Grievance Status
-  const statuses = config.getRange('I2:I8').getValues().flat().filter(String);
+  // Test Grievance Status using CONFIG_COLS constant (col J = 10)
+  const statusCol = getColumnLetter(CONFIG_COLS.GRIEVANCE_STATUS);
+  const statuses = config.getRange(statusCol + '3:' + statusCol + '10').getValues().flat().filter(String);
   Assert.assertTrue(
     statuses.length > 0,
     'Config should have grievance statuses defined'
@@ -34795,10 +34798,11 @@ function testGrievanceUpdatesTriggersRecalculation() {
     SpreadsheetApp.flush();
     Utilities.sleep(2000);
 
-    // Check initial state
+    // Check initial state - use MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
+    const statusIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
     const memberData1 = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const memberRow1 = memberData1.find(function(row) { return row[0] === testMemberId; });
-    const status1 = memberRow1[26];
+    const status1 = memberRow1[statusIdx];
 
     Assert.assertEquals('Open', status1, 'Initial status should be Open');
 
@@ -34811,7 +34815,7 @@ function testGrievanceUpdatesTriggersRecalculation() {
     // Check updated state
     const memberData2 = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
     const memberRow2 = memberData2.find(function(row) { return row[0] === testMemberId; });
-    const status2 = memberRow2[26];
+    const status2 = memberRow2[statusIdx];
 
     Assert.assertEquals(
       'Settled',
