@@ -98,7 +98,7 @@ const COLORS = {
  * @const {Object}
  */
 const MEMBER_COLS = {
-  // 27 columns total (removed 5 unused: LAST_SURVEY, LAST_EMAIL_OPEN, TIMESTAMP, PREFERRED_COMM, BEST_TIME)
+  // 31 columns total - Added: COMMITTEES, HOME_TOWN, PREFERRED_COMM, BEST_TIME
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -109,23 +109,27 @@ const MEMBER_COLS = {
   EMAIL: 8,                        // H
   PHONE: 9,                        // I
   IS_STEWARD: 10,                  // J
-  SUPERVISOR: 11,                  // K
-  MANAGER: 12,                     // L
-  ASSIGNED_STEWARD: 13,            // M
-  LAST_VIRTUAL_MTG: 14,            // N
-  LAST_INPERSON_MTG: 15,           // O
-  OPEN_RATE: 16,                   // P
-  VOLUNTEER_HOURS: 17,             // Q
-  INTEREST_LOCAL: 18,              // R
-  INTEREST_CHAPTER: 19,            // S
-  INTEREST_ALLIED: 20,             // T
-  HAS_OPEN_GRIEVANCE: 21,          // U
-  GRIEVANCE_STATUS: 22,            // V
-  NEXT_DEADLINE: 23,               // W
-  RECENT_CONTACT_DATE: 24,         // X
-  CONTACT_STEWARD: 25,             // Y
-  CONTACT_NOTES: 26,               // Z
-  START_GRIEVANCE: 27              // AA - Checkbox to start grievance with prepopulated member info
+  COMMITTEES: 11,                  // K - Multi-select: which committees steward is in
+  SUPERVISOR: 12,                  // L
+  MANAGER: 13,                     // M
+  ASSIGNED_STEWARD: 14,            // N
+  PREFERRED_COMM: 15,              // O - Multi-select: preferred communication methods
+  BEST_TIME: 16,                   // P - Multi-select: best times to reach member
+  LAST_VIRTUAL_MTG: 17,            // Q
+  LAST_INPERSON_MTG: 18,           // R
+  OPEN_RATE: 19,                   // S
+  VOLUNTEER_HOURS: 20,             // T
+  INTEREST_LOCAL: 21,              // U
+  HOME_TOWN: 22,                   // V - Member's home town
+  INTEREST_CHAPTER: 23,            // W
+  INTEREST_ALLIED: 24,             // X
+  HAS_OPEN_GRIEVANCE: 25,          // Y
+  GRIEVANCE_STATUS: 26,            // Z
+  NEXT_DEADLINE: 27,               // AA
+  RECENT_CONTACT_DATE: 28,         // AB
+  CONTACT_STEWARD: 29,             // AC
+  CONTACT_NOTES: 30,               // AD
+  START_GRIEVANCE: 31              // AE - Checkbox to start grievance with prepopulated member info
 };
 
 /* --------------------= GRIEVANCE LOG COLUMNS --------------------= */
@@ -277,7 +281,11 @@ const CONFIG_COLS = {
   FILING_DEADLINE_DAYS: 26,   // Z - days to file grievance (default: 21)
   STEP1_RESPONSE_DAYS: 27,    // AA - days for Step I response (default: 30)
   STEP2_APPEAL_DAYS: 28,      // AB - days to appeal to Step II (default: 10)
-  STEP2_RESPONSE_DAYS: 29     // AC - days for Step II response (default: 30)
+  STEP2_RESPONSE_DAYS: 29,    // AC - days for Step II response (default: 30)
+  // Multi-select options (cols 30-32)
+  COMMITTEES: 30,             // AD - list of committees stewards can be in
+  BEST_TIMES: 31,             // AE - best times to contact members
+  HOME_TOWNS: 32              // AF - list of home towns in area
 };
 
 /* --------------------= CACHE CONFIGURATION --------------------= */

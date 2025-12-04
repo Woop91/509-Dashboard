@@ -127,7 +127,7 @@ const COLORS = {
  * @const {Object}
  */
 const MEMBER_COLS = {
-  // 27 columns total (removed 5 unused: LAST_SURVEY, LAST_EMAIL_OPEN, TIMESTAMP, PREFERRED_COMM, BEST_TIME)
+  // 31 columns total - Added: COMMITTEES, HOME_TOWN, PREFERRED_COMM, BEST_TIME
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -138,23 +138,27 @@ const MEMBER_COLS = {
   EMAIL: 8,                        // H
   PHONE: 9,                        // I
   IS_STEWARD: 10,                  // J
-  SUPERVISOR: 11,                  // K
-  MANAGER: 12,                     // L
-  ASSIGNED_STEWARD: 13,            // M
-  LAST_VIRTUAL_MTG: 14,            // N
-  LAST_INPERSON_MTG: 15,           // O
-  OPEN_RATE: 16,                   // P
-  VOLUNTEER_HOURS: 17,             // Q
-  INTEREST_LOCAL: 18,              // R
-  INTEREST_CHAPTER: 19,            // S
-  INTEREST_ALLIED: 20,             // T
-  HAS_OPEN_GRIEVANCE: 21,          // U
-  GRIEVANCE_STATUS: 22,            // V
-  NEXT_DEADLINE: 23,               // W
-  RECENT_CONTACT_DATE: 24,         // X
-  CONTACT_STEWARD: 25,             // Y
-  CONTACT_NOTES: 26,               // Z
-  START_GRIEVANCE: 27              // AA - Checkbox to start grievance with prepopulated member info
+  COMMITTEES: 11,                  // K - Multi-select: which committees steward is in
+  SUPERVISOR: 12,                  // L
+  MANAGER: 13,                     // M
+  ASSIGNED_STEWARD: 14,            // N
+  PREFERRED_COMM: 15,              // O - Multi-select: preferred communication methods
+  BEST_TIME: 16,                   // P - Multi-select: best times to reach member
+  LAST_VIRTUAL_MTG: 17,            // Q
+  LAST_INPERSON_MTG: 18,           // R
+  OPEN_RATE: 19,                   // S
+  VOLUNTEER_HOURS: 20,             // T
+  INTEREST_LOCAL: 21,              // U
+  HOME_TOWN: 22,                   // V - Member's home town
+  INTEREST_CHAPTER: 23,            // W
+  INTEREST_ALLIED: 24,             // X
+  HAS_OPEN_GRIEVANCE: 25,          // Y
+  GRIEVANCE_STATUS: 26,            // Z
+  NEXT_DEADLINE: 27,               // AA
+  RECENT_CONTACT_DATE: 28,         // AB
+  CONTACT_STEWARD: 29,             // AC
+  CONTACT_NOTES: 30,               // AD
+  START_GRIEVANCE: 31              // AE - Checkbox to start grievance with prepopulated member info
 };
 
 /* --------------------= GRIEVANCE LOG COLUMNS --------------------= */
@@ -306,7 +310,11 @@ const CONFIG_COLS = {
   FILING_DEADLINE_DAYS: 26,   // Z - days to file grievance (default: 21)
   STEP1_RESPONSE_DAYS: 27,    // AA - days for Step I response (default: 30)
   STEP2_APPEAL_DAYS: 28,      // AB - days to appeal to Step II (default: 10)
-  STEP2_RESPONSE_DAYS: 29     // AC - days for Step II response (default: 30)
+  STEP2_RESPONSE_DAYS: 29,    // AC - days for Step II response (default: 30)
+  // Multi-select options (cols 30-32)
+  COMMITTEES: 30,             // AD - list of committees stewards can be in
+  BEST_TIMES: 31,             // AE - best times to contact members
+  HOME_TOWNS: 32              // AF - list of home towns in area
 };
 
 /* --------------------= CACHE CONFIGURATION --------------------= */
@@ -1822,8 +1830,8 @@ function createMemberDirectory() {
   }
   memberDir = ss.insertSheet(SHEETS.MEMBER_DIR);
 
-  // Member Directory columns (27 total after removing unused columns)
-  // Removed: Last Survey, Last Email Open, Timestamp, Preferred Communication Methods, Best Time(s)
+  // Member Directory columns (31 total)
+  // Added: Committees, Home Town, Preferred Communication Method, Best Time to Contact
   const headers = [
     "Member ID",                       // A - 1
     "First Name",                      // B - 2
@@ -1835,29 +1843,33 @@ function createMemberDirectory() {
     "Email Address",                   // H - 8
     "Phone Number",                    // I - 9
     "Is Steward (Y/N)",                // J - 10
-    "Supervisor (Name)",               // K - 11
-    "Manager (Name)",                  // L - 12
-    "Assigned Steward (Name)",         // M - 13
-    "Last Virtual Mtg (Date)",         // N - 14
-    "Last In-Person Mtg (Date)",       // O - 15
-    "Open Rate (%)",                   // P - 16
-    "Volunteer Hours (YTD)",           // Q - 17
-    "Interest: Local Actions",         // R - 18
-    "Interest: Chapter Actions",       // S - 19
-    "Interest: Allied Chapter Actions",// T - 20
-    "Has Open Grievance?",             // U - 21
-    "Grievance Status Snapshot",       // V - 22
-    "Next Grievance Deadline",         // W - 23
-    "Most Recent Steward Contact Date",// X - 24
-    "Steward Who Contacted Member",    // Y - 25
-    "Notes from Steward Contact",      // Z - 26
-    "Start Grievance"                  // AA - 27
+    "Committees",                      // K - 11 (multi-select for stewards)
+    "Supervisor (Name)",               // L - 12
+    "Manager (Name)",                  // M - 13
+    "Assigned Steward (Name)",         // N - 14
+    "Preferred Communication",         // O - 15 (multi-select)
+    "Best Time to Contact",            // P - 16 (multi-select)
+    "Last Virtual Mtg (Date)",         // Q - 17
+    "Last In-Person Mtg (Date)",       // R - 18
+    "Open Rate (%)",                   // S - 19
+    "Volunteer Hours (YTD)",           // T - 20
+    "Interest: Local Actions",         // U - 21
+    "Home Town",                       // V - 22
+    "Interest: Chapter Actions",       // W - 23
+    "Interest: Allied Chapter Actions",// X - 24
+    "Has Open Grievance?",             // Y - 25
+    "Grievance Status Snapshot",       // Z - 26
+    "Next Grievance Deadline",         // AA - 27
+    "Most Recent Steward Contact Date",// AB - 28
+    "Steward Who Contacted Member",    // AC - 29
+    "Notes from Steward Contact",      // AD - 30
+    "Start Grievance"                  // AE - 31
   ];
 
   memberDir.getRange(1, 1, 1, headers.length).setValues([headers]);
 
-  // Add checkboxes to Start Grievance column (column 27/AA)
-  memberDir.getRange(2, 27, 999, 1).insertCheckboxes();
+  // Add checkboxes to Start Grievance column (column 31/AE)
+  memberDir.getRange(2, MEMBER_COLS.START_GRIEVANCE, 999, 1).insertCheckboxes();
 
   memberDir.getRange(1, 1, 1, headers.length)
     .setFontWeight("bold")
@@ -1867,10 +1879,14 @@ function createMemberDirectory() {
 
   memberDir.setFrozenRows(1);
   memberDir.setRowHeight(1, 50);
-  memberDir.setColumnWidth(1, 90);   // Member ID
-  memberDir.setColumnWidth(8, 180);  // Email Address
-  memberDir.setColumnWidth(26, 250); // Notes from Steward Contact
-  memberDir.setColumnWidth(27, 120); // Start Grievance checkbox column
+  memberDir.setColumnWidth(MEMBER_COLS.MEMBER_ID, 90);      // Member ID
+  memberDir.setColumnWidth(MEMBER_COLS.EMAIL, 180);         // Email Address
+  memberDir.setColumnWidth(MEMBER_COLS.COMMITTEES, 150);    // Committees (multi-select)
+  memberDir.setColumnWidth(MEMBER_COLS.PREFERRED_COMM, 150);// Preferred Communication
+  memberDir.setColumnWidth(MEMBER_COLS.BEST_TIME, 150);     // Best Time to Contact
+  memberDir.setColumnWidth(MEMBER_COLS.HOME_TOWN, 120);     // Home Town
+  memberDir.setColumnWidth(MEMBER_COLS.CONTACT_NOTES, 250); // Notes from Steward Contact
+  memberDir.setColumnWidth(MEMBER_COLS.START_GRIEVANCE, 120);// Start Grievance checkbox
 
   memberDir.setTabColor("#059669");
 }
@@ -1880,41 +1896,42 @@ function createGrievanceLog() {
   const ss = SpreadsheetApp.getActive();
   var grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  if (!grievanceLog) {
-    grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
+  // Delete existing sheet to remove any extra columns or formatting issues
+  if (grievanceLog) {
+    ss.deleteSheet(grievanceLog);
   }
-  grievanceLog.clear();
+  grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
 
-  // EXACT columns as specified by user
+  // EXACT 28 columns as specified - no extra columns
   const headers = [
-    "Grievance ID",
-    "Member ID",
-    "First Name",
-    "Last Name",
-    "Status",
-    "Current Step",
-    "Incident Date",
-    "Filing Deadline (21d)",
-    "Date Filed (Step I)",
-    "Step I Decision Due (30d)",
-    "Step I Decision Rcvd",
-    "Step II Appeal Due (10d)",
-    "Step II Appeal Filed",
-    "Step II Decision Due (30d)",
-    "Step II Decision Rcvd",
-    "Step III Appeal Due (30d)",
-    "Step III Appeal Filed",
-    "Date Closed",
-    "Days Open",
-    "Next Action Due",
-    "Days to Deadline",
-    "Articles Violated",
-    "Issue Category",
-    "Member Email",
-    "Unit",
-    "Work Location (Site)",
-    "Assigned Steward (Name)",
-    "Resolution Summary"
+    "Grievance ID",                    // A - 1
+    "Member ID",                       // B - 2
+    "First Name",                      // C - 3
+    "Last Name",                       // D - 4
+    "Status",                          // E - 5
+    "Current Step",                    // F - 6
+    "Incident Date",                   // G - 7
+    "Filing Deadline (21d)",           // H - 8 (auto-calculated)
+    "Date Filed (Step I)",             // I - 9
+    "Step I Decision Due (30d)",       // J - 10 (auto-calculated)
+    "Step I Decision Rcvd",            // K - 11
+    "Step II Appeal Due (10d)",        // L - 12 (auto-calculated)
+    "Step II Appeal Filed",            // M - 13
+    "Step II Decision Due (30d)",      // N - 14 (auto-calculated)
+    "Step II Decision Rcvd",           // O - 15
+    "Step III Appeal Due (30d)",       // P - 16 (auto-calculated)
+    "Step III Appeal Filed",           // Q - 17
+    "Date Closed",                     // R - 18
+    "Days Open",                       // S - 19 (auto-calculated)
+    "Next Action Due",                 // T - 20 (auto-calculated)
+    "Days to Deadline",                // U - 21 (auto-calculated)
+    "Articles Violated",               // V - 22
+    "Issue Category",                  // W - 23
+    "Member Email",                    // X - 24
+    "Unit",                            // Y - 25
+    "Work Location (Site)",            // Z - 26
+    "Assigned Steward (Name)",         // AA - 27
+    "Resolution Summary"               // AB - 28
   ];
 
   grievanceLog.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -1927,9 +1944,9 @@ function createGrievanceLog() {
 
   grievanceLog.setFrozenRows(1);
   grievanceLog.setRowHeight(1, 50);
-  grievanceLog.setColumnWidth(1, 110);
-  grievanceLog.setColumnWidth(22, 180);
-  grievanceLog.setColumnWidth(28, 250);
+  grievanceLog.setColumnWidth(GRIEVANCE_COLS.GRIEVANCE_ID, 110);  // Grievance ID
+  grievanceLog.setColumnWidth(GRIEVANCE_COLS.ARTICLES, 180);      // Articles Violated
+  grievanceLog.setColumnWidth(GRIEVANCE_COLS.RESOLUTION, 250);    // Resolution Summary
 
   grievanceLog.setTabColor("#DC2626");
 }
