@@ -187,7 +187,7 @@ function createConfigTab() {
      "", "", "", "",
      "", "",
      "", "", "", "",
-     "Education Committee", "", "Quincy"],
+     "", "Quincy"],
 
     ["Director", "Remote/Hybrid", "", "Sunday", "",
      "Patricia Moore", "James Wilson",
@@ -231,7 +231,7 @@ function createConfigTab() {
      "", "", "", "",
      "", "",
      "", "", "", "",
-     "", "", "Framingham"],
+     "", "Framingham"],
 
     ["Technician", "", "", "", "",
      "Jessica Green", "Christopher Lee",
@@ -278,7 +278,7 @@ function createConfigTab() {
     "── ORGANIZATION ──", "", "", "",
     "── INTEGRATION ──", "",
     "── DEADLINES ──", "", "", "",
-    "── MULTI-SELECT OPTIONS ──", "", ""
+    "── MULTI-SELECT OPTIONS ──", ""
   ];
 
   // Insert category row at top, then column headers, then data
@@ -2365,9 +2365,10 @@ function seedMembersWithCount(count, toggleName) {
   const lastRow = Math.max(memberDir.getLastRow(), 2);
   const maxSeedRows = lastRow + count + 100; // Buffer for new rows
   try {
-    // Clear validations on columns: D (Job Title), E (Location), F (Unit), G (Office Days),
-    // J (Is Steward), K (Supervisor), L (Manager), M (Assigned Steward)
-    const columnsToClean = [4, 5, 6, 7, 10, 11, 12, 13];
+    // Clear validations on columns with dropdown data:
+    // D (Job Title), E (Location), F (Unit), G (Office Days),
+    // L (Supervisor), M (Manager), N (Is Steward), P (Assigned Steward)
+    const columnsToClean = [4, 5, 6, 7, 12, 13, 14, 16];
     columnsToClean.forEach(function(col) {
       memberDir.getRange(2, col, maxSeedRows, 1).clearDataValidations();
     });
@@ -2474,20 +2475,30 @@ function seedMembersWithCount(count, toggleName) {
       ? homeTownOptions[Math.floor(Math.random() * homeTownOptions.length)]
       : "";
 
-    // Build row to match MEMBER_COLS order (31 columns):
-    // 1-MEMBER_ID, 2-FIRST_NAME, 3-LAST_NAME, 4-JOB_TITLE, 5-WORK_LOCATION, 6-UNIT, 7-OFFICE_DAYS,
-    // 8-EMAIL, 9-PHONE, 10-IS_STEWARD, 11-COMMITTEES, 12-SUPERVISOR, 13-MANAGER, 14-ASSIGNED_STEWARD,
-    // 15-PREFERRED_COMM, 16-BEST_TIME, 17-LAST_VIRTUAL_MTG, 18-LAST_INPERSON_MTG, 19-OPEN_RATE,
-    // 20-VOLUNTEER_HOURS, 21-INTEREST_LOCAL, 22-HOME_TOWN, 23-INTEREST_CHAPTER, 24-INTEREST_ALLIED,
-    // 25-HAS_OPEN_GRIEVANCE (formula), 26-GRIEVANCE_STATUS (formula), 27-NEXT_DEADLINE (formula),
-    // 28-RECENT_CONTACT_DATE, 29-CONTACT_STEWARD, 30-CONTACT_NOTES, 31-START_GRIEVANCE
+    // Build row to match Member Directory headers exactly (31 columns):
+    // Section 1: Identity & Core Info (A-D, cols 1-4)
+    // Section 2: Location & Work (E-G, cols 5-7)
+    // Section 3: Contact Information (H-K, cols 8-11)
+    // Section 4: Organizational Structure (L-P, cols 12-16)
+    // Section 5: Engagement Metrics (Q-T, cols 17-20)
+    // Section 6: Member Interests (U-X, cols 21-24)
+    // Section 7: Steward Contact Tracking (Y-AA, cols 25-27)
+    // Section 8: Grievance Management (AB-AE, cols 28-31)
     const row = [
+      // Section 1-2: Identity, Location & Work (cols 1-7)
       memberID, firstName, lastName, jobTitle, location, unit, officeDaysValue,
-      email, phone, isSteward, committee, supervisor, manager, assignedSteward,
-      commMethod, bestTime, lastVirtual, lastInPerson, openRate, volHours,
-      localInterest, homeTown, chapterInterest, alliedInterest,
-      "", "", "",  // Columns 25-27 are formula-calculated (HAS_OPEN_GRIEVANCE, GRIEVANCE_STATUS, NEXT_DEADLINE)
-      contactDate, "", "", false  // RECENT_CONTACT_DATE, CONTACT_STEWARD, CONTACT_NOTES, START_GRIEVANCE
+      // Section 3: Contact Information (cols 8-11)
+      email, phone, commMethod, bestTime,
+      // Section 4: Organizational Structure (cols 12-16)
+      supervisor, manager, isSteward, committee, assignedSteward,
+      // Section 5: Engagement Metrics (cols 17-20)
+      lastVirtual, lastInPerson, openRate, volHours,
+      // Section 6: Member Interests (cols 21-24)
+      localInterest, chapterInterest, alliedInterest, homeTown,
+      // Section 7: Steward Contact Tracking (cols 25-27)
+      contactDate, "", "",
+      // Section 8: Grievance Management (cols 28-31) - formulas/checkbox
+      "", "", "", false
     ];
 
     data.push(row);
@@ -2598,7 +2609,8 @@ function seedGrievancesWithCount(count, toggleName) {
   const lastRow = Math.max(grievanceLog.getLastRow(), 2);
   const maxSeedRows = lastRow + count + 100;
   try {
-    // Clear validations on columns: E (Status), F (Step), V (Articles), W (Category), AA (Steward)
+    // Clear validations on columns matching Grievance Log headers:
+    // E (Status), F (Step), V (Articles), W (Category), AA (Assigned Steward)
     const columnsToClean = [5, 6, 22, 23, 27];
     columnsToClean.forEach(function(col) {
       grievanceLog.getRange(2, col, maxSeedRows, 1).clearDataValidations();
