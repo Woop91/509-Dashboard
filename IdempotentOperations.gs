@@ -78,7 +78,7 @@ function makeIdempotent(operation, keyGenerator, ttl = 600) {
  * Idempotent member addition
  * Safe to retry - won't create duplicates
  */
-var addMemberIdempotent = makeIdempotent(
+const addMemberIdempotent = makeIdempotent(
   function(memberData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -122,7 +122,7 @@ var addMemberIdempotent = makeIdempotent(
 /**
  * Idempotent grievance addition
  */
-var addGrievanceIdempotent = makeIdempotent(
+const addGrievanceIdempotent = makeIdempotent(
   function(grievanceData) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -167,7 +167,7 @@ var addGrievanceIdempotent = makeIdempotent(
  * Idempotent backup creation
  * Won't create duplicate backups if retried within TTL
  */
-var createBackupIdempotent = makeIdempotent(
+const createBackupIdempotent = makeIdempotent(
   function() {
     if (typeof createIncrementalBackup === 'function') {
       return createIncrementalBackup();
@@ -188,7 +188,7 @@ var createBackupIdempotent = makeIdempotent(
  * Idempotent recalculation wrapper
  * Prevents multiple simultaneous recalculations
  */
-var recalcAllIdempotent = makeIdempotent(
+const recalcAllIdempotent = makeIdempotent(
   function() {
     // Run both member and grievance recalculations
     const results = {};
@@ -216,7 +216,7 @@ var recalcAllIdempotent = makeIdempotent(
 /**
  * Idempotent dashboard rebuild
  */
-var rebuildDashboardIdempotent = makeIdempotent(
+const rebuildDashboardIdempotent = makeIdempotent(
   function() {
     if (typeof rebuildDashboardOptimized === 'function') {
       return rebuildDashboardOptimized();
@@ -308,7 +308,7 @@ function showIdempotentStatus() {
 
   const keys = JSON.parse(activeKeys);
 
-  var message = `Active Idempotent Operations: ${keys.length}\n\n`;
+  let message = `Active Idempotent Operations: ${keys.length}\n\n`;
 
   for (const key of keys) {
     const hasResult = cache.get(`result_${key}`) !== null;
@@ -335,7 +335,7 @@ function trackIdempotentKey(key) {
   const props = PropertiesService.getScriptProperties();
   const activeKeys = props.getProperty('IDEMPOTENT_KEYS');
 
-  var keys = activeKeys ? JSON.parse(activeKeys) : [];
+  const keys = activeKeys ? JSON.parse(activeKeys) : [];
 
   if (!keys.includes(key)) {
     keys.push(key);

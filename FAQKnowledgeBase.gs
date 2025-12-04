@@ -32,7 +32,7 @@ FAQ_CATEGORIES = {
  */
 function createFAQSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var faqSheet = ss.getSheetByName('📚 FAQ Database');
+  let faqSheet = ss.getSheetByName('📚 FAQ Database');
 
   if (faqSheet) {
     SpreadsheetApp.getUi().alert('FAQ Database sheet already exists.');
@@ -385,8 +385,8 @@ function createFAQSearchHTML() {
   </div>
 
   <script>
-    var allFAQs = [];
-    var currentCategory = '';
+    let allFAQs = [];
+    let currentCategory = '';
 
     // Load FAQs on startup
     google.script.run
@@ -415,7 +415,7 @@ function createFAQSearchHTML() {
         return;
       }
 
-      var filtered = allFAQs;
+      let filtered = allFAQs;
 
       if (currentCategory) {
         filtered = filtered.filter(function(faq) { return faq.category === currentCategory; });
@@ -664,7 +664,7 @@ function createFAQAdminHTML() {
  */
 function addNewFAQ(faq) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var faqSheet = ss.getSheetByName('📚 FAQ Database');
+  let faqSheet = ss.getSheetByName('📚 FAQ Database');
 
   if (!faqSheet) {
     createFAQSheet();

@@ -36,7 +36,7 @@ function createErrorDashboardHTML() {
   const stats = getErrorStats();
   const recentErrors = getRecentErrors(20);
 
-  var errorRows = '';
+  let errorRows = '';
   if (recentErrors.length === 0) {
     errorRows = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #999;">No errors logged</td></tr>';
   } else {
@@ -314,7 +314,7 @@ function createErrorDashboardHTML() {
 function logError(level, category, message, context = '', error = null, recovered = false) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var errorSheet = ss.getSheetByName(ERROR_CONFIG.LOG_SHEET_NAME);
+    let errorSheet = ss.getSheetByName(ERROR_CONFIG.LOG_SHEET_NAME);
 
     // Create error log sheet if it doesn't exist
     if (!errorSheet) {
@@ -444,8 +444,8 @@ function getErrorStats() {
   });
 
   // Determine health
-  var health = 'good';
-  var healthText = '✅ Good';
+  let health = 'good';
+  let healthText = '✅ Good';
 
   if (stats.critical > 0 || stats.error > 10) {
     health = 'poor';
@@ -728,7 +728,7 @@ function createErrorTrendReport() {
   }
 
   // Create or get trends sheet
-  var trendsSheet = ss.getSheetByName('Error_Trends');
+  let trendsSheet = ss.getSheetByName('Error_Trends');
   if (trendsSheet) {
     trendsSheet.clear();
   } else {

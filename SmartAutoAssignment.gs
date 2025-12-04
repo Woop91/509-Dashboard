@@ -100,15 +100,14 @@ function getGrievanceDetails(grievanceId) {
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === grievanceId) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       return {
-        id: data[i][0],
-        memberId: data[i][1],
-        memberName: `${data[i][2]} ${data[i][3]}`,
-        issueType: data[i][5],
-        location: data[i][9] || '',
-        unit: data[i][10] || '',
-        manager: data[i][11] || '',
+        id: data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1],
+        memberId: data[i][GRIEVANCE_COLS.MEMBER_ID - 1],
+        memberName: `${data[i][GRIEVANCE_COLS.FIRST_NAME - 1]} ${data[i][GRIEVANCE_COLS.LAST_NAME - 1]}`,
+        issueType: data[i][GRIEVANCE_COLS.ISSUE_CATEGORY - 1],
+        location: data[i][GRIEVANCE_COLS.LOCATION - 1] || '',
+        unit: data[i][GRIEVANCE_COLS.UNIT - 1] || '',
         row: i + 2
       };
     }
@@ -133,18 +132,18 @@ function getAllStewards() {
   const stewards = [];
 
   data.forEach(function(row, index) {
-    const isSteward = row[9]; // Column J: Is Steward?
+    const isSteward = row[MEMBER_COLS.IS_STEWARD - 1];
 
     if (isSteward === 'Yes') {
       stewards.push({
-        id: row[0],
-        name: `${row[1]} ${row[2]}`,
-        email: row[7],
-        location: row[4] || '',
-        unit: row[5] || '',
+        id: row[MEMBER_COLS.MEMBER_ID - 1],
+        name: `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`,
+        email: row[MEMBER_COLS.EMAIL - 1],
+        location: row[MEMBER_COLS.WORK_LOCATION - 1] || '',
+        unit: row[MEMBER_COLS.UNIT - 1] || '',
         row: index + 2,
-        currentCaseload: getCurrentCaseload(row[0]),
-        expertise: getStewardExpertise(row[0])
+        currentCaseload: getCurrentCaseload(row[MEMBER_COLS.MEMBER_ID - 1]),
+        expertise: getStewardExpertise(row[MEMBER_COLS.MEMBER_ID - 1])
       });
     }
   });
@@ -166,11 +165,11 @@ function getCurrentCaseload(memberId) {
 
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
-  var count = 0;
+  let count = 0;
 
   data.forEach(function(row) {
-    const assignedSteward = row[13]; // Column N: Assigned Steward
-    const status = row[4]; // Column E: Status
+    const assignedSteward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
 
     if (assignedSteward && assignedSteward.includes(memberId) && status === 'Open') {
       count++;
@@ -197,8 +196,8 @@ function getStewardExpertise(memberId) {
   const expertise = {};
 
   data.forEach(function(row) {
-    const assignedSteward = row[13]; // Column N: Assigned Steward
-    const issueType = row[5]; // Column F: Issue Type
+    const assignedSteward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
 
     if (assignedSteward && assignedSteward.includes(memberId) && issueType) {
       expertise[issueType] = (expertise[issueType] || 0) + 1;
@@ -258,11 +257,11 @@ function assignStewardToGrievance(grievanceId, steward) {
   if (!grievance) return false;
 
   // Update assigned steward
-  grievanceSheet.getRange(grievance.row, GRIEVANCE_COLS.ASSIGNED_STEWARD).setValue(steward.name);
+  grievanceSheet.getRange(grievance.row, GRIEVANCE_COLS.STEWARD).setValue(steward.name);
 
   // Update steward email if available
   if (steward.email) {
-    grievanceSheet.getRange(grievance.row, GRIEVANCE_COLS.ASSIGNED_STEWARD + 1).setValue(steward.email);
+    grievanceSheet.getRange(grievance.row, GRIEVANCE_COLS.STEWARD + 1).setValue(steward.email);
   }
 
   return true;
@@ -307,7 +306,7 @@ function generateAssignmentReasoning(steward, grievance) {
  */
 function logAssignment(grievanceId, selectedSteward, topCandidates) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var assignmentLog = ss.getSheetByName('🤖 Auto-Assignment Log');
+  let assignmentLog = ss.getSheetByName('🤖 Auto-Assignment Log');
 
   if (!assignmentLog) {
     assignmentLog = createAutoAssignmentLogSheet();
@@ -405,7 +404,7 @@ function showAutoAssignDialog() {
   }
 
   // Check if already assigned
-  const currentAssignment = activeSheet.getRange(activeRow, GRIEVANCE_COLS.ASSIGNED_STEWARD).getValue();
+  const currentAssignment = activeSheet.getRange(activeRow, GRIEVANCE_COLS.STEWARD).getValue();
 
   if (currentAssignment) {
     const confirmResponse = ui.alert(
@@ -472,9 +471,9 @@ function batchAutoAssign() {
   const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   // Count unassigned
-  var unassigned = 0;
+  let unassigned = 0;
   rows.forEach(function(row) {
-    const assigned = activeSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).getValue();
+    const assigned = activeSheet.getRange(row, GRIEVANCE_COLS.STEWARD).getValue();
     if (!assigned) {
       unassigned++;
     }
@@ -494,13 +493,13 @@ function batchAutoAssign() {
 
   SpreadsheetApp.getActiveSpreadsheet().toast('🤖 Auto-assigning...', 'Please wait', -1);
 
-  var assigned = 0;
-  var skipped = 0;
-  var errors = 0;
+  let assigned = 0;
+  let skipped = 0;
+  let errors = 0;
 
   rows.forEach(function(row) {
     const grievanceId = activeSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
-    const currentAssignment = activeSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).getValue();
+    const currentAssignment = activeSheet.getRange(row, GRIEVANCE_COLS.STEWARD).getValue();
 
     if (!grievanceId) {
       skipped++;

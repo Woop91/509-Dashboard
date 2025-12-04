@@ -92,7 +92,7 @@ function CREATE_509_DASHBOARD() {
 /* --------------------- CONFIG TAB --------------------- */
 function createConfigTab() {
   const ss = SpreadsheetApp.getActive();
-  var config = ss.getSheetByName(SHEETS.CONFIG);
+  let config = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!config) {
     config = ss.insertSheet(SHEETS.CONFIG);
@@ -353,7 +353,7 @@ function createConfigTab() {
 /* --------------------- MEMBER DIRECTORY - ALL CORRECT COLUMNS --------------------- */
 function createMemberDirectory() {
   const ss = SpreadsheetApp.getActive();
-  var memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  let memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const isNew = !memberDir;
 
   // Only create sheet if it doesn't exist - PRESERVE EXISTING DATA
@@ -432,7 +432,7 @@ function createMemberDirectory() {
 /* --------------------- GRIEVANCE LOG - ALL CORRECT COLUMNS --------------------- */
 function createGrievanceLog() {
   const ss = SpreadsheetApp.getActive();
-  var grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  let grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
   // Only create sheet if it doesn't exist - PRESERVE EXISTING DATA
   if (!grievanceLog) {
@@ -493,7 +493,7 @@ function createGrievanceLog() {
 /* --------------------- DASHBOARD - ONLY REAL DATA --------------------- */
 function createMainDashboard() {
   const ss = SpreadsheetApp.getActive();
-  var dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+  let dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
 
   if (!dashboard) {
     dashboard = ss.insertSheet(SHEETS.DASHBOARD);
@@ -535,7 +535,7 @@ function createMainDashboard() {
     ["YTD Vol. Hours", `=SUM('Member Directory'!${volunteerHoursCol}:${volunteerHoursCol})`, "🙋"]
   ];
 
-  var col = 1;
+  let col = 1;
   memberMetrics.forEach(function(m) {
     dashboard.getRange(6, col, 1, 3).merge()
       .setValue(m[2] + " " + m[0])
@@ -658,7 +658,7 @@ function createMainDashboard() {
 /* --------------------- ANALYTICS DATA SHEET --------------------- */
 function createAnalyticsDataSheet() {
   const ss = SpreadsheetApp.getActive();
-  var analytics = ss.getSheetByName(SHEETS.ANALYTICS);
+  let analytics = ss.getSheetByName(SHEETS.ANALYTICS);
 
   if (!analytics) {
     analytics = ss.insertSheet(SHEETS.ANALYTICS);
@@ -703,7 +703,7 @@ function createAnalyticsDataSheet() {
 /* --------------------- MEMBER SATISFACTION --------------------- */
 function createMemberSatisfactionSheet() {
   const ss = SpreadsheetApp.getActive();
-  var satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
+  let satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
 
   if (!satisfaction) {
     satisfaction = ss.insertSheet(SHEETS.MEMBER_SATISFACTION);
@@ -756,7 +756,7 @@ function createMemberSatisfactionSheet() {
 /* --------------------- FEEDBACK & DEVELOPMENT --------------------- */
 function createFeedbackSheet() {
   const ss = SpreadsheetApp.getActive();
-  var feedback = ss.getSheetByName(SHEETS.FEEDBACK);
+  let feedback = ss.getSheetByName(SHEETS.FEEDBACK);
   if (!feedback) feedback = ss.insertSheet(SHEETS.FEEDBACK);
   feedback.clear();
   feedback.getRange("A1:N1").merge().setValue("💡 FEEDBACK, FEATURES & DEVELOPMENT ROADMAP").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
@@ -779,7 +779,7 @@ function createFeedbackSheet() {
 /* --------------------- STEWARD WORKLOAD --------------------- */
 function createStewardWorkloadSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
+  let sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
   if (!sheet) sheet = ss.insertSheet(SHEETS.STEWARD_WORKLOAD);
   sheet.clear();
   sheet.getRange("A1:K1").merge().setValue("👨‍⚖️ STEWARD WORKLOAD ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_PURPLE).setFontColor("white");
@@ -791,7 +791,7 @@ function createStewardWorkloadSheet() {
 
 function createTrendsSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.TRENDS);
+  let sheet = ss.getSheetByName(SHEETS.TRENDS);
   if (!sheet) sheet = ss.insertSheet(SHEETS.TRENDS);
   sheet.clear();
   sheet.getRange("A1:L1").merge().setValue("📈 TRENDS & TIMELINE ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.UNION_GREEN).setFontColor("white");
@@ -804,7 +804,7 @@ function createTrendsSheet() {
 
 function createLocationSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.LOCATION);
+  let sheet = ss.getSheetByName(SHEETS.LOCATION);
   if (!sheet) sheet = ss.insertSheet(SHEETS.LOCATION);
   sheet.clear();
   sheet.getRange("A1:K1").merge().setValue("🗺️ LOCATION ANALYTICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
@@ -816,7 +816,7 @@ function createLocationSheet() {
 
 function createTypeAnalysisSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
+  let sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
   if (!sheet) sheet = ss.insertSheet(SHEETS.TYPE_ANALYSIS);
   sheet.clear();
   sheet.getRange("A1:K1").merge().setValue("📊 GRIEVANCE TYPE ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.PRIMARY_BLUE).setFontColor("white");
@@ -829,7 +829,7 @@ function createTypeAnalysisSheet() {
 /* --------------------- EXECUTIVE DASHBOARD (Merged Summary + Quick Stats) --------------------- */
 function createExecutiveDashboard() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName("💼 Executive Dashboard");
+  let sheet = ss.getSheetByName("💼 Executive Dashboard");
 
   if (!sheet) {
     sheet = ss.insertSheet("💼 Executive Dashboard");
@@ -928,7 +928,7 @@ function createExecutiveDashboard() {
 /* --------------------- KPI PERFORMANCE DASHBOARD (Merged Performance + KPI Board) --------------------- */
 function createKPIPerformanceDashboard() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
+  let sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
 
   if (!sheet) {
     sheet = ss.insertSheet("📊 KPI Performance Dashboard");
@@ -999,7 +999,7 @@ function createKPIPerformanceDashboard() {
 
 function createMemberEngagementSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
+  let sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
   if (!sheet) sheet = ss.insertSheet(SHEETS.MEMBER_ENGAGEMENT);
   sheet.clear();
   sheet.getRange("A1:L1").merge().setValue("👥 MEMBER ENGAGEMENT").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.ACCENT_PURPLE).setFontColor("white");
@@ -1011,7 +1011,7 @@ function createMemberEngagementSheet() {
 
 function createCostImpactSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
+  let sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
   if (!sheet) sheet = ss.insertSheet(SHEETS.COST_IMPACT);
   sheet.clear();
   sheet.getRange("A1:J1").merge().setValue("💰 COST IMPACT ANALYSIS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.SOLIDARITY_RED).setFontColor("white");
@@ -1024,7 +1024,7 @@ function createCostImpactSheet() {
 
 function createArchiveSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.ARCHIVE);
+  let sheet = ss.getSheetByName(SHEETS.ARCHIVE);
   if (!sheet) sheet = ss.insertSheet(SHEETS.ARCHIVE);
   sheet.clear();
   sheet.getRange("A1:F1").merge().setValue("📦 ARCHIVE").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.TEXT_GRAY).setFontColor("white");
@@ -1036,7 +1036,7 @@ function createArchiveSheet() {
 
 function createDiagnosticsSheet() {
   const ss = SpreadsheetApp.getActive();
-  var sheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  let sheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
   if (!sheet) sheet = ss.insertSheet(SHEETS.DIAGNOSTICS);
   sheet.clear();
   sheet.getRange("A1:G1").merge().setValue("🔧 DIAGNOSTICS").setFontSize(16).setFontWeight("bold").setHorizontalAlignment("center").setBackground(COLORS.SOLIDARITY_RED).setFontColor("white");
@@ -1828,7 +1828,7 @@ function recalcAllMembers() {
   const memberData = memberSheet.getRange(2, 1, lastRow - 1, memberSheet.getLastColumn()).getValues();
 
   // Read grievance data for cross-referencing
-  var grievanceData = [];
+  let grievanceData = [];
   if (grievanceSheet && grievanceSheet.getLastRow() > 1) {
     grievanceData = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, grievanceSheet.getLastColumn()).getValues();
   }
@@ -1851,8 +1851,8 @@ function recalcAllMembers() {
 
   // Process members and calculate fields
   const updates = [];
-  var processed = 0;
-  var errors = 0;
+  let processed = 0;
+  let errors = 0;
 
   for (let i = 0; i < memberData.length; i++) {
     try {
@@ -2388,7 +2388,7 @@ function seedMembersWithCount(count, toggleName) {
   }
 
   const BATCH_SIZE = 1000;
-  var data = [];
+  let data = [];
   const startingRow = memberDir.getLastRow();
   Logger.log('Seed starting at row: ' + startingRow);
 
@@ -2620,8 +2620,8 @@ function seedGrievancesWithCount(count, toggleName) {
   }
 
   const BATCH_SIZE = 500;
-  var data = [];
-  var successCount = 0;
+  let data = [];
+  let successCount = 0;
   const startingRow = grievanceLog.getLastRow();
 
   for (let i = 1; i <= count; i++) {
@@ -2665,7 +2665,7 @@ function seedGrievancesWithCount(count, toggleName) {
     const step3AppealDue = step2DecisionRcvd ? new Date(step2DecisionRcvd.getTime() + GRIEVANCE_TIMELINES.STEP3_APPEAL_DAYS * DAY_MS) : "";
     const step3AppealFiled = (step === "Step III" || step === "Arbitration") && step3AppealDue ? new Date(step2DecisionRcvd.getTime() + Math.random() * GRIEVANCE_TIMELINES.STEP3_APPEAL_DAYS * DAY_MS) : "";
     const daysOpen = isClosed && dateClosed ? Math.floor((dateClosed - dateFiled) / (1000 * 60 * 60 * 24)) : Math.floor((Date.now() - dateFiled.getTime()) / (1000 * 60 * 60 * 24));
-    var nextActionDue = "";
+    let nextActionDue = "";
     if (!isClosed) {
       if (step === "Informal" || step === "Step I") nextActionDue = step1DecisionDue;
       else if (step === "Step II") nextActionDue = step2DecisionDue || step2AppealDue;
@@ -2968,7 +2968,7 @@ function populateStewardWorkload() {
       : 0;
 
     // Capacity status based on active cases
-    var capacityStatus;
+    let capacityStatus;
     if (s.activeCases === 0) {
       capacityStatus = 'Available';
     } else if (s.activeCases <= 5) {

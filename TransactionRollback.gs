@@ -90,7 +90,7 @@ class Transaction {
    * @returns {number} Number of successful snapshots
    */
   snapshotMultiple(sheetNames) {
-    var successCount = 0;
+    let successCount = 0;
 
     for (const sheetName of sheetNames) {
       if (this.snapshot(sheetName)) {
@@ -151,8 +151,8 @@ class Transaction {
     }
 
     const duration = new Date() - this.startTime;
-    var sheetsRestored = 0;
-    var errors = [];
+    let sheetsRestored = 0;
+    const errors = [];
 
     Logger.log(`Transaction ${this.transactionId}: Starting rollback of ${this.snapshots.size} sheets...`);
 

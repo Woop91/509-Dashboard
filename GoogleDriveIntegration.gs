@@ -42,7 +42,7 @@ function createGrievanceFolder(grievanceId, grievantName) {
   const rootFolder = createRootFolder();
 
   // Create folder name with grievant name if provided
-  var folderName = `Grievance_${grievanceId}`;
+  let folderName = `Grievance_${grievanceId}`;
   if (grievantName) {
     folderName = `Grievance_${grievanceId}_${grievantName}`;
   }
@@ -216,7 +216,7 @@ function showFileUploadDialog() {
   }
 
   // Get or create folder
-  var folder;
+  let folder;
   try {
     folder = createGrievanceFolder(grievanceId);
     linkFolderToGrievance(grievanceId, folder.getId());
@@ -647,8 +647,8 @@ function batchCreateGrievanceFolders() {
     }
 
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 29).getValues();
-    var created = 0;
-    var skipped = 0;
+    let created = 0;
+    let skipped = 0;
 
     data.forEach(function(row, index) {
       const grievanceId = row[0];

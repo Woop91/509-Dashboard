@@ -72,7 +72,7 @@ function setupQuarterlyReports() {
  */
 function disableAutomatedReports() {
   const triggers = ScriptApp.getProjectTriggers();
-  var removed = 0;
+  let removed = 0;
 
   triggers.forEach(function(trigger) {
     const func = trigger.getHandlerFunction();
@@ -158,22 +158,22 @@ function gatherMonthlyData() {
 
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
-  var totalGrievances = 0;
-  var newGrievances = 0;
-  var closedGrievances = 0;
-  var openGrievances = 0;
-  var resolutionTimes = [];
+  let totalGrievances = 0;
+  let newGrievances = 0;
+  let closedGrievances = 0;
+  let openGrievances = 0;
+  const resolutionTimes = [];
   const byIssueType = {};
   const bySteward = {};
-  var overdueCount = 0;
+  let overdueCount = 0;
 
   data.forEach(function(row) {
-    const filedDate = row[6];
-    const closedDate = row[18];
-    const status = row[4];
-    const issueType = row[5];
-    const steward = row[13];
-    const daysToDeadline = row[20];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
     totalGrievances++;
 
@@ -258,10 +258,10 @@ function gatherQuarterlyData() {
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   const monthlyTrends = [0, 0, 0]; // Three months in a quarter
-  var totalGrievances = 0;
+  let totalGrievances = 0;
 
   data.forEach(function(row) {
-    const filedDate = row[6];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
     if (filedDate && filedDate >= firstDayOfQuarter && filedDate <= lastDayOfQuarter) {
       totalGrievances++;
@@ -274,7 +274,7 @@ function gatherQuarterlyData() {
   });
 
   // Determine trend
-  var trend = 'stable';
+  let trend = 'stable';
   if (monthlyTrends[2] > monthlyTrends[0] * 1.2) {
     trend = 'increasing';
   } else if (monthlyTrends[2] < monthlyTrends[0] * 0.8) {

@@ -152,7 +152,7 @@ function createThemeManagerHTML() {
   const currentTheme = getCurrentTheme();
   const autoSwitch = getAutoSwitchSettings();
 
-  var themeCards = '';
+  let themeCards = '';
   Object.entries(THEME_CONFIG.THEMES).forEach(function([key, theme]) {
     const isActive = currentTheme === key;
     themeCards += `
@@ -411,7 +411,7 @@ function createThemeManagerHTML() {
   </div>
 
   <script>
-    var selectedTheme = '${currentTheme}';
+    let selectedTheme = '${currentTheme}';
 
     function selectTheme(themeKey) {
       selectedTheme = themeKey;

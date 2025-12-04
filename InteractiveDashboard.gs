@@ -17,7 +17,7 @@
  * Creates the Interactive Dashboard sheet with user-selectable controls
  */
 function createInteractiveDashboardSheet(ss) {
-  var sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
+  let sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
   if (!sheet) sheet = ss.insertSheet(SHEETS.INTERACTIVE_DASHBOARD);
 
   sheet.clear();
@@ -477,35 +477,50 @@ function rebuildInteractiveDashboard() {
 function calculateAllMetrics(memberData, grievanceData) {
   const metrics = {};
 
-  // Member metrics
+  // Member metrics - using MEMBER_COLS constants
   metrics.totalMembers = memberData.length - 1;
-  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row[10] === 'Active'; }).length;
-  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row[9] === 'Yes'; }).length;
-  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
-  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
+  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.MEMBER_ID - 1]; }).length; // Count members with IDs
+  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'; }).length;
+  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 8'; }).length;
+  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 10'; }).length;
 
-  // Grievance metrics
+  // Grievance metrics - using GRIEVANCE_COLS constants
   metrics.totalGrievances = grievanceData.length - 1;
   metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
-    return row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision');
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    return status && (status === 'Open' || status === 'Pending Info');
   }).length;
   metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
-    return row[4] && row[4].startsWith('Resolved');
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    return status && (status === 'Settled' || status === 'Closed');
   }).length;
 
-  const resolvedData = grievanceData.slice(1).filter(function(row) { return row[4] && row[4].startsWith('Resolved'); });
-  metrics.grievancesWon = resolvedData.filter(function(row) { return row[24] && row[24].includes('Won'); }).length;
-  metrics.grievancesLost = resolvedData.filter(function(row) { return row[24] && row[24].includes('Lost'); }).length;
+  const resolvedData = grievanceData.slice(1).filter(function(row) {
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    return status && (status === 'Settled' || status === 'Closed');
+  });
+  metrics.grievancesWon = resolvedData.filter(function(row) {
+    const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
+    return resolution && resolution.includes('Won');
+  }).length;
+  metrics.grievancesLost = resolvedData.filter(function(row) {
+    const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
+    return resolution && resolution.includes('Lost');
+  }).length;
 
   metrics.winRate = metrics.resolvedGrievances > 0
     ? ((metrics.grievancesWon / metrics.resolvedGrievances) * 100).toFixed(1)
     : 0;
 
-  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) { return row[28] === 'YES'; }).length;
+  // Overdue = Days to Deadline is negative
+  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) {
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
+    return daysToDeadline && daysToDeadline < 0;
+  }).length;
 
   // Additional metrics
-  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Mediation'; }).length;
-  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row[4] === 'In Arbitration'; }).length;
+  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row[GRIEVANCE_COLS.CURRENT_STEP - 1] === 'Mediation'; }).length;
+  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row[GRIEVANCE_COLS.CURRENT_STEP - 1] === 'Arbitration'; }).length;
 
   return metrics;
 }
@@ -683,7 +698,7 @@ function createDynamicChart(sheet, metricName, chartType, metrics, startCell, wi
   if (!chartData || chartData.length === 0) return;
 
   // Create chart based on type
-  var chartBuilder;
+  let chartBuilder;
   const range = sheet.getRange(startCell);
 
   if (chartType === "Donut Chart") {
@@ -807,9 +822,9 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       // Count actual grievances by step from Grievance Log
       const stepCounts = {};
       grievanceData.slice(1).forEach(function(row) {
-        const status = row[4]; // Status column (E)
-        const step = row[5];    // Current Step column (F)
-        if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const step = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
+        if (status && (status === 'Open' || status === 'Pending Info')) {
           stepCounts[step] = (stepCounts[step] || 0) + 1;
         }
       });
@@ -830,7 +845,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       // Count grievances by type/category
       const typeCounts = {};
       grievanceData.slice(1).forEach(function(row) {
-        const type = row[22]; // Issue Category column (W)
+        const type = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
         if (type && type !== 'Issue Category') {
           typeCounts[type] = (typeCounts[type] || 0) + 1;
         }
@@ -847,7 +862,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       // Count grievances by location
       const locationCounts = {};
       grievanceData.slice(1).forEach(function(row) {
-        const location = row[25]; // Work Location column (Z)
+        const location = row[GRIEVANCE_COLS.LOCATION - 1];
         if (location && location !== 'Work Location (Site)') {
           locationCounts[location] = (locationCounts[location] || 0) + 1;
         }
@@ -864,7 +879,7 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       // Count all grievances by step
       const allStepCounts = {};
       grievanceData.slice(1).forEach(function(row) {
-        const step = row[5]; // Current Step column (F)
+        const step = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
         if (step && step !== 'Current Step') {
           allStepCounts[step] = (allStepCounts[step] || 0) + 1;
         }
@@ -876,11 +891,11 @@ function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
       return allStepData.length > 0 ? allStepData : [["No Data", 0]];
 
     case "Unit 8 Members":
-      const unit8Count = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
+      const unit8Count = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 8'; }).length;
       return [["Unit 8", unit8Count]];
 
     case "Unit 10 Members":
-      const unit10Count = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
+      const unit10Count = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 10'; }).length;
       return [["Unit 10", unit10Count]];
 
     case "Total Stewards":
@@ -901,7 +916,7 @@ function createGrievanceStatusDonut(sheet, grievanceData) {
   // Count by status
   const statusCounts = {};
   grievanceData.slice(1).forEach(function(row) {
-    const status = row[4] || 'Unknown';
+    const status = row[GRIEVANCE_COLS.STATUS - 1] || 'Unknown';
     statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
 
@@ -929,10 +944,10 @@ function createGrievanceStatusDonut(sheet, grievanceData) {
  * Create Location Pie Chart
  */
 function createLocationPieChart(sheet, grievanceData) {
-  // Count by location (from member data)
+  // Count by location
   const locationCounts = {};
   grievanceData.slice(1).forEach(function(row) {
-    const location = row[4] || 'Unknown';  // Adjust column as needed
+    const location = row[GRIEVANCE_COLS.LOCATION - 1] || 'Unknown';
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
@@ -965,7 +980,7 @@ function createWarehouseLocationChart(sheet, grievanceData) {
   // This would create a horizontal bar chart similar to warehouse dashboard
   const locationCounts = {};
   grievanceData.slice(1).forEach(function(row) {
-    const location = row[4] || 'Unknown';
+    const location = row[GRIEVANCE_COLS.LOCATION - 1] || 'Unknown';
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
@@ -995,7 +1010,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
   // Clear existing data
   sheet.getRange("A94:G110").clearContent();
 
-  var tableData = [];
+  let tableData = [];
 
   // Generate table based on selected metric
   switch (metricName) {
@@ -1008,17 +1023,18 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const typeWon = {};
 
       grievanceData.slice(1).forEach(function(row) {
-        const type = row[22]; // Issue Category column (W)
-        const status = row[4]; // Status column (E)
+        const type = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
 
         if (type && type !== 'Issue Category') {
           typeCounts[type] = (typeCounts[type] || 0) + 1;
 
-          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+          if (status && (status === 'Open' || status === 'Pending Info')) {
             typeActive[type] = (typeActive[type] || 0) + 1;
-          } else if (status && status.includes('Resolved')) {
+          } else if (status && (status === 'Settled' || status === 'Closed')) {
             typeResolved[type] = (typeResolved[type] || 0) + 1;
-            if (row[22] && row[22].includes('Won')) {
+            if (resolution && resolution.includes('Won')) {
               typeWon[type] = (typeWon[type] || 0) + 1;
             }
           }
@@ -1047,17 +1063,18 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const locationWon = {};
 
       grievanceData.slice(1).forEach(function(row) {
-        const location = row[25]; // Work Location column (Z)
-        const status = row[4]; // Status column (E)
+        const location = row[GRIEVANCE_COLS.LOCATION - 1];
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
 
         if (location && location !== 'Work Location (Site)') {
           locationCounts[location] = (locationCounts[location] || 0) + 1;
 
-          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+          if (status && (status === 'Open' || status === 'Pending Info')) {
             locationActive[location] = (locationActive[location] || 0) + 1;
-          } else if (status && status.includes('Resolved')) {
+          } else if (status && (status === 'Settled' || status === 'Closed')) {
             locationResolved[location] = (locationResolved[location] || 0) + 1;
-            if (row[22] && row[22].includes('Won')) {
+            if (resolution && resolution.includes('Won')) {
               locationWon[location] = (locationWon[location] || 0) + 1;
             }
           }
@@ -1086,17 +1103,18 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const stewardWon = {};
 
       grievanceData.slice(1).forEach(function(row) {
-        const steward = row[26]; // Assigned Steward column (AA)
-        const status = row[4]; // Status column (E)
+        const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
 
         if (steward && steward !== 'Assigned Steward (Name)') {
           stewardCounts[steward] = (stewardCounts[steward] || 0) + 1;
 
-          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+          if (status && (status === 'Open' || status === 'Pending Info')) {
             stewardActive[steward] = (stewardActive[steward] || 0) + 1;
-          } else if (status && status.includes('Resolved')) {
+          } else if (status && (status === 'Settled' || status === 'Closed')) {
             stewardResolved[steward] = (stewardResolved[steward] || 0) + 1;
-            if (row[22] && row[22].includes('Won')) {
+            if (resolution && resolution.includes('Won')) {
               stewardWon[steward] = (stewardWon[steward] || 0) + 1;
             }
           }
@@ -1121,7 +1139,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       // For other metrics, show top locations by default
       const defaultLocationCounts = {};
       grievanceData.slice(1).forEach(function(row) {
-        const location = row[25];
+        const location = row[GRIEVANCE_COLS.LOCATION - 1];
         if (location && location !== 'Work Location (Site)') {
           defaultLocationCounts[location] = (defaultLocationCounts[location] || 0) + 1;
         }
@@ -1161,7 +1179,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
  * Apply theme to dashboard
  */
 function applyDashboardTheme(sheet, themeName) {
-  var primaryColor, accentColor;
+  let primaryColor, accentColor;
 
   switch (themeName) {
     case "Union Blue":

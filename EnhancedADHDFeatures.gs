@@ -338,7 +338,7 @@ function createADHDControlPanelHTML() {
   </div>
 
   <script>
-    var selectedTheme = '${currentSettings.theme || 'default'}';
+    let selectedTheme = '${currentSettings.theme || 'default'}';
 
     function selectTheme(theme) {
       selectedTheme = theme;
@@ -752,11 +752,11 @@ function startPomodoroTimer() {
   <button onclick="skipSession()">⏭️ Skip</button>
 
   <script>
-    var timeLeft = 25 * 60; // 25 minutes in seconds
-    var totalTime = 25 * 60;
-    var isRunning = false;
-    var interval;
-    var sessionType = 'focus'; // 'focus' or 'break'
+    let timeLeft = 25 * 60; // 25 minutes in seconds
+    let totalTime = 25 * 60;
+    let isRunning = false;
+    let interval;
+    let sessionType = 'focus'; // 'focus' or 'break'
 
     function toggleTimer() {
       if (isRunning) {

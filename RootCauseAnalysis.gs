@@ -50,14 +50,14 @@ function analyzeLocationClusters(data) {
   const locationStats = {};
 
   data.forEach(function(row) {
-    const location = row[9]; // Column J: Work Location
+    const location = row[GRIEVANCE_COLS.LOCATION - 1];
     if (!location) return;
 
     if (!locationStats[location]) {
       locationStats[location] = {
         count: 0,
         issueTypes: {},
-        managers: {},
+        units: {},
         resolutionTimes: []
       };
     }
@@ -65,22 +65,22 @@ function analyzeLocationClusters(data) {
     locationStats[location].count++;
 
     // Track issue types per location
-    const issueType = row[5];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
     if (issueType) {
       locationStats[location].issueTypes[issueType] =
         (locationStats[location].issueTypes[issueType] || 0) + 1;
     }
 
-    // Track managers per location
-    const manager = row[11];
-    if (manager) {
-      locationStats[location].managers[manager] =
-        (locationStats[location].managers[manager] || 0) + 1;
+    // Track units per location (grievances don't have manager, using unit as proxy)
+    const unit = row[GRIEVANCE_COLS.UNIT - 1];
+    if (unit) {
+      locationStats[location].units[unit] =
+        (locationStats[location].units[unit] || 0) + 1;
     }
 
     // Track resolution times
-    const filedDate = row[6];
-    const closedDate = row[18];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
     if (filedDate && closedDate) {
       const resTime = Math.floor((closedDate - filedDate) / (1000 * 60 * 60 * 24));
       locationStats[location].resolutionTimes.push(resTime);
@@ -128,14 +128,15 @@ function analyzeLocationClusters(data) {
  * @returns {Object} Manager analysis
  */
 function analyzeManagerPatterns(data) {
-  const managerStats = {};
+  // Note: Grievance data uses Steward (AA) not Manager. Analyzing by steward instead.
+  const stewardStats = {};
 
   data.forEach(function(row) {
-    const manager = row[11]; // Column L: Manager
-    if (!manager) return;
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    if (!steward) return;
 
-    if (!managerStats[manager]) {
-      managerStats[manager] = {
+    if (!stewardStats[steward]) {
+      stewardStats[steward] = {
         count: 0,
         issueTypes: {},
         outcomes: {},
@@ -143,37 +144,37 @@ function analyzeManagerPatterns(data) {
       };
     }
 
-    managerStats[manager].count++;
+    stewardStats[steward].count++;
 
     // Track issue types
-    const issueType = row[5];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
     if (issueType) {
-      managerStats[manager].issueTypes[issueType] =
-        (managerStats[manager].issueTypes[issueType] || 0) + 1;
+      stewardStats[steward].issueTypes[issueType] =
+        (stewardStats[steward].issueTypes[issueType] || 0) + 1;
     }
 
     // Track outcomes
-    const status = row[4];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
     if (status) {
-      managerStats[manager].outcomes[status] =
-        (managerStats[manager].outcomes[status] || 0) + 1;
+      stewardStats[steward].outcomes[status] =
+        (stewardStats[steward].outcomes[status] || 0) + 1;
     }
 
     // Track resolution times
-    const filedDate = row[6];
-    const closedDate = row[18];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
     if (filedDate && closedDate) {
       const resTime = Math.floor((closedDate - filedDate) / (1000 * 60 * 60 * 24));
-      managerStats[manager].resolutionTimes.push(resTime);
+      stewardStats[steward].resolutionTimes.push(resTime);
     }
   });
 
-  // Find managers with concerning patterns
-  const avgGrievancesPerManager = data.length / Object.keys(managerStats).length;
-  const concerningManagers = [];
+  // Find stewards with high caseloads
+  const avgGrievancesPerSteward = data.length / Object.keys(stewardStats).length;
+  const highCaseloadStewards = [];
 
-  Object.entries(managerStats).forEach(function([manager, stats]) {
-    if (stats.count > avgGrievancesPerManager * 2) {
+  Object.entries(stewardStats).forEach(function([steward, stats]) {
+    if (stats.count > avgGrievancesPerSteward * 2) {
       const topIssue = Object.entries(stats.issueTypes)
         .sort(function(a, b) { return b[1] - a[1]; })[0];
 
@@ -181,22 +182,22 @@ function analyzeManagerPatterns(data) {
         ? stats.resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / stats.resolutionTimes.length
         : 0;
 
-      concerningManagers.push({
-        manager: manager,
+      highCaseloadStewards.push({
+        steward: steward,
         count: stats.count,
-        comparedToAverage: (stats.count / avgGrievancesPerManager).toFixed(1) + 'x',
+        comparedToAverage: (stats.count / avgGrievancesPerSteward).toFixed(1) + 'x',
         topIssueType: topIssue ? topIssue[0] : 'N/A',
         avgResolutionTime: Math.round(avgResTime),
-        severity: stats.count > avgGrievancesPerManager * 3 ? 'HIGH' : 'MEDIUM'
+        severity: stats.count > avgGrievancesPerSteward * 3 ? 'HIGH' : 'MEDIUM'
       });
     }
   });
 
   return {
-    totalManagers: Object.keys(managerStats).length,
-    avgPerManager: avgGrievancesPerManager.toFixed(1),
-    concerningManagers: concerningManagers.sort(function(a, b) { return b.count - a.count; }),
-    allStats: managerStats
+    totalStewards: Object.keys(stewardStats).length,
+    avgPerSteward: avgGrievancesPerSteward.toFixed(1),
+    highCaseloadStewards: highCaseloadStewards.sort(function(a, b) { return b.count - a.count; }),
+    allStats: stewardStats
   };
 }
 
@@ -209,14 +210,14 @@ function analyzeIssueTypePatterns(data) {
   const issueTypeStats = {};
 
   data.forEach(function(row) {
-    const issueType = row[5];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
     if (!issueType) return;
 
     if (!issueTypeStats[issueType]) {
       issueTypeStats[issueType] = {
         count: 0,
         locations: {},
-        managers: {},
+        stewards: {},
         resolutionTimes: [],
         outcomes: {}
       };
@@ -225,29 +226,29 @@ function analyzeIssueTypePatterns(data) {
     issueTypeStats[issueType].count++;
 
     // Track locations
-    const location = row[9];
+    const location = row[GRIEVANCE_COLS.LOCATION - 1];
     if (location) {
       issueTypeStats[issueType].locations[location] =
         (issueTypeStats[issueType].locations[location] || 0) + 1;
     }
 
-    // Track managers
-    const manager = row[11];
-    if (manager) {
-      issueTypeStats[issueType].managers[manager] =
-        (issueTypeStats[issueType].managers[manager] || 0) + 1;
+    // Track stewards
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    if (steward) {
+      issueTypeStats[issueType].stewards[steward] =
+        (issueTypeStats[issueType].stewards[steward] || 0) + 1;
     }
 
     // Track outcomes
-    const status = row[4];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
     if (status) {
       issueTypeStats[issueType].outcomes[status] =
         (issueTypeStats[issueType].outcomes[status] || 0) + 1;
     }
 
     // Track resolution times
-    const filedDate = row[6];
-    const closedDate = row[18];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
     if (filedDate && closedDate) {
       const resTime = Math.floor((closedDate - filedDate) / (1000 * 60 * 60 * 24));
       issueTypeStats[issueType].resolutionTimes.push(resTime);
@@ -300,7 +301,7 @@ function analyzeTemporalPatterns(data) {
   const dayOfWeekPatterns = {};
 
   data.forEach(function(row) {
-    const filedDate = row[6];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
     if (!filedDate) return;
 
     // Monthly analysis
@@ -332,25 +333,25 @@ function analyzeTemporalPatterns(data) {
 function findCorrelations(data) {
   const correlations = [];
 
-  // Check: Specific manager + specific issue type
-  const managerIssueMatrix = {};
+  // Check: Specific steward + specific issue type
+  const stewardIssueMatrix = {};
 
   data.forEach(function(row) {
-    const manager = row[11];
-    const issueType = row[5];
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
 
-    if (manager && issueType) {
-      const key = `${manager}|||${issueType}`;
-      managerIssueMatrix[key] = (managerIssueMatrix[key] || 0) + 1;
+    if (steward && issueType) {
+      const key = `${steward}|||${issueType}`;
+      stewardIssueMatrix[key] = (stewardIssueMatrix[key] || 0) + 1;
     }
   });
 
-  Object.entries(managerIssueMatrix).forEach(function([key, count]) {
+  Object.entries(stewardIssueMatrix).forEach(function([key, count]) {
     if (count >= 5) {
-      const [manager, issueType] = key.split('|||');
+      const [steward, issueType] = key.split('|||');
       correlations.push({
-        type: 'Manager-Issue Correlation',
-        description: `${manager} has ${count} ${issueType} grievances`,
+        type: 'Steward-Issue Correlation',
+        description: `${steward} has ${count} ${issueType} grievances`,
         count: count,
         significance: count >= 10 ? 'HIGH' : 'MEDIUM'
       });

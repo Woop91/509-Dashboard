@@ -304,7 +304,7 @@ function createReportBuilderHTML() {
   </div>
 
   <script>
-    var filterCount = 1;
+    let filterCount = 1;
     const grievanceFields = ${JSON.stringify(grievanceFields)};
     const memberFields = ${JSON.stringify(memberFields)};
 
@@ -432,7 +432,7 @@ function createReportBuilderHTML() {
         return;
       }
 
-      var html = '<table><thead><tr>';
+      let html = '<table><thead><tr>';
 
       // Headers
       Object.keys(data[0]).forEach(function(key) {
@@ -647,8 +647,8 @@ function getMemberFields() {
 function generateReportData(config, limit = null) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  var sourceData;
-  var fieldMapping;
+  let sourceData;
+  let fieldMapping;
 
   if (config.dataSource === 'grievances') {
     const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -661,7 +661,7 @@ function generateReportData(config, limit = null) {
   }
 
   // Apply filters
-  var filteredData = sourceData.filter(function(row) {
+  let filteredData = sourceData.filter(function(row) {
     return applyFilters(row, config.filters, fieldMapping);
   });
 
@@ -811,7 +811,7 @@ function sortData(data, sortBy, sortOrder, fieldMapping) {
     const aVal = a[field.index];
     const bVal = b[field.index];
 
-    var comparison = 0;
+    let comparison = 0;
     if (aVal < bVal) comparison = -1;
     if (aVal > bVal) comparison = 1;
 
@@ -899,7 +899,7 @@ function exportReportToCSV(config) {
   }
 
   const headers = Object.keys(data[0]);
-  var csv = headers.join(',') + '\n';
+  let csv = headers.join(',') + '\n';
 
   data.forEach(function(row) {
     const values = Object.values(row).map(function(v) {

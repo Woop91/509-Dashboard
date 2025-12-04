@@ -155,8 +155,8 @@ function createMemberSearchHTML() {
   </div>
 
   <script>
-    var allMembers = [];
-    var filteredMembers = [];
+    let allMembers = [];
+    let filteredMembers = [];
 
     // Load members on page load
     window.onload = function() {
@@ -289,23 +289,23 @@ function getAllMembers() {
   const lastRow = memberSheet.getLastRow();
   if (lastRow < 2) return [];
 
-  const data = memberSheet.getRange(2, 1, lastRow - 1, 13).getValues();
+  const data = memberSheet.getRange(2, 1, lastRow - 1, MEMBER_COLS.ASSIGNED_STEWARD).getValues();
 
   return data.map(function(row, index) { return {
     row: index + 2,
-    id: row[0] || '',
-    name: `${row[1]} ${row[2]}`.trim(),
-    firstName: row[1] || '',
-    lastName: row[2] || '',
-    jobTitle: row[3] || '',
-    location: row[4] || '',
-    unit: row[5] || '',
-    email: row[7] || '',
-    phone: row[8] || '',
-    isSteward: row[9] || '',
-    supervisor: row[10] || '',
-    manager: row[11] || '',
-    assignedSteward: row[12] || ''
+    id: row[MEMBER_COLS.MEMBER_ID - 1] || '',
+    name: `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`.trim(),
+    firstName: row[MEMBER_COLS.FIRST_NAME - 1] || '',
+    lastName: row[MEMBER_COLS.LAST_NAME - 1] || '',
+    jobTitle: row[MEMBER_COLS.JOB_TITLE - 1] || '',
+    location: row[MEMBER_COLS.WORK_LOCATION - 1] || '',
+    unit: row[MEMBER_COLS.UNIT - 1] || '',
+    email: row[MEMBER_COLS.EMAIL - 1] || '',
+    phone: row[MEMBER_COLS.PHONE - 1] || '',
+    isSteward: row[MEMBER_COLS.IS_STEWARD - 1] || '',
+    supervisor: row[MEMBER_COLS.SUPERVISOR - 1] || '',
+    manager: row[MEMBER_COLS.MANAGER - 1] || '',
+    assignedSteward: row[MEMBER_COLS.ASSIGNED_STEWARD - 1] || ''
   };}).filter(function(m) { return m.id; }); // Filter out empty rows
 }
 

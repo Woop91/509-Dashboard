@@ -87,9 +87,9 @@ function generateNextGrievanceID() {
 
   const existingIds = grievanceSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
 
-  var counter = 1;
-  var letter = 'A';
-  var newId;
+  let counter = 1;
+  let letter = 'A';
+  let newId;
 
   do {
     newId = `G-${String(counter).padStart(6, '0')}-${letter}`;
@@ -161,7 +161,7 @@ function showDuplicateGrievanceIDWarning(grievanceId) {
  */
 function createChangeLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var changeLog = ss.getSheetByName('📝 Change Log');
+  let changeLog = ss.getSheetByName('📝 Change Log');
 
   if (!changeLog) {
     changeLog = ss.insertSheet('📝 Change Log');

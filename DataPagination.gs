@@ -281,12 +281,12 @@ function createPaginatedViewerHTML() {
   </div>
 
   <script>
-    var currentPage = 1;
-    var pageSize = ${pageSize};
-    var totalRecords = ${totalRows};
-    var totalPages = ${totalPages};
-    var currentData = [];
-    var allHeaders = [];
+    let currentPage = 1;
+    let pageSize = ${pageSize};
+    const totalRecords = ${totalRows};
+    let totalPages = ${totalPages};
+    let currentData = [];
+    let allHeaders = [];
 
     // Load initial page
     loadPage(1);
@@ -315,7 +315,7 @@ function createPaginatedViewerHTML() {
       allHeaders = data.headers;
       currentData = data.rows;
 
-      var html = '<table><thead><tr>';
+      let html = '<table><thead><tr>';
 
       // Headers
       data.headers.forEach(function(header) {
@@ -331,7 +331,7 @@ function createPaginatedViewerHTML() {
         data.rows.forEach(function(row) {
           html += '<tr>';
           row.forEach(function(cell) {
-            var cellValue = cell;
+            let cellValue = cell;
             if (cell instanceof Date) {
               cellValue = cell.toLocaleDateString();
             }
@@ -348,7 +348,7 @@ function createPaginatedViewerHTML() {
     }
 
     function renderPagination() {
-      var html = '';
+      let html = '';
 
       // First and Previous buttons
       html += '<button class="page-button" onclick="loadPage(1)" ' + (currentPage === 1 ? 'disabled' : '') + '>« First</button>';
@@ -465,7 +465,7 @@ function getPageData(startRow, numRows) {
   const headers = grievanceSheet.getRange(1, 1, 1, lastCol).getValues()[0];
 
   // Get data
-  var rows = [];
+  let rows = [];
   if (numRows > 0) {
     rows = grievanceSheet.getRange(startRow, 1, numRows, lastCol).getValues();
   }
@@ -487,7 +487,7 @@ function exportPageToCSV(page, pageSize) {
   const data = getPageData(startRow, pageSize);
 
   // Create CSV content
-  var csv = '';
+  let csv = '';
 
   // Headers
   csv += data.headers.map(function(h) { return `"${h}"`; }).join(',') + '\n';
@@ -495,7 +495,7 @@ function exportPageToCSV(page, pageSize) {
   // Rows
   data.rows.forEach(function(row) {
     csv += row.map(function(cell) {
-      var value = String(cell);
+      let value = String(cell);
       if (cell instanceof Date) {
         value = Utilities.formatDate(cell, Session.getScriptTimeZone(), 'yyyy-MM-dd');
       }
@@ -527,7 +527,7 @@ function createPaginatedView(sheetName, pageSize = PAGINATION_CONFIG.DEFAULT_PAG
   const totalPages = Math.ceil(totalRows / pageSize);
 
   const viewSheetName = `${sheetName}_Paginated`;
-  var viewSheet = ss.getSheetByName(viewSheetName);
+  let viewSheet = ss.getSheetByName(viewSheetName);
 
   if (viewSheet) {
     viewSheet.clear();

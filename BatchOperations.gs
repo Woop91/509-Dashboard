@@ -207,8 +207,8 @@ function batchAssignSteward() {
   const stewardData = memberSheet.getRange(2, 1, memberSheet.getLastRow() - 1, 10).getValues();
 
   const stewards = stewardData
-    .filter(function(row) { return row[9] === 'Yes'; }) // Column J: Is Steward?
-    .map(function(row) { return `${row[1]} ${row[2]}`; }) // First + Last Name
+    .filter(function(row) { return row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'; }) // Column J: Is Steward?
+    .map(function(row) { return `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`; }) // First + Last Name
     .filter(function(name) { return name.trim() !== ''; });
 
   if (stewards.length === 0) {
@@ -253,7 +253,7 @@ function batchAssignSteward() {
 
   // Perform bulk assignment
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  var updated = 0;
+  let updated = 0;
 
   selectedRows.forEach(function(row) {
     grievanceSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).setValue(stewardName);
@@ -318,7 +318,7 @@ function batchUpdateStatus() {
   // Perform bulk status update
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  var updated = 0;
+  let updated = 0;
 
   selectedRows.forEach(function(row) {
     grievanceSheet.getRange(row, GRIEVANCE_COLS.STATUS).setValue(newStatus);
@@ -409,7 +409,7 @@ function exportGrievanceToPDF(grievanceId) {
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === grievanceId) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       const row = data[i];
 
       // Create a Google Doc
@@ -420,12 +420,12 @@ function exportGrievanceToPDF(grievanceId) {
       body.appendParagraph('SEIU Local 509 - Grievance Report').setHeading(DocumentApp.ParagraphHeading.HEADING1);
       body.appendParagraph(''); // Spacing
 
-      body.appendParagraph(`Grievance ID: ${row[0]}`);
+      body.appendParagraph(`Grievance ID: ${row[GRIEVANCE_COLS.GRIEVANCE_ID - 1]}`);
       body.appendParagraph(`Member: ${row[2]} ${row[3]}`);
-      body.appendParagraph(`Status: ${row[4]}`);
+      body.appendParagraph(`Status: ${row[GRIEVANCE_COLS.STATUS - 1]}`);
       body.appendParagraph(`Issue Type: ${row[5]}`);
       body.appendParagraph(`Filed Date: ${row[6]}`);
-      body.appendParagraph(`Assigned Steward: ${row[13]}`);
+      body.appendParagraph(`Assigned Steward: ${row[GRIEVANCE_COLS.STEWARD - 1]}`);
 
       doc.saveAndClose();
 
@@ -517,7 +517,7 @@ function batchEmailNotifications() {
   // Send emails
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  var sent = 0;
+  let sent = 0;
 
   selectedRows.forEach(function(row) {
     try {
@@ -597,7 +597,7 @@ function batchAddNotes() {
   const user = Session.getActiveUser().getEmail() || 'User';
   const formattedNote = `[${timestamp}] ${user}: ${noteText}`;
 
-  var updated = 0;
+  let updated = 0;
 
   selectedRows.forEach(function(row) {
     const existingNotes = grievanceSheet.getRange(row, GRIEVANCE_COLS.NOTES).getValue() || '';

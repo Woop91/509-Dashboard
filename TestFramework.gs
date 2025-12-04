@@ -24,7 +24,7 @@ TEST_RESULTS = {
 /**
  * Assertion library
  */
-var Assert = {
+const Assert = {
   /**
    * Assert that two values are equal
    */
@@ -119,7 +119,7 @@ var Assert = {
    * Assert that function throws an error
    */
   assertThrows: function(fn, message) {
-    var threw = false;
+    let threw = false;
     try {
       fn();
     } catch (e) {
@@ -286,7 +286,7 @@ function generateTestReport(duration) {
   const ss = SpreadsheetApp.getActive();
 
   // Create or clear Test Results sheet
-  var reportSheet = ss.getSheetByName('Test Results');
+  let reportSheet = ss.getSheetByName('Test Results');
   if (!reportSheet) {
     reportSheet = ss.insertSheet('Test Results');
   }
@@ -318,7 +318,7 @@ function generateTestReport(duration) {
   reportSheet.getRange(3, 1, summary.length, 2).setValues(summary);
   reportSheet.getRange(3, 1, summary.length, 1).setFontWeight('bold');
 
-  var currentRow = 3 + summary.length + 2;
+  let currentRow = 3 + summary.length + 2;
 
   // Passed tests
   if (TEST_RESULTS.passed.length > 0) {
@@ -596,9 +596,9 @@ function runTestCategory(categoryName, testNames) {
   TEST_RESULTS.failed = [];
   TEST_RESULTS.skipped = [];
 
-  var passed = 0;
-  var failed = 0;
-  var skipped = 0;
+  let passed = 0;
+  let failed = 0;
+  let skipped = 0;
 
   testNames.forEach(function(testName) {
     try {

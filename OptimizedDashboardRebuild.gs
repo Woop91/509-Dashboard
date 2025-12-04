@@ -165,35 +165,35 @@ function calculateAllMetricsOptimized(dataCache) {
   // Calculate member metrics (skip header row)
   metrics.totalMembers = memberData.length - 1;
 
-  var openRateSum = 0;
-  var openRateCount = 0;
+  let openRateSum = 0;
+  let openRateCount = 0;
 
   for (let i = 1; i < memberData.length; i++) {
     const row = memberData[i];
 
     // Active stewards (column J)
-    if (row[9] === 'Yes') {
+    if (row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes') {
       metrics.activeStewards++;
     }
 
-    // Open rate (column R)
-    if (row[17] && !isNaN(row[17])) {
-      openRateSum += parseFloat(row[17]);
+    // Open rate (column S)
+    if (row[MEMBER_COLS.OPEN_RATE - 1] && !isNaN(row[MEMBER_COLS.OPEN_RATE - 1])) {
+      openRateSum += parseFloat(row[MEMBER_COLS.OPEN_RATE - 1]);
       openRateCount++;
     }
 
-    // Volunteer hours (column S)
-    if (row[18] && !isNaN(row[18])) {
-      metrics.ytdVolunteerHours += parseFloat(row[18]);
+    // Volunteer hours (column T)
+    if (row[MEMBER_COLS.VOLUNTEER_HOURS - 1] && !isNaN(row[MEMBER_COLS.VOLUNTEER_HOURS - 1])) {
+      metrics.ytdVolunteerHours += parseFloat(row[MEMBER_COLS.VOLUNTEER_HOURS - 1]);
     }
 
-    // Interest in local actions (column T)
-    if (row[19] === 'Yes') {
+    // Interest in local actions (column U)
+    if (row[MEMBER_COLS.INTEREST_LOCAL - 1] === 'Yes') {
       metrics.localActionInterest++;
     }
 
-    // Interest in chapter actions (column U)
-    if (row[20] === 'Yes') {
+    // Interest in chapter actions (column W)
+    if (row[MEMBER_COLS.INTEREST_CHAPTER - 1] === 'Yes') {
       metrics.chapterActionInterest++;
     }
   }
@@ -208,16 +208,16 @@ function calculateAllMetricsOptimized(dataCache) {
   const thisYear = now.getFullYear();
   const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
 
-  var daysOpenSum = 0;
-  var daysOpenCount = 0;
+  let daysOpenSum = 0;
+  let daysOpenCount = 0;
 
   for (let i = 1; i < grievanceData.length; i++) {
     const row = grievanceData[i];
 
-    const status = row[4]; // Column E
-    const dateClosed = row[17]; // Column R
-    const daysOpen = row[18]; // Column S
-    const nextActionDue = row[19]; // Column T
+    const status = row[GRIEVANCE_COLS.STATUS - 1]; // Column E
+    const dateClosed = row[GRIEVANCE_COLS.DATE_CLOSED - 1]; // Column R
+    const daysOpen = row[GRIEVANCE_COLS.DAYS_OPEN - 1]; // Column S
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1]; // Column T
 
     // Count by status
     if (status === 'Open') {
@@ -250,8 +250,8 @@ function calculateAllMetricsOptimized(dataCache) {
         // Only include upcoming deadlines (0-14 days), not past deadlines
         if (daysUntil >= 0 && daysUntil <= 14) {
           metrics.upcomingDeadlines.push({
-            grievanceId: row[0],
-            memberName: `${row[2]} ${row[3]}`,
+            grievanceId: row[GRIEVANCE_COLS.GRIEVANCE_ID - 1],
+            memberName: `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`,
             deadline: deadline,
             daysUntil: daysUntil
           });
@@ -300,10 +300,10 @@ function prepareAllChartData(dataCache) {
   for (let i = 1; i < grievanceData.length; i++) {
     const row = grievanceData[i];
 
-    const status = row[4];
-    const location = row[24]; // Column Y
-    const issueCategory = row[21]; // Column V
-    const dateFiled = row[8]; // Column I
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const location = row[GRIEVANCE_COLS.LOCATION - 1]; // Column Z
+    const issueCategory = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1]; // Column W
+    const dateFiled = row[GRIEVANCE_COLS.DATE_FILED - 1]; // Column I
 
     // By status
     statusCounts[status] = (statusCounts[status] || 0) + 1;

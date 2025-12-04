@@ -77,7 +77,7 @@ function getUserRole(userEmail) {
 
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var userRolesSheet = ss.getSheetByName('User Roles');
+    let userRolesSheet = ss.getSheetByName('User Roles');
 
     if (!userRolesSheet) {
       // If sheet doesn't exist, create it and assign current user as admin
@@ -115,7 +115,7 @@ function assignRole(userEmail, role) {
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var userRolesSheet = ss.getSheetByName('User Roles');
+    let userRolesSheet = ss.getSheetByName('User Roles');
 
     if (!userRolesSheet) {
       userRolesSheet = createUserRolesSheet();
@@ -123,7 +123,7 @@ function assignRole(userEmail, role) {
 
     // Check if user already exists
     const data = userRolesSheet.getDataRange().getValues();
-    var userRow = -1;
+    let userRow = -1;
 
     for (let i = 1; i < data.length; i++) {
       if (data[i][0].toLowerCase() === userEmail.toLowerCase()) {
@@ -250,7 +250,7 @@ function withPermission(fn, requiredPermission, actionDescription) {
 function logAudit(eventType, description, metadata) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var auditSheet = ss.getSheetByName('Audit Log');
+    let auditSheet = ss.getSheetByName('Audit Log');
 
     if (!auditSheet) {
       auditSheet = createAuditLogSheet();
@@ -404,7 +404,7 @@ function filterGrievanceDataByPermission(grievanceData, userEmail) {
   if (role === 'STEWARD') {
     // First, get steward name from member directory
     const memberData = getSheetDataSafely(SHEETS.MEMBER_DIR);
-    var stewardName = '';
+    let stewardName = '';
 
     if (memberData) {
       const stewardRow = memberData.find(function(row) {
@@ -496,7 +496,7 @@ function showUserManagement() {
   requirePermission('manage_users', 'manage user roles');
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var userRolesSheet = ss.getSheetByName('User Roles');
+  let userRolesSheet = ss.getSheetByName('User Roles');
 
   if (!userRolesSheet) {
     userRolesSheet = createUserRolesSheet();
@@ -525,7 +525,7 @@ function showAuditLog() {
   requirePermission('view_audit_log', 'view audit log');
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var auditSheet = ss.getSheetByName('Audit Log');
+  const auditSheet = ss.getSheetByName('Audit Log');
 
   if (!auditSheet) {
     SpreadsheetApp.getUi().alert('No audit log found.');

@@ -84,7 +84,7 @@ function getOrCreateBackupFolder() {
  */
 function logBackup(backupName, fileId, automated) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var backupLog = ss.getSheetByName('💾 Backup Log');
+  let backupLog = ss.getSheetByName('💾 Backup Log');
 
   if (!backupLog) {
     backupLog = createBackupLogSheet();
@@ -229,7 +229,7 @@ function setupAutomatedBackups() {
  */
 function disableAutomatedBackups() {
   const triggers = ScriptApp.getProjectTriggers();
-  var removed = 0;
+  let removed = 0;
 
   triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'runAutomatedBackup') {
@@ -439,7 +439,7 @@ function createBackupManagerHTML() {
  */
 function navigateToBackupLog() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var backupLog = ss.getSheetByName('💾 Backup Log');
+  let backupLog = ss.getSheetByName('💾 Backup Log');
 
   if (!backupLog) {
     backupLog = createBackupLogSheet();
@@ -461,7 +461,7 @@ function exportGrievancesToCSV() {
 
   const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
 
-  var csv = '';
+  let csv = '';
   data.forEach(function(row) {
     const values = row.map(function(v) {
       const str = v.toString();
@@ -486,7 +486,7 @@ function exportMembersToCSV() {
 
   const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
 
-  var csv = '';
+  let csv = '';
   data.forEach(function(row) {
     const values = row.map(function(v) {
       const str = v.toString();

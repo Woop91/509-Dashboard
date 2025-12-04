@@ -18,7 +18,7 @@ function createIncrementalBackup() {
   const props = PropertiesService.getScriptProperties();
 
   // Get or create backup folder ID
-  var backupFolderId = props.getProperty('BACKUP_FOLDER_ID');
+  let backupFolderId = props.getProperty('BACKUP_FOLDER_ID');
 
   if (!backupFolderId) {
     // Create backup folder if it doesn't exist
@@ -118,7 +118,7 @@ function createBackupFolder() {
  */
 function cleanupOldBackups(folder) {
   const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000));
-  var deletedCount = 0;
+  let deletedCount = 0;
 
   try {
     const files = folder.getFilesByType(MimeType.GOOGLE_SHEETS);
@@ -259,7 +259,7 @@ function showBackupInfo() {
     return;
   }
 
-  var message = `Total Backups: ${backups.length}\n\n`;
+  let message = `Total Backups: ${backups.length}\n\n`;
   message += 'Recent Backups:\n';
   message += '─────────────────────────────────────\n';
 

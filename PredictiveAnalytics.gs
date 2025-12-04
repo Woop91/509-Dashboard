@@ -68,7 +68,7 @@ function analyzeVolumeTrend(data) {
     const monthlyVolumes = {};
 
     data.forEach(function(row) {
-      const filedDate = row[6]; // Column G: Filed Date
+      const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
       if (!filedDate) return;
 
@@ -122,8 +122,8 @@ function analyzeIssueTypeTrends(data) {
     const issueTypesByMonth = {};
 
     data.forEach(function(row) {
-      const filedDate = row[6];
-      const issueType = row[5];
+      const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+      const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
 
       if (!filedDate || !issueType) return;
 
@@ -196,7 +196,7 @@ function detectSeasonalPatterns(data) {
   const quarterlyVolumes = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
 
   data.forEach(function(row) {
-    const filedDate = row[6];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
     if (!filedDate) return;
 
@@ -205,8 +205,8 @@ function detectSeasonalPatterns(data) {
   });
 
   // Find peak quarter
-  var peakQuarter = 'Q1';
-  var peakVolume = 0;
+  let peakQuarter = 'Q1';
+  let peakVolume = 0;
 
   Object.entries(quarterlyVolumes).forEach(function([quarter, volume]) {
     if (volume > peakVolume) {
@@ -232,8 +232,8 @@ function analyzeResolutionTimeTrend(data) {
   const resolutionTimes = [];
 
   data.forEach(function(row) {
-    const filedDate = row[6];
-    const closedDate = row[18];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
 
     if (filedDate && closedDate && closedDate > filedDate) {
       const days = Math.floor((closedDate - filedDate) / (1000 * 60 * 60 * 24));
@@ -280,8 +280,8 @@ function forecastStewardWorkload(data) {
   const stewardCases = {};
 
   data.forEach(function(row) {
-    const steward = row[13];
-    const status = row[4];
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
 
     if (steward && status === 'Open') {
       stewardCases[steward] = (stewardCases[steward] || 0) + 1;
@@ -318,9 +318,9 @@ function identifyRiskFactors(data) {
   const risks = [];
 
   // Check for overdue cases
-  var overdueCount = 0;
+  let overdueCount = 0;
   data.forEach(function(row) {
-    const daysToDeadline = row[20];
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
     if (daysToDeadline < 0) overdueCount++;
   });
 
@@ -334,10 +334,10 @@ function identifyRiskFactors(data) {
   }
 
   // Check for cases with no steward assigned
-  var unassignedCount = 0;
+  let unassignedCount = 0;
   data.forEach(function(row) {
-    const steward = row[13];
-    const status = row[4];
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
     if (!steward && status === 'Open') unassignedCount++;
   });
 
@@ -375,7 +375,7 @@ function detectAnomalies(data) {
   // Check for unusual spike in last month
   const monthlyVolumes = {};
   data.forEach(function(row) {
-    const filedDate = row[6];
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
     if (!filedDate) return;
 
     const monthKey = `${filedDate.getFullYear()}-${String(filedDate.getMonth() + 1).padStart(2, '0')}`;
@@ -399,7 +399,7 @@ function detectAnomalies(data) {
   // Check for concentration of cases in one location
   const locationCounts = {};
   data.forEach(function(row) {
-    const location = row[9];
+    const location = row[GRIEVANCE_COLS.LOCATION - 1];
     if (location) {
       locationCounts[location] = (locationCounts[location] || 0) + 1;
     }
@@ -485,7 +485,7 @@ function calculateLinearTrend(values) {
   const n = values.length;
   if (n < 2) return { slope: 0, intercept: values[0] || 0 };
 
-  var sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
 
   for (let i = 0; i < n; i++) {
     sumX += i;

@@ -45,21 +45,21 @@ function composeGrievanceEmail(grievanceId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  var grievanceData = null;
+  let grievanceData = null;
 
   if (grievanceId) {
     const lastRow = grievanceSheet.getLastRow();
     const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
     for (let i = 0; i < data.length; i++) {
-      if (data[i][0] === grievanceId) {
+      if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
         grievanceData = {
-          id: data[i][0],
-          memberName: `${data[i][2]} ${data[i][3]}`,
-          memberEmail: data[i][7] || '',
-          steward: data[i][13] || '',
+          id: data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1],
+          memberName: `${data[i][GRIEVANCE_COLS.FIRST_NAME - 1]} ${data[i][GRIEVANCE_COLS.LAST_NAME - 1]}`,
+          memberEmail: data[i][GRIEVANCE_COLS.MEMBER_EMAIL - 1] || '',
+          steward: data[i][GRIEVANCE_COLS.STEWARD - 1] || '',
           issueType: data[i][5] || '',
-          status: data[i][4] || ''
+          status: data[i][GRIEVANCE_COLS.STATUS - 1] || ''
         };
         break;
       }
@@ -462,7 +462,7 @@ function sendGrievanceEmail(emailData) {
  */
 function logCommunication(grievanceId, type, details) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var commLog = ss.getSheetByName('📞 Communications Log');
+  let commLog = ss.getSheetByName('📞 Communications Log');
 
   if (!commLog) {
     commLog = createCommunicationsLogSheet();

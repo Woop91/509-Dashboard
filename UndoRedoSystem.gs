@@ -48,7 +48,7 @@ function showUndoRedoPanel() {
 function createUndoRedoPanelHTML() {
   const history = getUndoHistory();
 
-  var historyRows = '';
+  let historyRows = '';
   if (history.actions.length === 0) {
     historyRows = '<tr><td colspan="5" style="text-align: center; padding: 40px; color: #999;">No actions recorded yet</td></tr>';
   } else {
@@ -589,7 +589,7 @@ function exportUndoHistoryToSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
   // Create or get history sheet
-  var historySheet = ss.getSheetByName('Undo_History_Export');
+  let historySheet = ss.getSheetByName('Undo_History_Export');
   if (historySheet) {
     historySheet.clear();
   } else {

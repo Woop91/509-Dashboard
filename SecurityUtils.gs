@@ -490,7 +490,7 @@ function validateInput(input, type, maxLength = 255) {
 function logAuditEvent(action, details = {}, level = 'INFO') {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    var auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
+    let auditLog = ss.getSheetByName(AUDIT_LOG_SHEET);
 
     // Create audit log sheet if it doesn't exist
     if (!auditLog) {
@@ -572,10 +572,7 @@ function getAuditLog(limit = 100, action = null) {
     const headers = data[0];
     const rows = data.slice(1).reverse(); // Most recent first
 
-    var filtered = rows;
-    if (action) {
-      filtered = rows.filter(function(row) { return row[3] === action; });
-    }
+    const filtered = action ? rows.filter(function(row) { return row[3] === action; }) : rows;
 
     const result = filtered.slice(0, limit).map(function(row) { return {
       timestamp: row[0],
@@ -825,7 +822,7 @@ function showSecurityAudit() {
     const report = runSecurityAudit();
     const ui = SpreadsheetApp.getUi();
 
-    var message = '🔒 SECURITY AUDIT REPORT\n\n';
+    let message = '🔒 SECURITY AUDIT REPORT\n\n';
     message += `Total Users: ${report.results.totalUsers}\n`;
     message += `Admins: ${report.results.adminCount}\n`;
     message += `Stewards: ${report.results.stewardCount}\n`;

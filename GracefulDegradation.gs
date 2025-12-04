@@ -162,7 +162,7 @@ function rebuildDashboardMinimal() {
     const totalGrievances = grievanceData.length - 1;
 
     // Count open grievances
-    var openGrievances = 0;
+    let openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
       if (grievanceData[i][4] === 'Open') { // Column E (index 4)
         openGrievances++;
@@ -282,7 +282,7 @@ function cacheDashboardState() {
     const totalMembers = memberData.length - 1;
     const totalGrievances = grievanceData.length - 1;
 
-    var openGrievances = 0;
+    let openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
       if (grievanceData[i][4] === 'Open') {
         openGrievances++;
@@ -357,9 +357,9 @@ function recalcMembersGrievanceFieldsOnly() {
   // For each member, find their open grievances
   for (let i = 1; i < memberData.length; i++) {
     const memberID = memberData[i][0];
-    var hasOpen = 'No';
-    var status = '';
-    var deadline = '';
+    let hasOpen = 'No';
+    let status = '';
+    let deadline = '';
 
     // Find grievances for this member
     for (let j = 1; j < grievanceData.length; j++) {
@@ -431,7 +431,7 @@ function REBUILD_DASHBOARD_SAFE() {
 
     const result = rebuildDashboardSafe();
 
-    var message;
+    let message;
     if (result.mode === 'minimal') {
       message = 'Dashboard rebuilt in MINIMAL mode.\n\n' +
                 'Only basic KPIs are displayed.\n\n' +

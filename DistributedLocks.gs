@@ -387,7 +387,7 @@ function showLockStatus() {
   const ui = SpreadsheetApp.getUi();
   const status = checkConcurrentOperations();
 
-  var message;
+  let message;
 
   if (status.active) {
     message = `Active Operations:\n\n`;
@@ -426,7 +426,7 @@ function batchUpdateWithLock(updates) {
     const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
     // Perform batch updates
-    var updateCount = 0;
+    let updateCount = 0;
 
     for (const update of updates) {
       // Apply each update

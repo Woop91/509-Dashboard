@@ -270,7 +270,7 @@ function createMemberSelectionDialog(members) {
   </div>
 
   <script>
-    var members = ${JSON.stringify(members)};
+    const members = ${JSON.stringify(members)};
 
     function showMemberDetails() {
       const select = document.getElementById('memberSelect');
@@ -357,15 +357,15 @@ function generatePreFilledGrievanceForm(memberRowIndex) {
   // Get member data
   const memberData = memberSheet.getRange(memberRowIndex, 1, 1, 11).getValues()[0];
   const member = {
-    id: memberData[0],
-    firstName: memberData[1],
-    lastName: memberData[2],
-    jobTitle: memberData[3],
-    location: memberData[4],
-    unit: memberData[5],
-    officeDays: memberData[6],
-    email: memberData[7],
-    phone: memberData[8]
+    id: memberData[MEMBER_COLS.MEMBER_ID - 1],
+    firstName: memberData[MEMBER_COLS.FIRST_NAME - 1],
+    lastName: memberData[MEMBER_COLS.LAST_NAME - 1],
+    jobTitle: memberData[MEMBER_COLS.JOB_TITLE - 1],
+    location: memberData[MEMBER_COLS.WORK_LOCATION - 1],
+    unit: memberData[MEMBER_COLS.UNIT - 1],
+    officeDays: memberData[MEMBER_COLS.OFFICE_DAYS - 1],
+    email: memberData[MEMBER_COLS.EMAIL - 1],
+    phone: memberData[MEMBER_COLS.PHONE - 1]
   };
 
   // Get steward contact info from Config
@@ -458,7 +458,7 @@ function getGrievanceCoordinators() {
  */
 function addStewardContactInfoToConfig() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  var configSheet = ss.getSheetByName(SHEETS.CONFIG);
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
     SpreadsheetApp.getUi().alert('❌ Config sheet not found!');
@@ -562,7 +562,7 @@ function createGrievanceFolder(grievanceId, formData) {
   try {
     // Get or create main Grievances folder
     const mainFolderName = 'SEIU 509 - Grievances';
-    var mainFolder;
+    let mainFolder;
 
     const folders = DriveApp.getFoldersByName(mainFolderName);
     if (folders.hasNext()) {
@@ -597,15 +597,15 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
 
   // Get grievance data
   const grievanceData = grievanceLog.getDataRange().getValues();
-  var grievanceRow = grievanceData.find(function(row) { return row[0] === grievanceId; });
+  const grievanceRow = grievanceData.find(function(row) { return row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId; });
 
   if (!grievanceRow) {
     SpreadsheetApp.getUi().alert('❌ Grievance not found');
     return;
   }
 
-  const memberId = grievanceRow[1];
-  const memberEmail = grievanceRow[23];
+  const memberId = grievanceRow[GRIEVANCE_COLS.MEMBER_ID - 1];
+  const memberEmail = grievanceRow[GRIEVANCE_COLS.MEMBER_EMAIL - 1];
   const stewardEmail = getStewardContactInfo().email;
   const coordinators = getGrievanceCoordinators();
   const folderUrl = folder ? folder.getUrl() : '';
@@ -824,7 +824,7 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
     const pdfBlob = generateGrievancePDF(grievanceId);
 
     // Get folder by URL
-    var folder = null;
+    let folder = null;
     if (folderUrl) {
       const folderId = folderUrl.match(/[-\w]{25,}/);
       if (folderId) {
@@ -1075,9 +1075,9 @@ function generateUniqueGrievanceId() {
   const existingIds = grievanceSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
 
   // Generate new ID
-  var counter = 1;
-  var letter = 'A';
-  var newId;
+  let counter = 1;
+  let letter = 'A';
+  let newId;
 
   do {
     newId = `GRV-${String(counter).padStart(3, '0')}-${letter}`;
@@ -1132,10 +1132,10 @@ function generateGrievancePDF(grievanceId) {
 
   // Find grievance row
   const data = grievanceSheet.getDataRange().getValues();
-  var grievanceRow = -1;
+  let grievanceRow = -1;
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === grievanceId) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       grievanceRow = i;
       break;
     }
@@ -1199,7 +1199,7 @@ function formatGrievancePDFSheet(sheet, data) {
     .setBackground('#7EC8E3')
     .setFontColor('white');
 
-  var row = 3;
+  let row = 3;
 
   // Member Information
   sheet.getRange(row, 1, 1, 4).merge()
@@ -1208,9 +1208,9 @@ function formatGrievancePDFSheet(sheet, data) {
     .setBackground('#E8F0FE');
   row++;
 
-  addPDFField(sheet, row++, 'Grievance ID:', data[0]);
-  addPDFField(sheet, row++, 'Member ID:', data[1]);
-  addPDFField(sheet, row++, 'Name:', data[2] + ' ' + data[3]);
+  addPDFField(sheet, row++, 'Grievance ID:', data[GRIEVANCE_COLS.GRIEVANCE_ID - 1]);
+  addPDFField(sheet, row++, 'Member ID:', data[GRIEVANCE_COLS.MEMBER_ID - 1]);
+  addPDFField(sheet, row++, 'Name:', data[GRIEVANCE_COLS.FIRST_NAME - 1] + ' ' + data[GRIEVANCE_COLS.LAST_NAME - 1]);
   row++;
 
   // Grievance Details
@@ -1220,11 +1220,11 @@ function formatGrievancePDFSheet(sheet, data) {
     .setBackground('#E8F0FE');
   row++;
 
-  addPDFField(sheet, row++, 'Status:', data[4]);
-  addPDFField(sheet, row++, 'Current Step:', data[5]);
-  addPDFField(sheet, row++, 'Incident Date:', data[6] ? Utilities.formatDate(new Date(data[6]), Session.getScriptTimeZone(), 'MM/dd/yyyy') : '');
-  addPDFField(sheet, row++, 'Grievance Type:', data[23]);
-  addPDFField(sheet, row++, 'Steward:', data[25]);
+  addPDFField(sheet, row++, 'Status:', data[GRIEVANCE_COLS.STATUS - 1]);
+  addPDFField(sheet, row++, 'Current Step:', data[GRIEVANCE_COLS.CURRENT_STEP - 1]);
+  addPDFField(sheet, row++, 'Incident Date:', data[GRIEVANCE_COLS.INCIDENT_DATE - 1] ? Utilities.formatDate(new Date(data[GRIEVANCE_COLS.INCIDENT_DATE - 1]), Session.getScriptTimeZone(), 'MM/dd/yyyy') : '');
+  addPDFField(sheet, row++, 'Grievance Type:', data[GRIEVANCE_COLS.ISSUE_CATEGORY - 1]);
+  addPDFField(sheet, row++, 'Steward:', data[GRIEVANCE_COLS.STEWARD - 1]);
   row++;
 
   // Description
@@ -1235,7 +1235,7 @@ function formatGrievancePDFSheet(sheet, data) {
   row++;
 
   sheet.getRange(row, 1, 3, 4).merge()
-    .setValue(data[24] || '')
+    .setValue(data[GRIEVANCE_COLS.LOCATION - 1] || '')
     .setWrap(true)
     .setVerticalAlignment('top')
     .setBorder(true, true, true, true, false, false);
