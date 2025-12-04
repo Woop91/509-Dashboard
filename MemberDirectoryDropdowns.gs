@@ -3,238 +3,290 @@
  * MEMBER DIRECTORY DROPDOWNS
  * ------------------------------------------------------------------------====
  *
- * Adds data validation dropdowns to Member Directory for consistent data entry
+ * Adds data validation dropdowns to Member Directory for consistent data entry.
+ * All dropdown values are pulled from the Config sheet for easy customization.
  *
- * Dropdowns for:
- * - Job Title / Position
- * - Department / Unit
- * - Worksite / Office Location
- * - Work Schedule / Office Days (multiple selections)
- * - Unit (8 or 10)
- * - Is Steward (Y/N)
- * - Assigned Steward
- * - Immediate Supervisor
- * - Manager / Program Director
- * - Engagement Level
- * - Committee Member (multiple selections)
- * - Interest: Allied Chapter Actions (Y/N)
- * - Preferred Communication Methods (multiple selections)
- * - Best Time(s) to Reach Member (multiple selections)
- * - Steward Who Contacted Member
+ * SINGLE-SELECT DROPDOWNS:
+ * - Job Title (D)
+ * - Work Location (E)
+ * - Unit (F)
+ * - Is Steward (N)
+ * - Supervisor Name (L)
+ * - Manager Name (M)
+ * - Assigned Steward (P)
+ * - Contact Steward (Z)
+ *
+ * MULTI-SELECT DROPDOWNS (comma-separated values allowed):
+ * - Office Days (G)
+ * - Preferred Communication (J)
+ * - Best Time to Contact (K)
+ * - Committees (O)
+ *
+ * DATE FIELDS:
+ * - Recent Contact Date (Y) - Date validation only
+ *
+ * ------------------------------------------------------------------------====
  */
 
 /**
  * Sets up all dropdowns for the Member Directory
+ * Pulls values from Config sheet where available
  */
 function setupMemberDirectoryDropdowns() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!memberSheet) {
-    SpreadsheetApp.getUi().alert('❌ Member Directory sheet not found!');
+    SpreadsheetApp.getUi().alert('Member Directory sheet not found!');
+    return;
+  }
+
+  if (!configSheet) {
+    SpreadsheetApp.getUi().alert('Config sheet not found! Dropdowns require a Config sheet.');
     return;
   }
 
   SpreadsheetApp.getActiveSpreadsheet().toast('Setting up dropdowns...', 'Please wait', -1);
 
   try {
-    // Job Title / Position (Column D)
-    const jobTitles = [
-      'Case Manager',
-      'Social Worker',
-      'Program Coordinator',
-      'Administrative Assistant',
-      'Director',
-      'Supervisor',
-      'Analyst',
-      'Specialist',
-      'Counselor',
-      'Advocate',
-      'Other'
-    ];
-    setDropdown(memberSheet, 'D2:D10000', jobTitles, 'Job Title');
+    const lastRow = Math.max(memberSheet.getLastRow(), 1000);
 
-    // Department / Unit (Column not in original spec, but could be added)
-    const departments = [
-      'Human Services',
-      'Child Welfare',
-      'Mental Health',
-      'Housing',
-      'Employment Services',
-      'Administration',
-      'Finance',
-      'IT',
-      'Operations',
-      'Other'
-    ];
+    // ==================== SINGLE-SELECT DROPDOWNS ====================
 
-    // Worksite / Office Location (Column E)
-    const worksites = [
-      'Boston Office',
-      'Springfield Office',
-      'Worcester Office',
-      'Lowell Office',
-      'New Bedford Office',
-      'Brockton Office',
-      'Remote/Home',
-      'Field/Mobile',
-      'Other'
-    ];
-    setDropdown(memberSheet, 'E2:E10000', worksites, 'Worksite');
+    // Job Title (Column D / MEMBER_COLS.JOB_TITLE)
+    const jobTitles = getConfigColumnValues(configSheet, CONFIG_COLS.JOB_TITLES);
+    if (jobTitles.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.JOB_TITLE, lastRow, jobTitles, 'Job Title', true);
+    }
 
-    // Unit (8 or 10) (Column F)
-    const units = ['Unit 8', 'Unit 10'];
-    setDropdown(memberSheet, 'F2:F10000', units, 'Unit');
+    // Work Location (Column E / MEMBER_COLS.WORK_LOCATION)
+    const locations = getConfigColumnValues(configSheet, CONFIG_COLS.OFFICE_LOCATIONS);
+    if (locations.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.WORK_LOCATION, lastRow, locations, 'Work Location', true);
+    }
 
-    // Work Schedule / Office Days (Column G) - Multiple selections note
-    const officeDays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-      'M-F',
-      'Varies',
-      'Remote Only'
-    ];
-    setDropdown(memberSheet, 'G2:G10000', officeDays, 'Office Days', false);
+    // Unit (Column F / MEMBER_COLS.UNIT)
+    const units = getConfigColumnValues(configSheet, CONFIG_COLS.UNITS);
+    if (units.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.UNIT, lastRow, units, 'Unit', true);
+    }
 
-    // Is Steward (Y/N) (Column J)
-    const yesNo = ['Yes', 'No'];
-    setDropdown(memberSheet, 'J2:J10000', yesNo, 'Is Steward');
+    // Is Steward (Column N / MEMBER_COLS.IS_STEWARD)
+    const yesNo = getConfigColumnValues(configSheet, CONFIG_COLS.YES_NO);
+    if (yesNo.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.IS_STEWARD, lastRow, yesNo, 'Is Steward', true);
+    }
 
-    // Assigned Steward (Column M) - Will be populated from stewards list
+    // Supervisor Name (Column L / MEMBER_COLS.SUPERVISOR)
+    const supervisors = getConfigColumnValues(configSheet, CONFIG_COLS.SUPERVISORS);
+    if (supervisors.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.SUPERVISOR, lastRow, supervisors, 'Supervisor', true);
+    }
+
+    // Manager Name (Column M / MEMBER_COLS.MANAGER)
+    const managers = getConfigColumnValues(configSheet, CONFIG_COLS.MANAGERS);
+    if (managers.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.MANAGER, lastRow, managers, 'Manager', true);
+    }
+
+    // Assigned Steward (Column P / MEMBER_COLS.ASSIGNED_STEWARD)
     const stewards = getStewardsList();
     if (stewards.length > 0) {
-      setDropdown(memberSheet, 'M2:M10000', stewards, 'Assigned Steward');
+      setDropdownByCol(memberSheet, MEMBER_COLS.ASSIGNED_STEWARD, lastRow, stewards, 'Assigned Steward', true);
     }
 
-    // Immediate Supervisor (Column K)
-    const supervisors = [
-      'John Smith',
-      'Jane Doe',
-      'Bob Johnson',
-      'Sarah Williams',
-      'Mike Brown',
-      'Lisa Davis',
-      'Other'
-    ];
-    setDropdown(memberSheet, 'K2:K10000', supervisors, 'Immediate Supervisor', false);
-
-    // Manager / Program Director (Column L)
-    const managers = [
-      'Director Smith',
-      'Director Johnson',
-      'Director Williams',
-      'Director Brown',
-      'Director Davis',
-      'Program Manager A',
-      'Program Manager B',
-      'Other'
-    ];
-    setDropdown(memberSheet, 'L2:L10000', managers, 'Manager', false);
-
-    // Engagement Level - Need to find the column
-    const engagementLevels = [
-      'Very Active',
-      'Active',
-      'Moderate',
-      'Low',
-      'Inactive',
-      'New Member'
-    ];
-    // This would go after the volunteer hours column
-
-    // Committee Member - Multiple selections
-    const committees = [
-      'Executive Board',
-      'Grievance Committee',
-      'Contract Action Team',
-      'Political Action',
-      'Member Organizing',
-      'Communications',
-      'Social Committee',
-      'Health & Safety',
-      'Other'
-    ];
-
-    // Interest: Local Actions (Column T/20) - Y/N
-    setDropdown(memberSheet, 'T2:T10000', yesNo, 'Interest: Local Actions');
-
-    // Interest: Chapter Actions (Column U/21) - Y/N
-    setDropdown(memberSheet, 'U2:U10000', yesNo, 'Interest: Chapter Actions');
-
-    // Interest: Allied Chapter Actions (Column V/22) - Y/N
-    setDropdown(memberSheet, 'V2:V10000', yesNo, 'Interest: Allied Chapter Actions');
-
-    // Preferred Communication Methods (Column X/24) - Multiple
-    const commMethods = [
-      'Email',
-      'Phone Call',
-      'Text Message',
-      'In-Person',
-      'Video Call',
-      'Social Media',
-      'Mail'
-    ];
-    setDropdown(memberSheet, 'X2:X10000', commMethods, 'Preferred Communication', false);
-
-    // Best Time(s) to Reach Member (Column Y/25) - Multiple
-    const timeBlocks = [
-      '8am-10am',
-      '10am-12pm',
-      '12pm-2pm',
-      '2pm-4pm',
-      '4pm-6pm',
-      '6pm-8pm',
-      'Evening (8pm+)',
-      'Weekends',
-      'Anytime'
-    ];
-    setDropdown(memberSheet, 'Y2:Y10000', timeBlocks, 'Best Times', false);
-
-    // Steward Who Contacted Member (Column AD/30)
+    // Contact Steward (Column Z / MEMBER_COLS.CONTACT_STEWARD)
     if (stewards.length > 0) {
-      setDropdown(memberSheet, 'AD2:AD10000', stewards, 'Steward Who Contacted');
+      setDropdownByCol(memberSheet, MEMBER_COLS.CONTACT_STEWARD, lastRow, stewards, 'Contact Steward', true);
     }
 
-    SpreadsheetApp.getActiveSpreadsheet().toast('✅ Dropdowns set up!', '', 3);
+    // ==================== MULTI-SELECT DROPDOWNS ====================
+    // These allow comma-separated values (setAllowInvalid = true)
+
+    // Office Days (Column G / MEMBER_COLS.OFFICE_DAYS) - MULTI-SELECT
+    const officeDays = getConfigColumnValues(configSheet, CONFIG_COLS.OFFICE_DAYS);
+    if (officeDays.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.OFFICE_DAYS, lastRow, officeDays, 'Office Days', false);
+    }
+
+    // Preferred Communication (Column J / MEMBER_COLS.PREFERRED_COMM) - MULTI-SELECT
+    const commMethods = getConfigColumnValues(configSheet, CONFIG_COLS.COMM_METHODS);
+    if (commMethods.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.PREFERRED_COMM, lastRow, commMethods, 'Preferred Communication', false);
+    }
+
+    // Best Time to Contact (Column K / MEMBER_COLS.BEST_TIME) - MULTI-SELECT
+    const bestTimes = getConfigColumnValues(configSheet, CONFIG_COLS.BEST_TIMES);
+    if (bestTimes.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.BEST_TIME, lastRow, bestTimes, 'Best Time to Contact', false);
+    }
+
+    // Committees (Column O / MEMBER_COLS.COMMITTEES) - MULTI-SELECT
+    const committees = getConfigColumnValues(configSheet, CONFIG_COLS.STEWARD_COMMITTEES);
+    if (committees.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.COMMITTEES, lastRow, committees, 'Committees', false);
+    }
+
+    // ==================== DATE VALIDATION ====================
+
+    // Recent Contact Date (Column Y / MEMBER_COLS.RECENT_CONTACT_DATE) - DATE ONLY
+    setDateValidation(memberSheet, MEMBER_COLS.RECENT_CONTACT_DATE, lastRow, 'Recent Contact Date');
+
+    SpreadsheetApp.getActiveSpreadsheet().toast('Dropdowns set up successfully!', 'Complete', 3);
 
     SpreadsheetApp.getUi().alert(
-      '✅ Dropdowns Setup Complete',
+      'Dropdowns Setup Complete',
       'Data validation dropdowns have been added to the Member Directory.\n\n' +
-      'Note: Some dropdowns allow multiple selections (use comma-separated values).\n\n' +
-      'You can customize the dropdown options by editing the setupMemberDirectoryDropdowns function.',
+      'Single-select fields: Job Title, Work Location, Unit, Is Steward, Supervisor, Manager, Assigned Steward, Contact Steward\n\n' +
+      'Multi-select fields (comma-separated): Office Days, Preferred Communication, Best Time to Contact, Committees\n\n' +
+      'Date fields: Recent Contact Date\n\n' +
+      'To customize dropdown options, edit the Config sheet.',
       SpreadsheetApp.getUi().ButtonSet.OK
     );
 
   } catch (error) {
-    SpreadsheetApp.getUi().alert('❌ Error: ' + error.message);
+    SpreadsheetApp.getUi().alert('Error: ' + error.message);
     Logger.log('Error setting up dropdowns: ' + error);
   }
 }
 
 /**
- * Sets a dropdown validation rule on a range
+ * Sets up dropdowns for the Grievance Log
+ * Includes Issue Category, Articles Violated, Status, Step, etc.
+ */
+function setupGrievanceLogDropdowns() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!grievanceSheet) {
+    SpreadsheetApp.getUi().alert('Grievance Log sheet not found!');
+    return;
+  }
+
+  if (!configSheet) {
+    SpreadsheetApp.getUi().alert('Config sheet not found!');
+    return;
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast('Setting up Grievance Log dropdowns...', 'Please wait', -1);
+
+  try {
+    const lastRow = Math.max(grievanceSheet.getLastRow(), 500);
+
+    // Issue Category (Column E / GRIEVANCE_COLS.ISSUE_CATEGORY) - MULTI-SELECT
+    const issueCategories = getConfigColumnValues(configSheet, CONFIG_COLS.ISSUE_CATEGORY);
+    if (issueCategories.length > 0) {
+      setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ISSUE_CATEGORY, lastRow, issueCategories, 'Issue Category', false);
+    }
+
+    // Articles Violated (Column F / GRIEVANCE_COLS.ARTICLES) - MULTI-SELECT
+    const articles = getConfigColumnValues(configSheet, CONFIG_COLS.ARTICLES_VIOLATED);
+    if (articles.length > 0) {
+      setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ARTICLES, lastRow, articles, 'Articles Violated', false);
+    }
+
+    // Status (Column I / GRIEVANCE_COLS.STATUS) - SINGLE-SELECT
+    const statuses = getConfigColumnValues(configSheet, CONFIG_COLS.GRIEVANCE_STATUS);
+    if (statuses.length > 0) {
+      setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.STATUS, lastRow, statuses, 'Status', true);
+    }
+
+    // Current Step (Column J / GRIEVANCE_COLS.CURRENT_STEP) - SINGLE-SELECT
+    const steps = getConfigColumnValues(configSheet, CONFIG_COLS.GRIEVANCE_STEP);
+    if (steps.length > 0) {
+      setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.CURRENT_STEP, lastRow, steps, 'Current Step', true);
+    }
+
+    // Steward (Column K / GRIEVANCE_COLS.STEWARD) - SINGLE-SELECT
+    const stewards = getStewardsList();
+    if (stewards.length > 0) {
+      setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.STEWARD, lastRow, stewards, 'Steward', true);
+    }
+
+    SpreadsheetApp.getActiveSpreadsheet().toast('Grievance Log dropdowns set up!', 'Complete', 3);
+
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Error: ' + error.message);
+    Logger.log('Error setting up Grievance Log dropdowns: ' + error);
+  }
+}
+
+/**
+ * Gets values from a column in the Config sheet
+ * @param {Sheet} configSheet - The Config sheet
+ * @param {number} colNum - Column number (1-indexed)
+ * @returns {Array} Array of non-empty values
+ */
+function getConfigColumnValues(configSheet, colNum) {
+  try {
+    const lastRow = configSheet.getLastRow();
+    if (lastRow < 2) return [];
+
+    const values = configSheet.getRange(2, colNum, lastRow - 1, 1).getValues();
+    return values
+      .map(function(row) { return row[0]; })
+      .filter(function(val) { return val !== '' && val !== null && val !== undefined; })
+      .map(function(val) { return String(val).trim(); });
+  } catch (error) {
+    Logger.log('Error getting config values from column ' + colNum + ': ' + error.message);
+    return [];
+  }
+}
+
+/**
+ * Sets a dropdown validation rule on a column using MEMBER_COLS/GRIEVANCE_COLS constant
  * @param {Sheet} sheet - The sheet to apply the dropdown to
- * @param {string} range - A1 notation range
+ * @param {number} colNum - Column number (1-indexed, from constants)
+ * @param {number} lastRow - Last row to apply validation
  * @param {Array} values - Array of values for dropdown
  * @param {string} name - Name for logging
- * @param {boolean} requireList - Whether to strictly require list values (default true)
+ * @param {boolean} strictValidation - If true, only allow list values; if false, allow other values (for multi-select)
  */
-function setDropdown(sheet, range, values, name, requireList = true) {
+function setDropdownByCol(sheet, colNum, lastRow, values, name, strictValidation) {
   try {
+    const colLetter = getColumnLetter(colNum);
+    const range = sheet.getRange(`${colLetter}2:${colLetter}${lastRow}`);
+
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInList(values, true)
-      .setAllowInvalid(!requireList)
+      .setAllowInvalid(!strictValidation)
       .build();
 
-    sheet.getRange(range).setDataValidation(rule);
-    Logger.log(`Set dropdown for ${name}: ${range}`);
+    range.setDataValidation(rule);
+    Logger.log(`Set dropdown for ${name} (column ${colLetter}): ${values.length} options, strict=${strictValidation}`);
   } catch (error) {
     Logger.log(`Error setting dropdown for ${name}: ${error.message}`);
+  }
+}
+
+/**
+ * Sets date validation on a column
+ * @param {Sheet} sheet - The sheet to apply validation to
+ * @param {number} colNum - Column number (1-indexed)
+ * @param {number} lastRow - Last row to apply validation
+ * @param {string} name - Name for logging
+ */
+function setDateValidation(sheet, colNum, lastRow, name) {
+  try {
+    const colLetter = getColumnLetter(colNum);
+    const range = sheet.getRange(`${colLetter}2:${colLetter}${lastRow}`);
+
+    const rule = SpreadsheetApp.newDataValidation()
+      .requireDate()
+      .setAllowInvalid(false)
+      .setHelpText('Please enter a valid date')
+      .build();
+
+    range.setDataValidation(rule);
+
+    // Also set the number format to date
+    range.setNumberFormat('MM/dd/yyyy');
+
+    Logger.log(`Set date validation for ${name} (column ${colLetter})`);
+  } catch (error) {
+    Logger.log(`Error setting date validation for ${name}: ${error.message}`);
   }
 }
 
@@ -252,25 +304,41 @@ function getStewardsList() {
     const lastRow = memberSheet.getLastRow();
     if (lastRow < 2) return [];
 
-    // Get member data: Column B (First Name), C (Last Name), J (Is Steward)
-    const data = memberSheet.getRange(2, 1, lastRow - 1, 10).getValues();
+    // Get first name, last name, and is_steward columns
+    const firstNameCol = MEMBER_COLS.FIRST_NAME;
+    const lastNameCol = MEMBER_COLS.LAST_NAME;
+    const isStewardCol = MEMBER_COLS.IS_STEWARD;
+
+    const maxCol = Math.max(firstNameCol, lastNameCol, isStewardCol);
+    const data = memberSheet.getRange(2, 1, lastRow - 1, maxCol).getValues();
 
     const stewards = data
-      .filter(function(row) { return row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes' || row[MEMBER_COLS.IS_STEWARD - 1] === 'Y'; }) // Column J = Is Steward
-      .map(function(row) { return `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`; }) // First Name + Last Name
-      .filter(function(name) { return name.trim() !== ' '; });
+      .filter(function(row) {
+        const isSteward = row[isStewardCol - 1];
+        return isSteward === 'Yes' || isSteward === 'Y' || isSteward === true;
+      })
+      .map(function(row) {
+        const firstName = row[firstNameCol - 1] || '';
+        const lastName = row[lastNameCol - 1] || '';
+        return `${firstName} ${lastName}`.trim();
+      })
+      .filter(function(name) { return name !== '' && name !== ' '; });
 
-    // Add a few default stewards if none found
-    if (stewards.length === 0) {
-      return ['Steward 1', 'Steward 2', 'Steward 3', 'Other'];
+    // Sort alphabetically
+    stewards.sort();
+
+    // Add "Other" option at the end
+    if (stewards.length > 0) {
+      stewards.push('Other');
+    } else {
+      return ['No stewards found', 'Other'];
     }
 
-    stewards.push('Other');
     return stewards;
 
   } catch (error) {
     Logger.log('Error getting stewards list: ' + error.message);
-    return ['Steward 1', 'Steward 2', 'Other'];
+    return ['Error loading stewards', 'Other'];
   }
 }
 
@@ -280,41 +348,59 @@ function getStewardsList() {
 function refreshStewardDropdowns() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-
-  if (!memberSheet) {
-    SpreadsheetApp.getUi().alert('❌ Member Directory sheet not found!');
-    return;
-  }
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
   const stewards = getStewardsList();
 
-  if (stewards.length > 0) {
-    // Assigned Steward (Column M)
-    setDropdown(memberSheet, 'M2:M10000', stewards, 'Assigned Steward');
-
-    // Steward Who Contacted Member (Column AD/30)
-    setDropdown(memberSheet, 'AD2:AD10000', stewards, 'Steward Who Contacted');
-
-    SpreadsheetApp.getActiveSpreadsheet().toast('✅ Steward dropdowns refreshed!', '', 2);
+  if (stewards.length === 0) {
+    SpreadsheetApp.getUi().alert('No stewards found in Member Directory!');
+    return;
   }
+
+  let updated = 0;
+
+  // Update Member Directory steward dropdowns
+  if (memberSheet) {
+    const lastRow = Math.max(memberSheet.getLastRow(), 1000);
+
+    // Assigned Steward
+    setDropdownByCol(memberSheet, MEMBER_COLS.ASSIGNED_STEWARD, lastRow, stewards, 'Assigned Steward', true);
+    updated++;
+
+    // Contact Steward
+    setDropdownByCol(memberSheet, MEMBER_COLS.CONTACT_STEWARD, lastRow, stewards, 'Contact Steward', true);
+    updated++;
+  }
+
+  // Update Grievance Log steward dropdown
+  if (grievanceSheet) {
+    const lastRow = Math.max(grievanceSheet.getLastRow(), 500);
+    setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.STEWARD, lastRow, stewards, 'Grievance Steward', true);
+    updated++;
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    `Refreshed ${updated} steward dropdown(s) with ${stewards.length - 1} stewards`,
+    'Steward Dropdowns Updated',
+    3
+  );
 }
 
 /**
  * Removes emergency contact columns from Member Directory
- * This function identifies and removes any columns with "Emergency Contact" in the header
  */
 function removeEmergencyContactColumns() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
   if (!memberSheet) {
-    SpreadsheetApp.getUi().alert('❌ Member Directory sheet not found!');
+    SpreadsheetApp.getUi().alert('Member Directory sheet not found!');
     return;
   }
 
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
-    '⚠️ Remove Emergency Contact Columns',
+    'Remove Emergency Contact Columns',
     'This will remove any columns with "Emergency Contact" in the header.\n\n' +
     'This action cannot be easily undone.\n\n' +
     'Continue?',
@@ -329,33 +415,44 @@ function removeEmergencyContactColumns() {
     const headers = memberSheet.getRange(1, 1, 1, memberSheet.getLastColumn()).getValues()[0];
     const columnsToDelete = [];
 
-    // Find columns with "Emergency Contact" in the header
     headers.forEach(function(header, index) {
       const headerStr = String(header).toLowerCase();
       if (headerStr.includes('emergency contact') || headerStr.includes('emergency phone')) {
-        columnsToDelete.push(index + 1); // +1 because columns are 1-indexed
+        columnsToDelete.push(index + 1);
       }
     });
 
     if (columnsToDelete.length === 0) {
-      ui.alert('ℹ️ No emergency contact columns found.');
+      ui.alert('No emergency contact columns found.');
       return;
     }
 
-    // Delete columns in reverse order to maintain correct indices
+    // Delete columns in reverse order
     columnsToDelete.reverse().forEach(function(colIndex) {
       memberSheet.deleteColumn(colIndex);
-      Logger.log(`Deleted column ${colIndex}`);
     });
 
     ui.alert(
-      '✅ Columns Removed',
+      'Columns Removed',
       `Removed ${columnsToDelete.length} emergency contact column(s).`,
       ui.ButtonSet.OK
     );
 
   } catch (error) {
-    ui.alert('❌ Error: ' + error.message);
-    Logger.log('Error removing columns: ' + error);
+    ui.alert('Error: ' + error.message);
   }
+}
+
+/**
+ * Sets up all dropdowns for both Member Directory and Grievance Log
+ */
+function setupAllDropdowns() {
+  setupMemberDirectoryDropdowns();
+  setupGrievanceLogDropdowns();
+
+  SpreadsheetApp.getUi().alert(
+    'All Dropdowns Setup Complete',
+    'Dropdowns have been configured for both Member Directory and Grievance Log sheets.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
 }
