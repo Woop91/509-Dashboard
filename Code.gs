@@ -361,39 +361,46 @@ function createMemberDirectory() {
     memberDir = ss.insertSheet(SHEETS.MEMBER_DIR);
   }
 
-  // Member Directory columns (31 total)
-  // Added: Committees, Home Town, Preferred Communication Method, Best Time to Contact
+  // Member Directory columns (31 total) - Reorganized for logical grouping
   const headers = [
+    // Section 1: Identity & Core Info (A-D)
     "Member ID",                       // A - 1
     "First Name",                      // B - 2
     "Last Name",                       // C - 3
     "Job Title",                       // D - 4
+    // Section 2: Location & Work (E-G)
     "Work Location (Site)",            // E - 5
     "Unit",                            // F - 6
     "Office Days",                     // G - 7
+    // Section 3: Contact Information (H-K)
     "Email Address",                   // H - 8
     "Phone Number",                    // I - 9
-    "Is Steward (Y/N)",                // J - 10
-    "Committees",                      // K - 11 (multi-select for stewards)
+    "Preferred Communication",         // J - 10 (multi-select)
+    "Best Time to Contact",            // K - 11 (multi-select)
+    // Section 4: Organizational Structure (L-P)
     "Supervisor (Name)",               // L - 12
     "Manager (Name)",                  // M - 13
-    "Assigned Steward (Name)",         // N - 14
-    "Preferred Communication",         // O - 15 (multi-select)
-    "Best Time to Contact",            // P - 16 (multi-select)
+    "Is Steward (Y/N)",                // N - 14
+    "Committees",                      // O - 15 (multi-select for stewards)
+    "Assigned Steward (Name)",         // P - 16
+    // Section 5: Engagement Metrics (Q-T) - Hidden by default
     "Last Virtual Mtg (Date)",         // Q - 17
     "Last In-Person Mtg (Date)",       // R - 18
     "Open Rate (%)",                   // S - 19
     "Volunteer Hours (YTD)",           // T - 20
+    // Section 6: Member Interests (U-X) - Hidden by default
     "Interest: Local Actions",         // U - 21
-    "Home Town",                       // V - 22
-    "Interest: Chapter Actions",       // W - 23
-    "Interest: Allied Chapter Actions",// X - 24
-    "Has Open Grievance?",             // Y - 25
-    "Grievance Status Snapshot",       // Z - 26
-    "Next Grievance Deadline",         // AA - 27
-    "Most Recent Steward Contact Date",// AB - 28
-    "Steward Who Contacted Member",    // AC - 29
-    "Notes from Steward Contact",      // AD - 30
+    "Interest: Chapter Actions",       // V - 22
+    "Interest: Allied Chapter Actions",// W - 23
+    "Home Town",                       // X - 24 (connection building)
+    // Section 7: Steward Contact Tracking (Y-AA)
+    "Most Recent Steward Contact Date",// Y - 25
+    "Steward Who Contacted Member",    // Z - 26
+    "Notes from Steward Contact",      // AA - 27
+    // Section 8: Grievance Management (AB-AE)
+    "Has Open Grievance?",             // AB - 28
+    "Grievance Status Snapshot",       // AC - 29
+    "Next Grievance Deadline",         // AD - 30
     "Start Grievance"                  // AE - 31
   ];
 
@@ -425,6 +432,12 @@ function createMemberDirectory() {
   memberDir.setColumnWidth(MEMBER_COLS.HOME_TOWN, 120);     // Home Town
   memberDir.setColumnWidth(MEMBER_COLS.CONTACT_NOTES, 250); // Notes from Steward Contact
   memberDir.setColumnWidth(MEMBER_COLS.START_GRIEVANCE, 120);// Start Grievance checkbox
+
+  // Hide Engagement Metrics columns (Q-T) by default
+  memberDir.hideColumns(MEMBER_COLS.LAST_VIRTUAL_MTG, 4);   // Columns 17-20
+
+  // Hide Member Interests columns (U-X) by default
+  memberDir.hideColumns(MEMBER_COLS.INTEREST_LOCAL, 4);     // Columns 21-24
 
   memberDir.setTabColor("#059669");
 }
@@ -1674,6 +1687,10 @@ function onOpen() {
       .addItem("📦 Batch Update State", "batchUpdateWorkflowState"))
     .addSeparator()
     .addSubMenu(ui.createMenu("👁️ View & Display")
+      .addItem("📊 Toggle Engagement Metrics", "toggleEngagementMetricsColumns")
+      .addItem("💡 Toggle Member Interests", "toggleMemberInterestsColumns")
+      .addItem("📊💡 Toggle Both (Metrics & Interests)", "toggleEngagementAndInterestsColumns")
+      .addSeparator()
       .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
       .addItem("Show All Member Columns", "showAllMemberColumns")
       .addSeparator()

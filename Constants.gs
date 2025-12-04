@@ -113,37 +113,45 @@ const COLORS = {
  * @const {Object}
  */
 const MEMBER_COLS = {
-  // 31 columns total - Added: COMMITTEES, HOME_TOWN, PREFERRED_COMM, BEST_TIME
+  // 31 columns total - Reorganized for logical grouping
+  // Section 1: Identity & Core Info (A-D)
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
   JOB_TITLE: 4,                    // D
+  // Section 2: Location & Work (E-G)
   WORK_LOCATION: 5,                // E
   UNIT: 6,                         // F
   OFFICE_DAYS: 7,                  // G
+  // Section 3: Contact Information (H-K)
   EMAIL: 8,                        // H
   PHONE: 9,                        // I
-  IS_STEWARD: 10,                  // J
-  COMMITTEES: 11,                  // K - Multi-select: which committees steward is in
+  PREFERRED_COMM: 10,              // J - Multi-select: preferred communication methods
+  BEST_TIME: 11,                   // K - Multi-select: best times to reach member
+  // Section 4: Organizational Structure (L-P)
   SUPERVISOR: 12,                  // L
   MANAGER: 13,                     // M
-  ASSIGNED_STEWARD: 14,            // N
-  PREFERRED_COMM: 15,              // O - Multi-select: preferred communication methods
-  BEST_TIME: 16,                   // P - Multi-select: best times to reach member
+  IS_STEWARD: 14,                  // N
+  COMMITTEES: 15,                  // O - Multi-select: which committees steward is in
+  ASSIGNED_STEWARD: 16,            // P
+  // Section 5: Engagement Metrics (Q-T) - Hidden by default
   LAST_VIRTUAL_MTG: 17,            // Q
   LAST_INPERSON_MTG: 18,           // R
   OPEN_RATE: 19,                   // S
   VOLUNTEER_HOURS: 20,             // T
+  // Section 6: Member Interests (U-X) - Hidden by default
   INTEREST_LOCAL: 21,              // U
-  HOME_TOWN: 22,                   // V - Member's home town
-  INTEREST_CHAPTER: 23,            // W
-  INTEREST_ALLIED: 24,             // X
-  HAS_OPEN_GRIEVANCE: 25,          // Y
-  GRIEVANCE_STATUS: 26,            // Z
-  NEXT_DEADLINE: 27,               // AA
-  RECENT_CONTACT_DATE: 28,         // AB
-  CONTACT_STEWARD: 29,             // AC
-  CONTACT_NOTES: 30,               // AD
+  INTEREST_CHAPTER: 22,            // V
+  INTEREST_ALLIED: 23,             // W
+  HOME_TOWN: 24,                   // X - Connection building (last in interests section)
+  // Section 7: Steward Contact Tracking (Y-AA)
+  RECENT_CONTACT_DATE: 25,         // Y
+  CONTACT_STEWARD: 26,             // Z
+  CONTACT_NOTES: 27,               // AA
+  // Section 8: Grievance Management (AB-AE)
+  HAS_OPEN_GRIEVANCE: 28,          // AB
+  GRIEVANCE_STATUS: 29,            // AC
+  NEXT_DEADLINE: 30,               // AD
   START_GRIEVANCE: 31              // AE - Checkbox to start grievance with prepopulated member info
 };
 
