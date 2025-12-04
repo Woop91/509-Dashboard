@@ -2640,9 +2640,9 @@ function setupFormulasAndCalculations() {
     `=ARRAYFORMULA(IF(O2:O1000<>"",O2:O1000+30,""))`
   );
 
-  // Days Open - Column S (use MAX(0,...) to prevent negative numbers)
+  // Days Open - Column S (shows actual days - negative values indicate data entry errors)
   grievanceLog.getRange("S2").setFormula(
-    `=ARRAYFORMULA(IF(I2:I1000<>"",MAX(0,IF(R2:R1000<>"",R2:R1000-I2:I1000,TODAY()-I2:I1000)),""))`
+    `=ARRAYFORMULA(IF(I2:I1000<>"",IF(R2:R1000<>"",R2:R1000-I2:I1000,TODAY()-I2:I1000),""))`
   );
 
   // Next Action Due - Column T
@@ -3678,16 +3678,36 @@ function seedMembersWithCount(count, toggleName) {
     const localInterest = Math.random() > 0.5 ? "Yes" : "No";
     const chapterInterest = Math.random() > 0.6 ? "Yes" : "No";
     const alliedInterest = Math.random() > 0.8 ? "Yes" : "No";
-    const timestamp = new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000);
+    const contactDate = new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000);
     const commMethod = commMethods[Math.floor(Math.random() * commMethods.length)];
     const bestTime = times[Math.floor(Math.random() * times.length)];
 
+    // Get committees for stewards
+    const committeeOptions = getConfigColumnValues(CONFIG_COLS.COMMITTEES);
+    const committee = isSteward === "Yes" && committeeOptions.length > 0
+      ? committeeOptions[Math.floor(Math.random() * committeeOptions.length)]
+      : "";
+
+    // Get home towns
+    const homeTownOptions = getConfigColumnValues(CONFIG_COLS.HOME_TOWNS);
+    const homeTown = homeTownOptions.length > 0
+      ? homeTownOptions[Math.floor(Math.random() * homeTownOptions.length)]
+      : "";
+
+    // Build row to match MEMBER_COLS order (31 columns):
+    // 1-MEMBER_ID, 2-FIRST_NAME, 3-LAST_NAME, 4-JOB_TITLE, 5-WORK_LOCATION, 6-UNIT, 7-OFFICE_DAYS,
+    // 8-EMAIL, 9-PHONE, 10-IS_STEWARD, 11-COMMITTEES, 12-SUPERVISOR, 13-MANAGER, 14-ASSIGNED_STEWARD,
+    // 15-PREFERRED_COMM, 16-BEST_TIME, 17-LAST_VIRTUAL_MTG, 18-LAST_INPERSON_MTG, 19-OPEN_RATE,
+    // 20-VOLUNTEER_HOURS, 21-INTEREST_LOCAL, 22-HOME_TOWN, 23-INTEREST_CHAPTER, 24-INTEREST_ALLIED,
+    // 25-HAS_OPEN_GRIEVANCE (formula), 26-GRIEVANCE_STATUS (formula), 27-NEXT_DEADLINE (formula),
+    // 28-RECENT_CONTACT_DATE, 29-CONTACT_STEWARD, 30-CONTACT_NOTES, 31-START_GRIEVANCE
     const row = [
       memberID, firstName, lastName, jobTitle, location, unit, officeDaysValue,
-      email, phone, isSteward, supervisor, manager, assignedSteward,
-      lastVirtual, lastInPerson, lastSurvey, lastEmailOpen, openRate, volHours,
-      localInterest, chapterInterest, alliedInterest, timestamp, commMethod, bestTime,
-      "No", "", "", "", "", ""
+      email, phone, isSteward, committee, supervisor, manager, assignedSteward,
+      commMethod, bestTime, lastVirtual, lastInPerson, openRate, volHours,
+      localInterest, homeTown, chapterInterest, alliedInterest,
+      "", "", "",  // Columns 25-27 are formula-calculated (HAS_OPEN_GRIEVANCE, GRIEVANCE_STATUS, NEXT_DEADLINE)
+      contactDate, "", "", false  // RECENT_CONTACT_DATE, CONTACT_STEWARD, CONTACT_NOTES, START_GRIEVANCE
     ];
 
     data.push(row);
