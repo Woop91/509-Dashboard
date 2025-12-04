@@ -2590,7 +2590,7 @@ function seedGrievancesWithCount(count, toggleName) {
   }
 
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
-  const memberIDs = allMemberData.map(function(row) { return row[0]; }).filter(String);
+  const memberIDs = allMemberData.map(function(row) { return row[MEMBER_COLS.MEMBER_ID - 1]; }).filter(String);
 
   // Get grievance dropdown values using dynamic helpers
   const grievanceDropdowns = getGrievanceLogDropdownValues();
@@ -2760,10 +2760,10 @@ function updateMemberDirectorySnapshots() {
   const grievanceData = grievanceLog.getRange(2, 1, grievanceLastRow - 1, 28).getValues();
   const memberSnapshots = {};
   grievanceData.forEach(function(row) {
-    const memberID = row[1];
-    const status = row[4];
-    const nextActionDue = row[19];
-    const assignedSteward = row[26];
+    const memberID = row[GRIEVANCE_COLS.MEMBER_ID - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+    const assignedSteward = row[GRIEVANCE_COLS.STEWARD - 1];
     if (!memberID) return;
     if (!memberSnapshots[memberID]) {
       memberSnapshots[memberID] = {status, nextDeadline: nextActionDue, stewardWhoContacted: assignedSteward};
@@ -2787,7 +2787,7 @@ function updateMemberDirectorySnapshots() {
       updateData.push(["", "", "", "", ""]);
     }
   }
-  if (updateData.length > 0) memberDir.getRange(2, 25, updateData.length, 5).setValues(updateData);
+  if (updateData.length > 0) memberDir.getRange(2, MEMBER_COLS.HAS_OPEN_GRIEVANCE, updateData.length, 5).setValues(updateData);
 }
 
 function clearAllData() {
@@ -2911,12 +2911,12 @@ function populateStewardWorkload() {
   const stewards = {};
   for (let i = 1; i < memberData.length; i++) {
     const row = memberData[i];
-    const isSteward = row[9]; // Column J - Is Steward
+    const isSteward = row[MEMBER_COLS.IS_STEWARD - 1];
     if (isSteward === 'Yes') {
-      const memberId = row[0];
-      const name = `${row[1]} ${row[2]}`; // First + Last name
-      const email = row[4];
-      const phone = row[5];
+      const memberId = row[MEMBER_COLS.MEMBER_ID - 1];
+      const name = `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`;
+      const email = row[MEMBER_COLS.EMAIL - 1];
+      const phone = row[MEMBER_COLS.PHONE - 1];
       stewards[memberId] = {
         name: name,
         email: email,
@@ -2934,10 +2934,10 @@ function populateStewardWorkload() {
   const today = new Date();
   for (let i = 1; i < grievanceData.length; i++) {
     const row = grievanceData[i];
-    const stewardId = row[6]; // Column G - Assigned Steward ID
-    const status = row[4]; // Column E - Status
-    const outcome = row[16]; // Column Q - Outcome
-    const daysOpen = row[18]; // Column S - Days Open
+    const stewardId = row[GRIEVANCE_COLS.STEWARD - 1]; // Assigned Steward
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const outcome = row[GRIEVANCE_COLS.RESOLUTION - 1]; // Resolution/Outcome
+    const daysOpen = row[GRIEVANCE_COLS.DAYS_OPEN - 1];
 
     if (stewards[stewardId]) {
       stewards[stewardId].totalCases++;
