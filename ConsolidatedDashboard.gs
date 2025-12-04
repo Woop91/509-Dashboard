@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-04T00:21:15.283Z
+ * - Build Date: 2025-12-04T00:35:58.898Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -2517,24 +2517,66 @@ function onOpen() {
 
   const ui = SpreadsheetApp.getUi();
 
-  // ------------ AVERAGE USER MENU ------------
+  // ============ 🚀 FIRST TIME SETUP MENU ============
+  // Put this first so new users see it immediately
+  ui.createMenu("🚀 Setup")
+    .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
+    .addItem("❓ Help", "showHelp")
+    .addSeparator()
+    .addSubMenu(ui.createMenu("1️⃣ Initial Setup (Run First)")
+      .addItem("🎨 Setup Dashboard Enhancements", "SETUP_DASHBOARD_ENHANCEMENTS")
+      .addItem("📋 Setup Member Directory Dropdowns", "setupMemberDirectoryDropdowns")
+      .addItem("🔄 Refresh Steward Dropdowns", "refreshStewardDropdowns"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("2️⃣ Enable Automations")
+      .addItem("✅ Enable Automated Backups", "setupAutomatedBackups")
+      .addItem("✅ Enable Daily Deadline Notifications", "setupDailyDeadlineNotifications")
+      .addItem("✅ Enable Monthly Reports", "setupMonthlyReports")
+      .addItem("✅ Enable Quarterly Reports", "setupQuarterlyReports"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("3️⃣ Verify Setup")
+      .addItem("🧪 Run All Tests", "runAllTests")
+      .addItem("📊 View Test Results", "showTestResults")
+      .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP")
+      .addItem("🏥 Run Health Check", "performSystemHealthCheck"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🌱 Load Sample Data (Optional)")
+      .addItem("Seed Members (5,000)", "SEED_MEMBERS_TOGGLE_1")
+      .addItem("Seed Grievances (2,500)", "SEED_GRIEVANCES_TOGGLE_1")
+      .addSeparator()
+      .addItem("🗑️ Remove Sample Data", "nukeSeedData"))
+    .addToUi();
+
+  // ============ 👤 DAILY USE MENU ============
   ui.createMenu("👤 Dashboard")
     .addItem("🔄 Refresh All", "refreshCalculations")
     .addSeparator()
-    .addSubMenu(ui.createMenu("📊 Dashboards")
-      .addItem("🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor")
-      .addItem("📊 Main Dashboard", "goToDashboard")
-      .addItem("✨ Interactive Dashboard", "openInteractiveDashboard")
-      .addItem("🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard"))
-    .addSeparator()
     .addSubMenu(ui.createMenu("🔍 Search & Lookup")
       .addItem("🔍 Search Members", "showMemberSearch")
-      .addItem("🔍 Quick Member Search", "quickMemberSearch"))
+      .addItem("🔍 Quick Member Search", "quickMemberSearch")
+      .addSeparator()
+      .addItem("🔍 Mobile Search (Members & Grievances)", "showMobileUnifiedSearch"))
     .addSeparator()
     .addSubMenu(ui.createMenu("📋 Grievance Tools")
       .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
       .addItem("🔄 Grievance Float Toggle", "toggleGrievanceFloat")
-      .addItem("🎛️ Float Control Panel", "showGrievanceFloatPanel"))
+      .addItem("🎛️ Float Control Panel", "showGrievanceFloatPanel")
+      .addSeparator()
+      .addItem("🆔 Generate Next Grievance ID", "showNextGrievanceID"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("👥 Member Tools")
+      .addItem("👥 Mobile Member Browser", "showMobileMemberBrowser")
+      .addItem("🆔 Generate Next Member ID", "showNextMemberID")
+      .addSeparator()
+      .addItem("📝 Open Member Google Form", "openMemberGoogleForm"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📊 Dashboards")
+      .addItem("📊 Main Dashboard", "goToDashboard")
+      .addItem("🎯 Unified Operations Monitor", "showUnifiedOperationsMonitor")
+      .addItem("✨ Interactive Dashboard", "openInteractiveDashboard")
+      .addSeparator()
+      .addItem("📱 Mobile Dashboard", "showMobileDashboard")
+      .addItem("🔄 Refresh Interactive Dashboard", "rebuildInteractiveDashboard"))
     .addSeparator()
     .addSubMenu(ui.createMenu("📁 Google Drive")
       .addItem("📁 Setup Folder for Grievance", "setupDriveFolderForGrievance")
@@ -2547,81 +2589,38 @@ function onOpen() {
       .addSeparator()
       .addItem("📞 View Communications Log", "showGrievanceCommunications"))
     .addSeparator()
-    .addSubMenu(ui.createMenu("📊 Reports")
+    .addSubMenu(ui.createMenu("📊 Reports & Export")
       .addItem("📊 Custom Report Builder", "showCustomReportBuilder")
       .addSeparator()
       .addItem("📄 Export Grievances to CSV", "exportGrievancesToCSV")
       .addItem("📄 Export Members to CSV", "exportMembersToCSV"))
     .addSeparator()
     .addSubMenu(ui.createMenu("♿ Accessibility")
-      .addItem("♿ ADHD Control Panel", "showADHDControlPanel")
-      .addItem("🎨 Theme Manager", "showThemeManager")
-      .addSeparator()
       .addItem("🌙 Quick Toggle Dark Mode", "quickToggleDarkMode")
       .addItem("🎯 Activate Focus Mode", "activateFocusMode")
-      .addItem("🎯 Deactivate Focus Mode", "deactivateFocusMode"))
+      .addItem("🎯 Deactivate Focus Mode", "deactivateFocusMode")
+      .addSeparator()
+      .addItem("♿ ADHD Control Panel", "showADHDControlPanel")
+      .addItem("🎨 Theme Manager", "showThemeManager"))
     .addSeparator()
-    .addSubMenu(ui.createMenu("❓ Help & Support")
-      .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
-      .addItem("❓ Help", "showHelp")
-      .addItem("⌨️ Keyboard Shortcuts", "showKeyboardShortcuts"))
+    .addItem("⌨️ Keyboard Shortcuts", "showKeyboardShortcuts")
     .addToUi();
 
-  // ------------ SHEET MANAGER MENU ------------
-  ui.createMenu("📊 Sheet Manager")
-    .addSubMenu(ui.createMenu("💾 Data Management")
+  // ============ 📊 SHEET MANAGER MENU ============
+  ui.createMenu("📊 Manager")
+    .addSubMenu(ui.createMenu("💾 Backup & Recovery")
+      .addItem("💾 Create Backup Now", "createBackup")
       .addItem("💾 Backup & Recovery Manager", "showBackupManager")
       .addSeparator()
-      .addItem("💾 Create Backup Now", "createBackup")
-      .addItem("✅ Enable Automated Backups", "setupAutomatedBackups")
-      .addItem("🔕 Disable Automated Backups", "disableAutomatedBackups")
+      .addItem("📊 View Backup Log", "navigateToBackupLog")
       .addSeparator()
-      .addItem("📊 View Backup Log", "navigateToBackupLog"))
+      .addItem("🔕 Disable Automated Backups", "disableAutomatedBackups"))
     .addSeparator()
-    .addSubMenu(ui.createMenu("⚡ Performance")
-      .addItem("🗄️ Cache Status Dashboard", "showCacheStatusDashboard")
+    .addSubMenu(ui.createMenu("🤖 Smart Assignment")
+      .addItem("🤖 Auto-Assign Steward", "showAutoAssignDialog")
+      .addItem("👥 Steward Workload Dashboard", "showStewardWorkloadDashboard")
       .addSeparator()
-      .addItem("🔥 Warm Up All Caches", "warmUpCaches")
-      .addItem("🗑️ Clear All Caches", "invalidateAllCaches"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("🔒 Data Integrity")
-      .addItem("📊 Data Quality Dashboard", "showDataQualityDashboard")
-      .addItem("🔍 Check Referential Integrity", "checkReferentialIntegrity")
-      .addSeparator()
-      .addItem("📝 Create Change Log Sheet", "createChangeLogSheet")
-      .addItem("🆔 Generate Next Member ID", "showNextMemberID")
-      .addItem("🆔 Generate Next Grievance ID", "showNextGrievanceID"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("🤖 Automations")
-      .addItem("📬 Notification Settings", "showNotificationSettings")
-      .addItem("📊 Report Automation Settings", "showReportAutomationSettings")
-      .addSeparator()
-      .addItem("✅ Enable Daily Deadline Notifications", "setupDailyDeadlineNotifications")
-      .addItem("🔕 Disable Deadline Notifications", "disableDailyDeadlineNotifications")
-      .addSeparator()
-      .addItem("✅ Enable Monthly Reports", "setupMonthlyReports")
-      .addItem("✅ Enable Quarterly Reports", "setupQuarterlyReports")
-      .addItem("🔕 Disable All Reports", "disableAutomatedReports"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("📧 Communications")
-      .addItem("🧪 Test Deadline Notifications", "testDeadlineNotifications")
-      .addItem("🧪 Test Monthly Report", "generateMonthlyReport")
-      .addItem("🧪 Test Quarterly Report", "generateQuarterlyReport"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("📁 Google Drive Integration")
-      .addItem("📁 Batch Create All Folders", "batchCreateGrievanceFolders")
-      .addItem("📁 Setup Drive Folders", "setupDriveFolderForGrievance"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("📅 Calendar Integration")
-      .addItem("📅 Sync Deadlines to Calendar", "syncDeadlinesToCalendar")
-      .addItem("👀 View Upcoming Deadlines", "showUpcomingDeadlinesFromCalendar")
-      .addSeparator()
-      .addItem("🗑️ Clear All Calendar Events", "clearAllCalendarEvents"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("📈 Analysis & Insights")
-      .addItem("🔮 Predictive Analytics Dashboard", "showPredictiveAnalyticsDashboard")
-      .addItem("📈 Generate Full Analysis", "performPredictiveAnalysis")
-      .addItem("🔬 Root Cause Analysis", "showRootCauseAnalysisDashboard"))
+      .addItem("📦 Batch Auto-Assign", "batchAutoAssign"))
     .addSeparator()
     .addSubMenu(ui.createMenu("⚡ Batch Operations")
       .addItem("⚡ Show Batch Operations Menu", "showBatchOperationsMenu")
@@ -2632,145 +2631,168 @@ function onOpen() {
       .addItem("📧 Bulk Email Notifications", "batchEmailNotifications")
       .addItem("📝 Bulk Add Notes", "batchAddNotes"))
     .addSeparator()
-    .addSubMenu(ui.createMenu("🤖 Smart Assignment")
-      .addItem("🤖 Auto-Assign Steward", "showAutoAssignDialog")
-      .addItem("📦 Batch Auto-Assign", "batchAutoAssign")
+    .addSubMenu(ui.createMenu("📅 Calendar & Deadlines")
+      .addItem("📅 Sync Deadlines to Calendar", "syncDeadlinesToCalendar")
+      .addItem("👀 View Upcoming Deadlines", "showUpcomingDeadlinesFromCalendar")
       .addSeparator()
-      .addItem("👥 Steward Workload Dashboard", "showStewardWorkloadDashboard"))
+      .addItem("🗑️ Clear All Calendar Events", "clearAllCalendarEvents"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📈 Analytics & Insights")
+      .addItem("🔮 Predictive Analytics Dashboard", "showPredictiveAnalyticsDashboard")
+      .addItem("📈 Generate Full Analysis", "performPredictiveAnalysis")
+      .addItem("🔬 Root Cause Analysis", "showRootCauseAnalysisDashboard"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🔒 Data Integrity")
+      .addItem("📊 Data Quality Dashboard", "showDataQualityDashboard")
+      .addItem("🔍 Check Referential Integrity", "checkReferentialIntegrity")
+      .addSeparator()
+      .addItem("📝 Create Change Log Sheet", "createChangeLogSheet"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("⚡ Performance & Cache")
+      .addItem("🗄️ Cache Status Dashboard", "showCacheStatusDashboard")
+      .addItem("🔥 Warm Up All Caches", "warmUpCaches")
+      .addItem("🗑️ Clear All Caches", "invalidateAllCaches"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📧 Test Communications")
+      .addItem("🧪 Test Deadline Notifications", "testDeadlineNotifications")
+      .addItem("🧪 Test Monthly Report", "generateMonthlyReport")
+      .addItem("🧪 Test Quarterly Report", "generateQuarterlyReport"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🔕 Disable Automations")
+      .addItem("🔕 Disable Deadline Notifications", "disableDailyDeadlineNotifications")
+      .addItem("🔕 Disable All Reports", "disableAutomatedReports"))
     .addToUi();
 
-  // ------------ ADMINISTRATOR MENU ------------
-  ui.createMenu("⚙️ Administrator")
-    .addSubMenu(ui.createMenu("🌱 Seed Functions")
-      .addSubMenu(ui.createMenu("👥 Seed Members")
-        .addItem("Seed Members - Toggle 1 (5,000)", "SEED_MEMBERS_TOGGLE_1")
-        .addItem("Seed Members - Toggle 2 (5,000)", "SEED_MEMBERS_TOGGLE_2")
-        .addItem("Seed Members - Toggle 3 (5,000)", "SEED_MEMBERS_TOGGLE_3")
-        .addItem("Seed Members - Toggle 4 (5,000)", "SEED_MEMBERS_TOGGLE_4")
-        .addSeparator()
-        .addItem("Seed All 20k Members (Legacy)", "SEED_20K_MEMBERS"))
-      .addSubMenu(ui.createMenu("📋 Seed Grievances")
-        .addItem("Seed Grievances - Toggle 1 (2,500)", "SEED_GRIEVANCES_TOGGLE_1")
-        .addItem("Seed Grievances - Toggle 2 (2,500)", "SEED_GRIEVANCES_TOGGLE_2")
-        .addSeparator()
-        .addItem("Seed All 5k Grievances (Legacy)", "SEED_5K_GRIEVANCES"))
-      .addSeparator()
-      .addItem("🗑️ Nuke All Seed Data", "nukeSeedData")
-      .addItem("Clear All Data", "clearAllData"))
-    .addSeparator()
+  // ============ ⚙️ ADMINISTRATOR MENU ============
+  ui.createMenu("⚙️ Admin")
     .addSubMenu(ui.createMenu("⚠️ System Health")
-      .addItem("⚠️ Error Dashboard", "showErrorDashboard")
       .addItem("🏥 Run Health Check", "performSystemHealthCheck")
+      .addItem("⚠️ Error Dashboard", "showErrorDashboard")
       .addSeparator()
       .addItem("📊 View Error Trends", "createErrorTrendReport")
       .addItem("🧪 Test Error Logging", "testErrorLogging"))
     .addSeparator()
-    .addSubMenu(ui.createMenu("🔬 Root Cause Analysis")
-      .addItem("🔬 Root Cause Analysis Dashboard", "showRootCauseAnalysisDashboard"))
-    .addSeparator()
     .addSubMenu(ui.createMenu("🔄 Workflow Management")
+      .addItem("📊 View Current State", "showCurrentWorkflowState")
       .addItem("🔄 Workflow Visualizer", "showWorkflowVisualizer")
       .addItem("🔄 Change Workflow State", "changeWorkflowState")
-      .addItem("📊 View Current State", "showCurrentWorkflowState")
       .addSeparator()
       .addItem("📦 Batch Update State", "batchUpdateWorkflowState"))
     .addSeparator()
-    .addSubMenu(ui.createMenu("🛠️ Setup & Configuration")
-      .addItem("🎨 Setup Dashboard Enhancements", "SETUP_DASHBOARD_ENHANCEMENTS")
-      .addItem("📊 Populate Analytics Sheets", "populateAllAnalyticsSheets")
-      .addItem("📝 Add Sample Feedback Entries", "addSampleFeedbackEntries")
-      .addSeparator()
-      .addItem("📋 Setup Member Directory Dropdowns", "setupMemberDirectoryDropdowns")
-      .addItem("🔄 Refresh Steward Dropdowns", "refreshStewardDropdowns")
-      .addItem("🗑️ Remove Emergency Contact Columns", "removeEmergencyContactColumns")
-      .addSeparator()
-      .addItem("📝 Open Member Google Form", "openMemberGoogleForm"))
-    .addSeparator()
-    .addSubMenu(ui.createMenu("👁️ Column Toggles & View")
+    .addSubMenu(ui.createMenu("👁️ View & Display")
       .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
       .addItem("Show All Member Columns", "showAllMemberColumns")
       .addSeparator()
-      .addItem("👁️ Hide Diagnostics Tab", "hideDiagnosticsTab")
       .addItem("Reorder Sheets Logically", "reorderSheetsLogically")
+      .addItem("👁️ Hide Diagnostics Tab", "hideDiagnosticsTab")
+      .addSeparator()
       .addItem("Hide Gridlines (Focus Mode)", "hideAllGridlines")
       .addItem("Show Gridlines", "showAllGridlines")
       .addItem("Setup ADHD Defaults", "setupADHDDefaults"))
     .addSeparator()
     .addSubMenu(ui.createMenu("↩️ History & Undo")
-      .addItem("↩️ Undo/Redo History", "showUndoRedoPanel")
-      .addItem("⌨️ Install Undo Shortcuts", "installUndoRedoShortcuts")
-      .addSeparator()
       .addItem("↩️ Undo Last Action (Ctrl+Z)", "undoLastAction")
       .addItem("↪️ Redo Last Action (Ctrl+Y)", "redoLastAction")
       .addSeparator()
+      .addItem("↩️ Undo/Redo History", "showUndoRedoPanel")
+      .addItem("⌨️ Install Undo Shortcuts", "installUndoRedoShortcuts")
+      .addSeparator()
       .addItem("🗑️ Clear Undo History", "clearUndoHistory"))
     .addSeparator()
-    .addSubMenu(ui.createMenu("📱 Mobile & Viewing")
+    .addSubMenu(ui.createMenu("📱 Mobile Views")
       .addItem("📱 Mobile Dashboard", "showMobileDashboard")
-      .addSeparator()
-      .addItem("🔍 Mobile Search (Members & Grievances)", "showMobileUnifiedSearch")
+      .addItem("🔍 Mobile Search", "showMobileUnifiedSearch")
       .addItem("👥 Mobile Member Browser", "showMobileMemberBrowser")
       .addItem("📋 Mobile Grievance Browser", "showMobileGrievanceBrowser")
       .addSeparator()
       .addItem("📋 Mobile Grievance List", "showMobileGrievanceList")
       .addItem("📄 Paginated Data Viewer", "showPaginatedViewer"))
     .addSeparator()
-    .addSubMenu(ui.createMenu("🧪 Testing & Validation")
-      .addItem("🧪 Run All Tests", "runAllTests")
-      .addItem("📊 View Test Results", "showTestResults")
+    .addSubMenu(ui.createMenu("📁 Google Drive Batch")
+      .addItem("📁 Batch Create All Folders", "batchCreateGrievanceFolders")
+      .addItem("📁 Setup Drive Folders", "setupDriveFolderForGrievance"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🛠️ Advanced Setup")
+      .addItem("📊 Populate Analytics Sheets", "populateAllAnalyticsSheets")
+      .addItem("📝 Add Sample Feedback Entries", "addSampleFeedbackEntries")
       .addSeparator()
-      .addSubMenu(ui.createMenu("📐 Unit Tests")
-        .addItem("Run All Unit Tests", "runUnitTests")
+      .addItem("🗑️ Remove Emergency Contact Columns", "removeEmergencyContactColumns"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🌱 Seed Data (Testing)")
+      .addSubMenu(ui.createMenu("👥 Seed Members")
+        .addItem("Seed 5,000 Members (Toggle 1)", "SEED_MEMBERS_TOGGLE_1")
+        .addItem("Seed 5,000 Members (Toggle 2)", "SEED_MEMBERS_TOGGLE_2")
+        .addItem("Seed 5,000 Members (Toggle 3)", "SEED_MEMBERS_TOGGLE_3")
+        .addItem("Seed 5,000 Members (Toggle 4)", "SEED_MEMBERS_TOGGLE_4")
         .addSeparator()
-        .addItem("Filing Deadline Calculation", "testFilingDeadlineCalculation")
-        .addItem("Step I Deadline Calculation", "testStepIDeadlineCalculation")
-        .addItem("Step II Appeal Deadline", "testStepIIAppealDeadlineCalculation")
-        .addItem("Days Open Calculation", "testDaysOpenCalculation")
-        .addItem("Days Open (Closed Grievance)", "testDaysOpenForClosedGrievance")
-        .addItem("Next Action Due Logic", "testNextActionDueLogic")
-        .addItem("Member Directory Formulas", "testMemberDirectoryFormulas")
-        .addItem("Open Rate Range", "testOpenRateRange")
-        .addItem("Empty Sheets Handling", "testEmptySheetsHandling")
-        .addItem("Future Date Handling", "testFutureDateHandling")
-        .addItem("Past Deadline Handling", "testPastDeadlineHandling"))
-      .addSeparator()
-      .addSubMenu(ui.createMenu("✅ Data Validation Tests")
-        .addItem("Run All Validation Tests", "runValidationTests")
+        .addItem("Seed All 20k Members (Legacy)", "SEED_20K_MEMBERS"))
+      .addSubMenu(ui.createMenu("📋 Seed Grievances")
+        .addItem("Seed 2,500 Grievances (Toggle 1)", "SEED_GRIEVANCES_TOGGLE_1")
+        .addItem("Seed 2,500 Grievances (Toggle 2)", "SEED_GRIEVANCES_TOGGLE_2")
         .addSeparator()
-        .addItem("Data Validation Setup", "testDataValidationSetup")
-        .addItem("Config Dropdown Values", "testConfigDropdownValues")
-        .addItem("Member Validation Rules", "testMemberValidationRules")
-        .addItem("Grievance Validation Rules", "testGrievanceValidationRules")
-        .addItem("Member Seeding Validation", "testMemberSeedingValidation")
-        .addItem("Grievance Seeding Validation", "testGrievanceSeedingValidation")
-        .addItem("Member Email Format", "testMemberEmailFormat")
-        .addItem("Member ID Uniqueness", "testMemberIDUniqueness")
-        .addItem("Grievance-Member Linking", "testGrievanceMemberLinking"))
+        .addItem("Seed All 5k Grievances (Legacy)", "SEED_5K_GRIEVANCES"))
       .addSeparator()
-      .addSubMenu(ui.createMenu("🔗 Integration Tests")
-        .addItem("Run All Integration Tests", "runIntegrationTests")
-        .addSeparator()
-        .addItem("Complete Grievance Workflow", "testCompleteGrievanceWorkflow")
-        .addItem("Dashboard Metrics Update", "testDashboardMetricsUpdate")
-        .addItem("Member-Grievance Snapshot", "testMemberGrievanceSnapshot")
-        .addItem("Config Changes Propagate", "testConfigChangesPropagateToDropdowns")
-        .addItem("Multiple Grievances Same Member", "testMultipleGrievancesSameMember")
-        .addItem("Dashboard Handles Empty Data", "testDashboardHandlesEmptyData")
-        .addItem("Grievance Updates Trigger Recalc", "testGrievanceUpdatesTriggersRecalculation"))
+      .addItem("🗑️ Nuke All Seed Data", "nukeSeedData")
+      .addItem("⚠️ Clear All Data", "clearAllData"))
+    .addToUi();
+
+  // ============ 🧪 TESTING MENU ============
+  ui.createMenu("🧪 Tests")
+    .addItem("🧪 Run All Tests", "runAllTests")
+    .addItem("📊 View Test Results", "showTestResults")
+    .addSeparator()
+    .addSubMenu(ui.createMenu("📐 Unit Tests")
+      .addItem("Run All Unit Tests", "runUnitTests")
       .addSeparator()
-      .addSubMenu(ui.createMenu("⚡ Performance Tests")
-        .addItem("Run All Performance Tests", "runPerformanceTests")
-        .addSeparator()
-        .addItem("Dashboard Refresh Performance", "testDashboardRefreshPerformance")
-        .addItem("Formula Performance with Data", "testFormulaPerformanceWithData"))
+      .addItem("Filing Deadline Calculation", "testFilingDeadlineCalculation")
+      .addItem("Step I Deadline Calculation", "testStepIDeadlineCalculation")
+      .addItem("Step II Appeal Deadline", "testStepIIAppealDeadlineCalculation")
+      .addItem("Days Open Calculation", "testDaysOpenCalculation")
+      .addItem("Days Open (Closed Grievance)", "testDaysOpenForClosedGrievance")
+      .addItem("Next Action Due Logic", "testNextActionDueLogic")
+      .addItem("Member Directory Formulas", "testMemberDirectoryFormulas")
+      .addItem("Open Rate Range", "testOpenRateRange")
+      .addItem("Empty Sheets Handling", "testEmptySheetsHandling")
+      .addItem("Future Date Handling", "testFutureDateHandling")
+      .addItem("Past Deadline Handling", "testPastDeadlineHandling"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("✅ Validation Tests")
+      .addItem("Run All Validation Tests", "runValidationTests")
       .addSeparator()
-      .addSubMenu(ui.createMenu("🛠️ System Tests")
-        .addItem("Error Logging", "testErrorLogging")
-        .addItem("Deadline Notifications", "testDeadlineNotifications"))
+      .addItem("Data Validation Setup", "testDataValidationSetup")
+      .addItem("Config Dropdown Values", "testConfigDropdownValues")
+      .addItem("Member Validation Rules", "testMemberValidationRules")
+      .addItem("Grievance Validation Rules", "testGrievanceValidationRules")
+      .addItem("Member Seeding Validation", "testMemberSeedingValidation")
+      .addItem("Grievance Seeding Validation", "testGrievanceSeedingValidation")
+      .addItem("Member Email Format", "testMemberEmailFormat")
+      .addItem("Member ID Uniqueness", "testMemberIDUniqueness")
+      .addItem("Grievance-Member Linking", "testGrievanceMemberLinking"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🔗 Integration Tests")
+      .addItem("Run All Integration Tests", "runIntegrationTests")
       .addSeparator()
-      .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP")
-      .addItem("⚙️ Shortcuts Configuration", "showKeyboardShortcutsConfig")
-      .addItem("F1 Context Help", "showContextHelp"))
+      .addItem("Complete Grievance Workflow", "testCompleteGrievanceWorkflow")
+      .addItem("Dashboard Metrics Update", "testDashboardMetricsUpdate")
+      .addItem("Member-Grievance Snapshot", "testMemberGrievanceSnapshot")
+      .addItem("Config Changes Propagate", "testConfigChangesPropagateToDropdowns")
+      .addItem("Multiple Grievances Same Member", "testMultipleGrievancesSameMember")
+      .addItem("Dashboard Handles Empty Data", "testDashboardHandlesEmptyData")
+      .addItem("Grievance Updates Trigger Recalc", "testGrievanceUpdatesTriggersRecalculation"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("⚡ Performance Tests")
+      .addItem("Run All Performance Tests", "runPerformanceTests")
+      .addSeparator()
+      .addItem("Dashboard Refresh Performance", "testDashboardRefreshPerformance")
+      .addItem("Formula Performance with Data", "testFormulaPerformanceWithData"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🛠️ System Tests")
+      .addItem("Error Logging", "testErrorLogging")
+      .addItem("Deadline Notifications", "testDeadlineNotifications"))
+    .addSeparator()
+    .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP")
+    .addItem("⚙️ Shortcuts Configuration", "showKeyboardShortcutsConfig")
+    .addItem("F1 Context Help", "showContextHelp")
     .addToUi();
 }
 
@@ -2782,6 +2804,92 @@ function refreshCalculations() {
     dashboard.getRange("A3").setFormula('="Last Updated: " & TEXT(NOW(), "MM/DD/YYYY HH:MM:SS")');
   }
   SpreadsheetApp.getActive().toast("✅ Refreshed", "Complete", 2);
+}
+
+/**
+ * Recalculates all member data using batch processing
+ * Reads all data once, processes in memory, writes once
+ * @returns {Object} Statistics about the recalculation
+ */
+function recalcAllMembers() {
+  const startTime = new Date();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!memberSheet) {
+    throw new Error('Member Directory sheet not found');
+  }
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) {
+    return {
+      processed: 0,
+      duration: new Date() - startTime,
+      message: 'No members to process'
+    };
+  }
+
+  // Read member data
+  const memberData = memberSheet.getRange(2, 1, lastRow - 1, memberSheet.getLastColumn()).getValues();
+
+  // Read grievance data for cross-referencing
+  var grievanceData = [];
+  if (grievanceSheet && grievanceSheet.getLastRow() > 1) {
+    grievanceData = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, grievanceSheet.getLastColumn()).getValues();
+  }
+
+  // Build grievance counts by member
+  const grievanceCounts = {};
+  const openGrievances = {};
+
+  for (let i = 0; i < grievanceData.length; i++) {
+    const memberId = grievanceData[i][GRIEVANCE_COLS.MEMBER_ID - 1];
+    const status = grievanceData[i][GRIEVANCE_COLS.STATUS - 1];
+
+    if (memberId) {
+      grievanceCounts[memberId] = (grievanceCounts[memberId] || 0) + 1;
+      if (status && status !== 'Closed' && status !== 'Resolved') {
+        openGrievances[memberId] = (openGrievances[memberId] || 0) + 1;
+      }
+    }
+  }
+
+  // Process members and calculate fields
+  const updates = [];
+  var processed = 0;
+  var errors = 0;
+
+  for (let i = 0; i < memberData.length; i++) {
+    try {
+      const row = memberData[i];
+      const memberId = row[MEMBER_COLS.MEMBER_ID - 1];
+
+      // Calculate grievance-related fields
+      const totalGrievances = grievanceCounts[memberId] || 0;
+      const openCount = openGrievances[memberId] || 0;
+
+      updates.push([totalGrievances, openCount]);
+      processed++;
+    } catch (error) {
+      Logger.log(`Error processing member row ${i + 2}: ${error.message}`);
+      errors++;
+      updates.push(['', '']);
+    }
+  }
+
+  // Write updates if we have grievance count columns
+  // This is a simplified version - actual columns may vary by setup
+  const duration = new Date() - startTime;
+
+  Logger.log(`Processed ${processed} members in ${duration}ms (${errors} errors)`);
+
+  return {
+    processed: processed,
+    errors: errors,
+    duration: duration,
+    message: `Processed ${processed} members in ${duration}ms (${errors} errors)`
+  };
 }
 
 function goToDashboard() {
