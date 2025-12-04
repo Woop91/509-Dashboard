@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-04T00:35:58.898Z
+ * - Build Date: 2025-12-04T00:45:42.265Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -2358,23 +2358,29 @@ function setupDataValidations() {
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
   // ENHANCEMENT: Email validation for Member Directory (Column H - Email Address)
+  // Using custom formula with REGEXMATCH for pattern validation
   const emailRule = SpreadsheetApp.newDataValidation()
-    .requireTextMatchesPattern('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$')
-    .setAllowInvalid(false)
+    .requireFormulaSatisfied('=OR(ISBLANK(H2), REGEXMATCH(H2, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"))')
+    .setAllowInvalid(true)
     .setHelpText('Enter a valid email address (e.g., name@example.com)')
     .build();
   memberDir.getRange(2, 8, 5000, 1).setDataValidation(emailRule);
 
   // ENHANCEMENT: Phone number validation for Member Directory (Column I - Phone Number)
   const phoneRule = SpreadsheetApp.newDataValidation()
-    .requireTextMatchesPattern('^\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$')
-    .setAllowInvalid(false)
+    .requireFormulaSatisfied('=OR(ISBLANK(I2), REGEXMATCH(TO_TEXT(I2), "^\\(?\\d{3}\\)?[\\s.-]?\\d{3}[\\s.-]?\\d{4}$"))')
+    .setAllowInvalid(true)
     .setHelpText('Enter phone number (formats: 555-123-4567, (555) 123-4567, 5551234567)')
     .build();
   memberDir.getRange(2, 9, 5000, 1).setDataValidation(phoneRule);
 
   // ENHANCEMENT: Email validation for Grievance Log (Column X - Member Email)
-  grievanceLog.getRange(2, 24, 5000, 1).setDataValidation(emailRule);
+  const grievanceEmailRule = SpreadsheetApp.newDataValidation()
+    .requireFormulaSatisfied('=OR(ISBLANK(X2), REGEXMATCH(X2, "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"))')
+    .setAllowInvalid(true)
+    .setHelpText('Enter a valid email address (e.g., name@example.com)')
+    .build();
+  grievanceLog.getRange(2, 24, 5000, 1).setDataValidation(grievanceEmailRule);
 
   // Member Directory validations (updated for new Config structure)
   const memberValidations = [
