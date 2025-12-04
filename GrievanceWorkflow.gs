@@ -1018,41 +1018,65 @@ function addGrievanceToLog(formData) {
 
 /**
  * Recalculates formulas for a specific grievance row
- * Sets deadline formulas (Filing Deadline, Step deadlines, Days Open, etc.)
+ * Sets deadline formulas (Filing Deadline, Step deadlines, Days Open, Next Action Due)
+ * Uses GRIEVANCE_COLS constants for column references
  */
 function recalcGrievanceRow(row) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   if (!grievanceLog) return;
 
-  // Set all deadline formulas for this row
-  // Filing Deadline (Column H): Incident Date + 21 days
-  grievanceLog.getRange(row, 8).setFormula(`=IF(G${row}<>"",G${row}+21,"")`);
+  // Get column letters for formula references
+  const incidentDateCol = getColumnLetter(GRIEVANCE_COLS.INCIDENT_DATE);
+  const filingDeadlineCol = getColumnLetter(GRIEVANCE_COLS.FILING_DEADLINE);
+  const dateFiledCol = getColumnLetter(GRIEVANCE_COLS.DATE_FILED);
+  const step1DueCol = getColumnLetter(GRIEVANCE_COLS.STEP1_DUE);
+  const step1RcvdCol = getColumnLetter(GRIEVANCE_COLS.STEP1_RCVD);
+  const step2AppealDueCol = getColumnLetter(GRIEVANCE_COLS.STEP2_APPEAL_DUE);
+  const step2AppealFiledCol = getColumnLetter(GRIEVANCE_COLS.STEP2_APPEAL_FILED);
+  const step2DueCol = getColumnLetter(GRIEVANCE_COLS.STEP2_DUE);
+  const step2RcvdCol = getColumnLetter(GRIEVANCE_COLS.STEP2_RCVD);
+  const step3AppealDueCol = getColumnLetter(GRIEVANCE_COLS.STEP3_APPEAL_DUE);
+  const dateClosedCol = getColumnLetter(GRIEVANCE_COLS.DATE_CLOSED);
+  const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
+  const nextActionDueCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const currentStepCol = getColumnLetter(GRIEVANCE_COLS.CURRENT_STEP);
 
-  // Step I Decision Due (Column J): Date Filed + 30 days
-  grievanceLog.getRange(row, 10).setFormula(`=IF(I${row}<>"",I${row}+30,"")`);
-
-  // Step II Appeal Due (Column L): Step I Decision + 10 days
-  grievanceLog.getRange(row, 12).setFormula(`=IF(K${row}<>"",K${row}+10,"")`);
-
-  // Step II Decision Due (Column N): Step II Appeal + 30 days
-  grievanceLog.getRange(row, 14).setFormula(`=IF(M${row}<>"",M${row}+30,"")`);
-
-  // Step III Appeal Due (Column P): Step II Decision + 30 days
-  grievanceLog.getRange(row, 16).setFormula(`=IF(O${row}<>"",O${row}+30,"")`);
-
-  // Days Open (Column S): Today - Date Filed (or Date Closed - Date Filed)
-  grievanceLog.getRange(row, 19).setFormula(
-    `=IF(I${row}<>"",IF(R${row}<>"",R${row}-I${row},TODAY()-I${row}),"")`
+  // Filing Deadline: Incident Date + 21 days
+  grievanceLog.getRange(row, GRIEVANCE_COLS.FILING_DEADLINE).setFormula(
+    `=IF(${incidentDateCol}${row}<>"",${incidentDateCol}${row}+21,"")`
   );
 
-  // Next Action Due (Column T): Based on current step
-  grievanceLog.getRange(row, 20).setFormula(
-    `=IF(E${row}="Open",IF(F${row}="Step I",J${row},IF(F${row}="Step II",N${row},IF(F${row}="Step III",P${row},H${row}))),"")`
+  // Step I Decision Due: Date Filed + 30 days
+  grievanceLog.getRange(row, GRIEVANCE_COLS.STEP1_DUE).setFormula(
+    `=IF(${dateFiledCol}${row}<>"",${dateFiledCol}${row}+30,"")`
   );
 
-  // Days to Deadline (Column U): Next Action - Today
-  grievanceLog.getRange(row, 21).setFormula(`=IF(T${row}<>"",T${row}-TODAY(),"")`);
+  // Step II Appeal Due: Step I Decision Received + 10 days
+  grievanceLog.getRange(row, GRIEVANCE_COLS.STEP2_APPEAL_DUE).setFormula(
+    `=IF(${step1RcvdCol}${row}<>"",${step1RcvdCol}${row}+10,"")`
+  );
+
+  // Step II Decision Due: Step II Appeal Filed + 30 days
+  grievanceLog.getRange(row, GRIEVANCE_COLS.STEP2_DUE).setFormula(
+    `=IF(${step2AppealFiledCol}${row}<>"",${step2AppealFiledCol}${row}+30,"")`
+  );
+
+  // Step III Appeal Due: Step II Decision Received + 30 days
+  grievanceLog.getRange(row, GRIEVANCE_COLS.STEP3_APPEAL_DUE).setFormula(
+    `=IF(${step2RcvdCol}${row}<>"",${step2RcvdCol}${row}+30,"")`
+  );
+
+  // Days Open: Today - Date Filed (or Date Closed - Date Filed if closed)
+  grievanceLog.getRange(row, GRIEVANCE_COLS.DAYS_OPEN).setFormula(
+    `=IF(${dateFiledCol}${row}<>"",IF(${dateClosedCol}${row}<>"",${dateClosedCol}${row}-${dateFiledCol}${row},TODAY()-${dateFiledCol}${row}),"")`
+  );
+
+  // Next Action Due: Based on current step
+  grievanceLog.getRange(row, GRIEVANCE_COLS.NEXT_ACTION_DUE).setFormula(
+    `=IF(${statusCol}${row}="Open",IF(${currentStepCol}${row}="Step I",${step1DueCol}${row},IF(${currentStepCol}${row}="Step II",${step2DueCol}${row},IF(${currentStepCol}${row}="Step III",${step3AppealDueCol}${row},${filingDeadlineCol}${row}))),"")`
+  );
 }
 
 /**
