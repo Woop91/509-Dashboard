@@ -2640,9 +2640,9 @@ function setupFormulasAndCalculations() {
     `=ARRAYFORMULA(IF(O2:O1000<>"",O2:O1000+30,""))`
   );
 
-  // Days Open - Column S
+  // Days Open - Column S (use MAX(0,...) to prevent negative numbers)
   grievanceLog.getRange("S2").setFormula(
-    `=ARRAYFORMULA(IF(I2:I1000<>"",IF(R2:R1000<>"",R2:R1000-I2:I1000,TODAY()-I2:I1000),""))`
+    `=ARRAYFORMULA(IF(I2:I1000<>"",MAX(0,IF(R2:R1000<>"",R2:R1000-I2:I1000,TODAY()-I2:I1000)),""))`
   );
 
   // Next Action Due - Column T
@@ -2678,6 +2678,72 @@ function setupFormulasAndCalculations() {
   memberDir.getRange(nextDeadlineCol + "2").setFormula(
     `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A2:A1000,'Grievance Log'!${memberIdCol}:${memberIdCol},0)),""),""))`
   );
+}
+
+/**
+ * Sorts Grievance Log with active cases at top, completed at bottom
+ */
+function sortGrievancesByStatus() {
+  const ss = SpreadsheetApp.getActive();
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!grievanceLog) return;
+
+  const lastRow = grievanceLog.getLastRow();
+  if (lastRow <= 1) return;
+
+  const lastCol = grievanceLog.getLastColumn();
+  const dataRange = grievanceLog.getRange(2, 1, lastRow - 1, lastCol);
+  const statusCol = GRIEVANCE_COLS.STATUS;
+
+  dataRange.sort([{ column: statusCol, ascending: true }]);
+  SpreadsheetApp.getActive().toast('Grievances sorted - active cases at top, completed at bottom', 'Sorted', 3);
+}
+
+/**
+ * Cleans up Grievance Log by removing extra columns and reapplying formulas
+ */
+function cleanupGrievanceLog() {
+  const ss = SpreadsheetApp.getActive();
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!grievanceLog) {
+    SpreadsheetApp.getUi().alert('Grievance Log sheet not found');
+    return;
+  }
+
+  const EXPECTED_COLS = 28; // A through AB
+  const lastCol = grievanceLog.getLastColumn();
+
+  // Delete extra columns beyond AB (28)
+  if (lastCol > EXPECTED_COLS) {
+    const extraCols = lastCol - EXPECTED_COLS;
+    grievanceLog.deleteColumns(EXPECTED_COLS + 1, extraCols);
+    SpreadsheetApp.getActive().toast(`Removed ${extraCols} extra column(s)`, 'Cleanup', 2);
+  }
+
+  // Reapply headers
+  const headers = [
+    "Grievance ID", "Member ID", "First Name", "Last Name", "Status", "Current Step",
+    "Incident Date", "Filing Deadline (21d)", "Date Filed (Step I)", "Step I Decision Due (30d)",
+    "Step I Decision Rcvd", "Step II Appeal Due (10d)", "Step II Appeal Filed", "Step II Decision Due (30d)",
+    "Step II Decision Rcvd", "Step III Appeal Due (30d)", "Step III Appeal Filed", "Date Closed",
+    "Days Open", "Next Action Due", "Days to Deadline", "Articles Violated", "Issue Category",
+    "Member Email", "Unit", "Work Location (Site)", "Assigned Steward (Name)", "Resolution Summary"
+  ];
+  grievanceLog.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+  // Clear calculated columns before reapplying formulas
+  const calculatedCols = [
+    GRIEVANCE_COLS.FILING_DEADLINE, GRIEVANCE_COLS.STEP1_DUE, GRIEVANCE_COLS.STEP2_APPEAL_DUE,
+    GRIEVANCE_COLS.STEP2_DUE, GRIEVANCE_COLS.STEP3_APPEAL_DUE, GRIEVANCE_COLS.DAYS_OPEN,
+    GRIEVANCE_COLS.NEXT_ACTION_DUE, GRIEVANCE_COLS.DAYS_TO_DEADLINE
+  ];
+  const lastRow = Math.max(grievanceLog.getLastRow(), 2);
+  calculatedCols.forEach(col => {
+    grievanceLog.getRange(2, col, lastRow - 1, 1).clearContent();
+  });
+
+  setupFormulasAndCalculations();
+  SpreadsheetApp.getActive().toast('Grievance Log cleaned up and formulas reapplied', 'Complete', 3);
 }
 
 /* --------------------- MENU --------------------- */
@@ -2728,6 +2794,9 @@ function onOpen() {
       .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
       .addItem("🔄 Grievance Float Toggle", "toggleGrievanceFloat")
       .addItem("🎛️ Float Control Panel", "showGrievanceFloatPanel")
+      .addSeparator()
+      .addItem("📊 Sort Grievances (Active First)", "sortGrievancesByStatus")
+      .addItem("🧹 Cleanup Grievance Log", "cleanupGrievanceLog")
       .addSeparator()
       .addItem("🆔 Generate Next Grievance ID", "showNextGrievanceID"))
     .addSeparator()

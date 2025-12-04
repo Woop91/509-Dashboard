@@ -1210,9 +1210,9 @@ function setupFormulasAndCalculations() {
     `=ARRAYFORMULA(IF(${gStep2RcvdCol}2:${gStep2RcvdCol}1000<>"",${gStep2RcvdCol}2:${gStep2RcvdCol}1000+30,""))`
   );
 
-  // Days Open - Column S
+  // Days Open - Column S (use MAX(0,...) to prevent negative numbers)
   grievanceLog.getRange(gDaysOpenCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",IF(${gDateClosedCol}2:${gDateClosedCol}1000<>"",${gDateClosedCol}2:${gDateClosedCol}1000-${gDateFiledCol}2:${gDateFiledCol}1000,TODAY()-${gDateFiledCol}2:${gDateFiledCol}1000),""))`
+    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",MAX(0,IF(${gDateClosedCol}2:${gDateClosedCol}1000<>"",${gDateClosedCol}2:${gDateClosedCol}1000-${gDateFiledCol}2:${gDateFiledCol}1000,TODAY()-${gDateFiledCol}2:${gDateFiledCol}1000)),""))`
   );
 
   // Next Action Due - Column T (determines based on current step)
@@ -1419,6 +1419,62 @@ function sortGrievancesByStatus() {
   SpreadsheetApp.getActive().toast('✅ Grievances sorted - active cases at top, completed at bottom', 'Sorted', 3);
 }
 
+/**
+ * Cleans up Grievance Log by removing extra columns and reapplying formulas
+ * Use this when data appears misaligned or there are extra columns
+ */
+function cleanupGrievanceLog() {
+  const ss = SpreadsheetApp.getActive();
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!grievanceLog) {
+    SpreadsheetApp.getUi().alert('Grievance Log sheet not found');
+    return;
+  }
+
+  const EXPECTED_COLS = 28; // A through AB
+  const lastCol = grievanceLog.getLastColumn();
+
+  // Delete extra columns beyond AB (28)
+  if (lastCol > EXPECTED_COLS) {
+    const extraCols = lastCol - EXPECTED_COLS;
+    grievanceLog.deleteColumns(EXPECTED_COLS + 1, extraCols);
+    SpreadsheetApp.getActive().toast(`Removed ${extraCols} extra column(s)`, 'Cleanup', 2);
+  }
+
+  // Reapply headers to ensure correct column names
+  const headers = [
+    "Grievance ID", "Member ID", "First Name", "Last Name", "Status", "Current Step",
+    "Incident Date", "Filing Deadline (21d)", "Date Filed (Step I)", "Step I Decision Due (30d)",
+    "Step I Decision Rcvd", "Step II Appeal Due (10d)", "Step II Appeal Filed", "Step II Decision Due (30d)",
+    "Step II Decision Rcvd", "Step III Appeal Due (30d)", "Step III Appeal Filed", "Date Closed",
+    "Days Open", "Next Action Due", "Days to Deadline", "Articles Violated", "Issue Category",
+    "Member Email", "Unit", "Work Location (Site)", "Assigned Steward (Name)", "Resolution Summary"
+  ];
+  grievanceLog.getRange(1, 1, 1, headers.length).setValues([headers]);
+
+  // Clear any existing formulas in calculated columns before reapplying
+  const calculatedCols = [
+    GRIEVANCE_COLS.FILING_DEADLINE,    // H
+    GRIEVANCE_COLS.STEP1_DUE,          // J
+    GRIEVANCE_COLS.STEP2_APPEAL_DUE,   // L
+    GRIEVANCE_COLS.STEP2_DUE,          // N
+    GRIEVANCE_COLS.STEP3_APPEAL_DUE,   // P
+    GRIEVANCE_COLS.DAYS_OPEN,          // S
+    GRIEVANCE_COLS.NEXT_ACTION_DUE,    // T
+    GRIEVANCE_COLS.DAYS_TO_DEADLINE    // U
+  ];
+
+  const lastRow = Math.max(grievanceLog.getLastRow(), 2);
+  calculatedCols.forEach(col => {
+    grievanceLog.getRange(2, col, lastRow - 1, 1).clearContent();
+  });
+
+  // Reapply all formulas
+  setupFormulasAndCalculations();
+
+  SpreadsheetApp.getActive().toast('✅ Grievance Log cleaned up and formulas reapplied', 'Complete', 3);
+}
+
 /* --------------------- MENU --------------------- */
 /**
  * Runs when spreadsheet opens - creates menu and validates configuration
@@ -1470,6 +1526,7 @@ function onOpen() {
       .addSeparator()
       .addItem("📊 Sort Grievances (Active First)", "sortGrievancesByStatus")
       .addItem("🔄 Refresh Progress Bar", "setupGrievanceProgressBar")
+      .addItem("🧹 Cleanup Grievance Log", "cleanupGrievanceLog")
       .addSeparator()
       .addItem("🆔 Generate Next Grievance ID", "showNextGrievanceID"))
     .addSeparator()
