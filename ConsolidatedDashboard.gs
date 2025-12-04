@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-04T02:34:20.623Z
+ * - Build Date: 2025-12-04T13:57:56.134Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -1699,7 +1699,7 @@ function createConfigTab() {
      "", "", "", "",
      "", "",
      "", "", "", "",
-     "Education Committee", "Quincy"],
+     "Education Committee", "", "Quincy"],
 
     ["Director", "Remote/Hybrid", "", "Sunday", "",
      "Patricia Moore", "James Wilson",
@@ -1743,7 +1743,7 @@ function createConfigTab() {
      "", "", "", "",
      "", "",
      "", "", "", "",
-     "", "Framingham"],
+     "", "", "Framingham"],
 
     ["Technician", "", "", "", "",
      "Jessica Green", "Christopher Lee",
@@ -1779,7 +1779,7 @@ function createConfigTab() {
      "", "Malden"]
   ];
 
-  // Add category header row first (10 categories, 32 columns)
+  // Add category header row first (9 categories, 32 columns)
   const categoryRow = [
     "── EMPLOYMENT INFO ──", "", "", "", "",
     "── SUPERVISION ──", "",
@@ -1790,7 +1790,7 @@ function createConfigTab() {
     "── ORGANIZATION ──", "", "", "",
     "── INTEGRATION ──", "",
     "── DEADLINES ──", "", "", "",
-    "── MULTI-SELECT OPTIONS ──", ""
+    "── MULTI-SELECT OPTIONS ──", "", ""
   ];
 
   // Insert category row at top, then column headers, then data
@@ -1983,8 +1983,10 @@ function createGrievanceLog() {
     "Resolution Summary"               // AB - 28
   ];
 
+  // Update headers (row 1 only - preserves data in rows 2+)
   grievanceLog.getRange(1, 1, 1, headers.length).setValues([headers]);
 
+  // Apply header formatting
   grievanceLog.getRange(1, 1, 1, headers.length)
     .setFontWeight("bold")
     .setBackground("#DC2626")
@@ -2589,20 +2591,21 @@ function setupDataValidations() {
   grievanceLog.getRange(2, 24, 5000, 1).setDataValidation(grievanceEmailRule);
 
   // Member Directory validations using MEMBER_COLS constants
-  // Columns updated after removing unused columns (27 total now)
+  // 31 columns total after adding: Committees, Home Town, Preferred Comm, Best Time
   const memberValidations = [
     { col: MEMBER_COLS.JOB_TITLE, configCol: CONFIG_COLS.JOB_TITLES },       // Job Title (4)
     { col: MEMBER_COLS.WORK_LOCATION, configCol: CONFIG_COLS.OFFICE_LOCATIONS }, // Work Location (5)
     { col: MEMBER_COLS.UNIT, configCol: CONFIG_COLS.UNITS },                 // Unit (6)
     { col: MEMBER_COLS.IS_STEWARD, configCol: CONFIG_COLS.YES_NO },          // Is Steward (10)
-    { col: MEMBER_COLS.ASSIGNED_STEWARD, configCol: CONFIG_COLS.STEWARDS },  // Assigned Steward (13)
-    { col: MEMBER_COLS.INTEREST_LOCAL, configCol: CONFIG_COLS.YES_NO },      // Interest: Local (18)
-    { col: MEMBER_COLS.INTEREST_CHAPTER, configCol: CONFIG_COLS.YES_NO },    // Interest: Chapter (19)
-    { col: MEMBER_COLS.INTEREST_ALLIED, configCol: CONFIG_COLS.YES_NO }      // Interest: Allied (20)
+    { col: MEMBER_COLS.ASSIGNED_STEWARD, configCol: CONFIG_COLS.STEWARDS },  // Assigned Steward (14)
+    { col: MEMBER_COLS.INTEREST_LOCAL, configCol: CONFIG_COLS.YES_NO },      // Interest: Local (21)
+    { col: MEMBER_COLS.HOME_TOWN, configCol: CONFIG_COLS.HOME_TOWNS },       // Home Town (22)
+    { col: MEMBER_COLS.INTEREST_CHAPTER, configCol: CONFIG_COLS.YES_NO },    // Interest: Chapter (23)
+    { col: MEMBER_COLS.INTEREST_ALLIED, configCol: CONFIG_COLS.YES_NO }      // Interest: Allied (24)
   ];
 
   memberValidations.forEach(function(v) {
-    const configRange = config.getRange(2, v.configCol, 50, 1);
+    const configRange = config.getRange(3, v.configCol, 50, 1);
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(configRange, true)
       .setAllowInvalid(false)
@@ -2617,17 +2620,41 @@ function setupDataValidations() {
     .setAllowInvalid(true)
     .setHelpText('Enter office days (e.g., "Monday, Wednesday, Friday" or select from Config tab)')
     .build();
-  memberDir.getRange(2, 7, 5000, 1).setDataValidation(officeDaysRule);
+  memberDir.getRange(2, MEMBER_COLS.OFFICE_DAYS, 5000, 1).setDataValidation(officeDaysRule);
 
   // Supervisor and Manager - allow text input since they're now first+last name combinations
-  // Users can manually type "FirstName LastName" or the seed function will populate them
   const nameRule = SpreadsheetApp.newDataValidation()
     .requireTextContains("")
     .setAllowInvalid(true)
     .setHelpText('Enter full name (e.g., "John Smith")')
     .build();
-  memberDir.getRange(2, 11, 5000, 1).setDataValidation(nameRule); // Supervisor
-  memberDir.getRange(2, 12, 5000, 1).setDataValidation(nameRule); // Manager
+  memberDir.getRange(2, MEMBER_COLS.SUPERVISOR, 5000, 1).setDataValidation(nameRule);
+  memberDir.getRange(2, MEMBER_COLS.MANAGER, 5000, 1).setDataValidation(nameRule);
+
+  // Multi-select columns - allow text input with help text showing available options
+  // Committees (column 11) - multi-select for stewards
+  const committeesRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter committees (comma-separated, e.g., "Grievance Committee, Bargaining Committee"). See Config tab column AD for options.')
+    .build();
+  memberDir.getRange(2, MEMBER_COLS.COMMITTEES, 5000, 1).setDataValidation(committeesRule);
+
+  // Preferred Communication (column 15) - multi-select
+  const prefCommRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter preferred methods (comma-separated, e.g., "Email, Phone, Text"). See Config tab column M for options.')
+    .build();
+  memberDir.getRange(2, MEMBER_COLS.PREFERRED_COMM, 5000, 1).setDataValidation(prefCommRule);
+
+  // Best Time to Contact (column 16) - multi-select
+  const bestTimeRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter best times (comma-separated, e.g., "Morning (8am-12pm), Evening (5pm-8pm)"). See Config tab column AE for options.')
+    .build();
+  memberDir.getRange(2, MEMBER_COLS.BEST_TIME, 5000, 1).setDataValidation(bestTimeRule);
 
   // Grievance Log validations (updated for new Config structure)
   // GRIEVANCE_COLS: STATUS=5, CURRENT_STEP=6, ARTICLES=22, ISSUE_CATEGORY=23, UNIT=25, LOCATION=26, STEWARD=27
@@ -2642,13 +2669,26 @@ function setupDataValidations() {
   ];
 
   grievanceValidations.forEach(function(v) {
-    const configRange = config.getRange(2, v.configCol, 50, 1);
+    const configRange = config.getRange(3, v.configCol, 50, 1);
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(configRange, true)
       .setAllowInvalid(false)
       .build();
     grievanceLog.getRange(2, v.col, 5000, 1).setDataValidation(rule);
   });
+
+  // ----- CONDITIONAL FORMATTING -----
+  // Light purple background for rows where Is Steward = "Yes"
+  const isStewardCol = getColumnLetter(MEMBER_COLS.IS_STEWARD);
+  const stewardRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=$' + isStewardCol + '2="Yes"')
+    .setBackground('#E8E3F3')  // Light purple (509 theme)
+    .setRanges([memberDir.getRange(2, 1, 5000, 31)])  // Apply to entire row
+    .build();
+
+  const existingRules = memberDir.getConditionalFormatRules();
+  existingRules.push(stewardRule);
+  memberDir.setConditionalFormatRules(existingRules);
 }
 
 /* --------------------- FORMULAS --------------------- */
@@ -2657,74 +2697,241 @@ function setupFormulasAndCalculations() {
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-  // Grievance Log formulas - ENHANCED: Now covers 1000 rows instead of 100
+  // ----- GRIEVANCE LOG FORMULAS -----
+  // All using dynamic column references from GRIEVANCE_COLS
+  const gIncidentDateCol = getColumnLetter(GRIEVANCE_COLS.INCIDENT_DATE);
+  const gFilingDeadlineCol = getColumnLetter(GRIEVANCE_COLS.FILING_DEADLINE);
+  const gDateFiledCol = getColumnLetter(GRIEVANCE_COLS.DATE_FILED);
+  const gStep1DueCol = getColumnLetter(GRIEVANCE_COLS.STEP1_DUE);
+  const gStep1RcvdCol = getColumnLetter(GRIEVANCE_COLS.STEP1_RCVD);
+  const gStep2AppealDueCol = getColumnLetter(GRIEVANCE_COLS.STEP2_APPEAL_DUE);
+  const gStep2AppealFiledCol = getColumnLetter(GRIEVANCE_COLS.STEP2_APPEAL_FILED);
+  const gStep2DueCol = getColumnLetter(GRIEVANCE_COLS.STEP2_DUE);
+  const gStep2RcvdCol = getColumnLetter(GRIEVANCE_COLS.STEP2_RCVD);
+  const gStep3AppealDueCol = getColumnLetter(GRIEVANCE_COLS.STEP3_APPEAL_DUE);
+  const gDateClosedCol = getColumnLetter(GRIEVANCE_COLS.DATE_CLOSED);
+  const gDaysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
+  const gNextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const gDaysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+  const gStatusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const gCurrentStepCol = getColumnLetter(GRIEVANCE_COLS.CURRENT_STEP);
+  const gMemberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
+
   // Filing Deadline (Incident Date + 21 days) - Column H
-  grievanceLog.getRange("H2").setFormula(
-    `=ARRAYFORMULA(IF(G2:G1000<>"",G2:G1000+21,""))`
+  grievanceLog.getRange(gFilingDeadlineCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gIncidentDateCol}2:${gIncidentDateCol}1000<>"",${gIncidentDateCol}2:${gIncidentDateCol}1000+21,""))`
   );
 
   // Step I Decision Due (Date Filed + 30 days) - Column J
-  grievanceLog.getRange("J2").setFormula(
-    `=ARRAYFORMULA(IF(I2:I1000<>"",I2:I1000+30,""))`
+  grievanceLog.getRange(gStep1DueCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",${gDateFiledCol}2:${gDateFiledCol}1000+30,""))`
   );
 
   // Step II Appeal Due (Step I Decision Rcvd + 10 days) - Column L
-  grievanceLog.getRange("L2").setFormula(
-    `=ARRAYFORMULA(IF(K2:K1000<>"",K2:K1000+10,""))`
+  grievanceLog.getRange(gStep2AppealDueCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gStep1RcvdCol}2:${gStep1RcvdCol}1000<>"",${gStep1RcvdCol}2:${gStep1RcvdCol}1000+10,""))`
   );
 
   // Step II Decision Due (Step II Appeal Filed + 30 days) - Column N
-  grievanceLog.getRange("N2").setFormula(
-    `=ARRAYFORMULA(IF(M2:M1000<>"",M2:M1000+30,""))`
+  grievanceLog.getRange(gStep2DueCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}1000<>"",${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}1000+30,""))`
   );
 
   // Step III Appeal Due (Step II Decision Rcvd + 30 days) - Column P
-  grievanceLog.getRange("P2").setFormula(
-    `=ARRAYFORMULA(IF(O2:O1000<>"",O2:O1000+30,""))`
+  grievanceLog.getRange(gStep3AppealDueCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gStep2RcvdCol}2:${gStep2RcvdCol}1000<>"",${gStep2RcvdCol}2:${gStep2RcvdCol}1000+30,""))`
   );
 
   // Days Open - Column S (shows actual days - negative values indicate data entry errors)
-  grievanceLog.getRange("S2").setFormula(
-    `=ARRAYFORMULA(IF(I2:I1000<>"",IF(R2:R1000<>"",R2:R1000-I2:I1000,TODAY()-I2:I1000),""))`
+  grievanceLog.getRange(gDaysOpenCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",IF(${gDateClosedCol}2:${gDateClosedCol}1000<>"",${gDateClosedCol}2:${gDateClosedCol}1000-${gDateFiledCol}2:${gDateFiledCol}1000,TODAY()-${gDateFiledCol}2:${gDateFiledCol}1000),""))`
   );
 
-  // Next Action Due - Column T
-  grievanceLog.getRange("T2").setFormula(
-    `=ARRAYFORMULA(IF(E2:E1000="Open",IF(F2:F1000="Step I",J2:J1000,IF(F2:F1000="Step II",N2:N1000,IF(F2:F1000="Step III",P2:P1000,H2:H1000))),""))`
+  // Next Action Due - Column T (determines based on current step)
+  grievanceLog.getRange(gNextActionCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gStatusCol}2:${gStatusCol}1000="Open",IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step I",${gStep1DueCol}2:${gStep1DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step II",${gStep2DueCol}2:${gStep2DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step III",${gStep3AppealDueCol}2:${gStep3AppealDueCol}1000,${gFilingDeadlineCol}2:${gFilingDeadlineCol}1000))),""))`
   );
 
-  // Days to Deadline - Column U
-  grievanceLog.getRange("U2").setFormula(
-    `=ARRAYFORMULA(IF(T2:T1000<>"",T2:T1000-TODAY(),""))`
+  // Days to Deadline - Column U (Next Action Due - Today)
+  grievanceLog.getRange(gDaysToDeadlineCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}1000<>"",${gNextActionCol}2:${gNextActionCol}1000-TODAY(),""))`
   );
 
-  // Dynamic column references for Member Directory formulas
-  const memberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
-  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
-  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
-
-  // Member Directory formulas - Now using dynamic column references
-  // Has Open Grievance? - Column Y (25) - counts all active statuses
+  // ----- MEMBER DIRECTORY FORMULAS -----
+  // Has Open Grievance? - Column Y (25)
+  // Counts grievances with ANY active status: Open, Pending Info, Appealed, In Arbitration
   const hasGrievanceCol = getColumnLetter(MEMBER_COLS.HAS_OPEN_GRIEVANCE);
   memberDir.getRange(hasGrievanceCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IF(SUMPRODUCT((('Grievance Log'!${memberIdCol}:${memberIdCol}=A2:A1000)*(('Grievance Log'!${statusCol}:${statusCol}="Open")+('Grievance Log'!${statusCol}:${statusCol}="Pending Info")+('Grievance Log'!${statusCol}:${statusCol}="Appealed")+('Grievance Log'!${statusCol}:${statusCol}="In Arbitration"))))>0,"Yes","No"),""))`
+    `=ARRAYFORMULA(IF(A2:A1000<>"",IF(SUMPRODUCT((('Grievance Log'!${gMemberIdCol}:${gMemberIdCol}=A2:A1000)*(('Grievance Log'!${gStatusCol}:${gStatusCol}="Open")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Pending Info")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Appealed")+('Grievance Log'!${gStatusCol}:${gStatusCol}="In Arbitration"))))>0,"Yes","No"),""))`
   );
 
-  // Grievance Status Snapshot - Column V (22)
+  // Grievance Status Snapshot - Column Z (26)
   const statusSnapshotCol = getColumnLetter(MEMBER_COLS.GRIEVANCE_STATUS);
   memberDir.getRange(statusSnapshotCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A2:A1000,'Grievance Log'!${memberIdCol}:${memberIdCol},0)),""),""))`
+    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gStatusCol}:${gStatusCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
   );
 
-  // Next Grievance Deadline - Column W (23)
+  // Next Grievance Deadline - Column AA (27)
   const nextDeadlineCol = getColumnLetter(MEMBER_COLS.NEXT_DEADLINE);
   memberDir.getRange(nextDeadlineCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A2:A1000,'Grievance Log'!${memberIdCol}:${memberIdCol},0)),""),""))`
+    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gNextActionCol}:${gNextActionCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
   );
+
+  // Apply progress bar formatting
+  setupGrievanceProgressBar();
 }
 
 /**
- * Sorts Grievance Log with active cases at top, completed at bottom
+ * Sets up visual progress bar formatting for Grievance Log timeline columns (G-R)
+ * - Completed steps: Green background
+ * - Current step: Yellow/amber highlight
+ * - Future steps: Light gray (faded)
+ * - Closed/Settled/Withdrawn: Full green bar
+ */
+function setupGrievanceProgressBar() {
+  const ss = SpreadsheetApp.getActive();
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (!grievanceLog) return;
+
+  // Clear existing conditional formatting rules for timeline columns
+  const existingRules = grievanceLog.getConditionalFormatRules();
+  const newRules = existingRules.filter(rule => {
+    const ranges = rule.getRanges();
+    // Keep rules that don't affect columns G-R (7-18)
+    return !ranges.some(r => r.getColumn() >= 7 && r.getColumn() <= 18);
+  });
+
+  // Timeline columns: G(7) to R(18)
+  const timelineRange = grievanceLog.getRange(2, 7, 1000, 12); // G2:R1001
+
+  // Column references
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const stepCol = getColumnLetter(GRIEVANCE_COLS.CURRENT_STEP);
+
+  // Colors
+  const COMPLETED_GREEN = '#D1FAE5';  // Light green for completed steps
+  const CURRENT_AMBER = '#FEF3C7';    // Amber for current step
+  const FUTURE_GRAY = '#F3F4F6';      // Light gray for future steps
+  const CLOSED_GREEN = '#A7F3D0';     // Darker green for closed cases
+
+  // ----- CLOSED/SETTLED/WITHDRAWN - Full green bar -----
+  const closedRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=OR($${statusCol}2="Settled",$${statusCol}2="Closed",$${statusCol}2="Withdrawn",$${statusCol}2="Denied")`)
+    .setBackground(CLOSED_GREEN)
+    .setRanges([timelineRange])
+    .build();
+  newRules.push(closedRule);
+
+  // Helper: Active statuses formula part (Open, Pending Info, Appealed, In Arbitration)
+  const activeStatusCondition = `OR($${statusCol}2="Open",$${statusCol}2="Pending Info",$${statusCol}2="Appealed",$${statusCol}2="In Arbitration")`;
+
+  // ----- INFORMAL STEP (Pre-filing): Highlight G-H -----
+  const informalCurrentRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND($${stepCol}2="Informal",${activeStatusCondition})`)
+    .setBackground(CURRENT_AMBER)
+    .setRanges([grievanceLog.getRange(2, 7, 1000, 2)]) // G-H
+    .build();
+  newRules.push(informalCurrentRule);
+
+  // Gray out future columns when at Informal
+  const informalFutureRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND($${stepCol}2="Informal",${activeStatusCondition})`)
+    .setBackground(FUTURE_GRAY)
+    .setFontColor('#9CA3AF')
+    .setRanges([grievanceLog.getRange(2, 9, 1000, 10)]) // I-R (future)
+    .build();
+  newRules.push(informalFutureRule);
+
+  // ----- STEP I: Highlight I-K, green G-H, gray L-R -----
+  const step1CompletedRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND($${stepCol}2="Step I",${activeStatusCondition})`)
+    .setBackground(COMPLETED_GREEN)
+    .setRanges([grievanceLog.getRange(2, 7, 1000, 2)]) // G-H completed
+    .build();
+  newRules.push(step1CompletedRule);
+
+  const step1CurrentRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND($${stepCol}2="Step I",${activeStatusCondition})`)
+    .setBackground(CURRENT_AMBER)
+    .setRanges([grievanceLog.getRange(2, 9, 1000, 3)]) // I-K current
+    .build();
+  newRules.push(step1CurrentRule);
+
+  const step1FutureRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND($${stepCol}2="Step I",${activeStatusCondition})`)
+    .setBackground(FUTURE_GRAY)
+    .setFontColor('#9CA3AF')
+    .setRanges([grievanceLog.getRange(2, 12, 1000, 7)]) // L-R future
+    .build();
+  newRules.push(step1FutureRule);
+
+  // ----- STEP II: Highlight L-O, green G-K, gray P-R -----
+  const step2CompletedRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND($${stepCol}2="Step II",${activeStatusCondition})`)
+    .setBackground(COMPLETED_GREEN)
+    .setRanges([grievanceLog.getRange(2, 7, 1000, 5)]) // G-K completed
+    .build();
+  newRules.push(step2CompletedRule);
+
+  const step2CurrentRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND($${stepCol}2="Step II",${activeStatusCondition})`)
+    .setBackground(CURRENT_AMBER)
+    .setRanges([grievanceLog.getRange(2, 12, 1000, 4)]) // L-O current
+    .build();
+  newRules.push(step2CurrentRule);
+
+  const step2FutureRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND($${stepCol}2="Step II",${activeStatusCondition})`)
+    .setBackground(FUTURE_GRAY)
+    .setFontColor('#9CA3AF')
+    .setRanges([grievanceLog.getRange(2, 16, 1000, 3)]) // P-R future
+    .build();
+  newRules.push(step2FutureRule);
+
+  // ----- STEP III: Highlight P-Q, green G-O, gray R -----
+  const step3CompletedRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND($${stepCol}2="Step III",${activeStatusCondition})`)
+    .setBackground(COMPLETED_GREEN)
+    .setRanges([grievanceLog.getRange(2, 7, 1000, 9)]) // G-O completed
+    .build();
+  newRules.push(step3CompletedRule);
+
+  const step3CurrentRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND($${stepCol}2="Step III",${activeStatusCondition})`)
+    .setBackground(CURRENT_AMBER)
+    .setRanges([grievanceLog.getRange(2, 16, 1000, 2)]) // P-Q current
+    .build();
+  newRules.push(step3CurrentRule);
+
+  const step3FutureRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND($${stepCol}2="Step III",${activeStatusCondition})`)
+    .setBackground(FUTURE_GRAY)
+    .setFontColor('#9CA3AF')
+    .setRanges([grievanceLog.getRange(2, 18, 1000, 1)]) // R future
+    .build();
+  newRules.push(step3FutureRule);
+
+  // ----- ARBITRATION/MEDIATION: Green G-Q, amber R -----
+  const arbMedCompletedRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND(OR($${stepCol}2="Arbitration",$${stepCol}2="Mediation"),${activeStatusCondition})`)
+    .setBackground(COMPLETED_GREEN)
+    .setRanges([grievanceLog.getRange(2, 7, 1000, 11)]) // G-Q completed
+    .build();
+  newRules.push(arbMedCompletedRule);
+
+  const arbMedCurrentRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied(`=AND(OR($${stepCol}2="Arbitration",$${stepCol}2="Mediation"),${activeStatusCondition})`)
+    .setBackground(CURRENT_AMBER)
+    .setRanges([grievanceLog.getRange(2, 18, 1000, 1)]) // R current (awaiting close)
+    .build();
+  newRules.push(arbMedCurrentRule);
+
+  grievanceLog.setConditionalFormatRules(newRules);
+}
+
+/**
+ * Sorts Grievance Log to move completed grievances to bottom
+ * Call this manually or set up a trigger to run periodically
  */
 function sortGrievancesByStatus() {
   const ss = SpreadsheetApp.getActive();
@@ -2736,14 +2943,21 @@ function sortGrievancesByStatus() {
 
   const lastCol = grievanceLog.getLastColumn();
   const dataRange = grievanceLog.getRange(2, 1, lastRow - 1, lastCol);
+
+  // Sort by Status - Open/Pending first, then Closed/Settled/Withdrawn/Denied
+  // Custom sort: Open=1, Pending Info=2, Appealed=3, In Arbitration=4, others=5
   const statusCol = GRIEVANCE_COLS.STATUS;
 
-  dataRange.sort([{ column: statusCol, ascending: true }]);
-  SpreadsheetApp.getActive().toast('Grievances sorted - active cases at top, completed at bottom', 'Sorted', 3);
+  dataRange.sort([
+    { column: statusCol, ascending: true }
+  ]);
+
+  SpreadsheetApp.getActive().toast('✅ Grievances sorted - active cases at top, completed at bottom', 'Sorted', 3);
 }
 
 /**
  * Cleans up Grievance Log by removing extra columns and reapplying formulas
+ * Use this when data appears misaligned or there are extra columns
  */
 function cleanupGrievanceLog() {
   const ss = SpreadsheetApp.getActive();
@@ -2763,7 +2977,7 @@ function cleanupGrievanceLog() {
     SpreadsheetApp.getActive().toast(`Removed ${extraCols} extra column(s)`, 'Cleanup', 2);
   }
 
-  // Reapply headers
+  // Reapply headers to ensure correct column names
   const headers = [
     "Grievance ID", "Member ID", "First Name", "Last Name", "Status", "Current Step",
     "Incident Date", "Filing Deadline (21d)", "Date Filed (Step I)", "Step I Decision Due (30d)",
@@ -2774,19 +2988,27 @@ function cleanupGrievanceLog() {
   ];
   grievanceLog.getRange(1, 1, 1, headers.length).setValues([headers]);
 
-  // Clear calculated columns before reapplying formulas
+  // Clear any existing formulas in calculated columns before reapplying
   const calculatedCols = [
-    GRIEVANCE_COLS.FILING_DEADLINE, GRIEVANCE_COLS.STEP1_DUE, GRIEVANCE_COLS.STEP2_APPEAL_DUE,
-    GRIEVANCE_COLS.STEP2_DUE, GRIEVANCE_COLS.STEP3_APPEAL_DUE, GRIEVANCE_COLS.DAYS_OPEN,
-    GRIEVANCE_COLS.NEXT_ACTION_DUE, GRIEVANCE_COLS.DAYS_TO_DEADLINE
+    GRIEVANCE_COLS.FILING_DEADLINE,    // H
+    GRIEVANCE_COLS.STEP1_DUE,          // J
+    GRIEVANCE_COLS.STEP2_APPEAL_DUE,   // L
+    GRIEVANCE_COLS.STEP2_DUE,          // N
+    GRIEVANCE_COLS.STEP3_APPEAL_DUE,   // P
+    GRIEVANCE_COLS.DAYS_OPEN,          // S
+    GRIEVANCE_COLS.NEXT_ACTION_DUE,    // T
+    GRIEVANCE_COLS.DAYS_TO_DEADLINE    // U
   ];
+
   const lastRow = Math.max(grievanceLog.getLastRow(), 2);
   calculatedCols.forEach(col => {
     grievanceLog.getRange(2, col, lastRow - 1, 1).clearContent();
   });
 
+  // Reapply all formulas
   setupFormulasAndCalculations();
-  SpreadsheetApp.getActive().toast('Grievance Log cleaned up and formulas reapplied', 'Complete', 3);
+
+  SpreadsheetApp.getActive().toast('✅ Grievance Log cleaned up and formulas reapplied', 'Complete', 3);
 }
 
 /* --------------------- MENU --------------------- */
@@ -2839,6 +3061,7 @@ function onOpen() {
       .addItem("🎛️ Float Control Panel", "showGrievanceFloatPanel")
       .addSeparator()
       .addItem("📊 Sort Grievances (Active First)", "sortGrievancesByStatus")
+      .addItem("🔄 Refresh Progress Bar", "setupGrievanceProgressBar")
       .addItem("🧹 Cleanup Grievance Log", "cleanupGrievanceLog")
       .addSeparator()
       .addItem("🆔 Generate Next Grievance ID", "showNextGrievanceID"))
@@ -3879,7 +4102,7 @@ function seedGrievancesWithCount(count, toggleName) {
   }
 
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
-  const memberIDs = allMemberData.map(function(row) { return row[0]; }).filter(String);
+  const memberIDs = allMemberData.map(function(row) { return row[MEMBER_COLS.MEMBER_ID - 1]; }).filter(String);
 
   // Get grievance dropdown values using dynamic helpers
   const grievanceDropdowns = getGrievanceLogDropdownValues();
@@ -4049,10 +4272,10 @@ function updateMemberDirectorySnapshots() {
   const grievanceData = grievanceLog.getRange(2, 1, grievanceLastRow - 1, 28).getValues();
   const memberSnapshots = {};
   grievanceData.forEach(function(row) {
-    const memberID = row[1];
-    const status = row[4];
-    const nextActionDue = row[19];
-    const assignedSteward = row[26];
+    const memberID = row[GRIEVANCE_COLS.MEMBER_ID - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+    const assignedSteward = row[GRIEVANCE_COLS.STEWARD - 1];
     if (!memberID) return;
     if (!memberSnapshots[memberID]) {
       memberSnapshots[memberID] = {status, nextDeadline: nextActionDue, stewardWhoContacted: assignedSteward};
@@ -4076,7 +4299,7 @@ function updateMemberDirectorySnapshots() {
       updateData.push(["", "", "", "", ""]);
     }
   }
-  if (updateData.length > 0) memberDir.getRange(2, 25, updateData.length, 5).setValues(updateData);
+  if (updateData.length > 0) memberDir.getRange(2, MEMBER_COLS.HAS_OPEN_GRIEVANCE, updateData.length, 5).setValues(updateData);
 }
 
 function clearAllData() {
@@ -4200,12 +4423,12 @@ function populateStewardWorkload() {
   const stewards = {};
   for (let i = 1; i < memberData.length; i++) {
     const row = memberData[i];
-    const isSteward = row[9]; // Column J - Is Steward
+    const isSteward = row[MEMBER_COLS.IS_STEWARD - 1];
     if (isSteward === 'Yes') {
-      const memberId = row[0];
-      const name = `${row[1]} ${row[2]}`; // First + Last name
-      const email = row[4];
-      const phone = row[5];
+      const memberId = row[MEMBER_COLS.MEMBER_ID - 1];
+      const name = `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`;
+      const email = row[MEMBER_COLS.EMAIL - 1];
+      const phone = row[MEMBER_COLS.PHONE - 1];
       stewards[memberId] = {
         name: name,
         email: email,
@@ -4223,10 +4446,10 @@ function populateStewardWorkload() {
   const today = new Date();
   for (let i = 1; i < grievanceData.length; i++) {
     const row = grievanceData[i];
-    const stewardId = row[6]; // Column G - Assigned Steward ID
-    const status = row[4]; // Column E - Status
-    const outcome = row[16]; // Column Q - Outcome
-    const daysOpen = row[18]; // Column S - Days Open
+    const stewardId = row[GRIEVANCE_COLS.STEWARD - 1]; // Assigned Steward
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const outcome = row[GRIEVANCE_COLS.RESOLUTION - 1]; // Resolution/Outcome
+    const daysOpen = row[GRIEVANCE_COLS.DAYS_OPEN - 1];
 
     if (stewards[stewardId]) {
       stewards[stewardId].totalCases++;
