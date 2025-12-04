@@ -1873,6 +1873,22 @@ function seedMembersWithCount(count, toggleName) {
 
   SpreadsheetApp.getActive().toast(`🚀 Seeding ${count} members (${toggleName})...`, "Processing", -1);
 
+  // Clear existing data validations on columns that will receive seeded data
+  // This prevents validation conflicts when Config values differ from existing rules
+  const lastRow = Math.max(memberDir.getLastRow(), 2);
+  const maxSeedRows = lastRow + count + 100; // Buffer for new rows
+  try {
+    // Clear validations on columns: D (Job Title), E (Location), F (Unit), G (Office Days),
+    // J (Is Steward), K (Supervisor), L (Manager), M (Assigned Steward)
+    const columnsToClean = [4, 5, 6, 7, 10, 11, 12, 13];
+    columnsToClean.forEach(function(col) {
+      memberDir.getRange(2, col, maxSeedRows, 1).clearDataValidations();
+    });
+    Logger.log('Cleared data validations for seed operation');
+  } catch (e) {
+    Logger.log('Warning: Could not clear some validations: ' + e.message);
+  }
+
   const firstNames = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley", "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle"];
   const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores"];
 
@@ -2035,6 +2051,20 @@ function seedGrievancesWithCount(count, toggleName) {
   if (response !== ui.Button.YES) return;
 
   SpreadsheetApp.getActive().toast(`🚀 Seeding ${count} grievances (${toggleName})...`, "Processing", -1);
+
+  // Clear existing data validations on columns that will receive seeded data
+  const lastRow = Math.max(grievanceLog.getLastRow(), 2);
+  const maxSeedRows = lastRow + count + 100;
+  try {
+    // Clear validations on columns: E (Status), F (Step), V (Articles), W (Category), AA (Steward)
+    const columnsToClean = [5, 6, 22, 23, 27];
+    columnsToClean.forEach(function(col) {
+      grievanceLog.getRange(2, col, maxSeedRows, 1).clearDataValidations();
+    });
+    Logger.log('Cleared grievance data validations for seed operation');
+  } catch (e) {
+    Logger.log('Warning: Could not clear some validations: ' + e.message);
+  }
 
   // Get member data ONCE before the loop (CRITICAL FIX)
   const memberLastRow = memberDir.getLastRow();
