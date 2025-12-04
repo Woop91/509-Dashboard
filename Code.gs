@@ -100,27 +100,27 @@ function createConfigTab() {
   config.clear();
 
   const configData = [
-    // Row 1: Column Headers (31 columns total)
+    // Row 1: Column Headers (29 columns total)
     // Employment Info (1-5)
     ["Job Titles", "Office Locations", "Units", "Office Days", "Yes/No",
-    // Supervision (6-10)
-     "Supervisor First Name", "Supervisor Last Name", "Manager First Name", "Manager Last Name", "Stewards",
-    // Grievance Settings (11-15)
+    // Supervision (6-8)
+     "Supervisors", "Managers", "Stewards",
+    // Grievance Settings (9-13)
      "Grievance Status", "Grievance Step", "Issue Category", "Articles Violated", "Communication Methods",
-    // Links & Coordinators (16-18)
+    // Links & Coordinators (14-16)
      "Grievance Coordinators", "Grievance Form URL", "Contact Form URL",
-    // Notifications (19-21)
+    // Notifications (17-19)
      "Admin Emails", "Alert Days Before Deadline", "Notification Recipients",
-    // Organization (22-25)
+    // Organization (20-23)
      "Organization Name", "Local Number", "Main Office Address", "Main Phone",
-    // Integration (26-27)
+    // Integration (24-25)
      "Google Drive Folder ID", "Google Calendar ID",
-    // Deadlines (28-31)
+    // Deadlines (26-29)
      "Filing Deadline Days", "Step I Response Days", "Step II Appeal Days", "Step II Response Days"],
 
     // Data rows - first row has default/example values for settings columns
     ["Coordinator", "Boston HQ", "Unit A - Administrative", "Monday", "Yes",
-     "Sarah", "Johnson", "Michael", "Chen", "Jane Smith",
+     "Sarah Johnson", "Michael Chen", "Jane Smith",
      "Open", "Informal", "Discipline", "Art. 1 - Recognition", "Email",
      "Jane Smith, John Doe, Mary Johnson", "", "",
      "", "3, 7, 14", "",
@@ -129,7 +129,7 @@ function createConfigTab() {
      "21", "30", "10", "30"],
 
     ["Analyst", "Worcester Office", "Unit B - Technical", "Tuesday", "No",
-     "Mike", "Wilson", "Lisa", "Anderson", "John Doe",
+     "Mike Wilson", "Lisa Anderson", "John Doe",
      "Pending Info", "Step I", "Workload", "Art. 2 - Union Security", "Phone",
      "Bob Wilson, Alice Brown", "", "",
      "", "", "",
@@ -138,7 +138,7 @@ function createConfigTab() {
      "", "", "", ""],
 
     ["Case Manager", "Springfield Branch", "Unit C - Support Services", "Wednesday", "",
-     "Emily", "Davis", "Robert", "Brown", "Mary Johnson",
+     "Emily Davis", "Robert Brown", "Mary Johnson",
      "Settled", "Step II", "Scheduling", "Art. 3 - Management Rights", "Text",
      "Sarah Martinez, Kevin Jones", "", "",
      "", "", "",
@@ -147,7 +147,7 @@ function createConfigTab() {
      "", "", "", ""],
 
     ["Specialist", "Cambridge Office", "Unit D - Operations", "Thursday", "",
-     "Tom", "Harris", "Jennifer", "Lee", "Bob Wilson",
+     "Tom Harris", "Jennifer Lee", "Bob Wilson",
      "Withdrawn", "Step III", "Pay", "Art. 4 - No Discrimination", "In Person",
      "Daniel Kim, Rachel Adams", "", "",
      "", "", "",
@@ -156,7 +156,7 @@ function createConfigTab() {
      "", "", "", ""],
 
     ["Senior Analyst", "Lowell Center", "Unit E - Field Services", "Friday", "",
-     "Amanda", "White", "David", "Martinez", "Alice Brown",
+     "Amanda White", "David Martinez", "Alice Brown",
      "Closed", "Mediation", "Discrimination", "Art. 5 - Union Business", "",
      "John Doe, Mary Johnson", "", "",
      "", "", "",
@@ -165,7 +165,7 @@ function createConfigTab() {
      "", "", "", ""],
 
     ["Team Lead", "Quincy Station", "", "Saturday", "",
-     "Chris", "Taylor", "Susan", "Garcia", "Tom Davis",
+     "Chris Taylor", "Susan Garcia", "Tom Davis",
      "Appealed", "Arbitration", "Safety", "Art. 23 - Grievance Procedure", "",
      "Alice Brown, Tom Davis", "", "",
      "", "", "",
@@ -174,7 +174,7 @@ function createConfigTab() {
      "", "", "", ""],
 
     ["Director", "Remote/Hybrid", "", "Sunday", "",
-     "Patricia", "Moore", "James", "Wilson", "Sarah Martinez",
+     "Patricia Moore", "James Wilson", "Sarah Martinez",
      "", "", "Benefits", "Art. 24 - Discipline", "",
      "Kevin Jones, Linda Garcia", "", "",
      "", "", "",
@@ -183,7 +183,7 @@ function createConfigTab() {
      "", "", "", ""],
 
     ["Manager", "Brockton Office", "", "", "",
-     "Kevin", "Anderson", "Nancy", "Taylor", "Kevin Jones",
+     "Kevin Anderson", "Nancy Taylor", "Kevin Jones",
      "", "", "Training", "Art. 25 - Hours of Work", "",
      "Rachel Adams", "", "",
      "", "", "",
@@ -192,7 +192,7 @@ function createConfigTab() {
      "", "", "", ""],
 
     ["Assistant", "Lynn Location", "", "", "",
-     "Michelle", "Lee", "Richard", "White", "Linda Garcia",
+     "Michelle Lee", "Richard White", "Linda Garcia",
      "", "", "Other", "Art. 26 - Overtime", "",
      "", "", "",
      "", "", "",
@@ -201,7 +201,7 @@ function createConfigTab() {
      "", "", "", ""],
 
     ["Associate", "Salem Office", "", "", "",
-     "Brandon", "Scott", "Angela", "Moore", "Daniel Kim",
+     "Brandon Scott", "Angela Moore", "Daniel Kim",
      "", "", "Harassment", "Art. 27 - Seniority", "",
      "", "", "",
      "", "", "",
@@ -210,7 +210,7 @@ function createConfigTab() {
      "", "", "", ""],
 
     ["Technician", "", "", "", "",
-     "Jessica", "Green", "Christopher", "Lee", "Rachel Adams",
+     "Jessica Green", "Christopher Lee", "Rachel Adams",
      "", "", "Equipment", "Art. 28 - Layoff", "",
      "", "", "",
      "", "", "",
@@ -219,7 +219,7 @@ function createConfigTab() {
      "", "", "", ""],
 
     ["Administrator", "", "", "", "",
-     "Andrew", "Clark", "Melissa", "Wright", "",
+     "Andrew Clark", "Melissa Wright", "",
      "", "", "Leave", "Art. 29 - Sick Leave", "",
      "", "", "",
      "", "", "",
@@ -228,7 +228,7 @@ function createConfigTab() {
      "", "", "", ""],
 
     ["Support Staff", "", "", "", "",
-     "Rachel", "Brown", "Timothy", "Davis", "",
+     "Rachel Brown", "Timothy Davis", "",
      "", "", "Grievance Process", "Art. 30 - Vacation", "",
      "", "", "",
      "", "", "",
@@ -237,10 +237,10 @@ function createConfigTab() {
      "", "", "", ""]
   ];
 
-  // Add category header row first (8 categories, 31 columns)
+  // Add category header row first (8 categories, 29 columns)
   const categoryRow = [
     "── EMPLOYMENT INFO ──", "", "", "", "",
-    "── SUPERVISION ──", "", "", "", "",
+    "── SUPERVISION ──", "", "",
     "── GRIEVANCE SETTINGS ──", "", "", "", "",
     "── LINKS & COORDINATORS ──", "", "",
     "── NOTIFICATIONS ──", "", "",
@@ -259,48 +259,48 @@ function createConfigTab() {
     .setFontSize(10)
     .setHorizontalAlignment("center");
 
-  // Category colors for row 1 (dark colors)
+  // Category colors for row 1 (dark colors) - 29 columns total
   // Employment Info (cols 1-5) - Blue
   config.getRange(1, 1, 1, 5).setBackground("#3B82F6").setFontColor("#FFFFFF");
-  // Supervision (cols 6-10) - Green
-  config.getRange(1, 6, 1, 5).setBackground("#10B981").setFontColor("#FFFFFF");
-  // Grievance Settings (cols 11-15) - Orange
-  config.getRange(1, 11, 1, 5).setBackground("#F59E0B").setFontColor("#FFFFFF");
-  // Links & Coordinators (cols 16-18) - Purple
-  config.getRange(1, 16, 1, 3).setBackground("#8B5CF6").setFontColor("#FFFFFF");
-  // Notifications (cols 19-21) - Red/Pink
-  config.getRange(1, 19, 1, 3).setBackground("#EF4444").setFontColor("#FFFFFF");
-  // Organization (cols 22-25) - Teal
-  config.getRange(1, 22, 1, 4).setBackground("#14B8A6").setFontColor("#FFFFFF");
-  // Integration (cols 26-27) - Indigo
-  config.getRange(1, 26, 1, 2).setBackground("#6366F1").setFontColor("#FFFFFF");
-  // Deadlines (cols 28-31) - Amber/Gold
-  config.getRange(1, 28, 1, 4).setBackground("#D97706").setFontColor("#FFFFFF");
+  // Supervision (cols 6-8) - Green
+  config.getRange(1, 6, 1, 3).setBackground("#10B981").setFontColor("#FFFFFF");
+  // Grievance Settings (cols 9-13) - Orange
+  config.getRange(1, 9, 1, 5).setBackground("#F59E0B").setFontColor("#FFFFFF");
+  // Links & Coordinators (cols 14-16) - Purple
+  config.getRange(1, 14, 1, 3).setBackground("#8B5CF6").setFontColor("#FFFFFF");
+  // Notifications (cols 17-19) - Red/Pink
+  config.getRange(1, 17, 1, 3).setBackground("#EF4444").setFontColor("#FFFFFF");
+  // Organization (cols 20-23) - Teal
+  config.getRange(1, 20, 1, 4).setBackground("#14B8A6").setFontColor("#FFFFFF");
+  // Integration (cols 24-25) - Indigo
+  config.getRange(1, 24, 1, 2).setBackground("#6366F1").setFontColor("#FFFFFF");
+  // Deadlines (cols 26-29) - Amber/Gold
+  config.getRange(1, 26, 1, 4).setBackground("#D97706").setFontColor("#FFFFFF");
 
   // Style column header row (Row 2) with matching lighter colors
   config.getRange(2, 1, 1, configData[0].length)
     .setFontWeight("bold")
     .setFontSize(9);
 
-  // Light colors for column headers (Row 2)
-  config.getRange(2, 1, 1, 5).setBackground("#DBEAFE");   // Light blue - Employment
-  config.getRange(2, 6, 1, 5).setBackground("#D1FAE5");   // Light green - Supervision
-  config.getRange(2, 11, 1, 5).setBackground("#FEF3C7");  // Light orange - Grievance Settings
-  config.getRange(2, 16, 1, 3).setBackground("#EDE9FE");  // Light purple - Links
-  config.getRange(2, 19, 1, 3).setBackground("#FEE2E2");  // Light red - Notifications
-  config.getRange(2, 22, 1, 4).setBackground("#CCFBF1");  // Light teal - Organization
-  config.getRange(2, 26, 1, 2).setBackground("#E0E7FF");  // Light indigo - Integration
-  config.getRange(2, 28, 1, 4).setBackground("#FEF3C7");  // Light amber - Deadlines
+  // Light colors for column headers (Row 2) - 29 columns total
+  config.getRange(2, 1, 1, 5).setBackground("#DBEAFE");   // Light blue - Employment (1-5)
+  config.getRange(2, 6, 1, 3).setBackground("#D1FAE5");   // Light green - Supervision (6-8)
+  config.getRange(2, 9, 1, 5).setBackground("#FEF3C7");   // Light orange - Grievance Settings (9-13)
+  config.getRange(2, 14, 1, 3).setBackground("#EDE9FE");  // Light purple - Links (14-16)
+  config.getRange(2, 17, 1, 3).setBackground("#FEE2E2");  // Light red - Notifications (17-19)
+  config.getRange(2, 20, 1, 4).setBackground("#CCFBF1");  // Light teal - Organization (20-23)
+  config.getRange(2, 24, 1, 2).setBackground("#E0E7FF");  // Light indigo - Integration (24-25)
+  config.getRange(2, 26, 1, 4).setBackground("#FEF3C7");  // Light amber - Deadlines (26-29)
 
-  // Add borders between category groups
+  // Add borders between category groups (right border after last column of each category)
   const totalRows = configData.length + 1;
-  config.getRange(1, 5, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  config.getRange(1, 10, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  config.getRange(1, 15, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  config.getRange(1, 18, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  config.getRange(1, 21, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  config.getRange(1, 25, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
-  config.getRange(1, 27, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
+  config.getRange(1, 5, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);   // After Employment
+  config.getRange(1, 8, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);   // After Supervision
+  config.getRange(1, 13, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);  // After Grievance Settings
+  config.getRange(1, 16, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);  // After Links
+  config.getRange(1, 19, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);  // After Notifications
+  config.getRange(1, 23, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);  // After Organization
+  config.getRange(1, 25, totalRows, 1).setBorder(null, null, null, true, null, null, "#9CA3AF", SpreadsheetApp.BorderStyle.SOLID_MEDIUM);  // After Integration
 
   for (let i = 1; i <= configData[0].length; i++) {
     config.autoResizeColumn(i);
@@ -2478,13 +2478,14 @@ function setupMemberDirectoryValidations() {
     memberDir.getRange(2, 12, MAX_ROWS, 1).setDataValidation(managerRule);
   }
 
-  // Assigned Steward (Column M = 13)
+  // Assigned Steward (Column M = 13) and Steward Who Contacted Member (Column AD = 30)
   if (stewards.length > 0) {
     const stewardRule = SpreadsheetApp.newDataValidation()
       .requireValueInList(stewards, true)
       .setAllowInvalid(false)
       .build();
     memberDir.getRange(2, 13, MAX_ROWS, 1).setDataValidation(stewardRule);
+    memberDir.getRange(2, 30, MAX_ROWS, 1).setDataValidation(stewardRule);
   }
 
   // Interest: Local Actions (Column T = 20)
@@ -2511,11 +2512,6 @@ function setupMemberDirectoryValidations() {
     .setHelpText('Select one or enter multiple comma-separated')
     .build();
   memberDir.getRange(2, 25, MAX_ROWS, 1).setDataValidation(bestTimeRule);
-
-  // Steward Who Contacted Member (Column AD = 30)
-  if (stewards.length > 0) {
-    memberDir.getRange(2, 30, MAX_ROWS, 1).setDataValidation(stewardRule);
-  }
 
   // Add conditional formatting for empty email/phone
   // Email (Column H = 8) - Red background if empty

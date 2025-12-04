@@ -250,39 +250,37 @@ const CONFIG_COLS = {
   UNITS: 3,                   // C
   OFFICE_DAYS: 4,             // D
   YES_NO: 5,                  // E
-  // Supervision (cols 6-10)
-  SUPERVISOR_FIRST: 6,        // F
-  SUPERVISOR_LAST: 7,         // G
-  MANAGER_FIRST: 8,           // H
-  MANAGER_LAST: 9,            // I
-  STEWARDS: 10,               // J
-  // Grievance Settings (cols 11-15)
-  GRIEVANCE_STATUS: 11,       // K
-  GRIEVANCE_STEP: 12,         // L
-  ISSUE_CATEGORY: 13,         // M
-  ARTICLES_VIOLATED: 14,      // N
-  COMM_METHODS: 15,           // O
-  // Links & Coordinators (cols 16-18)
-  GRIEVANCE_COORDINATORS: 16, // P - comma-separated list
-  GRIEVANCE_FORM_URL: 17,     // Q - URL to grievance intake form
-  CONTACT_FORM_URL: 18,       // R - URL to contact form
-  // Notifications (cols 19-21)
-  ADMIN_EMAILS: 19,           // S - admin email addresses
-  ALERT_DAYS: 20,             // T - days before deadline to alert (e.g., "3, 7, 14")
-  NOTIFICATION_RECIPIENTS: 21,// U - default CC for notifications
-  // Organization (cols 22-25)
-  ORG_NAME: 22,               // V - organization name
-  LOCAL_NUMBER: 23,           // W - union local number
-  MAIN_ADDRESS: 24,           // X - main office address
-  MAIN_PHONE: 25,             // Y - main phone number
-  // Integration (cols 26-27)
-  DRIVE_FOLDER_ID: 26,        // Z - Google Drive root folder ID
-  CALENDAR_ID: 27,            // AA - Google Calendar ID
-  // Deadlines (cols 28-31)
-  FILING_DEADLINE_DAYS: 28,   // AB - days to file grievance (default: 21)
-  STEP1_RESPONSE_DAYS: 29,    // AC - days for Step I response (default: 30)
-  STEP2_APPEAL_DAYS: 30,      // AD - days to appeal to Step II (default: 10)
-  STEP2_RESPONSE_DAYS: 31     // AE - days for Step II response (default: 30)
+  // Supervision (cols 6-8) - combined first/last names
+  SUPERVISORS: 6,             // F - full name (First Last)
+  MANAGERS: 7,                // G - full name (First Last)
+  STEWARDS: 8,                // H
+  // Grievance Settings (cols 9-13)
+  GRIEVANCE_STATUS: 9,        // I
+  GRIEVANCE_STEP: 10,         // J
+  ISSUE_CATEGORY: 11,         // K
+  ARTICLES_VIOLATED: 12,      // L
+  COMM_METHODS: 13,           // M
+  // Links & Coordinators (cols 14-16)
+  GRIEVANCE_COORDINATORS: 14, // N - comma-separated list
+  GRIEVANCE_FORM_URL: 15,     // O - URL to grievance intake form
+  CONTACT_FORM_URL: 16,       // P - URL to contact form
+  // Notifications (cols 17-19)
+  ADMIN_EMAILS: 17,           // Q - admin email addresses
+  ALERT_DAYS: 18,             // R - days before deadline to alert (e.g., "3, 7, 14")
+  NOTIFICATION_RECIPIENTS: 19,// S - default CC for notifications
+  // Organization (cols 20-23)
+  ORG_NAME: 20,               // T - organization name
+  LOCAL_NUMBER: 21,           // U - union local number
+  MAIN_ADDRESS: 22,           // V - main office address
+  MAIN_PHONE: 23,             // W - main phone number
+  // Integration (cols 24-25)
+  DRIVE_FOLDER_ID: 24,        // X - Google Drive root folder ID
+  CALENDAR_ID: 25,            // Y - Google Calendar ID
+  // Deadlines (cols 26-29)
+  FILING_DEADLINE_DAYS: 26,   // Z - days to file grievance (default: 21)
+  STEP1_RESPONSE_DAYS: 27,    // AA - days for Step I response (default: 30)
+  STEP2_APPEAL_DAYS: 28,      // AB - days to appeal to Step II (default: 10)
+  STEP2_RESPONSE_DAYS: 29     // AC - days for Step II response (default: 30)
 };
 
 /* --------------------= CACHE CONFIGURATION --------------------= */
