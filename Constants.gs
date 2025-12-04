@@ -251,41 +251,44 @@ const CONFIG_COLS = {
   UNITS: 3,                   // C
   OFFICE_DAYS: 4,             // D
   YES_NO: 5,                  // E
-  // Supervision (cols 6-8) - combined first/last names
+  // Supervision (cols 6-7) - managers only, NOT stewards
   SUPERVISORS: 6,             // F - full name (First Last)
   MANAGERS: 7,                // G - full name (First Last)
-  STEWARDS: 8,                // H
-  // Grievance Settings (cols 9-13)
-  GRIEVANCE_STATUS: 9,        // I
-  GRIEVANCE_STEP: 10,         // J
-  ISSUE_CATEGORY: 11,         // K
-  ARTICLES_VIOLATED: 12,      // L
-  COMM_METHODS: 13,           // M
-  // Links & Coordinators (cols 14-16)
-  GRIEVANCE_COORDINATORS: 14, // N - comma-separated list
-  GRIEVANCE_FORM_URL: 15,     // O - URL to grievance intake form
-  CONTACT_FORM_URL: 16,       // P - URL to contact form
-  // Notifications (cols 17-19)
-  ADMIN_EMAILS: 17,           // Q - admin email addresses
-  ALERT_DAYS: 18,             // R - days before deadline to alert (e.g., "3, 7, 14")
-  NOTIFICATION_RECIPIENTS: 19,// S - default CC for notifications
-  // Organization (cols 20-23)
-  ORG_NAME: 20,               // T - organization name
-  LOCAL_NUMBER: 21,           // U - union local number
-  MAIN_ADDRESS: 22,           // V - main office address
-  MAIN_PHONE: 23,             // W - main phone number
-  // Integration (cols 24-25)
-  DRIVE_FOLDER_ID: 24,        // X - Google Drive root folder ID
-  CALENDAR_ID: 25,            // Y - Google Calendar ID
-  // Deadlines (cols 26-29)
-  FILING_DEADLINE_DAYS: 26,   // Z - days to file grievance (default: 21)
-  STEP1_RESPONSE_DAYS: 27,    // AA - days for Step I response (default: 30)
-  STEP2_APPEAL_DAYS: 28,      // AB - days to appeal to Step II (default: 10)
-  STEP2_RESPONSE_DAYS: 29,    // AC - days for Step II response (default: 30)
-  // Multi-select options (cols 30-32)
-  COMMITTEES: 30,             // AD - list of committees stewards can be in
+  // Steward Info (cols 8-9) - stewards are union reps, not supervisors
+  STEWARDS: 8,                // H - steward names
+  STEWARD_COMMITTEES: 9,      // I - committees stewards can serve on
+  // Grievance Settings (cols 10-14)
+  GRIEVANCE_STATUS: 10,       // J
+  GRIEVANCE_STEP: 11,         // K
+  ISSUE_CATEGORY: 12,         // L
+  ARTICLES_VIOLATED: 13,      // M
+  COMM_METHODS: 14,           // N
+  // Links & Coordinators (cols 15-17)
+  GRIEVANCE_COORDINATORS: 15, // O - comma-separated list
+  GRIEVANCE_FORM_URL: 16,     // P - URL to grievance intake form
+  CONTACT_FORM_URL: 17,       // Q - URL to contact form
+  // Notifications (cols 18-20)
+  ADMIN_EMAILS: 18,           // R - admin email addresses
+  ALERT_DAYS: 19,             // S - days before deadline to alert (e.g., "3, 7, 14")
+  NOTIFICATION_RECIPIENTS: 20,// T - default CC for notifications
+  // Organization (cols 21-24)
+  ORG_NAME: 21,               // U - organization name
+  LOCAL_NUMBER: 22,           // V - union local number
+  MAIN_ADDRESS: 23,           // W - main office address
+  MAIN_PHONE: 24,             // X - main phone number
+  // Integration (cols 25-26)
+  DRIVE_FOLDER_ID: 25,        // Y - Google Drive root folder ID
+  CALENDAR_ID: 26,            // Z - Google Calendar ID
+  // Deadlines (cols 27-30)
+  FILING_DEADLINE_DAYS: 27,   // AA - days to file grievance (default: 21)
+  STEP1_RESPONSE_DAYS: 28,    // AB - days for Step I response (default: 30)
+  STEP2_APPEAL_DAYS: 29,      // AC - days to appeal to Step II (default: 10)
+  STEP2_RESPONSE_DAYS: 30,    // AD - days for Step II response (default: 30)
+  // Multi-select options (cols 31-32)
   BEST_TIMES: 31,             // AE - best times to contact members
-  HOME_TOWNS: 32              // AF - list of home towns in area
+  HOME_TOWNS: 32,             // AF - list of home towns in area
+  // Backward compatibility alias
+  COMMITTEES: 9               // Alias for STEWARD_COMMITTEES (col I)
 };
 
 /* --------------------= CACHE CONFIGURATION --------------------= */
