@@ -1813,6 +1813,111 @@ function goToDashboard() {
   ss.getSheetByName(SHEETS.DASHBOARD).activate();
 }
 
+/**
+ * Diagnostic function to check setup and seed readiness
+ */
+function DIAGNOSE_SETUP() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ui = SpreadsheetApp.getUi();
+
+  let report = "🔧 SETUP DIAGNOSTIC REPORT\n";
+  report += "═══════════════════════════════\n\n";
+
+  // Check sheets
+  report += "📋 SHEETS:\n";
+  const requiredSheets = [
+    { name: SHEETS.CONFIG, label: "Config" },
+    { name: SHEETS.MEMBER_DIR, label: "Member Directory" },
+    { name: SHEETS.GRIEVANCE_LOG, label: "Grievance Log" },
+    { name: SHEETS.DASHBOARD, label: "Dashboard" }
+  ];
+
+  requiredSheets.forEach(function(s) {
+    const sheet = ss.getSheetByName(s.name);
+    if (sheet) {
+      const lastRow = sheet.getLastRow();
+      const lastCol = sheet.getLastColumn();
+      report += `  ✅ ${s.label}: ${lastRow} rows, ${lastCol} columns\n`;
+    } else {
+      report += `  ❌ ${s.label}: NOT FOUND\n`;
+    }
+  });
+
+  // Check Config structure
+  report += "\n📊 CONFIG STRUCTURE:\n";
+  const config = ss.getSheetByName(SHEETS.CONFIG);
+  if (config) {
+    const configLastRow = config.getLastRow();
+    const configLastCol = config.getLastColumn();
+    report += `  Total: ${configLastRow} rows, ${configLastCol} columns\n`;
+    report += `  Expected: 29 columns (new structure)\n`;
+
+    if (configLastCol === 29) {
+      report += `  ✅ Column count matches new structure\n`;
+    } else if (configLastCol === 31) {
+      report += `  ⚠️ Column count matches OLD structure (31 cols)\n`;
+      report += `  → Run CREATE_509_DASHBOARD to update\n`;
+    } else {
+      report += `  ⚠️ Unexpected column count: ${configLastCol}\n`;
+    }
+
+    // Check data in key columns
+    report += "\n📋 CONFIG DATA (Row 3 values):\n";
+    try {
+      const row3 = config.getRange(3, 1, 1, Math.min(configLastCol, 13)).getValues()[0];
+      report += `  Col A (Job Titles): "${row3[0] || 'EMPTY'}"\n`;
+      report += `  Col B (Locations): "${row3[1] || 'EMPTY'}"\n`;
+      report += `  Col F (Supervisors): "${row3[5] || 'EMPTY'}"\n`;
+      report += `  Col G (Managers): "${row3[6] || 'EMPTY'}"\n`;
+      report += `  Col H (Stewards): "${row3[7] || 'EMPTY'}"\n`;
+      report += `  Col I (Status): "${row3[8] || 'EMPTY'}"\n`;
+    } catch (e) {
+      report += `  Error reading: ${e.message}\n`;
+    }
+  }
+
+  // Check dynamic helpers
+  report += "\n🔧 DYNAMIC CONFIG VALUES:\n";
+  try {
+    const dropdowns = getMemberDirectoryDropdownValues();
+    report += `  Job Titles: ${dropdowns.jobTitles.length} values\n`;
+    report += `  Locations: ${dropdowns.locations.length} values\n`;
+    report += `  Units: ${dropdowns.units.length} values\n`;
+    report += `  Supervisors: ${dropdowns.supervisors.length} values\n`;
+    report += `  Managers: ${dropdowns.managers.length} values\n`;
+    report += `  Stewards: ${dropdowns.stewards.length} values\n`;
+
+    if (dropdowns.jobTitles.length > 0) {
+      report += `\n  Sample Job Title: "${dropdowns.jobTitles[0]}"\n`;
+    }
+    if (dropdowns.supervisors.length > 0) {
+      report += `  Sample Supervisor: "${dropdowns.supervisors[0]}"\n`;
+    }
+  } catch (e) {
+    report += `  Error: ${e.message}\n`;
+  }
+
+  // Check grievance config
+  report += "\n📋 GRIEVANCE CONFIG VALUES:\n";
+  try {
+    const gDropdowns = getGrievanceLogDropdownValues();
+    report += `  Statuses: ${gDropdowns.statuses.length} values\n`;
+    report += `  Steps: ${gDropdowns.steps.length} values\n`;
+    report += `  Categories: ${gDropdowns.categories.length} values\n`;
+    report += `  Articles: ${gDropdowns.articles.length} values\n`;
+  } catch (e) {
+    report += `  Error: ${e.message}\n`;
+  }
+
+  // Summary
+  report += "\n═══════════════════════════════\n";
+  report += "💡 If Config values show 0, the Config sheet\n";
+  report += "   structure may not match expected format.\n";
+  report += "   Run CREATE_509_DASHBOARD to recreate sheets.\n";
+
+  ui.alert("🔧 Setup Diagnostic", report, ui.ButtonSet.OK);
+}
+
 function showHelp() {
   const helpText = `
 📊 509 DASHBOARD
