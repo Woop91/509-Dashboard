@@ -865,3 +865,341 @@ function runColumnConstantTests() {
 
   Logger.log('=== All Column Constant Tests Passed ===');
 }
+
+/* --------------------= INPUT VALIDATION TESTS --------------------= */
+
+/**
+ * Test: validateRequired throws on null/undefined/empty
+ */
+function testValidateRequired() {
+  // Should throw on null
+  Assert.assertThrows(
+    function() { validateRequired(null, 'testParam'); },
+    'validateRequired should throw on null'
+  );
+
+  // Should throw on undefined
+  Assert.assertThrows(
+    function() { validateRequired(undefined, 'testParam'); },
+    'validateRequired should throw on undefined'
+  );
+
+  // Should throw on empty string
+  Assert.assertThrows(
+    function() { validateRequired('', 'testParam'); },
+    'validateRequired should throw on empty string'
+  );
+
+  // Should NOT throw on valid values
+  Assert.assertNotThrows(
+    function() { validateRequired('value', 'testParam'); },
+    'validateRequired should not throw on valid string'
+  );
+
+  Assert.assertNotThrows(
+    function() { validateRequired(0, 'testParam'); },
+    'validateRequired should not throw on zero'
+  );
+
+  Logger.log('✅ validateRequired test passed');
+}
+
+/**
+ * Test: validateString validates string type
+ */
+function testValidateString() {
+  // Should throw on number
+  Assert.assertThrows(
+    function() { validateString(123, 'testParam'); },
+    'validateString should throw on number'
+  );
+
+  // Should NOT throw on valid string
+  Assert.assertNotThrows(
+    function() { validateString('valid', 'testParam'); },
+    'validateString should not throw on valid string'
+  );
+
+  Logger.log('✅ validateString test passed');
+}
+
+/**
+ * Test: validatePositiveInt validates positive integers
+ */
+function testValidatePositiveInt() {
+  // Should throw on negative
+  Assert.assertThrows(
+    function() { validatePositiveInt(-1, 'testParam'); },
+    'validatePositiveInt should throw on negative'
+  );
+
+  // Should throw on zero
+  Assert.assertThrows(
+    function() { validatePositiveInt(0, 'testParam'); },
+    'validatePositiveInt should throw on zero'
+  );
+
+  // Should NOT throw on positive integer
+  Assert.assertNotThrows(
+    function() { validatePositiveInt(1, 'testParam'); },
+    'validatePositiveInt should not throw on 1'
+  );
+
+  Logger.log('✅ validatePositiveInt test passed');
+}
+
+/**
+ * Test: validateGrievanceId validates G-XXXXXX format
+ */
+function testValidateGrievanceId() {
+  // Should throw on invalid format
+  Assert.assertThrows(
+    function() { validateGrievanceId('12345', 'testValidateGrievanceId'); },
+    'validateGrievanceId should throw on missing prefix'
+  );
+
+  Assert.assertThrows(
+    function() { validateGrievanceId('G-123', 'testValidateGrievanceId'); },
+    'validateGrievanceId should throw on short ID'
+  );
+
+  // Should NOT throw on valid format
+  Assert.assertNotThrows(
+    function() { validateGrievanceId('G-000001', 'testValidateGrievanceId'); },
+    'validateGrievanceId should not throw on valid ID'
+  );
+
+  Logger.log('✅ validateGrievanceId test passed');
+}
+
+/**
+ * Test: validateMemberId validates MXXXXXX format
+ */
+function testValidateMemberId() {
+  // Should throw on invalid format
+  Assert.assertThrows(
+    function() { validateMemberId('12345', 'testValidateMemberId'); },
+    'validateMemberId should throw on missing prefix'
+  );
+
+  // Should NOT throw on valid format
+  Assert.assertNotThrows(
+    function() { validateMemberId('M000001', 'testValidateMemberId'); },
+    'validateMemberId should not throw on valid ID'
+  );
+
+  Logger.log('✅ validateMemberId test passed');
+}
+
+/**
+ * Test: validateEmail validates email format
+ */
+function testValidateEmail() {
+  // Should throw on invalid emails
+  Assert.assertThrows(
+    function() { validateEmail('notanemail', 'testValidateEmail'); },
+    'validateEmail should throw on missing @'
+  );
+
+  // Should NOT throw on valid emails
+  Assert.assertNotThrows(
+    function() { validateEmail('user@example.com', 'testValidateEmail'); },
+    'validateEmail should not throw on valid email'
+  );
+
+  Logger.log('✅ validateEmail test passed');
+}
+
+/**
+ * Test: validateEnum validates against allowed values
+ */
+function testValidateEnum() {
+  const allowedStatuses = ['Open', 'Closed', 'Pending'];
+
+  // Should throw on invalid value
+  Assert.assertThrows(
+    function() { validateEnum('Invalid', allowedStatuses, 'status'); },
+    'validateEnum should throw on invalid value'
+  );
+
+  // Should NOT throw on valid values
+  Assert.assertNotThrows(
+    function() { validateEnum('Open', allowedStatuses, 'status'); },
+    'validateEnum should not throw on valid value'
+  );
+
+  Logger.log('✅ validateEnum test passed');
+}
+
+/**
+ * Test: safeExecute handles errors properly
+ */
+function testSafeExecute() {
+  // Test successful execution
+  const successResult = safeExecute(function() { return 42; }, { context: 'testSuccess' });
+  Assert.assertTrue(successResult.success, 'safeExecute should return success=true');
+  Assert.assertEquals(42, successResult.data, 'safeExecute should return correct data');
+
+  // Test error with silent mode
+  const errorResult = safeExecute(
+    function() { throw new Error('Test error'); },
+    { silent: true, defaultValue: 'default', context: 'testError' }
+  );
+  Assert.assertFalse(errorResult.success, 'safeExecute should return success=false on error');
+  Assert.assertEquals('default', errorResult.data, 'safeExecute should return defaultValue');
+
+  Logger.log('✅ safeExecute test passed');
+}
+
+/* --------------------= ERROR SCENARIO TESTS --------------------= */
+
+/**
+ * Test: Grievance status values are all valid
+ */
+function testGrievanceStatusValidation() {
+  GRIEVANCE_STATUSES.forEach(function(status) {
+    Assert.assertNotThrows(
+      function() { validateEnum(status, GRIEVANCE_STATUSES, 'status'); },
+      'Status "' + status + '" should be valid'
+    );
+  });
+
+  Assert.assertThrows(
+    function() { validateEnum('InvalidStatus', GRIEVANCE_STATUSES, 'status'); },
+    'Invalid status should throw'
+  );
+
+  Logger.log('✅ Grievance status validation test passed');
+}
+
+/**
+ * Test: Grievance step values are all valid
+ */
+function testGrievanceStepValidation() {
+  GRIEVANCE_STEPS.forEach(function(step) {
+    Assert.assertNotThrows(
+      function() { validateEnum(step, GRIEVANCE_STEPS, 'step'); },
+      'Step "' + step + '" should be valid'
+    );
+  });
+
+  Logger.log('✅ Grievance step validation test passed');
+}
+
+/**
+ * Test: Issue categories are all valid
+ */
+function testIssueCategoryValidation() {
+  ISSUE_CATEGORIES.forEach(function(category) {
+    Assert.assertNotThrows(
+      function() { validateEnum(category, ISSUE_CATEGORIES, 'category'); },
+      'Category "' + category + '" should be valid'
+    );
+  });
+
+  Logger.log('✅ Issue category validation test passed');
+}
+
+/**
+ * Test: Error messages include context when provided
+ */
+function testErrorMessageContext() {
+  try {
+    validateRequired(null, 'testParam', 'testFunction');
+    Assert.fail('Should have thrown');
+  } catch (e) {
+    Assert.assertTrue(
+      e.message.indexOf('testParam') >= 0,
+      'Error should include parameter name'
+    );
+    Assert.assertTrue(
+      e.message.indexOf('testFunction') >= 0,
+      'Error should include function name when provided'
+    );
+  }
+
+  Logger.log('✅ Error message context test passed');
+}
+
+/**
+ * Test: Date validation handles edge cases
+ */
+function testDateValidationEdgeCases() {
+  // Invalid date (NaN time)
+  Assert.assertThrows(
+    function() { validateDate(new Date('invalid'), 'testDate'); },
+    'validateDate should throw on invalid date string'
+  );
+
+  // Valid dates
+  Assert.assertNotThrows(
+    function() { validateDate(new Date(), 'testDate'); },
+    'validateDate should accept current date'
+  );
+
+  Logger.log('✅ Date validation edge cases test passed');
+}
+
+/**
+ * Test: Array validation
+ */
+function testArrayValidation() {
+  // Should throw on non-array
+  Assert.assertThrows(
+    function() { validateArray('string', 'testArray'); },
+    'validateArray should throw on string'
+  );
+
+  // Should NOT throw on arrays
+  Assert.assertNotThrows(
+    function() { validateArray([], 'testArray'); },
+    'validateArray should accept empty array'
+  );
+
+  Assert.assertNotThrows(
+    function() { validateArray([1, 2, 3], 'testArray'); },
+    'validateArray should accept populated array'
+  );
+
+  Logger.log('✅ Array validation test passed');
+}
+
+/**
+ * Run all validation tests
+ */
+function runValidationTests() {
+  Logger.log('=== Running Validation Tests ===');
+
+  testValidateRequired();
+  testValidateString();
+  testValidatePositiveInt();
+  testValidateGrievanceId();
+  testValidateMemberId();
+  testValidateEmail();
+  testValidateEnum();
+  testSafeExecute();
+  testGrievanceStatusValidation();
+  testGrievanceStepValidation();
+  testIssueCategoryValidation();
+  testErrorMessageContext();
+  testDateValidationEdgeCases();
+  testArrayValidation();
+
+  Logger.log('=== All Validation Tests Passed ===');
+}
+
+/**
+ * Run all tests
+ */
+function runAllTests() {
+  Logger.log('========================================');
+  Logger.log('  RUNNING ALL TESTS');
+  Logger.log('========================================');
+
+  runColumnConstantTests();
+  runValidationTests();
+
+  Logger.log('========================================');
+  Logger.log('  ALL TESTS COMPLETE');
+  Logger.log('========================================');
+}

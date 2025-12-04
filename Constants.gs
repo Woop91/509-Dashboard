@@ -647,6 +647,199 @@ function validateRequiredSheets() {
   };
 }
 
+/* --------------------= INPUT VALIDATION HELPERS --------------------= */
+
+/**
+ * Validates that a required parameter is not null/undefined/empty
+ * @param {*} value - The value to check
+ * @param {string} paramName - Name of the parameter (for error message)
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is null, undefined, or empty string
+ */
+function validateRequired(value, paramName, functionName) {
+  if (value === null || value === undefined || value === '') {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Required parameter '${paramName}' is missing${context}`);
+  }
+}
+
+/**
+ * Validates that a value is a non-empty string
+ * @param {*} value - The value to check
+ * @param {string} paramName - Name of the parameter
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is not a string or is empty
+ */
+function validateString(value, paramName, functionName) {
+  validateRequired(value, paramName, functionName);
+  if (typeof value !== 'string') {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Parameter '${paramName}' must be a string${context}, got ${typeof value}`);
+  }
+}
+
+/**
+ * Validates that a value is a positive integer
+ * @param {*} value - The value to check
+ * @param {string} paramName - Name of the parameter
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is not a positive integer
+ */
+function validatePositiveInt(value, paramName, functionName) {
+  validateRequired(value, paramName, functionName);
+  if (!Number.isInteger(value) || value < 1) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Parameter '${paramName}' must be a positive integer${context}, got ${value}`);
+  }
+}
+
+/**
+ * Validates that a value is a valid date
+ * @param {*} value - The value to check
+ * @param {string} paramName - Name of the parameter
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is not a valid date
+ */
+function validateDate(value, paramName, functionName) {
+  validateRequired(value, paramName, functionName);
+  if (!(value instanceof Date) || isNaN(value.getTime())) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Parameter '${paramName}' must be a valid Date${context}`);
+  }
+}
+
+/**
+ * Validates that a value is a non-empty array
+ * @param {*} value - The value to check
+ * @param {string} paramName - Name of the parameter
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is not an array or is empty
+ */
+function validateArray(value, paramName, functionName) {
+  validateRequired(value, paramName, functionName);
+  if (!Array.isArray(value)) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Parameter '${paramName}' must be an array${context}, got ${typeof value}`);
+  }
+}
+
+/**
+ * Validates a grievance ID format (G-XXXXXX)
+ * @param {string} grievanceId - The grievance ID to validate
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If grievance ID is invalid
+ */
+function validateGrievanceId(grievanceId, functionName) {
+  validateString(grievanceId, 'grievanceId', functionName);
+  if (!/^G-\d{6}$/.test(grievanceId)) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Invalid grievance ID format '${grievanceId}'${context}. Expected format: G-XXXXXX`);
+  }
+}
+
+/**
+ * Validates a member ID format (MXXXXXX)
+ * @param {string} memberId - The member ID to validate
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If member ID is invalid
+ */
+function validateMemberId(memberId, functionName) {
+  validateString(memberId, 'memberId', functionName);
+  if (!/^M\d{6}$/.test(memberId)) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Invalid member ID format '${memberId}'${context}. Expected format: MXXXXXX`);
+  }
+}
+
+/**
+ * Validates an email address format
+ * @param {string} email - The email to validate
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If email format is invalid
+ */
+function validateEmail(email, functionName) {
+  validateString(email, 'email', functionName);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Invalid email format '${email}'${context}`);
+  }
+}
+
+/**
+ * Validates that a value is one of the allowed values
+ * @param {*} value - The value to check
+ * @param {Array} allowedValues - Array of allowed values
+ * @param {string} paramName - Name of the parameter
+ * @param {string} [functionName] - Name of the calling function
+ * @throws {Error} If value is not in allowed values
+ */
+function validateEnum(value, allowedValues, paramName, functionName) {
+  validateRequired(value, paramName, functionName);
+  if (!allowedValues.includes(value)) {
+    const context = functionName ? ` in ${functionName}()` : '';
+    throw new Error(`Invalid ${paramName} '${value}'${context}. Allowed values: ${allowedValues.join(', ')}`);
+  }
+}
+
+/**
+ * Creates a validated wrapper for a function that validates parameters
+ * @param {Function} fn - The function to wrap
+ * @param {Array<Object>} validations - Array of {name, validator, required} objects
+ * @returns {Function} Wrapped function with validation
+ *
+ * @example
+ * const safeAddMember = withValidation(addMember, [
+ *   { name: 'memberId', validator: validateMemberId, required: true },
+ *   { name: 'email', validator: validateEmail, required: true }
+ * ]);
+ */
+function withValidation(fn, validations) {
+  return function() {
+    const args = Array.prototype.slice.call(arguments);
+    validations.forEach(function(v, i) {
+      if (v.required || args[i] !== undefined) {
+        try {
+          v.validator(args[i], v.name, fn.name);
+        } catch (e) {
+          throw e;
+        }
+      }
+    });
+    return fn.apply(this, args);
+  };
+}
+
+/**
+ * Safely executes a function and returns a result object
+ * @param {Function} fn - The function to execute
+ * @param {Object} [options] - Options for error handling
+ * @param {boolean} [options.silent=false] - If true, don't throw on error
+ * @param {*} [options.defaultValue=null] - Default value to return on error
+ * @param {string} [options.context] - Context string for error logging
+ * @returns {Object} {success: boolean, data: *, error: Error|null}
+ */
+function safeExecute(fn, options) {
+  options = options || {};
+  const silent = options.silent || false;
+  const defaultValue = options.hasOwnProperty('defaultValue') ? options.defaultValue : null;
+  const context = options.context || fn.name || 'unknown function';
+
+  try {
+    const result = fn();
+    return { success: true, data: result, error: null };
+  } catch (error) {
+    Logger.log(`Error in ${context}: ${error.message}`);
+    if (ERROR_CONFIG.LOG_TO_CONSOLE) {
+      console.error(`[${context}]`, error);
+    }
+    if (!silent) {
+      throw error;
+    }
+    return { success: false, data: defaultValue, error: error };
+  }
+}
+
 /* --------------------= CONFIGURATION REFERENCE --------------------= */
 
 /**

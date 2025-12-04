@@ -81,6 +81,7 @@ function getUserRole(userEmail) {
 
     if (!userRolesSheet) {
       // If sheet doesn't exist, create it and assign current user as admin
+      Logger.log('getUserRole: User Roles sheet not found. Creating and assigning ' + userEmail + ' as ADMIN');
       userRolesSheet = createUserRolesSheet();
       assignRole(userEmail, 'ADMIN');
       return 'ADMIN';
@@ -90,13 +91,20 @@ function getUserRole(userEmail) {
     const data = userRolesSheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
       if (data[i][0].toLowerCase() === userEmail.toLowerCase()) {
-        return data[i][1] || 'VIEWER';
+        const role = data[i][1] || 'VIEWER';
+        Logger.log('getUserRole: Found user ' + userEmail + ' with role ' + role);
+        return role;
       }
     }
 
-    // User not found, default to VIEWER
+    // User not found, default to VIEWER (this is expected behavior, not an error)
+    Logger.log('getUserRole: User ' + userEmail + ' not found in User Roles sheet. Defaulting to VIEWER');
     return 'VIEWER';
   } catch (error) {
+    // Distinguish between "user not found" (handled above) and "error occurred"
+    Logger.log('Error in getUserRole: Failed to retrieve role for user. UserEmail: ' + userEmail +
+               ', Error: ' + error.message +
+               ', Stack: ' + error.stack);
     handleError(error, 'getUserRole');
     return 'VIEWER';
   }
@@ -110,8 +118,32 @@ function getUserRole(userEmail) {
  */
 function assignRole(userEmail, role) {
   try {
+    // Validate email parameter
+    if (!userEmail || typeof userEmail !== 'string') {
+      const error = new Error('assignRole: userEmail parameter is required and must be a string');
+      Logger.log(error.message + '. Received: ' + JSON.stringify(userEmail));
+      throw error;
+    }
+
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userEmail)) {
+      const error = new Error('assignRole: Invalid email format');
+      Logger.log(error.message + '. Email provided: ' + userEmail);
+      throw error;
+    }
+
+    // Validate role parameter
+    if (!role || typeof role !== 'string') {
+      const error = new Error('assignRole: role parameter is required and must be a string');
+      Logger.log(error.message + '. Received: ' + JSON.stringify(role));
+      throw error;
+    }
+
     if (!ROLES[role]) {
-      throw new Error(`Invalid role: ${role}`);
+      const error = new Error(`assignRole: Invalid role "${role}". Valid roles: ${Object.keys(ROLES).join(', ')}`);
+      Logger.log(error.message);
+      throw error;
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -119,6 +151,9 @@ function assignRole(userEmail, role) {
 
     if (!userRolesSheet) {
       userRolesSheet = createUserRolesSheet();
+      if (!userRolesSheet) {
+        throw new Error('assignRole: Failed to create User Roles sheet');
+      }
     }
 
     // Check if user already exists
@@ -137,9 +172,11 @@ function assignRole(userEmail, role) {
 
     if (userRow > 0) {
       // Update existing user
+      Logger.log(`assignRole: Updating existing user ${userEmail} from row ${userRow} to role ${role}`);
       userRolesSheet.getRange(userRow, 2, 1, 3).setValues([[role, timestamp, assignedBy]]);
     } else {
       // Add new user
+      Logger.log(`assignRole: Adding new user ${userEmail} with role ${role}`);
       userRolesSheet.appendRow([userEmail, role, timestamp, assignedBy]);
     }
 
@@ -147,11 +184,18 @@ function assignRole(userEmail, role) {
     logAudit('ROLE_ASSIGNMENT', `Assigned role ${role} to ${userEmail}`, {
       userEmail: userEmail,
       role: role,
-      assignedBy: assignedBy
+      assignedBy: assignedBy,
+      operation: userRow > 0 ? 'UPDATE' : 'CREATE'
     });
 
     return true;
   } catch (error) {
+    // Provide detailed error context
+    Logger.log('Error in assignRole: Failed to assign role. UserEmail: ' + (userEmail || 'undefined') +
+               ', Role: ' + (role || 'undefined') +
+               ', Error: ' + error.message +
+               ', Stack: ' + error.stack);
+
     handleError(error, 'assignRole');
     return false;
   }
@@ -189,15 +233,33 @@ function createUserRolesSheet() {
  */
 function hasPermission(permission, userEmail) {
   try {
+    // Validate permission parameter
+    if (!permission || typeof permission !== 'string') {
+      Logger.log('Error in hasPermission: permission parameter is required and must be a string. Received: ' + JSON.stringify(permission));
+      return false;
+    }
+
     const role = getUserRole(userEmail);
     const roleConfig = ROLES[role];
 
     if (!roleConfig) {
+      // Role not found in ROLES configuration - this is unexpected
+      Logger.log('Error in hasPermission: Role "' + role + '" not found in ROLES configuration. UserEmail: ' + (userEmail || 'current user'));
       return false;
     }
 
-    return roleConfig.permissions.includes(permission);
+    const hasAccess = roleConfig.permissions.includes(permission);
+    Logger.log('hasPermission: User "' + (userEmail || Session.getActiveUser().getEmail()) +
+               '" with role "' + role + '" ' +
+               (hasAccess ? 'HAS' : 'DOES NOT HAVE') +
+               ' permission "' + permission + '"');
+
+    return hasAccess;
   } catch (error) {
+    Logger.log('Error in hasPermission: Failed to check permission. Permission: ' + (permission || 'undefined') +
+               ', UserEmail: ' + (userEmail || 'undefined') +
+               ', Error: ' + error.message +
+               ', Stack: ' + error.stack);
     handleError(error, 'hasPermission');
     return false;
   }
@@ -242,13 +304,45 @@ function withPermission(fn, requiredPermission, actionDescription) {
 /* --------------------= AUDIT LOGGING --------------------= */
 
 /**
+ * Valid audit event types
+ * @type {Array<string>}
+ */
+const VALID_AUDIT_EVENT_TYPES = [
+  'ACCESS',
+  'ACCESS_DENIED',
+  'DATA_CHANGE',
+  'ROLE_ASSIGNMENT',
+  'SEED_DATA',
+  'CLEAR_DATA',
+  'EXPORT_AUDIT_LOG',
+  'ERROR'
+];
+
+/**
  * Logs an audit event
- * @param {string} eventType - Type of event (LOGIN, DATA_CHANGE, ACCESS_DENIED, etc.)
+ * @param {string} eventType - Type of event (ACCESS, DATA_CHANGE, ACCESS_DENIED, etc.)
  * @param {string} description - Human-readable description
  * @param {Object} metadata - Additional metadata
  */
 function logAudit(eventType, description, metadata) {
   try {
+    // Validate eventType parameter
+    if (!eventType || typeof eventType !== 'string') {
+      Logger.log('Error in logAudit: eventType is required and must be a string. Received: ' + JSON.stringify(eventType));
+      return;
+    }
+
+    if (!VALID_AUDIT_EVENT_TYPES.includes(eventType)) {
+      Logger.log('Warning in logAudit: Invalid eventType "' + eventType + '". Valid types: ' + VALID_AUDIT_EVENT_TYPES.join(', '));
+      // Continue with logging anyway, but log the warning
+    }
+
+    // Validate description parameter
+    if (!description || typeof description !== 'string') {
+      Logger.log('Error in logAudit: description is required and must be a string. Received: ' + JSON.stringify(description));
+      return;
+    }
+
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     let auditSheet = ss.getSheetByName('Audit Log');
 
@@ -277,7 +371,8 @@ function logAudit(eventType, description, metadata) {
     }
   } catch (error) {
     // Don't throw error in logging to avoid breaking functionality
-    Logger.log('Error in logAudit: ' + error.message);
+    // But provide better context about what failed
+    Logger.log('Error in logAudit: Failed to log audit event. EventType: ' + eventType + ', Error: ' + error.message + ', Stack: ' + error.stack);
   }
 }
 
