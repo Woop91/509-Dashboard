@@ -201,10 +201,10 @@ function batchAssignSteward() {
     return;
   }
 
-  // Get list of stewards
+  // Get list of stewards - read enough columns to include IS_STEWARD
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-  const stewardData = memberSheet.getRange(2, 1, memberSheet.getLastRow() - 1, 10).getValues();
+  const stewardData = memberSheet.getRange(2, 1, memberSheet.getLastRow() - 1, MEMBER_COLS.IS_STEWARD).getValues();
 
   const stewards = stewardData
     .filter(function(row) { return row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'; }) // Column J: Is Steward?
@@ -404,9 +404,9 @@ function exportGrievanceToPDF(grievanceId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  // Find the grievance
+  // Find the grievance - read all columns up to RESOLUTION (last column)
   const lastRow = grievanceSheet.getLastRow();
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.RESOLUTION).getValues();
 
   for (let i = 0; i < data.length; i++) {
     if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {

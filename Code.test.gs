@@ -269,8 +269,8 @@ function testDataValidationSetup() {
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  // Check that validation exists for Job Title (column 4)
-  const jobTitleCell = memberDir.getRange(2, 4);
+  // Check that validation exists for Job Title column
+  const jobTitleCell = memberDir.getRange(2, MEMBER_COLS.JOB_TITLE);
   const validation = jobTitleCell.getDataValidation();
 
   Assert.assertNotNull(

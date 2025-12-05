@@ -19418,18 +19418,22 @@ function getGrievanceCoordinators() {
   }
 
   try {
-    // Grievance Coordinators are in columns P (16), Q (17), R (18)
-    const coordinatorData = configSheet.getRange(2, 16, 10, 3).getValues();
+    // Grievance Coordinators are in CONFIG_COLS.GRIEVANCE_COORDINATORS as comma-separated list
+    const coordinatorData = configSheet.getRange(2, CONFIG_COLS.GRIEVANCE_COORDINATORS, 10, 1).getValues();
 
-    // Get unique coordinator names
-    const coordinator1List = coordinatorData.map(function(row) { return row[0]; }).filter(String);
-    const coordinator2List = coordinatorData.map(function(row) { return row[1]; }).filter(String);
-    const coordinator3List = coordinatorData.map(function(row) { return row[2]; }).filter(String);
+    // Get coordinator names from comma-separated values
+    const allCoordinators = coordinatorData
+      .map(function(row) { return row[0]; })
+      .filter(String)
+      .join(',')
+      .split(',')
+      .map(function(name) { return name.trim(); })
+      .filter(String);
 
     const result = {
-      coordinator1: coordinator1List.length > 0 ? coordinator1List[0] : '',
-      coordinator2: coordinator2List.length > 0 ? coordinator2List[0] : '',
-      coordinator3: coordinator3List.length > 0 ? coordinator3List[0] : ''
+      coordinator1: allCoordinators.length > 0 ? allCoordinators[0] : '',
+      coordinator2: allCoordinators.length > 1 ? allCoordinators[1] : '',
+      coordinator3: allCoordinators.length > 2 ? allCoordinators[2] : ''
     };
 
     // Check if any coordinators were found
@@ -35420,8 +35424,8 @@ function testDataValidationSetup() {
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  // Check that validation exists for Job Title (column 4)
-  const jobTitleCell = memberDir.getRange(2, 4);
+  // Check that validation exists for Job Title column
+  const jobTitleCell = memberDir.getRange(2, MEMBER_COLS.JOB_TITLE);
   const validation = jobTitleCell.getDataValidation();
 
   Assert.assertNotNull(
@@ -36653,7 +36657,7 @@ function testConfigChangesPropagateToDropdowns() {
     Utilities.sleep(1000);
 
     // Check that validation includes new location
-    const locationCell = memberDir.getRange(2, 5);
+    const locationCell = memberDir.getRange(2, MEMBER_COLS.WORK_LOCATION);
     const validation = locationCell.getDataValidation();
 
     Assert.assertNotNull(

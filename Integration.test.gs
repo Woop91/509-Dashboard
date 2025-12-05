@@ -289,7 +289,7 @@ function testConfigChangesPropagateToDropdowns() {
     Utilities.sleep(1000);
 
     // Check that validation includes new location
-    const locationCell = memberDir.getRange(2, 5);
+    const locationCell = memberDir.getRange(2, MEMBER_COLS.WORK_LOCATION);
     const validation = locationCell.getDataValidation();
 
     Assert.assertNotNull(

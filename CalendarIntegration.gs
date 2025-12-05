@@ -50,8 +50,8 @@ function syncDeadlinesToCalendar() {
       return;
     }
 
-    // Get all grievance data
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+    // Get all grievance data - read all columns up to RESOLUTION (last column)
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.RESOLUTION).getValues();
 
     const calendar = CalendarApp.getDefaultCalendar();
     let eventsCreated = 0;
@@ -178,9 +178,9 @@ function syncSingleDeadlineToCalendar(grievanceId) {
     return;
   }
 
-  // Find the grievance
+  // Find the grievance - read all columns up to RESOLUTION (last column)
   const lastRow = grievanceSheet.getLastRow();
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.RESOLUTION).getValues();
 
   for (let i = 0; i < data.length; i++) {
     if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
