@@ -4357,18 +4357,16 @@ function reorderSheetsLogically() {
     SHEETS.GRIEVANCE_LOG,          // 4. Grievances
     SHEETS.STEWARD_WORKLOAD,       // 5. Workload
     SHEETS.TRENDS,                 // 6. Test 1
-    SHEETS.PERFORMANCE,            // 7. Test 2
     SHEETS.LOCATION,               // 8. Test 3
     SHEETS.TYPE_ANALYSIS,          // 9. Test 4
-    SHEETS.EXECUTIVE,              // 10. Test 5
-    SHEETS.KPI_BOARD,              // 11. Test 6
+    SHEETS.EXECUTIVE_DASHBOARD,    // 10. Test 5
+    SHEETS.KPI_PERFORMANCE,        // 11. Test 6
     SHEETS.MEMBER_ENGAGEMENT,      // 12. Test 7
     SHEETS.COST_IMPACT,            // 13. Test 8
-    SHEETS.QUICK_STATS,            // 14. Test 9
+    SHEETS.MEMBER_SATISFACTION,    // 14. Member Satisfaction
     SHEETS.ANALYTICS,              // 15. Analytics Data
     SHEETS.CONFIG,                 // 16. Config
-    SHEETS.FUTURE_FEATURES,        // 17. Future
-    SHEETS.PENDING_FEATURES,       // 18. Pending
+    SHEETS.FEEDBACK,               // 17. Feedback & Development
     SHEETS.ARCHIVE,                // 19. Archive
     SHEETS.DIAGNOSTICS             // 20. Diagnostics
   ];
