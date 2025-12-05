@@ -33037,12 +33037,22 @@ function validateConfigurationOnOpen() {
     validateConfiguration();
     return true;
   } catch (error) {
-    SpreadsheetApp.getUi().alert(
-      '⚠️ Configuration Error',
-      'The dashboard configuration has errors:\n\n' + error.message +
-      '\n\nPlease contact the administrator.',
-      SpreadsheetApp.getUi().ButtonSet.OK
-    );
+    // Log the error for debugging
+    Logger.log('Configuration validation error: ' + error.message);
+
+    // Try to show UI alert, but gracefully handle contexts where UI isn't available
+    // (e.g., when called from time-driven triggers or CREATE_509_DASHBOARD)
+    try {
+      SpreadsheetApp.getUi().alert(
+        '⚠️ Configuration Error',
+        'The dashboard configuration has errors:\n\n' + error.message +
+        '\n\nPlease contact the administrator.',
+        SpreadsheetApp.getUi().ButtonSet.OK
+      );
+    } catch (uiError) {
+      // UI not available in this context - just log the error
+      Logger.log('validateConfigurationOnOpen: UI not available, cannot show alert. Context: ' + uiError.message);
+    }
     return false;
   }
 }
