@@ -229,55 +229,83 @@ AE (31): Start Grievance (CHECKBOX ONLY - triggers grievance creation)
 
 **Purpose:** Complete grievance case tracking with automatic deadline calculations
 
-**Columns (28 total) - See GRIEVANCE_COLS constant:**
+**Columns (32 total) - See GRIEVANCE_COLS constant in Constants.gs:**
 ```
-A: Grievance ID (G-000001, G-000002, etc.)
-B: Member ID (links to Member Directory)
-C: First Name
-D: Last Name
-E: Status (validated: Open, Pending Info, Settled, Withdrawn, Closed, Appealed)
-F: Current Step (validated: Informal, Step I, Step II, Step III, Mediation, Arbitration)
-G: Incident Date
-H: Filing Deadline (21d) (Formula: =IF(G2<>"",G2+21,""))
-I: Date Filed (Step I)
-J: Step I Decision Due (30d) (Formula: =IF(I2<>"",I2+30,""))
-K: Step I Decision Rcvd
-L: Step II Appeal Due (10d) (Formula: =IF(K2<>"",K2+10,""))
-M: Step II Appeal Filed
-N: Step II Decision Due (30d) (Formula: =IF(M2<>"",M2+30,""))
-O: Step II Decision Rcvd
-P: Step III Appeal Due (30d) (Formula: =IF(O2<>"",O2+30,""))
-Q: Step III Appeal Filed
-R: Date Closed
-S: Days Open (Formula: =IF(I2<>"",IF(R2<>"",R2-I2,TODAY()-I2),""))
-T: Next Action Due (Formula: =IF(E2="Open",IF(F2="Step I",J2,IF(F2="Step II",N2,IF(F2="Step III",P2,H2))),""))
-U: Days to Deadline (Formula: =IF(T2<>"",T2-TODAY(),""))
-V: Articles Violated (validated from Config)
-W: Issue Category (validated from Config)
-X: Member Email
-Y: Unit (validated from Config)
-Z: Work Location (Site) (validated from Config)
-AA: Assigned Steward (Name) (validated from Config)
-AB: Resolution Summary (e.g., "Won - Resolved favorably", "Lost - No violation found")
+Section 1: Identity (A-D)
+A (1):  Grievance ID (G-000001, G-000002, etc.)
+B (2):  Member ID (links to Member Directory)
+C (3):  First Name
+D (4):  Last Name
+
+Section 2: Case Details (E-H)
+E (5):  Issue Category (validated from Config)
+F (6):  Articles Violated (validated from Config)
+G (7):  Resolution Summary (e.g., "Won - Resolved favorably", "Lost - No violation found")
+H (8):  Comments
+
+Section 3: Status & Assignment (I-K)
+I (9):  Status (validated: Open, Pending Info, Settled, Withdrawn, Closed, Appealed)
+J (10): Current Step (validated: Informal, Step I, Step II, Step III, Mediation, Arbitration)
+K (11): Assigned Steward (Name) (validated from Config)
+
+Section 4: Timeline - Filing (L-N)
+L (12): Incident Date
+M (13): Filing Deadline (21d) (auto-calc: INCIDENT_DATE + 21)
+N (14): Date Filed (Step I)
+
+Section 5: Timeline - Step I (O-P)
+O (15): Step I Decision Due (30d) (auto-calc: DATE_FILED + 30)
+P (16): Step I Decision Rcvd
+
+Section 6: Timeline - Step II (Q-T)
+Q (17): Step II Appeal Due (10d) (auto-calc: STEP1_RCVD + 10)
+R (18): Step II Appeal Filed
+S (19): Step II Decision Due (30d) (auto-calc: STEP2_APPEAL_FILED + 30)
+T (20): Step II Decision Rcvd
+
+Section 7: Timeline - Step III (U-W)
+U (21): Step III Appeal Due (30d) (auto-calc: STEP2_RCVD + 30)
+V (22): Step III Appeal Filed
+W (23): Date Closed
+
+Section 8: Calculated Metrics (X-Y)
+X (24): Days Open (auto-calc: DATE_FILED to DATE_CLOSED or TODAY)
+Y (25): Next Action Due (auto-calc: based on CURRENT_STEP)
+
+Section 9: Contact & Location (Z-AB)
+Z (26): Member Email
+AA (27): Unit (validated from Config)
+AB (28): Work Location (Site) (validated from Config)
+
+Section 10: Integration (AC)
+AC (29): Drive Folder Link
+
+Section 11: Admin Messages (AD-AF) - Hidden by default
+AD (30): Admin Flag (checkbox: triggers highlight, move to top, send message)
+AE (31): Admin Message (text: message from grievance coordinator)
+AF (32): Message Acknowledged (checkbox: steward confirms message read, clears highlight)
 ```
 
+**NOTE:** DAYS_TO_DEADLINE column was removed. Overdue status is now calculated dynamically:
+`=COUNTIFS('Grievance Log'!StatusCol:StatusCol,"Open",'Grievance Log'!NextActionCol:NextActionCol,"<"&TODAY())`
+
 **Data Validations:**
-- Column E (Status): Config!I2:I14
-- Column F (Current Step): Config!J2:J14
-- Column V (Articles): Config!L2:L14
-- Column W (Issue Category): Config!K2:K14
-- Column Y (Unit): Config!C2:C7
-- Column Z (Location): Config!B2:B14
-- Column AA (Steward): Config!H2:H14
+- Column E (Issue Category): Config!K2:K14
+- Column F (Articles): Config!L2:L14
+- Column I (Status): Config!I2:I14
+- Column J (Current Step): Config!J2:J14
+- Column K (Steward): Config!H2:H14
+- Column AA (Unit): Config!C2:C7
+- Column AB (Location): Config!B2:B14
 
 **Styling:**
 - Header: Bold, red background (#DC2626), white text, wrapped
 - Tab color: Red (#DC2626)
-- Column widths: A=110px, V=180px, AB=250px
+- Column widths: A=110px, F=180px, G=250px
 - Frozen first row, header height 50px
 
 **Auto-Calculated Deadlines:**
-All deadline formulas (columns H, J, L, N, P, S, T, U) are set for first 100 rows in `setupFormulasAndCalculations()`
+All deadline formulas (columns M, O, Q, S, U, X, Y) are set for first 100 rows in `setupFormulasAndCalculations()`
 
 **Contract Rules Built Into Formulas:**
 - Filing deadline: Incident date + 21 days
