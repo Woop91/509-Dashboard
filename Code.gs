@@ -1136,7 +1136,7 @@ function setupDataValidations() {
   const committeesRule = SpreadsheetApp.newDataValidation()
     .requireTextContains("")
     .setAllowInvalid(true)
-    .setHelpText('Enter committees (comma-separated, e.g., "Grievance Committee, Bargaining Committee"). See Config tab column AD for options.')
+    .setHelpText('Enter committees (comma-separated, e.g., "Grievance Committee, Bargaining Committee"). See Config tab column I for options.')
     .build();
   memberDir.getRange(2, MEMBER_COLS.COMMITTEES, 5000, 1).setDataValidation(committeesRule);
 
@@ -1144,7 +1144,7 @@ function setupDataValidations() {
   const prefCommRule = SpreadsheetApp.newDataValidation()
     .requireTextContains("")
     .setAllowInvalid(true)
-    .setHelpText('Enter preferred methods (comma-separated, e.g., "Email, Phone, Text"). See Config tab column M for options.')
+    .setHelpText('Enter preferred methods (comma-separated, e.g., "Email, Phone, Text"). See Config tab column N for options.')
     .build();
   memberDir.getRange(2, MEMBER_COLS.PREFERRED_COMM, 5000, 1).setDataValidation(prefCommRule);
 
