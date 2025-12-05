@@ -188,7 +188,6 @@ const MEMBER_COLS = {
 
 /**
  * Column positions for Grievance Log (1-indexed)
- * NOTE: This should match Constants.gs - GRIEVANCE_COLS is the source of truth
  * Use getColumnLetter() to convert to letter notation
  * @const {Object}
  */
@@ -2480,12 +2479,13 @@ function createMainDashboard() {
   const grievanceIdCol = getColumnLetter(GRIEVANCE_COLS.GRIEVANCE_ID);
   const firstNameCol = getColumnLetter(GRIEVANCE_COLS.FIRST_NAME);
   const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
-  const lastCol = getColumnLetter(GRIEVANCE_COLS.LOCATION); // AB - last visible column
+  const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+  const lastCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION); // AB - last column
 
   // Formula to populate upcoming deadlines (open grievances with deadlines in next 14 days)
   dashboard.getRange("A22").setFormula(
     `=IFERROR(QUERY('Grievance Log'!${grievanceIdCol}:${lastCol}, ` +
-    `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${statusCol} ` +
+    `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${daysToDeadlineCol}, ${statusCol} ` +
     `WHERE ${statusCol} = 'Open' AND ${nextActionCol} IS NOT NULL AND ${nextActionCol} <= date '"&TEXT(TODAY()+14,"yyyy-mm-dd")&"' ` +
     `ORDER BY ${nextActionCol} ASC ` +
     `LIMIT 10", 0), "No upcoming deadlines")`
@@ -2711,7 +2711,7 @@ function createExecutiveDashboard() {
   const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);
   const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
-  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
   const grievanceIdCol = getColumnLetter(GRIEVANCE_COLS.GRIEVANCE_ID);
 
   const execMemberIdCol = getColumnLetter(MEMBER_COLS.MEMBER_ID);
@@ -2722,7 +2722,7 @@ function createExecutiveDashboard() {
     ["Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, "", ""],
     ["Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0%")`, "", ""],
     ["Avg Resolution (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, "", ""],
-    ["Overdue Cases", `=COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Open",'Grievance Log'!${nextActionCol}:${nextActionCol},"<"&TODAY())`, "", ""],
+    ["Overdue Cases", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"OVERDUE*")`, "", ""],
     ["Active Stewards", `=COUNTIF('Member Directory'!${execIsStewardCol}:${execIsStewardCol},"Yes")`, "", ""]
   ];
 
@@ -2747,7 +2747,7 @@ function createExecutiveDashboard() {
     ["Total Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, ""],
     ["Overall Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0.0%")`, ""],
     ["Avg Resolution Time (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, ""],
-    ["Cases Overdue", `=COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Open",'Grievance Log'!${nextActionCol}:${nextActionCol},"<"&TODAY())`, ""],
+    ["Cases Overdue", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"OVERDUE*")`, ""],
     ["Member Satisfaction Score", "=TEXT(AVERAGE('Member Satisfaction'!C:C),\"0.0\")", ""],
     ["Total Grievances Filed YTD", `=COUNTA('Grievance Log'!${grievanceIdCol}2:${grievanceIdCol})`, ""],
     ["Resolved Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved")`, ""]
@@ -3126,6 +3126,7 @@ function setupFormulasAndCalculations() {
   const gDateClosedCol = getColumnLetter(GRIEVANCE_COLS.DATE_CLOSED);
   const gDaysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
   const gNextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const gDaysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
   const gStatusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const gCurrentStepCol = getColumnLetter(GRIEVANCE_COLS.CURRENT_STEP);
   const gMemberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
@@ -3160,12 +3161,57 @@ function setupFormulasAndCalculations() {
     `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",IF(${gDateClosedCol}2:${gDateClosedCol}1000<>"",${gDateClosedCol}2:${gDateClosedCol}1000-${gDateFiledCol}2:${gDateFiledCol}1000,TODAY()-${gDateFiledCol}2:${gDateFiledCol}1000),""))`
   );
 
-  // Next Action Due - Column Y (determines based on current step)
+  // Next Action Due - Column T (determines based on current step)
   grievanceLog.getRange(gNextActionCol + "2").setFormula(
     `=ARRAYFORMULA(IF(${gStatusCol}2:${gStatusCol}1000="Open",IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step I",${gStep1DueCol}2:${gStep1DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step II",${gStep2DueCol}2:${gStep2DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step III",${gStep3AppealDueCol}2:${gStep3AppealDueCol}1000,${gFilingDeadlineCol}2:${gFilingDeadlineCol}1000))),""))`
   );
 
-  // Note: Days to Deadline is calculated dynamically from NEXT_ACTION_DUE - no separate column needed
+  // Days to Deadline - Column U (shows descriptive text for overdue items)
+  // Positive = days remaining, 0 = "DUE TODAY", Negative = "OVERDUE Xd"
+  grievanceLog.getRange(gDaysToDeadlineCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}1000<>"",IF(${gNextActionCol}2:${gNextActionCol}1000-TODAY()<0,"OVERDUE "&ABS(${gNextActionCol}2:${gNextActionCol}1000-TODAY())&"d",IF(${gNextActionCol}2:${gNextActionCol}1000-TODAY()=0,"DUE TODAY",${gNextActionCol}2:${gNextActionCol}1000-TODAY())),""))`
+  );
+
+  // Add conditional formatting for Days to Deadline column
+  const daysToDeadlineRange = grievanceLog.getRange(gDaysToDeadlineCol + "2:" + gDaysToDeadlineCol + "1000");
+
+  // Rule 1: OVERDUE - Red background
+  const overdueRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains("OVERDUE")
+    .setBackground("#FEE2E2")  // Light red
+    .setFontColor("#DC2626")   // Dark red text
+    .setBold(true)
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Rule 2: DUE TODAY - Orange background
+  const dueTodayRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo("DUE TODAY")
+    .setBackground("#FEF3C7")  // Light amber
+    .setFontColor("#D97706")   // Dark amber text
+    .setBold(true)
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Rule 3: Due within 7 days - Yellow background (numbers 1-7)
+  const dueSoonRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberBetween(1, 7)
+    .setBackground("#FEF9C3")  // Light yellow
+    .setFontColor("#CA8A04")   // Dark yellow text
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Rule 4: More than 7 days - Green background
+  const onTrackRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberGreaterThan(7)
+    .setBackground("#DCFCE7")  // Light green
+    .setFontColor("#16A34A")   // Dark green text
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Apply all rules
+  const existingRules = grievanceLog.getConditionalFormatRules();
+  grievanceLog.setConditionalFormatRules([overdueRule, dueTodayRule, dueSoonRule, onTrackRule, ...existingRules]);
 
   // ----- MEMBER DIRECTORY FORMULAS -----
   // Has Open Grievance? - Column Y (25)
@@ -3400,13 +3446,14 @@ function cleanupGrievanceLog() {
 
   // Clear any existing formulas in calculated columns before reapplying
   const calculatedCols = [
-    GRIEVANCE_COLS.FILING_DEADLINE,    // M
-    GRIEVANCE_COLS.STEP1_DUE,          // O
-    GRIEVANCE_COLS.STEP2_APPEAL_DUE,   // Q
-    GRIEVANCE_COLS.STEP2_DUE,          // S
-    GRIEVANCE_COLS.STEP3_APPEAL_DUE,   // U
-    GRIEVANCE_COLS.DAYS_OPEN,          // X
-    GRIEVANCE_COLS.NEXT_ACTION_DUE     // Y
+    GRIEVANCE_COLS.FILING_DEADLINE,    // H
+    GRIEVANCE_COLS.STEP1_DUE,          // J
+    GRIEVANCE_COLS.STEP2_APPEAL_DUE,   // L
+    GRIEVANCE_COLS.STEP2_DUE,          // N
+    GRIEVANCE_COLS.STEP3_APPEAL_DUE,   // P
+    GRIEVANCE_COLS.DAYS_OPEN,          // S
+    GRIEVANCE_COLS.NEXT_ACTION_DUE,    // T
+    GRIEVANCE_COLS.DAYS_TO_DEADLINE    // U
   ];
 
   const lastRow = Math.max(grievanceLog.getLastRow(), 2);
@@ -7733,16 +7780,13 @@ function checkDeadlinesAndNotify() {
   }
 
   // Get all grievance data
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   const notifications = {
     overdue: [],
     urgent: [],      // 3 days or less
     upcoming: []     // 7 days or less
   };
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
 
   // Categorize grievances by deadline urgency
   data.forEach(function(row, index) {
@@ -7752,7 +7796,7 @@ function checkDeadlinesAndNotify() {
     const status = row[GRIEVANCE_COLS.STATUS - 1];
     const issueType = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
     const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-    const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
     const steward = row[GRIEVANCE_COLS.STEWARD - 1];
     const manager = row[GRIEVANCE_COLS.STEP2_APPEAL_DUE - 1];
 
@@ -8285,10 +8329,7 @@ function gatherMonthlyData() {
     };
   }
 
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   let totalGrievances = 0;
   let newGrievances = 0;
@@ -8305,8 +8346,7 @@ function gatherMonthlyData() {
     const status = row[GRIEVANCE_COLS.STATUS - 1];
     const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
     const steward = row[GRIEVANCE_COLS.STEWARD - 1];
-    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-    const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
     totalGrievances++;
 
@@ -8341,8 +8381,8 @@ function gatherMonthlyData() {
       bySteward[steward] = (bySteward[steward] || 0) + 1;
     }
 
-    // Count overdue (only if there's a valid deadline and it's past due)
-    if (daysToDeadline !== null && daysToDeadline < 0) {
+    // Count overdue
+    if (daysToDeadline < 0) {
       overdueCount++;
     }
   });
@@ -9739,22 +9779,19 @@ function syncDeadlinesToCalendar() {
       return;
     }
 
-    // Get all grievance data (up to NEXT_ACTION_DUE column)
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
+    // Get all grievance data
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
     const calendar = CalendarApp.getDefaultCalendar();
     let eventsCreated = 0;
     let eventsSkipped = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
 
     data.forEach(function(row, index) {
       const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
       const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
       const status = row[GRIEVANCE_COLS.STATUS - 1];
       const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-      // Calculate days to deadline from NEXT_ACTION_DUE
-      const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
+      const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
       // Only create events for open grievances with deadlines
       if (status !== 'Open' || !nextActionDue) {
@@ -9872,9 +9909,7 @@ function syncSingleDeadlineToCalendar(grievanceId) {
 
   // Find the grievance
   const lastRow = grievanceSheet.getLastRow();
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   for (let i = 0; i < data.length; i++) {
     if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
@@ -9882,8 +9917,7 @@ function syncSingleDeadlineToCalendar(grievanceId) {
       const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
       const status = row[GRIEVANCE_COLS.STATUS - 1];
       const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-      // Calculate days to deadline from NEXT_ACTION_DUE
-      const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
+      const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
       if (status !== 'Open' || !nextActionDue) {
         return; // Skip if not open or no deadline
@@ -12835,9 +12869,6 @@ function getCachedDashboardMetrics() {
     function() {
       const grievances = getCachedGrievances();
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
       const metrics = {
         total: grievances.length,
         open: 0,
@@ -12852,12 +12883,11 @@ function getCachedDashboardMetrics() {
         const status = row[GRIEVANCE_COLS.STATUS - 1];
         const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
         const steward = row[GRIEVANCE_COLS.STEWARD - 1];
-        const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-        const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
+        const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
         if (status === 'Open') metrics.open++;
         if (status === 'Closed' || status === 'Resolved') metrics.closed++;
-        if (daysToDeadline !== null && daysToDeadline < 0) metrics.overdue++;
+        if (daysToDeadline < 0) metrics.overdue++;
 
         metrics.byStatus[status] = (metrics.byStatus[status] || 0) + 1;
 
@@ -21948,15 +21978,10 @@ function calculateAllMetrics(memberData, grievanceData) {
     ? ((metrics.grievancesWon / metrics.resolvedGrievances) * 100).toFixed(1)
     : 0;
 
-  // Overdue = NEXT_ACTION_DUE is before today for open grievances
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Overdue = Days to Deadline is negative
   metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) {
-    const status = row[GRIEVANCE_COLS.STATUS - 1];
-    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-    if (status !== 'Open' || !nextActionDue) return false;
-    const daysToDeadline = Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24));
-    return daysToDeadline < 0;
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
+    return daysToDeadline && daysToDeadline < 0;
   }).length;
 
   // Additional metrics
@@ -28619,16 +28644,10 @@ function forecastStewardWorkload(data) {
 function identifyRiskFactors(data) {
   const risks = [];
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
   // Check for overdue cases
   let overdueCount = 0;
   data.forEach(function(row) {
-    const status = row[GRIEVANCE_COLS.STATUS - 1];
-    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-    if (status !== 'Open' || !nextActionDue) return;
-    const daysToDeadline = Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24));
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
     if (daysToDeadline < 0) overdueCount++;
   });
 
@@ -35804,7 +35823,7 @@ function testGrievanceColsConstants() {
   const requiredCols = [
     'GRIEVANCE_ID', 'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'STATUS',
     'CURRENT_STEP', 'INCIDENT_DATE', 'FILING_DEADLINE', 'DATE_FILED',
-    'DATE_CLOSED', 'DAYS_OPEN', 'NEXT_ACTION_DUE',
+    'DATE_CLOSED', 'DAYS_OPEN', 'NEXT_ACTION_DUE', 'DAYS_TO_DEADLINE',
     'ISSUE_CATEGORY', 'MEMBER_EMAIL', 'LOCATION', 'STEWARD', 'RESOLUTION'
   ];
 

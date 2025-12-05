@@ -161,10 +161,10 @@ function rebuildDashboardMinimal() {
     const totalMembers = memberData.length - 1;
     const totalGrievances = grievanceData.length - 1;
 
-    // Count open grievances
+    // Count open grievances using GRIEVANCE_COLS.STATUS constant
     let openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
-      if (grievanceData[i][4] === 'Open') { // Column E (index 4)
+      if (grievanceData[i][GRIEVANCE_COLS.STATUS - 1] === 'Open') {
         openGrievances++;
       }
     }
@@ -284,7 +284,7 @@ function cacheDashboardState() {
 
     let openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
-      if (grievanceData[i][4] === 'Open') {
+      if (grievanceData[i][GRIEVANCE_COLS.STATUS - 1] === 'Open') {
         openGrievances++;
       }
     }
@@ -356,17 +356,18 @@ function recalcMembersGrievanceFieldsOnly() {
 
   // For each member, find their open grievances
   for (let i = 1; i < memberData.length; i++) {
-    const memberID = memberData[i][0];
+    const memberID = memberData[i][MEMBER_COLS.MEMBER_ID - 1];
     let hasOpen = 'No';
     let status = '';
     let deadline = '';
 
     // Find grievances for this member
     for (let j = 1; j < grievanceData.length; j++) {
-      if (grievanceData[j][1] === memberID && grievanceData[j][4] === 'Open') {
+      if (grievanceData[j][GRIEVANCE_COLS.MEMBER_ID - 1] === memberID &&
+          grievanceData[j][GRIEVANCE_COLS.STATUS - 1] === 'Open') {
         hasOpen = 'Yes';
-        status = grievanceData[j][4];
-        deadline = grievanceData[j][19] || ''; // Next action due
+        status = grievanceData[j][GRIEVANCE_COLS.STATUS - 1];
+        deadline = grievanceData[j][GRIEVANCE_COLS.NEXT_ACTION_DUE - 1] || '';
         break;
       }
     }
@@ -374,9 +375,9 @@ function recalcMembersGrievanceFieldsOnly() {
     updates.push([hasOpen, status, deadline]);
   }
 
-  // Update columns Z, AA, AB
+  // Update Has Open Grievance (AB), Grievance Status (AC), Next Deadline (AD)
   if (updates.length > 0) {
-    memberSheet.getRange(2, 26, updates.length, 3).setValues(updates);
+    memberSheet.getRange(2, MEMBER_COLS.HAS_OPEN_GRIEVANCE, updates.length, 3).setValues(updates);
   }
 
   Logger.log(`✅ Updated grievance fields for ${updates.length} members`);
