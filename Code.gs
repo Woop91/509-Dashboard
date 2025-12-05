@@ -102,6 +102,10 @@ function CREATE_509_DASHBOARD() {
     Logger.log("Completed createDiagnosticsSheet");
     SpreadsheetApp.getActive().toast("✅ Utility sheets created", "85%", 2);
 
+    // Create Audit Log sheet
+    createAuditLogSheet();
+    SpreadsheetApp.getActive().toast("✅ Audit Log created", "90%", 2);
+
     Logger.log("Starting setupDataValidations...");
     setupDataValidations();
     Logger.log("Completed setupDataValidations");
@@ -2073,7 +2077,15 @@ function onOpen() {
         .addItem("Seed All 5k Grievances (Legacy)", "SEED_5K_GRIEVANCES"))
       .addSeparator()
       .addItem("🗑️ Nuke All Seed Data", "nukeSeedData")
-      .addItem("⚠️ Clear All Data", "clearAllData"))
+      .addItem("⚠️ Clear All Data", "clearAllData")
+      .addSeparator()
+      .addSubMenu(ui.createMenu("👥 User Roles (RBAC)")
+        .addItem("Initialize RBAC", "initializeRBAC")
+        .addItem("Configure Roles", "configureUserRoles")
+        .addItem("Add Admin", "addAdmin")
+        .addItem("Add Steward", "addSteward")
+        .addItem("Add Viewer", "addViewer")
+        .addItem("My Permissions", "showMyPermissions")))
     .addToUi();
 
   // ============ 🧪 TESTING MENU ============
@@ -3201,6 +3213,87 @@ function clearAllData() {
   }
 
   SpreadsheetApp.getActive().toast("✅ All data cleared", "Complete", 3);
+}
+
+/**
+ * NUCLEAR OPTION: Delete ALL seed data from all sheets
+ * More thorough than clearAllData - clears analytics, surveys, feedback too
+ */
+function nukeSeedData() {
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    '🗑️ NUCLEAR OPTION: Delete ALL Seed Data',
+    '⚠️ WARNING: This will DELETE:\n' +
+    '• All members from Member Directory\n' +
+    '• All grievances from Grievance Log\n' +
+    '• All analytics data\n' +
+    '• All satisfaction surveys\n' +
+    '• All feedback entries\n\n' +
+    'This action CANNOT be undone!\n\n' +
+    'Are you absolutely sure?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    SpreadsheetApp.getActive().toast("❌ Nuke cancelled", "Cancelled", 2);
+    return;
+  }
+
+  SpreadsheetApp.getActive().toast("💥 Nuking all seed data...", "Processing", -1);
+
+  const ss = SpreadsheetApp.getActive();
+
+  // Clear Member Directory
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (memberDir && memberDir.getLastRow() > 1) {
+    memberDir.getRange(2, 1, memberDir.getLastRow() - 1, memberDir.getLastColumn()).clear();
+  }
+
+  // Clear Grievance Log
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (grievanceLog && grievanceLog.getLastRow() > 1) {
+    grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, grievanceLog.getLastColumn()).clear();
+  }
+
+  // Clear Analytics Data
+  const analytics = ss.getSheetByName(SHEETS.ANALYTICS);
+  if (analytics && analytics.getLastRow() > 1) {
+    analytics.getRange(5, 1, analytics.getLastRow() - 4, analytics.getLastColumn()).clear();
+  }
+
+  // Clear Member Satisfaction
+  const satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
+  if (satisfaction && satisfaction.getLastRow() > 3) {
+    satisfaction.getRange(4, 1, satisfaction.getLastRow() - 3, satisfaction.getLastColumn()).clear();
+  }
+
+  // Clear Feedback & Development
+  const feedback = ss.getSheetByName(SHEETS.FEEDBACK);
+  if (feedback && feedback.getLastRow() > 3) {
+    feedback.getRange(4, 1, feedback.getLastRow() - 3, feedback.getLastColumn()).clear();
+  }
+
+  // Clear Archive
+  const archive = ss.getSheetByName(SHEETS.ARCHIVE);
+  if (archive && archive.getLastRow() > 3) {
+    archive.getRange(4, 1, archive.getLastRow() - 3, archive.getLastColumn()).clear();
+  }
+
+  // Log to Diagnostics
+  const diagnostics = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  if (diagnostics) {
+    diagnostics.appendRow([
+      new Date(),
+      "Data Nuke",
+      "All Sheets",
+      "Completed",
+      "All seed data deleted via nukeSeedData()",
+      "Critical",
+      "Data cleared successfully"
+    ]);
+  }
+
+  SpreadsheetApp.getActive().toast("✅ All seed data has been nuked!", "Complete", 5);
 }
 
 /**

@@ -18,7 +18,7 @@
 
 **Why This Matters:**
 - Prevents re-introducing bugs that were already fixed
-- Ensures consistency across all 21 sheets and 15+ code files
+- Ensures consistency across all 22 sheets and 15+ code files
 - Maintains 100% dynamic column coverage (critical for system stability)
 - Documents all design decisions and architectural choices
 
@@ -36,10 +36,34 @@
 
 ---
 
+## 🆕 Changelog - Version 2.4 (2025-12-05)
+
+**Major Features Added:**
+- ✅ **Audit Logging System** - Full audit trail for all data modifications
+- ✅ **Role-Based Access Control (RBAC)** - Admin, Steward, and Viewer roles
+- ✅ **DIAGNOSE_SETUP()** - Comprehensive system health check function
+- ✅ **Enhanced nukeSeedData()** - True nuclear option for clearing all test data
+
+**Critical Bug Fixes:**
+- 🐛 **Fixed updateMemberDirectorySnapshots() column bug** - Was overwriting formula columns (Z, AA, AB), now correctly writes to AC, AD, AE
+- 🐛 **Fixed ADHDEnhancements.gs sheet references** - Removed invalid sheet name constants
+- 🐛 **Added null checks to clearAllData()** - Prevents errors if sheets don't exist
+
+**New File:**
+- `AuditLoggingRBAC.gs` - Complete implementation of audit logging and role-based access control
+
+**Documentation Updates:**
+- Added sheet #22: Audit_Log
+- Updated menu system with RBAC submenu
+- Added Security & Compliance section
+- Updated seed data function documentation
+
+---
+
 ## Table of Contents
 
 1. [System Overview](#system-overview)
-2. [Sheet Structure (21 Sheets)](#sheet-structure-21-sheets)
+2. [Sheet Structure (22 Sheets)](#sheet-structure-22-sheets)
 3. [Core Data Sheets](#core-data-sheets)
 4. [Dashboard Sheets](#dashboard-sheets)
 5. [Analytics Sheets](#analytics-sheets)
@@ -79,7 +103,7 @@ The 509 Dashboard is a comprehensive Google Apps Script-based union management s
 
 ---
 
-## Sheet Structure (21 Sheets)
+## Sheet Structure (22 Sheets)
 
 ### Complete Sheet List
 
@@ -106,8 +130,9 @@ The 509 Dashboard is a comprehensive Google Apps Script-based union management s
 | 19 | 💰 Cost Impact | Analytics | Financial impact analysis |
 | 20 | 📦 Archive | Utility | Archived records |
 | 21 | 🔧 Diagnostics | Utility | System health checks |
+| 22 | 📋 Audit_Log | Security | Complete audit trail of all data changes |
 
-**Recent Consolidations (25 → 21 sheets):**
+**Recent Consolidations (25 → 22 sheets):**
 - Merged: Feedback & Development + Future Features + Pending Features → "Feedback & Development"
 - Merged: Executive Summary + Quick Stats → "💼 Executive Dashboard"
 - Merged: Performance Metrics + KPI Board → "📊 KPI Performance Dashboard"
@@ -789,6 +814,87 @@ G: Action Needed
 
 ---
 
+### 22. 📋 Audit_Log
+
+**Purpose:** Complete audit trail of all data modifications for compliance and security
+
+**Columns (9 total):**
+```
+A: Timestamp
+B: User Email
+C: Action (CREATE, UPDATE, DELETE)
+D: Sheet Name
+E: Row Number
+F: Column
+G: Old Value
+H: New Value
+I: Details
+```
+
+**Key Features:**
+- Automatic logging via `logDataModification()` function
+- Tracks user, action type, location, and values
+- Auto-cleanup (keeps last 10,000 entries)
+- Non-intrusive (won't break main functionality if logging fails)
+- Created automatically during `CREATE_509_DASHBOARD()`
+
+**Helper Functions:**
+- `logMemberCreation()` - Logs new member additions
+- `logGrievanceCreation()` - Logs new grievance filings
+- `logMemberUpdate()` - Logs member data changes
+- `logGrievanceUpdate()` - Logs grievance data changes
+- `logDataDeletion()` - Logs record deletions
+
+**Styling:**
+- Header: Red background (COLORS.SOLIDARITY_RED), white text
+- Tab color: Red (COLORS.SOLIDARITY_RED)
+- Frozen header row
+
+**Implementation:**
+- File: `AuditLoggingRBAC.gs`
+- Created via: `createAuditLogSheet()`
+- All logging functions are failure-safe (won't throw errors)
+
+---
+
+## Security & Compliance
+
+### Role-Based Access Control (RBAC)
+
+**Purpose:** Control user permissions based on roles
+
+**Roles (Hierarchical):**
+1. **ADMIN** - Full access to all features including role management
+2. **STEWARD** - Can create and edit members and grievances
+3. **VIEWER** - Read-only access
+
+**Script Properties Configuration:**
+```
+ADMINS:   ["admin@union.org", "president@union.org"]
+STEWARDS: ["steward1@union.org", "steward2@union.org"]
+VIEWERS:  ["member@union.org", "observer@union.org"]
+```
+
+**Key Functions:**
+- `checkUserPermission(role)` - Returns true if user has specified role or higher
+- `getUserRole()` - Returns user's current role
+- `initializeRBAC()` - Sets up RBAC script properties
+- `configureUserRoles()` - Shows current role assignments
+- `addAdmin()`, `addSteward()`, `addViewer()` - Add users to roles
+- `showMyPermissions()` - Shows current user's permissions
+
+**Menu Integration:**
+- Located under: 509 Tools > Admin > User Roles (RBAC)
+- Only accessible to administrators
+- Role changes are logged to Audit_Log
+
+**Implementation:**
+- File: `AuditLoggingRBAC.gs`
+- Storage: Script Properties Service
+- Session: Uses `Session.getActiveUser().getEmail()`
+
+---
+
 ## Menu System
 
 ### Main Menu: "📊 509 Dashboard"
@@ -811,7 +917,15 @@ G: Action Needed
 │   ├── Seed 5k Grievances             → SEED_5K_GRIEVANCES()
 │   ├── ──────────────────
 │   ├── Clear All Data                 → clearAllData()
-│   └── 🗑️ Nuke All Seed Data         → nukeSeedData()
+│   ├── 🗑️ Nuke All Seed Data         → nukeSeedData()
+│   ├── ──────────────────
+│   └── 👥 User Roles (RBAC)
+│       ├── Initialize RBAC             → initializeRBAC()
+│       ├── Configure Roles             → configureUserRoles()
+│       ├── Add Admin                   → addAdmin()
+│       ├── Add Steward                 → addSteward()
+│       ├── Add Viewer                  → addViewer()
+│       └── My Permissions              → showMyPermissions()
 ├── ──────────────────
 ├── ♿ ADHD Features
 │   ├── Hide Gridlines (Focus Mode)   → hideAllGridlines()
@@ -1078,11 +1192,81 @@ const resolution = isClosed ? [
 
 ### nukeSeedData()
 
-**Purpose:** Complete nuclear option - delete all seed data
+**Purpose:** Complete nuclear option - delete ALL seed data across all sheets
 
-**Implementation:** Currently calls clearAllData()
+**Implementation:**
+1. Shows comprehensive warning dialog
+2. Requires explicit confirmation
+3. Clears data from:
+   - Member Directory (all member rows)
+   - Grievance Log (all grievance rows)
+   - Analytics Data (computed rows)
+   - Member Satisfaction (survey rows)
+   - Feedback & Development (feedback rows)
+   - Archive (archived items)
+4. Keeps all headers and structure intact
+5. Logs action to Diagnostics sheet
+6. Toast notification
 
-**Future Enhancement:** Could also reset Config, clear Analytics cache, etc.
+**Safety Features:**
+- Dual confirmation dialogs
+- Clear warning about irreversibility
+- Can be cancelled at any point
+- Null-safe (won't error if sheets don't exist)
+
+**File:** Code.gs (lines 1463-1538)
+
+**Note:** This is NOT the same as clearAllData() - it's much more comprehensive and clears test data from all sheets, not just Member Directory and Grievance Log.
+
+---
+
+### DIAGNOSE_SETUP()
+
+**Purpose:** Comprehensive system health check and diagnostic tool
+
+**Functionality:**
+1. Checks for all 22 expected sheets
+2. Validates column counts:
+   - Member Directory: 31 columns
+   - Grievance Log: 28 columns
+   - Config: 13 columns
+3. Reports data status (row counts)
+4. Generates health report with ✅/⚠️ indicators
+5. Logs diagnostic run to Diagnostics sheet
+
+**Expected Sheets (22 total):**
+- Config, Member Directory, Grievance Log
+- Dashboard, Analytics, Feedback, Member Satisfaction
+- Interactive Dashboard, Getting Started, FAQ, User Settings
+- Steward Workload, Trends, Location, Type Analysis
+- Executive Dashboard, KPI Performance, Member Engagement, Cost Impact
+- Archive, Diagnostics, Audit_Log
+
+**Report Format:**
+```
+🔧 DIAGNOSTIC REPORT
+
+📊 Sheets Found: 22 / 22
+
+✅ All sheets present!
+
+📋 COLUMN COUNTS:
+   Member Directory: 31 columns ✅
+   Grievance Log: 28 columns ✅
+   Config: 13 columns ✅
+
+📈 DATA STATUS:
+   Members: 150 rows
+   Grievances: 75 rows
+
+🎉 VERDICT: System is healthy!
+```
+
+**Access:** 509 Tools > Help & Support > Diagnose Setup
+
+**File:** Code.gs (lines 1541-1583)
+
+**Added:** Version 2.4
 
 ---
 
@@ -1347,9 +1531,14 @@ const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);
 ├── ColumnToggles.gs            # Column visibility functions
 ├── InteractiveDashboard.gs     # Interactive dashboard logic
 ├── ADHDEnhancements.gs         # ADHD-friendly features
+├── AuditLoggingRBAC.gs         # Audit logging & role-based access control (NEW v2.4)
+├── GrievanceWorkflow.gs        # Grievance creation workflow
+├── GettingStartedAndFAQ.gs     # Help sheets creation
+├── SeedNuke.gs                 # Seed and nuke data functions
+├── UnifiedOperationsMonitor.gs # Comprehensive operations dashboard
 ├── MenuItems.gs                # Menu creation (if separate)
 ├── SeedData.gs                 # Seed functions (if separate)
-└── FEATURES.md                 # This document
+└── AI_REFERENCE.md             # This document (formerly FEATURES.md)
 ```
 
 ### Code.gs vs Complete509Dashboard.gs
@@ -1375,14 +1564,29 @@ const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);
 
 **Code.gs / Complete509Dashboard.gs:**
 - `CREATE_509_DASHBOARD()` - Main setup function
-- `DIAGNOSE_SETUP()` - Health check function
+- `DIAGNOSE_SETUP()` - Comprehensive health check function (v2.4)
 - All sheet creation functions (createMemberDirectory, createGrievanceLog, etc.)
 - `setupDataValidations()` - Apply all validations
 - `setupFormulasAndCalculations()` - Set formulas for first 100 rows
 - `SEED_20K_MEMBERS()` - Generate member data
 - `SEED_5K_GRIEVANCES()` - Generate grievance data
-- `updateMemberDirectorySnapshots()` - Update member columns from grievances
+- `updateMemberDirectorySnapshots()` - Update member columns from grievances (FIXED v2.4)
+- `clearAllData()` - Clear member and grievance data
+- `nukeSeedData()` - Nuclear option - clear ALL seed data (ENHANCED v2.4)
 - `onOpen()` - Create menu system
+
+**AuditLoggingRBAC.gs:** (NEW in v2.4)
+- `createAuditLogSheet()` - Create audit log sheet
+- `logDataModification()` - Main audit logging function
+- `logMemberCreation()`, `logGrievanceCreation()` - Specific log helpers
+- `logMemberUpdate()`, `logGrievanceUpdate()` - Update logging
+- `logDataDeletion()` - Deletion logging
+- `initializeRBAC()` - Set up RBAC script properties
+- `checkUserPermission(role)` - Permission checking
+- `getUserRole()` - Get current user's role
+- `configureUserRoles()` - Show/manage roles
+- `addAdmin()`, `addSteward()`, `addViewer()` - Add users to roles
+- `showMyPermissions()` - Show current user permissions
 
 **ColumnToggles.gs:**
 - `toggleGrievanceColumns()` - [DISABLED] Show/hide grievance columns
