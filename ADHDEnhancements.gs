@@ -253,31 +253,48 @@ function createUserSettingsSheet() {
     .setBackground(COLORS.WHITE)
     .setFontColor(COLORS.TEXT_DARK);
 
-  // Add data validation for choices
+  // Add data validation for choices with improved visual styling
   const yesNoRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(['Yes', 'No'], true)
+    .setHelpText('Click to select from dropdown options')
     .build();
-
-  sheet.getRange("B5").setDataValidation(yesNoRule);
-  sheet.getRange("B9").setDataValidation(yesNoRule);
 
   const themeRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(['Soft Pastels', 'High Contrast', 'Warm Tones', 'Cool Tones'], true)
+    .setHelpText('Click to select from dropdown options')
     .build();
-
-  sheet.getRange("B6").setDataValidation(themeRule);
 
   const sizeRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(['Small', 'Medium', 'Large', 'Extra Large'], true)
+    .setHelpText('Click to select from dropdown options')
     .build();
-
-  sheet.getRange("B7").setDataValidation(sizeRule);
 
   const iconRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(['Emoji', 'Symbols', 'None'], true)
+    .setHelpText('Click to select from dropdown options')
     .build();
 
+  // Apply dropdown validations
+  sheet.getRange("B5").setDataValidation(yesNoRule);
+  sheet.getRange("B6").setDataValidation(themeRule);
+  sheet.getRange("B7").setDataValidation(sizeRule);
   sheet.getRange("B8").setDataValidation(iconRule);
+  sheet.getRange("B9").setDataValidation(yesNoRule);
+
+  // Style dropdown cells to be more noticeable - light blue background with arrow indicator
+  const dropdownCells = ["B5", "B6", "B7", "B8", "B9"];
+  dropdownCells.forEach(function(cell) {
+    sheet.getRange(cell)
+      .setBackground("#E0F2FE")  // Light blue to indicate clickable
+      .setBorder(true, true, true, true, false, false, "#0EA5E9", SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
+      .setFontWeight("bold");
+  });
+
+  // Add dropdown indicator column
+  sheet.getRange("C5:C9").setValues([["▼ Click to choose"], ["▼ Click to choose"], ["▼ Click to choose"], ["▼ Click to choose"], ["▼ Click to choose"]])
+    .setFontColor("#0EA5E9")
+    .setFontSize(9)
+    .setFontStyle("italic");
 
   // Action buttons section
   sheet.getRange("A11:F11").merge()

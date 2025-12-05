@@ -698,11 +698,13 @@ function createMainDashboard() {
   const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
   const lastCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION); // AB - last column
 
-  // Formula to populate upcoming deadlines (open grievances with deadlines in next 14 days)
+  // Formula to populate upcoming deadlines (open grievances with deadlines in next 14 days, excluding past deadlines)
   dashboard.getRange("A22").setFormula(
     `=IFERROR(QUERY('Grievance Log'!${grievanceIdCol}:${lastCol}, ` +
     `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${daysToDeadlineCol}, ${statusCol} ` +
-    `WHERE ${statusCol} = 'Open' AND ${nextActionCol} IS NOT NULL AND ${nextActionCol} <= date '"&TEXT(TODAY()+14,"yyyy-mm-dd")&"' ` +
+    `WHERE ${statusCol} = 'Open' AND ${nextActionCol} IS NOT NULL ` +
+    `AND ${nextActionCol} >= date '"&TEXT(TODAY(),"yyyy-mm-dd")&"' ` +
+    `AND ${nextActionCol} <= date '"&TEXT(TODAY()+14,"yyyy-mm-dd")&"' ` +
     `ORDER BY ${nextActionCol} ASC ` +
     `LIMIT 10", 0), "No upcoming deadlines")`
   );
@@ -3091,17 +3093,20 @@ function populateStewardWorkload() {
   const grievanceData = grievanceSheet.getDataRange().getValues();
   const memberData = memberSheet.getDataRange().getValues();
 
-  // Build steward lookup map (Member ID -> Steward info)
+  // Build steward lookup map (Steward Name -> Steward info)
+  // Note: Grievance Log uses steward NAMES, not member IDs, so we key by name
   const stewards = {};
   for (let i = 1; i < memberData.length; i++) {
     const row = memberData[i];
     const isSteward = row[MEMBER_COLS.IS_STEWARD - 1];
     if (isSteward === 'Yes') {
       const memberId = row[MEMBER_COLS.MEMBER_ID - 1];
-      const name = `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`;
+      const name = `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`.trim();
       const email = row[MEMBER_COLS.EMAIL - 1];
       const phone = row[MEMBER_COLS.PHONE - 1];
-      stewards[memberId] = {
+      // Use name as key since Grievance Log references stewards by name
+      stewards[name] = {
+        memberId: memberId,
         name: name,
         email: email,
         phone: phone,
@@ -3118,25 +3123,27 @@ function populateStewardWorkload() {
   const today = new Date();
   for (let i = 1; i < grievanceData.length; i++) {
     const row = grievanceData[i];
-    const stewardId = row[GRIEVANCE_COLS.STEWARD - 1]; // Assigned Steward
+    const stewardName = row[GRIEVANCE_COLS.STEWARD - 1]; // Assigned Steward (Name)
     const status = row[GRIEVANCE_COLS.STATUS - 1];
     const outcome = row[GRIEVANCE_COLS.RESOLUTION - 1]; // Resolution/Outcome
     const daysOpen = row[GRIEVANCE_COLS.DAYS_OPEN - 1];
 
-    if (stewards[stewardId]) {
-      stewards[stewardId].totalCases++;
+    // Match steward by name (trim whitespace for consistent matching)
+    const normalizedName = stewardName ? stewardName.toString().trim() : '';
+    if (normalizedName && stewards[normalizedName]) {
+      stewards[normalizedName].totalCases++;
 
       if (status === 'Open' || status === 'Pending Info') {
-        stewards[stewardId].activeCases++;
+        stewards[normalizedName].activeCases++;
       } else if (status === 'Settled' || status === 'Resolved' || status === 'Closed') {
-        stewards[stewardId].resolvedCases++;
+        stewards[normalizedName].resolvedCases++;
 
         if (outcome === 'Won' || outcome === 'Partially Won') {
-          stewards[stewardId].wonCases++;
+          stewards[normalizedName].wonCases++;
         }
 
         if (daysOpen && !isNaN(daysOpen)) {
-          stewards[stewardId].resolutionDays.push(parseFloat(daysOpen));
+          stewards[normalizedName].resolutionDays.push(parseFloat(daysOpen));
         }
       }
     }

@@ -159,6 +159,27 @@ const Assert = {
         `\nActual: ${new Date(actualTime).toISOString()}`
       );
     }
+  },
+
+  /**
+   * Assert that function does NOT throw an error
+   */
+  assertNotThrows: function(fn, message) {
+    try {
+      fn();
+    } catch (e) {
+      throw new Error(
+        (message || 'Expected function to not throw') +
+        `\nError thrown: ${e.message}`
+      );
+    }
+  },
+
+  /**
+   * Explicitly fail a test
+   */
+  fail: function(message) {
+    throw new Error(message || 'Test failed');
   }
 };
 
@@ -281,8 +302,10 @@ function runAllTests() {
 
 /**
  * Generates a detailed test report in a new sheet
+ * @param {number} [duration=0] - Test duration in seconds
  */
 function generateTestReport(duration) {
+  duration = duration || 0;
   const ss = SpreadsheetApp.getActive();
 
   // Create or clear Test Results sheet
@@ -600,6 +623,8 @@ function runTestCategory(categoryName, testNames) {
   let failed = 0;
   let skipped = 0;
 
+  const startTime = new Date();
+
   testNames.forEach(function(testName) {
     try {
       const testFn = this[testName];
@@ -610,7 +635,7 @@ function runTestCategory(categoryName, testNames) {
       }
 
       testFn();
-      TEST_RESULTS.passed.push({ name: testName });
+      TEST_RESULTS.passed.push({ name: testName, time: new Date() - startTime });
       passed++;
     } catch (error) {
       TEST_RESULTS.failed.push({
@@ -622,14 +647,17 @@ function runTestCategory(categoryName, testNames) {
     }
   });
 
+  const endTime = new Date();
+  const duration = (endTime - startTime) / 1000;
+
   // Generate report
-  generateTestReport();
+  generateTestReport(duration);
 
   // Show summary
   const total = passed + failed + skipped;
   SpreadsheetApp.getUi().alert(
     categoryName + ' Complete',
-    `Results:\n✅ Passed: ${passed}/${total}\n❌ Failed: ${failed}/${total}\n⏭️ Skipped: ${skipped}/${total}\n\nView the Test Results sheet for details.`,
+    `Results:\n✅ Passed: ${passed}/${total}\n❌ Failed: ${failed}/${total}\n⏭️ Skipped: ${skipped}/${total}\n\nDuration: ${duration.toFixed(2)}s\n\nView the Test Results sheet for details.`,
     SpreadsheetApp.getUi().ButtonSet.OK
   );
 }
