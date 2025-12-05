@@ -101,17 +101,17 @@ function setupMemberDirectoryDropdowns() {
     ];
     setDropdown(memberSheet, 'G2:G10000', officeDays, 'Office Days', false);
 
-    // Is Steward (Y/N) (Column J)
+    // Is Steward (Y/N) (Column N - position 14)
     const yesNo = ['Yes', 'No'];
-    setDropdown(memberSheet, 'J2:J10000', yesNo, 'Is Steward');
+    setDropdown(memberSheet, 'N2:N10000', yesNo, 'Is Steward');
 
-    // Assigned Steward (Column M) - Will be populated from stewards list
+    // Assigned Steward (Column P - position 16) - Will be populated from stewards list
     const stewards = getStewardsList();
     if (stewards.length > 0) {
-      setDropdown(memberSheet, 'M2:M10000', stewards, 'Assigned Steward');
+      setDropdown(memberSheet, 'P2:P10000', stewards, 'Assigned Steward');
     }
 
-    // Immediate Supervisor (Column K)
+    // Immediate Supervisor (Column L - position 12)
     const supervisors = [
       'John Smith',
       'Jane Doe',
@@ -121,9 +121,9 @@ function setupMemberDirectoryDropdowns() {
       'Lisa Davis',
       'Other'
     ];
-    setDropdown(memberSheet, 'K2:K10000', supervisors, 'Immediate Supervisor', false);
+    setDropdown(memberSheet, 'L2:L10000', supervisors, 'Immediate Supervisor', false);
 
-    // Manager / Program Director (Column L)
+    // Manager / Program Director (Column M - position 13)
     const managers = [
       'Director Smith',
       'Director Johnson',
@@ -134,7 +134,7 @@ function setupMemberDirectoryDropdowns() {
       'Program Manager B',
       'Other'
     ];
-    setDropdown(memberSheet, 'L2:L10000', managers, 'Manager', false);
+    setDropdown(memberSheet, 'M2:M10000', managers, 'Manager', false);
 
     // Engagement Level - Need to find the column
     const engagementLevels = [
@@ -147,7 +147,7 @@ function setupMemberDirectoryDropdowns() {
     ];
     // This would go after the volunteer hours column
 
-    // Committee Member - Multiple selections
+    // Committee Member (Column O - position 15) - Multiple selections
     const committees = [
       'Executive Board',
       'Grievance Committee',
@@ -159,17 +159,9 @@ function setupMemberDirectoryDropdowns() {
       'Health & Safety',
       'Other'
     ];
+    setDropdown(memberSheet, 'O2:O10000', committees, 'Committees', false);
 
-    // Interest: Local Actions (Column T/20) - Y/N
-    setDropdown(memberSheet, 'T2:T10000', yesNo, 'Interest: Local Actions');
-
-    // Interest: Chapter Actions (Column U/21) - Y/N
-    setDropdown(memberSheet, 'U2:U10000', yesNo, 'Interest: Chapter Actions');
-
-    // Interest: Allied Chapter Actions (Column V/22) - Y/N
-    setDropdown(memberSheet, 'V2:V10000', yesNo, 'Interest: Allied Chapter Actions');
-
-    // Preferred Communication Methods (Column X/24) - Multiple
+    // Preferred Communication Methods (Column J - position 10) - Multiple
     const commMethods = [
       'Email',
       'Phone Call',
@@ -179,9 +171,9 @@ function setupMemberDirectoryDropdowns() {
       'Social Media',
       'Mail'
     ];
-    setDropdown(memberSheet, 'X2:X10000', commMethods, 'Preferred Communication', false);
+    setDropdown(memberSheet, 'J2:J10000', commMethods, 'Preferred Communication', false);
 
-    // Best Time(s) to Reach Member (Column Y/25) - Multiple
+    // Best Time(s) to Reach Member (Column K - position 11) - Multiple
     const timeBlocks = [
       '8am-10am',
       '10am-12pm',
@@ -193,11 +185,20 @@ function setupMemberDirectoryDropdowns() {
       'Weekends',
       'Anytime'
     ];
-    setDropdown(memberSheet, 'Y2:Y10000', timeBlocks, 'Best Times', false);
+    setDropdown(memberSheet, 'K2:K10000', timeBlocks, 'Best Times', false);
 
-    // Steward Who Contacted Member (Column AD/30)
+    // Interest: Local Actions (Column U - position 21) - Y/N
+    setDropdown(memberSheet, 'U2:U10000', yesNo, 'Interest: Local Actions');
+
+    // Interest: Chapter Actions (Column V - position 22) - Y/N
+    setDropdown(memberSheet, 'V2:V10000', yesNo, 'Interest: Chapter Actions');
+
+    // Interest: Allied Chapter Actions (Column W - position 23) - Y/N
+    setDropdown(memberSheet, 'W2:W10000', yesNo, 'Interest: Allied Chapter Actions');
+
+    // Steward Who Contacted Member (Column Z - position 26)
     if (stewards.length > 0) {
-      setDropdown(memberSheet, 'AD2:AD10000', stewards, 'Steward Who Contacted');
+      setDropdown(memberSheet, 'Z2:Z10000', stewards, 'Steward Who Contacted');
     }
 
     SpreadsheetApp.getActiveSpreadsheet().toast('✅ Dropdowns set up!', '', 3);
@@ -289,11 +290,11 @@ function refreshStewardDropdowns() {
   const stewards = getStewardsList();
 
   if (stewards.length > 0) {
-    // Assigned Steward (Column M)
-    setDropdown(memberSheet, 'M2:M10000', stewards, 'Assigned Steward');
+    // Assigned Steward (Column P - position 16)
+    setDropdown(memberSheet, 'P2:P10000', stewards, 'Assigned Steward');
 
-    // Steward Who Contacted Member (Column AD/30)
-    setDropdown(memberSheet, 'AD2:AD10000', stewards, 'Steward Who Contacted');
+    // Steward Who Contacted Member (Column Z - position 26)
+    setDropdown(memberSheet, 'Z2:Z10000', stewards, 'Steward Who Contacted');
 
     SpreadsheetApp.getActiveSpreadsheet().toast('✅ Steward dropdowns refreshed!', '', 2);
   }
