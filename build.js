@@ -29,17 +29,53 @@
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * MODULE DEPENDENCY GRAPH
+ * =======================
+ *
+ * Module loading order is critical. Dependencies must be loaded before dependents.
+ *
+ * Legend:
+ * [CORE] = No dependencies, can be loaded first
+ * [DEPENDS: X, Y] = Requires modules X and Y to be loaded first
+ *
+ * Dependency Hierarchy:
+ *
+ * Level 0 (No Dependencies):
+ *   - Constants.gs
+ *
+ * Level 1 (Depends on Constants only):
+ *   - SecurityUtils.gs
+ *   - TestConfig.gs
+ *   - HTMLTemplates.gs
+ *   - I18n.gs
+ *
+ * Level 2 (Depends on Level 0-1):
+ *   - Code.gs (Depends: Constants, SecurityUtils)
+ *   - DataArchiving.gs (Depends: Constants, SecurityUtils, HTMLTemplates)
+ *
+ * Level 3+ (Depends on Level 0-2):
+ *   - All feature modules (Depends: Constants, SecurityUtils, Code.gs)
+ *   - Test modules (Depends: Constants, TestConfig)
+ */
+
 // Module order matters - dependencies must come first
-const CORE_MODULES = [
-  // Core infrastructure (must be first)
-  'Constants.gs',
-  'SecurityUtils.gs',
+const MODULES = [
+  // ===== LEVEL 0: CORE INFRASTRUCTURE (NO DEPENDENCIES) =====
+  'Constants.gs',  // [CORE] Provides: SHEETS, MEMBER_COLS, COLORS, ERROR_MESSAGES, etc.
 
-  // Main setup
-  'Code.gs',
-  'SecurityService.gs',
+  // ===== LEVEL 1: DEPENDS ON CONSTANTS ONLY =====
+  'SecurityUtils.gs',   // [DEPENDS: Constants] Provides: sanitizeHTML, requireRole, isAdmin
+  'HTMLTemplates.gs',   // [DEPENDS: Constants] Provides: createHTMLPage, createButton, etc.
+  'I18n.gs',           // [DEPENDS: Constants] Provides: t(), getUserLanguage, translations
+  'TestConfig.gs',     // [DEPENDS: Constants] Provides: TEST_CONFIG, getTestSpreadsheet
 
-  // Features (alphabetical within categories)
+  // ===== LEVEL 2: MAIN SETUP & UTILITIES =====
+  'Code.gs',           // [DEPENDS: Constants, SecurityUtils] Provides: CREATE_509_DASHBOARD, onOpen
+  'DataArchiving.gs',  // [DEPENDS: Constants, SecurityUtils, HTMLTemplates] Provides: archiveOldGrievances
+
+  // ===== LEVEL 3: FEATURE MODULES (ALPHABETICAL) =====
+  // All feature modules depend on: Constants, SecurityUtils, Code.gs
   'ADHDEnhancements.gs',
   'AdminGrievanceMessages.gs',
   'EnhancedADHDFeatures.gs',
@@ -89,12 +125,61 @@ const CORE_MODULES = [
   'WorkflowStateMachine.gs'
 ];
 
-// Test modules (excluded in production builds)
-const TEST_MODULES = [
-  'TestFramework.gs',
-  'Code.test.gs',
-  'Integration.test.gs'
+  // ===== LEVEL 4: TESTING MODULES (LAST) =====
+  // Test modules should be loaded last
+  'TestFramework.gs',     // [DEPENDS: Constants, TestConfig] Provides: runAllTests, Assert
+  'Code.test.gs',         // [DEPENDS: TestFramework, Code.gs] Unit tests
+  'Integration.test.gs'   // [DEPENDS: TestFramework, All modules] Integration tests
 ];
+
+/**
+ * Module dependency validation
+ * Checks if all module dependencies are satisfied
+ */
+function validateModuleDependencies() {
+  console.log('🔍 Validating module dependencies...\n');
+
+  const moduleSet = new Set(MODULES);
+  const warnings = [];
+
+  // Define known dependencies
+  const dependencies = {
+    'SecurityUtils.gs': ['Constants.gs'],
+    'HTMLTemplates.gs': ['Constants.gs'],
+    'I18n.gs': ['Constants.gs'],
+    'TestConfig.gs': ['Constants.gs'],
+    'Code.gs': ['Constants.gs', 'SecurityUtils.gs'],
+    'DataArchiving.gs': ['Constants.gs', 'SecurityUtils.gs', 'HTMLTemplates.gs'],
+    'TestFramework.gs': ['Constants.gs', 'TestConfig.gs'],
+    'Code.test.gs': ['TestFramework.gs', 'Code.gs'],
+    'Integration.test.gs': ['TestFramework.gs']
+  };
+
+  // Check each module's dependencies
+  MODULES.forEach((module, index) => {
+    if (dependencies[module]) {
+      dependencies[module].forEach(dep => {
+        const depIndex = MODULES.indexOf(dep);
+
+        if (depIndex === -1) {
+          warnings.push(`⚠️  ${module} depends on ${dep}, but ${dep} is not in build list`);
+        } else if (depIndex > index) {
+          warnings.push(`⚠️  ${module} (index ${index}) depends on ${dep} (index ${depIndex}), but ${dep} is loaded later`);
+        }
+      });
+    }
+  });
+
+  if (warnings.length > 0) {
+    console.log('⚠️  DEPENDENCY WARNINGS:\n');
+    warnings.forEach(w => console.log(`   ${w}`));
+    console.log('');
+  } else {
+    console.log('✅ All module dependencies are correctly ordered\n');
+  }
+
+  return warnings.length === 0;
+}
 
 // Files to exclude from build
 const EXCLUDED_FILES = [
@@ -505,6 +590,7 @@ try {
   if (!buildOptions.quiet) {
     verifyModules(buildOptions.includeTests);
   }
+  validateModuleDependencies();
   build(buildOptions);
 } catch (error) {
   console.error('\n💥 FATAL ERROR:', error.message);
