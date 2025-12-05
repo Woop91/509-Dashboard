@@ -1020,21 +1020,21 @@ function setupDataValidations() {
     .build();
   grievanceLog.getRange(2, 24, 5000, 1).setDataValidation(grievanceEmailRule);
 
-  // Member Directory validations (updated for new Config structure)
+  // Member Directory validations (using CONFIG_COLS for correct column mapping)
   const memberValidations = [
-    { col: 4, configCol: 1 },    // Job Title
-    { col: 5, configCol: 2 },    // Work Location
-    { col: 6, configCol: 3 },    // Unit
-    { col: 10, configCol: 5 },   // Is Steward
-    { col: 13, configCol: 10 },  // Assigned Steward
-    { col: 20, configCol: 5 },   // Interest: Local
-    { col: 21, configCol: 5 },   // Interest: Chapter
-    { col: 22, configCol: 5 },   // Interest: Allied
-    { col: 24, configCol: 15 }   // Comm Methods
+    { col: 4, configCol: CONFIG_COLS.JOB_TITLES },       // Job Title
+    { col: 5, configCol: CONFIG_COLS.OFFICE_LOCATIONS }, // Work Location
+    { col: 6, configCol: CONFIG_COLS.UNITS },            // Unit
+    { col: 10, configCol: CONFIG_COLS.YES_NO },          // Is Steward
+    { col: 13, configCol: CONFIG_COLS.STEWARDS },        // Assigned Steward
+    { col: 20, configCol: CONFIG_COLS.YES_NO },          // Interest: Local
+    { col: 21, configCol: CONFIG_COLS.YES_NO },          // Interest: Chapter
+    { col: 22, configCol: CONFIG_COLS.YES_NO },          // Interest: Allied
+    { col: 24, configCol: CONFIG_COLS.COMM_METHODS }     // Comm Methods
   ];
 
   memberValidations.forEach(function(v) {
-    const configRange = config.getRange(2, v.configCol, 50, 1);
+    const configRange = config.getRange(3, v.configCol, 50, 1);  // Start from row 3 (data row)
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(configRange, true)
       .setAllowInvalid(false)
@@ -1061,19 +1061,19 @@ function setupDataValidations() {
   memberDir.getRange(2, 11, 5000, 1).setDataValidation(nameRule); // Supervisor
   memberDir.getRange(2, 12, 5000, 1).setDataValidation(nameRule); // Manager
 
-  // Grievance Log validations (updated for new Config structure)
+  // Grievance Log validations (using CONFIG_COLS for correct column mapping)
   const grievanceValidations = [
-    { col: 5, configCol: 11 },  // Status (now column K)
-    { col: 6, configCol: 12 },  // Current Step (now column L)
-    { col: 22, configCol: 14 }, // Articles Violated (now column N)
-    { col: 23, configCol: 13 }, // Issue Category (now column M)
-    { col: 25, configCol: 3 },  // Unit
-    { col: 26, configCol: 2 },  // Work Location
-    { col: 27, configCol: 10 }  // Assigned Steward (now column J)
+    { col: 5, configCol: CONFIG_COLS.GRIEVANCE_STATUS },    // Status
+    { col: 6, configCol: CONFIG_COLS.GRIEVANCE_STEP },      // Current Step
+    { col: 22, configCol: CONFIG_COLS.ARTICLES_VIOLATED },  // Articles Violated
+    { col: 23, configCol: CONFIG_COLS.ISSUE_CATEGORY },     // Issue Category
+    { col: 25, configCol: CONFIG_COLS.UNITS },              // Unit
+    { col: 26, configCol: CONFIG_COLS.OFFICE_LOCATIONS },   // Work Location
+    { col: 27, configCol: CONFIG_COLS.STEWARDS }            // Assigned Steward
   ];
 
   grievanceValidations.forEach(function(v) {
-    const configRange = config.getRange(2, v.configCol, 50, 1);
+    const configRange = config.getRange(3, v.configCol, 50, 1);  // Start from row 3 (data row)
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(configRange, true)
       .setAllowInvalid(false)
