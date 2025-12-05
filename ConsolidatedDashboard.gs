@@ -4599,6 +4599,16 @@ function seedMembersWithCount(count, toggleName) {
   const finalRow = memberDir.getLastRow();
   Logger.log('Seed complete. Member Directory now has ' + finalRow + ' rows (including header)');
 
+  // CRITICAL: Re-apply dropdowns that were cleared before seeding
+  SpreadsheetApp.getActive().toast(`Restoring dropdowns...`, "Processing", -1);
+  try {
+    setupMemberDirectoryDropdownsSilent();
+    setupGrievanceLogDropdownsSilent();
+    Logger.log('Successfully re-applied dropdowns after seeding');
+  } catch (e) {
+    Logger.log('Warning: Could not re-apply dropdowns: ' + e.message);
+  }
+
   SpreadsheetApp.getActive().toast(`✅ ${count} members added (${toggleName})! Sheet now has ${finalRow - 1} members.`, "Complete", 5);
 }
 
@@ -4817,8 +4827,25 @@ function seedGrievancesWithCount(count, toggleName) {
   const finalRow = grievanceLog.getLastRow();
   Logger.log('Grievance seed complete. Grievance Log now has ' + finalRow + ' rows (including header)');
 
-  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added (${toggleName})! Sheet now has ${finalRow - 1} total. Updating member snapshots...`, "Processing", 2);
+  SpreadsheetApp.getActive().toast(`Updating formulas and snapshots...`, "Processing", -1);
   updateMemberDirectorySnapshots();
+
+  // CRITICAL: Re-apply formulas for calculated columns (Days Open, Next Action, Days to Deadline)
+  try {
+    refreshGrievanceFormulas();
+    Logger.log('Successfully re-applied grievance formulas after seeding');
+  } catch (e) {
+    Logger.log('Warning: Could not re-apply grievance formulas: ' + e.message);
+  }
+
+  // CRITICAL: Re-apply dropdowns
+  try {
+    setupGrievanceLogDropdownsSilent();
+    Logger.log('Successfully re-applied grievance dropdowns after seeding');
+  } catch (e) {
+    Logger.log('Warning: Could not re-apply grievance dropdowns: ' + e.message);
+  }
+
   SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added (${toggleName})! Total: ${finalRow - 1} grievances.`, "Complete", 5);
 }
 
@@ -22265,6 +22292,18 @@ function writeChartData(sheet, startCell, data) {
 
   try {
     const range = sheet.getRange(startCell).offset(1, 0, data.length, 2);
+
+    // IMPORTANT: Break any merged cells before writing data
+    // This prevents "You must select all cells in a merged range" error
+    try {
+      range.breakApart();
+    } catch (e) {
+      // Range wasn't merged, ignore
+    }
+
+    // Clear existing content and formatting
+    range.clearContent();
+
     range.setValues(data);
 
     // Hide this data area - OPTIMIZED: batch hide instead of one-by-one
@@ -24410,6 +24449,256 @@ function setupAllDropdowns() {
     'Dropdowns have been configured for both Member Directory and Grievance Log sheets.',
     SpreadsheetApp.getUi().ButtonSet.OK
   );
+}
+
+/**
+ * Silent version of setupMemberDirectoryDropdowns - no alerts
+ * Used after seeding to re-apply dropdowns
+ */
+function setupMemberDirectoryDropdownsSilent() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!memberSheet || !configSheet) {
+    Logger.log('Silent Member dropdown setup: Sheet not found');
+    return;
+  }
+
+  try {
+    const lastRow = Math.max(memberSheet.getLastRow(), 1000);
+
+    // Job Title
+    const jobTitles = getConfigValuesFromSheet(configSheet, CONFIG_COLS.JOB_TITLES);
+    if (jobTitles.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.JOB_TITLE, lastRow, jobTitles, 'Job Title', true);
+
+    // Work Location
+    const locations = getConfigValuesFromSheet(configSheet, CONFIG_COLS.OFFICE_LOCATIONS);
+    if (locations.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.WORK_LOCATION, lastRow, locations, 'Work Location', true);
+
+    // Unit
+    const units = getConfigValuesFromSheet(configSheet, CONFIG_COLS.UNITS);
+    if (units.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.UNIT, lastRow, units, 'Unit', true);
+
+    // Is Steward
+    const yesNo = getConfigValuesFromSheet(configSheet, CONFIG_COLS.YES_NO);
+    if (yesNo.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.IS_STEWARD, lastRow, yesNo, 'Is Steward', true);
+
+    // Supervisor
+    const supervisors = getConfigValuesFromSheet(configSheet, CONFIG_COLS.SUPERVISORS);
+    if (supervisors.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.SUPERVISOR, lastRow, supervisors, 'Supervisor', true);
+
+    // Manager
+    const managers = getConfigValuesFromSheet(configSheet, CONFIG_COLS.MANAGERS);
+    if (managers.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.MANAGER, lastRow, managers, 'Manager', true);
+
+    // Assigned Steward
+    const stewards = getStewardsList();
+    if (stewards.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.ASSIGNED_STEWARD, lastRow, stewards, 'Assigned Steward', true);
+      setDropdownByCol(memberSheet, MEMBER_COLS.CONTACT_STEWARD, lastRow, stewards, 'Contact Steward', true);
+    }
+
+    // Office Days (multi-select)
+    const officeDays = getConfigValuesFromSheet(configSheet, CONFIG_COLS.OFFICE_DAYS);
+    if (officeDays.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.OFFICE_DAYS, lastRow, officeDays, 'Office Days', false);
+
+    Logger.log('Silent Member Directory dropdown setup complete');
+
+  } catch (error) {
+    Logger.log('Error in silent member dropdown setup: ' + error.message);
+  }
+}
+
+/**
+ * Silent version of setupGrievanceLogDropdowns - no alerts
+ * Used after seeding to re-apply dropdowns
+ */
+function setupGrievanceLogDropdownsSilent() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!grievanceSheet || !configSheet) {
+    Logger.log('Silent Grievance dropdown setup: Sheet not found');
+    return;
+  }
+
+  try {
+    const lastRow = Math.max(grievanceSheet.getLastRow(), 500);
+
+    // Status
+    const statuses = getConfigValuesFromSheet(configSheet, CONFIG_COLS.GRIEVANCE_STATUS);
+    if (statuses.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.STATUS, lastRow, statuses, 'Status', true);
+
+    // Current Step
+    const steps = getConfigValuesFromSheet(configSheet, CONFIG_COLS.GRIEVANCE_STEP);
+    if (steps.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.CURRENT_STEP, lastRow, steps, 'Current Step', true);
+
+    // Articles Violated (multi-select)
+    const articles = getConfigValuesFromSheet(configSheet, CONFIG_COLS.ARTICLES_VIOLATED);
+    if (articles.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ARTICLES, lastRow, articles, 'Articles Violated', false);
+
+    // Issue Category (multi-select)
+    const categories = getConfigValuesFromSheet(configSheet, CONFIG_COLS.ISSUE_CATEGORY);
+    if (categories.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ISSUE_CATEGORY, lastRow, categories, 'Issue Category', false);
+
+    // Unit
+    const units = getConfigValuesFromSheet(configSheet, CONFIG_COLS.UNITS);
+    if (units.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.UNIT, lastRow, units, 'Unit', true);
+
+    // Work Location
+    const locations = getConfigValuesFromSheet(configSheet, CONFIG_COLS.OFFICE_LOCATIONS);
+    if (locations.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.LOCATION, lastRow, locations, 'Work Location', true);
+
+    // Assigned Steward
+    const stewards = getStewardsList();
+    if (stewards.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.STEWARD, lastRow, stewards, 'Assigned Steward', true);
+
+    Logger.log('Silent Grievance Log dropdown setup complete');
+
+  } catch (error) {
+    Logger.log('Error in silent grievance dropdown setup: ' + error.message);
+  }
+}
+
+/**
+ * Cleans up Member Directory structure - removes extra columns beyond AE (31)
+ * Run this if columns AF, AG, etc. appear with mixed data
+ */
+function cleanupMemberDirectoryColumns() {
+  const ss = SpreadsheetApp.getActive();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberDir) {
+    SpreadsheetApp.getUi().alert('Member Directory not found!');
+    return;
+  }
+
+  const ui = SpreadsheetApp.getUi();
+  const lastCol = memberDir.getLastColumn();
+
+  if (lastCol <= 31) {
+    ui.alert('Column Structure OK', 'Member Directory has ' + lastCol + ' columns (expected: 31 max). No cleanup needed.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const response = ui.alert(
+    'Remove Extra Columns?',
+    'Member Directory has ' + lastCol + ' columns but should only have 31 (A-AE).\n\n' +
+    'Extra columns will be deleted. This cannot be undone.\n\n' +
+    'Continue?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) return;
+
+  // Delete columns from right to left (starting after column 31)
+  const columnsToDelete = lastCol - 31;
+  for (let i = 0; i < columnsToDelete; i++) {
+    memberDir.deleteColumn(32); // Always delete column 32 (shifts remaining left)
+  }
+
+  // Re-apply checkboxes to column AE (31) - Start Grievance
+  const lastRow = Math.max(memberDir.getLastRow(), 100);
+  memberDir.getRange(2, MEMBER_COLS.START_GRIEVANCE, lastRow - 1, 1).insertCheckboxes();
+
+  ui.alert('Cleanup Complete', 'Removed ' + columnsToDelete + ' extra columns.\nColumn AE checkboxes have been restored.', ui.ButtonSet.OK);
+}
+
+/**
+ * Refresh Dashboard Deadlines - Updates formula on existing Dashboard
+ * Run this after seeding data or if deadlines show incorrect values
+ */
+function refreshDashboardDeadlines() {
+  const ss = SpreadsheetApp.getActive();
+  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+
+  if (!dashboard) {
+    SpreadsheetApp.getUi().alert('Dashboard sheet not found!');
+    return;
+  }
+
+  SpreadsheetApp.getActive().toast('Refreshing dashboard deadlines...', 'Please wait', -1);
+
+  // Dynamic column references
+  const grievanceIdCol = getColumnLetter(GRIEVANCE_COLS.GRIEVANCE_ID);
+  const firstNameCol = getColumnLetter(GRIEVANCE_COLS.FIRST_NAME);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+
+  // Clear existing deadline data
+  dashboard.getRange("A22:E31").clearContent();
+
+  // New formula: Uses FILTER instead of QUERY for better date handling
+  // Only shows items where Days to Deadline is numeric and >= 0 (future deadlines)
+  // Formats Next Action as date
+  dashboard.getRange("A22").setFormula(
+    `=IFERROR(QUERY('Grievance Log'!A:AB, ` +
+    `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${daysToDeadlineCol}, ${statusCol} ` +
+    `WHERE ${statusCol} = 'Open' ` +
+    `AND ${daysToDeadlineCol} IS NOT NULL ` +
+    `AND ${daysToDeadlineCol} >= 0 ` +
+    `AND ${daysToDeadlineCol} <= 14 ` +
+    `ORDER BY ${daysToDeadlineCol} ASC ` +
+    `LIMIT 10", 0), "No upcoming deadlines")`
+  );
+
+  // Format the Next Action column (column C in the output) as dates
+  dashboard.getRange("C22:C31").setNumberFormat("MM/DD/YYYY");
+
+  SpreadsheetApp.getActive().toast('✅ Dashboard deadlines refreshed!', 'Complete', 3);
+}
+
+/**
+ * Refresh Grievance Log Formulas - Re-applies ARRAYFORMULA to calculated columns
+ * Run this after seeding data to fix Days Open, Next Action, Days to Deadline
+ */
+function refreshGrievanceFormulas() {
+  const ss = SpreadsheetApp.getActive();
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceLog) {
+    SpreadsheetApp.getUi().alert('Grievance Log sheet not found!');
+    return;
+  }
+
+  SpreadsheetApp.getActive().toast('Refreshing grievance formulas...', 'Please wait', -1);
+
+  // Get column letters
+  const gStatusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const gCurrentStepCol = getColumnLetter(GRIEVANCE_COLS.CURRENT_STEP);
+  const gFilingDeadlineCol = getColumnLetter(GRIEVANCE_COLS.FILING_DEADLINE);
+  const gDateFiledCol = getColumnLetter(GRIEVANCE_COLS.DATE_FILED);
+  const gStep1DueCol = getColumnLetter(GRIEVANCE_COLS.STEP1_DUE);
+  const gStep2DueCol = getColumnLetter(GRIEVANCE_COLS.STEP2_DUE);
+  const gStep3AppealDueCol = getColumnLetter(GRIEVANCE_COLS.STEP3_APPEAL_DUE);
+  const gDateClosedCol = getColumnLetter(GRIEVANCE_COLS.DATE_CLOSED);
+  const gDaysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
+  const gNextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const gDaysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+
+  // Clear the formula columns first (S, T, U = columns 19, 20, 21)
+  const lastRow = Math.max(grievanceLog.getLastRow(), 100);
+  grievanceLog.getRange(2, GRIEVANCE_COLS.DAYS_OPEN, lastRow - 1, 3).clearContent();
+
+  // Days Open - Column S (19)
+  grievanceLog.getRange(gDaysOpenCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}<>"",IF(${gDateClosedCol}2:${gDateClosedCol}<>"",${gDateClosedCol}2:${gDateClosedCol}-${gDateFiledCol}2:${gDateFiledCol},TODAY()-${gDateFiledCol}2:${gDateFiledCol}),""))`
+  );
+
+  // Next Action Due - Column T (20)
+  grievanceLog.getRange(gNextActionCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gStatusCol}2:${gStatusCol}="Open",IF(${gCurrentStepCol}2:${gCurrentStepCol}="Step I",${gStep1DueCol}2:${gStep1DueCol},IF(${gCurrentStepCol}2:${gCurrentStepCol}="Step II",${gStep2DueCol}2:${gStep2DueCol},IF(${gCurrentStepCol}2:${gCurrentStepCol}="Step III",${gStep3AppealDueCol}2:${gStep3AppealDueCol},${gFilingDeadlineCol}2:${gFilingDeadlineCol}))),""))`
+  );
+
+  // Days to Deadline - Column U (21) - Shows text for overdue, number for future
+  grievanceLog.getRange(gDaysToDeadlineCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}<>"",IF(${gNextActionCol}2:${gNextActionCol}-TODAY()<0,"OVERDUE "&ABS(${gNextActionCol}2:${gNextActionCol}-TODAY())&"d",IF(${gNextActionCol}2:${gNextActionCol}-TODAY()=0,"DUE TODAY",${gNextActionCol}2:${gNextActionCol}-TODAY())),""))`
+  );
+
+  SpreadsheetApp.getActive().toast('✅ Grievance formulas refreshed!', 'Complete', 3);
 }
 
 
@@ -34310,6 +34599,27 @@ const Assert = {
         `\nActual: ${new Date(actualTime).toISOString()}`
       );
     }
+  },
+
+  /**
+   * Assert that function does NOT throw an error
+   */
+  assertNotThrows: function(fn, message) {
+    try {
+      fn();
+    } catch (e) {
+      throw new Error(
+        (message || 'Expected function to not throw') +
+        `\nError thrown: ${e.message}`
+      );
+    }
+  },
+
+  /**
+   * Explicitly fail a test
+   */
+  fail: function(message) {
+    throw new Error(message || 'Test failed');
   }
 };
 

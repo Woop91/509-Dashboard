@@ -149,40 +149,58 @@ M: Communication Methods (Email, Phone, Text, In Person)
 
 **Purpose:** Complete member database with engagement tracking
 
-**Columns (31 total):**
+**Columns (31 total) - FROM Constants.gs MEMBER_COLS:**
 ```
-A: Member ID (M000001, M000002, etc.)
-B: First Name
-C: Last Name
-D: Job Title (validated from Config)
-E: Work Location (Site) (validated from Config)
-F: Unit (validated from Config)
-G: Office Days
-H: Email Address
-I: Phone Number
-J: Is Steward (Y/N) (validated from Config)
-K: Supervisor (Name) (validated from Config)
-L: Manager (Name) (validated from Config)
-M: Assigned Steward (Name) (validated from Config)
-N: Last Virtual Mtg (Date)
-O: Last In-Person Mtg (Date)
-P: Last Survey (Date)
-Q: Last Email Open (Date)
-R: Open Rate (%)
-S: Volunteer Hours (YTD)
-T: Interest: Local Actions (Y/N)
-U: Interest: Chapter Actions (Y/N)
-V: Interest: Allied Chapter Actions (Y/N)
-W: Timestamp
-X: Preferred Communication Methods (validated from Config)
-Y: Best Time(s) to Reach Member
-Z: Has Open Grievance? (Formula: =IF(COUNTIFS('Grievance Log'!B:B,A2,'Grievance Log'!E:E,"Open")>0,"Yes","No"))
-AA: Grievance Status Snapshot (Formula: =IFERROR(INDEX('Grievance Log'!E:E,MATCH(A2,'Grievance Log'!B:B,0)),""))
-AB: Next Grievance Deadline (Formula: =IFERROR(INDEX('Grievance Log'!T:T,MATCH(A2,'Grievance Log'!B:B,0)),""))
-AC: Most Recent Steward Contact Date
-AD: Steward Who Contacted Member
-AE: Notes from Steward Contact
+Section 1: Identity & Core Info (A-D)
+A (1):  Member ID (M000001, M000002, etc.)
+B (2):  First Name
+C (3):  Last Name
+D (4):  Job Title (DROPDOWN from Config col A)
+
+Section 2: Location & Work (E-G)
+E (5):  Work Location (Site) (DROPDOWN from Config col B)
+F (6):  Unit (DROPDOWN from Config col C)
+G (7):  Office Days (DROPDOWN from Config col D)
+
+Section 3: Contact Information (H-K)
+H (8):  Email Address
+I (9):  Phone Number
+J (10): Preferred Communication (MULTI-SELECT from Config col N)
+K (11): Best Time to Contact (MULTI-SELECT from Config col AE)
+
+Section 4: Organizational Structure (L-P)
+L (12): Supervisor (Name) (DROPDOWN from Config col F)
+M (13): Manager (Name) (DROPDOWN from Config col G)
+N (14): Is Steward (Y/N) (DROPDOWN from Config col E)
+O (15): Committees (MULTI-SELECT from Config col I) - for stewards
+P (16): Assigned Steward (Name) (DROPDOWN from Config col H)
+
+Section 5: Engagement Metrics (Q-T) - Hidden by default
+Q (17): Last Virtual Mtg (Date)
+R (18): Last In-Person Mtg (Date)
+S (19): Open Rate (%)
+T (20): Volunteer Hours (YTD)
+
+Section 6: Member Interests (U-X) - Hidden by default
+U (21): Interest: Local Actions (Y/N)
+V (22): Interest: Chapter Actions (Y/N)
+W (23): Interest: Allied Chapter Actions (Y/N)
+X (24): Home Town
+
+Section 7: Steward Contact Tracking (Y-AA)
+Y (25): Most Recent Steward Contact Date
+Z (26): Steward Who Contacted Member (DROPDOWN from Config col H - Stewards)
+AA (27): Notes from Steward Contact
+
+Section 8: Grievance Management (AB-AE)
+AB (28): Has Open Grievance? (Formula)
+AC (29): Grievance Status Snapshot (Formula)
+AD (30): Next Grievance Deadline (Formula)
+AE (31): Start Grievance (CHECKBOX ONLY - triggers grievance creation)
 ```
+
+**CRITICAL: Column AE must be checkboxes ONLY. No text, no names.**
+**CRITICAL: Columns AF, AG should NOT exist. Max is 31 columns (AE).**
 
 **Data Validations:**
 - Column D (Job Title): Config!A2:A14

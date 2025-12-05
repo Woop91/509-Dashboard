@@ -457,3 +457,114 @@ function setupAllDropdowns() {
     SpreadsheetApp.getUi().ButtonSet.OK
   );
 }
+
+/**
+ * Silent version of setupMemberDirectoryDropdowns - no alerts
+ * Used after seeding to re-apply dropdowns
+ */
+function setupMemberDirectoryDropdownsSilent() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!memberSheet || !configSheet) {
+    Logger.log('Silent Member dropdown setup: Sheet not found');
+    return;
+  }
+
+  try {
+    const lastRow = Math.max(memberSheet.getLastRow(), 1000);
+
+    // Job Title
+    const jobTitles = getConfigValuesFromSheet(configSheet, CONFIG_COLS.JOB_TITLES);
+    if (jobTitles.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.JOB_TITLE, lastRow, jobTitles, 'Job Title', true);
+
+    // Work Location
+    const locations = getConfigValuesFromSheet(configSheet, CONFIG_COLS.OFFICE_LOCATIONS);
+    if (locations.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.WORK_LOCATION, lastRow, locations, 'Work Location', true);
+
+    // Unit
+    const units = getConfigValuesFromSheet(configSheet, CONFIG_COLS.UNITS);
+    if (units.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.UNIT, lastRow, units, 'Unit', true);
+
+    // Is Steward
+    const yesNo = getConfigValuesFromSheet(configSheet, CONFIG_COLS.YES_NO);
+    if (yesNo.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.IS_STEWARD, lastRow, yesNo, 'Is Steward', true);
+
+    // Supervisor
+    const supervisors = getConfigValuesFromSheet(configSheet, CONFIG_COLS.SUPERVISORS);
+    if (supervisors.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.SUPERVISOR, lastRow, supervisors, 'Supervisor', true);
+
+    // Manager
+    const managers = getConfigValuesFromSheet(configSheet, CONFIG_COLS.MANAGERS);
+    if (managers.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.MANAGER, lastRow, managers, 'Manager', true);
+
+    // Assigned Steward
+    const stewards = getStewardsList();
+    if (stewards.length > 0) {
+      setDropdownByCol(memberSheet, MEMBER_COLS.ASSIGNED_STEWARD, lastRow, stewards, 'Assigned Steward', true);
+      setDropdownByCol(memberSheet, MEMBER_COLS.CONTACT_STEWARD, lastRow, stewards, 'Contact Steward', true);
+    }
+
+    // Office Days (multi-select)
+    const officeDays = getConfigValuesFromSheet(configSheet, CONFIG_COLS.OFFICE_DAYS);
+    if (officeDays.length > 0) setDropdownByCol(memberSheet, MEMBER_COLS.OFFICE_DAYS, lastRow, officeDays, 'Office Days', false);
+
+    Logger.log('Silent Member Directory dropdown setup complete');
+
+  } catch (error) {
+    Logger.log('Error in silent member dropdown setup: ' + error.message);
+  }
+}
+
+/**
+ * Silent version of setupGrievanceLogDropdowns - no alerts
+ * Used after seeding to re-apply dropdowns
+ */
+function setupGrievanceLogDropdownsSilent() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!grievanceSheet || !configSheet) {
+    Logger.log('Silent Grievance dropdown setup: Sheet not found');
+    return;
+  }
+
+  try {
+    const lastRow = Math.max(grievanceSheet.getLastRow(), 500);
+
+    // Status
+    const statuses = getConfigValuesFromSheet(configSheet, CONFIG_COLS.GRIEVANCE_STATUS);
+    if (statuses.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.STATUS, lastRow, statuses, 'Status', true);
+
+    // Current Step
+    const steps = getConfigValuesFromSheet(configSheet, CONFIG_COLS.GRIEVANCE_STEP);
+    if (steps.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.CURRENT_STEP, lastRow, steps, 'Current Step', true);
+
+    // Articles Violated (multi-select)
+    const articles = getConfigValuesFromSheet(configSheet, CONFIG_COLS.ARTICLES_VIOLATED);
+    if (articles.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ARTICLES, lastRow, articles, 'Articles Violated', false);
+
+    // Issue Category (multi-select)
+    const categories = getConfigValuesFromSheet(configSheet, CONFIG_COLS.ISSUE_CATEGORY);
+    if (categories.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ISSUE_CATEGORY, lastRow, categories, 'Issue Category', false);
+
+    // Unit
+    const units = getConfigValuesFromSheet(configSheet, CONFIG_COLS.UNITS);
+    if (units.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.UNIT, lastRow, units, 'Unit', true);
+
+    // Work Location
+    const locations = getConfigValuesFromSheet(configSheet, CONFIG_COLS.OFFICE_LOCATIONS);
+    if (locations.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.LOCATION, lastRow, locations, 'Work Location', true);
+
+    // Assigned Steward
+    const stewards = getStewardsList();
+    if (stewards.length > 0) setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.STEWARD, lastRow, stewards, 'Assigned Steward', true);
+
+    Logger.log('Silent Grievance Log dropdown setup complete');
+
+  } catch (error) {
+    Logger.log('Error in silent grievance dropdown setup: ' + error.message);
+  }
+}
