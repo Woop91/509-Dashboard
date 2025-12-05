@@ -2498,6 +2498,10 @@ function seedMembersWithCount(count, toggleName) {
   }
   const times = ["Mornings", "Afternoons", "Evenings", "Weekends", "Flexible"];
 
+  // Pre-fetch committee and home town options ONCE (not inside the loop!)
+  const committeeOptions = getConfigColumnValues(CONFIG_COLS.STEWARD_COMMITTEES);
+  const homeTownOptions = getConfigColumnValues(CONFIG_COLS.HOME_TOWNS);
+
   // Validate config data with detailed debugging
   Logger.log('Seed Config Debug: jobTitles=' + jobTitles.length + ', locations=' + locations.length +
              ', units=' + units.length + ', supervisors=' + supervisors.length +
@@ -2565,14 +2569,12 @@ function seedMembersWithCount(count, toggleName) {
     const commMethod = commMethods[Math.floor(Math.random() * commMethods.length)];
     const bestTime = times[Math.floor(Math.random() * times.length)];
 
-    // Get committees for stewards (use new STEWARD_COMMITTEES column)
-    const committeeOptions = getConfigColumnValues(CONFIG_COLS.STEWARD_COMMITTEES);
+    // Use pre-fetched committees for stewards
     const committee = isSteward === "Yes" && committeeOptions.length > 0
       ? committeeOptions[Math.floor(Math.random() * committeeOptions.length)]
       : "";
 
-    // Get home towns
-    const homeTownOptions = getConfigColumnValues(CONFIG_COLS.HOME_TOWNS);
+    // Use pre-fetched home towns
     const homeTown = homeTownOptions.length > 0
       ? homeTownOptions[Math.floor(Math.random() * homeTownOptions.length)]
       : "";
