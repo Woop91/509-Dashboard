@@ -2754,7 +2754,7 @@ function createExecutiveDashboard() {
     ["Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, "", ""],
     ["Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0%")`, "", ""],
     ["Avg Resolution (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, "", ""],
-    ["Overdue Cases", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"<0")`, "", ""],
+    ["Overdue Cases", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"OVERDUE*")`, "", ""],
     ["Active Stewards", `=COUNTIF('Member Directory'!${execIsStewardCol}:${execIsStewardCol},"Yes")`, "", ""]
   ];
 
@@ -2779,7 +2779,7 @@ function createExecutiveDashboard() {
     ["Total Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, ""],
     ["Overall Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0.0%")`, ""],
     ["Avg Resolution Time (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, ""],
-    ["Cases Overdue", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"<0")`, ""],
+    ["Cases Overdue", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"OVERDUE*")`, ""],
     ["Member Satisfaction Score", "=TEXT(AVERAGE('Member Satisfaction'!C:C),\"0.0\")", ""],
     ["Total Grievances Filed YTD", `=COUNTA('Grievance Log'!${grievanceIdCol}2:${grievanceIdCol})`, ""],
     ["Resolved Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved")`, ""]
@@ -3112,10 +3112,52 @@ function setupFormulasAndCalculations() {
     `=ARRAYFORMULA(IF(${gStatusCol}2:${gStatusCol}1000="Open",IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step I",${gStep1DueCol}2:${gStep1DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step II",${gStep2DueCol}2:${gStep2DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step III",${gStep3AppealDueCol}2:${gStep3AppealDueCol}1000,${gFilingDeadlineCol}2:${gFilingDeadlineCol}1000))),""))`
   );
 
-  // Days to Deadline - Column U (Next Action Due - Today)
+  // Days to Deadline - Column U (shows descriptive text for overdue items)
+  // Positive = days remaining, 0 = "DUE TODAY", Negative = "OVERDUE Xd"
   grievanceLog.getRange(gDaysToDeadlineCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}1000<>"",${gNextActionCol}2:${gNextActionCol}1000-TODAY(),""))`
+    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}1000<>"",IF(${gNextActionCol}2:${gNextActionCol}1000-TODAY()<0,"OVERDUE "&ABS(${gNextActionCol}2:${gNextActionCol}1000-TODAY())&"d",IF(${gNextActionCol}2:${gNextActionCol}1000-TODAY()=0,"DUE TODAY",${gNextActionCol}2:${gNextActionCol}1000-TODAY())),""))`
   );
+
+  // Add conditional formatting for Days to Deadline column
+  const daysToDeadlineRange = grievanceLog.getRange(gDaysToDeadlineCol + "2:" + gDaysToDeadlineCol + "1000");
+
+  // Rule 1: OVERDUE - Red background
+  const overdueRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains("OVERDUE")
+    .setBackground("#FEE2E2")  // Light red
+    .setFontColor("#DC2626")   // Dark red text
+    .setBold(true)
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Rule 2: DUE TODAY - Orange background
+  const dueTodayRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo("DUE TODAY")
+    .setBackground("#FEF3C7")  // Light amber
+    .setFontColor("#D97706")   // Dark amber text
+    .setBold(true)
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Rule 3: Due within 7 days - Yellow background (numbers 1-7)
+  const dueSoonRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberBetween(1, 7)
+    .setBackground("#FEF9C3")  // Light yellow
+    .setFontColor("#CA8A04")   // Dark yellow text
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Rule 4: More than 7 days - Green background
+  const onTrackRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberGreaterThan(7)
+    .setBackground("#DCFCE7")  // Light green
+    .setFontColor("#16A34A")   // Dark green text
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Apply all rules
+  const existingRules = grievanceLog.getConditionalFormatRules();
+  grievanceLog.setConditionalFormatRules([overdueRule, dueTodayRule, dueSoonRule, onTrackRule, ...existingRules]);
 
   // ----- MEMBER DIRECTORY FORMULAS -----
   // Has Open Grievance? - Column Y (25)
