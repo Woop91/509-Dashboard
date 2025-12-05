@@ -373,36 +373,95 @@ function setupInteractiveDashboardControls() {
   // Comparison options
   const comparisonOptions = ["Yes", "No"];
 
-  // Create dropdown rules
+  // Create dropdown rules with help text
   const metricRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(metrics, true)
     .setAllowInvalid(false)
+    .setHelpText('🎯 Click here to select a metric!')
     .build();
 
   const chartTypeRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(chartTypes, true)
     .setAllowInvalid(false)
+    .setHelpText('📊 Click here to select chart type!')
     .build();
 
   const themeRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(themes, true)
     .setAllowInvalid(false)
+    .setHelpText('🎨 Click here to select a theme!')
     .build();
 
   const comparisonRule = SpreadsheetApp.newDataValidation()
     .requireValueInList(comparisonOptions, true)
     .setAllowInvalid(false)
+    .setHelpText('🔄 Click here to toggle comparison mode!')
     .build();
 
-  // Apply data validation to control cells
-  sheet.getRange("A7").setDataValidation(metricRule).setValue("Total Members");
-  sheet.getRange("B7").setDataValidation(chartTypeRule).setValue("Donut Chart");
-  sheet.getRange("C7").setDataValidation(metricRule).setValue("Active Grievances");
-  sheet.getRange("D7").setDataValidation(chartTypeRule).setValue("Bar Chart");
-  sheet.getRange("E7").setDataValidation(themeRule).setValue("Union Blue");
-  sheet.getRange("G7").setDataValidation(comparisonRule).setValue("Yes");
+  // Apply data validation to control cells with enhanced visual styling
+  const dropdownStyle = {
+    background: "#DBEAFE",  // Light blue to stand out
+    border: "#3B82F6",      // Blue border
+    fontWeight: "bold"
+  };
 
-  Logger.log("Interactive Dashboard controls set up successfully");
+  // Metric 1
+  sheet.getRange("A7")
+    .setDataValidation(metricRule)
+    .setValue("Total Members")
+    .setBackground(dropdownStyle.background)
+    .setBorder(true, true, true, true, false, false, dropdownStyle.border, SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
+    .setFontWeight(dropdownStyle.fontWeight);
+
+  // Chart Type 1
+  sheet.getRange("B7")
+    .setDataValidation(chartTypeRule)
+    .setValue("Donut Chart")
+    .setBackground(dropdownStyle.background)
+    .setBorder(true, true, true, true, false, false, dropdownStyle.border, SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
+    .setFontWeight(dropdownStyle.fontWeight);
+
+  // Metric 2
+  sheet.getRange("C7")
+    .setDataValidation(metricRule)
+    .setValue("Active Grievances")
+    .setBackground(dropdownStyle.background)
+    .setBorder(true, true, true, true, false, false, dropdownStyle.border, SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
+    .setFontWeight(dropdownStyle.fontWeight);
+
+  // Chart Type 2
+  sheet.getRange("D7")
+    .setDataValidation(chartTypeRule)
+    .setValue("Bar Chart")
+    .setBackground(dropdownStyle.background)
+    .setBorder(true, true, true, true, false, false, dropdownStyle.border, SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
+    .setFontWeight(dropdownStyle.fontWeight);
+
+  // Theme
+  sheet.getRange("E7")
+    .setDataValidation(themeRule)
+    .setValue("Union Blue")
+    .setBackground("#FEF3C7")  // Yellow for theme selector
+    .setBorder(true, true, true, true, false, false, "#F59E0B", SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
+    .setFontWeight(dropdownStyle.fontWeight);
+
+  // Comparison toggle
+  sheet.getRange("G7")
+    .setDataValidation(comparisonRule)
+    .setValue("Yes")
+    .setBackground("#D1FAE5")  // Green for toggle
+    .setBorder(true, true, true, true, false, false, "#10B981", SpreadsheetApp.BorderStyle.SOLID_MEDIUM)
+    .setFontWeight(dropdownStyle.fontWeight);
+
+  // Add visual dropdown indicators in row 8
+  sheet.getRange("A8:G8")
+    .setValues([["▼ Select", "▼ Select", "▼ Select", "▼ Select", "▼ Select", "", "▼ Select"]])
+    .setFontSize(8)
+    .setFontColor("#6B7280")
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center");
+
+  Logger.log("Interactive Dashboard controls set up successfully with enhanced visibility");
 }
 
 /**

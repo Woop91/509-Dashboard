@@ -175,34 +175,34 @@ function setupGrievanceLogDropdowns() {
   try {
     const lastRow = Math.max(grievanceSheet.getLastRow(), 500);
 
-    // Issue Category (Column E / GRIEVANCE_COLS.ISSUE_CATEGORY) - MULTI-SELECT
-    const issueCategories = getConfigValuesFromSheet(configSheet, CONFIG_COLS.ISSUE_CATEGORY);
-    if (issueCategories.length > 0) {
-      setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ISSUE_CATEGORY, lastRow, issueCategories, 'Issue Category', false);
-    }
-
-    // Articles Violated (Column F / GRIEVANCE_COLS.ARTICLES) - MULTI-SELECT
-    const articles = getConfigValuesFromSheet(configSheet, CONFIG_COLS.ARTICLES_VIOLATED);
-    if (articles.length > 0) {
-      setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ARTICLES, lastRow, articles, 'Articles Violated', false);
-    }
-
-    // Status (Column I / GRIEVANCE_COLS.STATUS) - SINGLE-SELECT
+    // Status (Column E / GRIEVANCE_COLS.STATUS = 5) - SINGLE-SELECT
     const statuses = getConfigValuesFromSheet(configSheet, CONFIG_COLS.GRIEVANCE_STATUS);
     if (statuses.length > 0) {
       setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.STATUS, lastRow, statuses, 'Status', true);
     }
 
-    // Current Step (Column J / GRIEVANCE_COLS.CURRENT_STEP) - SINGLE-SELECT
+    // Current Step (Column F / GRIEVANCE_COLS.CURRENT_STEP = 6) - SINGLE-SELECT
     const steps = getConfigValuesFromSheet(configSheet, CONFIG_COLS.GRIEVANCE_STEP);
     if (steps.length > 0) {
       setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.CURRENT_STEP, lastRow, steps, 'Current Step', true);
     }
 
-    // Steward (Column K / GRIEVANCE_COLS.STEWARD) - SINGLE-SELECT
+    // Articles Violated (Column V / GRIEVANCE_COLS.ARTICLES = 22) - MULTI-SELECT
+    const articles = getConfigValuesFromSheet(configSheet, CONFIG_COLS.ARTICLES_VIOLATED);
+    if (articles.length > 0) {
+      setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ARTICLES, lastRow, articles, 'Articles Violated', false);
+    }
+
+    // Issue Category (Column W / GRIEVANCE_COLS.ISSUE_CATEGORY = 23) - MULTI-SELECT
+    const issueCategories = getConfigValuesFromSheet(configSheet, CONFIG_COLS.ISSUE_CATEGORY);
+    if (issueCategories.length > 0) {
+      setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ISSUE_CATEGORY, lastRow, issueCategories, 'Issue Category', false);
+    }
+
+    // Steward (Column AA / GRIEVANCE_COLS.STEWARD = 27) - SINGLE-SELECT
     const stewards = getStewardsList();
     if (stewards.length > 0) {
-      setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.STEWARD, lastRow, stewards, 'Steward', true);
+      setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.STEWARD, lastRow, stewards, 'Assigned Steward', true);
     }
 
     SpreadsheetApp.getActiveSpreadsheet().toast('Grievance Log dropdowns set up!', 'Complete', 3);
