@@ -65,27 +65,26 @@ function reorderSheetsLogically() {
   // 7. Analytics Data
   // 8. Admin sheets (Config, Archive, etc.)
 
+  // FIXED: Use only valid sheet names from SHEETS constant
   const sheetOrder = [
     SHEETS.INTERACTIVE_DASHBOARD,  // 1. YOUR Custom View (most important for daily use)
     SHEETS.DASHBOARD,              // 2. Main Overview
     SHEETS.MEMBER_DIR,             // 3. Members
     SHEETS.GRIEVANCE_LOG,          // 4. Grievances
     SHEETS.STEWARD_WORKLOAD,       // 5. Workload
-    SHEETS.TRENDS,                 // 6. Test 1
-    SHEETS.PERFORMANCE,            // 7. Test 2
-    SHEETS.LOCATION,               // 8. Test 3
-    SHEETS.TYPE_ANALYSIS,          // 9. Test 4
-    SHEETS.EXECUTIVE,              // 10. Test 5
-    SHEETS.KPI_BOARD,              // 11. Test 6
-    SHEETS.MEMBER_ENGAGEMENT,      // 12. Test 7
-    SHEETS.COST_IMPACT,            // 13. Test 8
-    SHEETS.QUICK_STATS,            // 14. Test 9
+    SHEETS.TRENDS,                 // 6. Trends & Timeline
+    SHEETS.LOCATION,               // 7. Location Analytics
+    SHEETS.TYPE_ANALYSIS,          // 8. Type Analysis
+    SHEETS.EXECUTIVE_DASHBOARD,    // 9. Executive Dashboard
+    SHEETS.KPI_PERFORMANCE,        // 10. KPI Performance
+    SHEETS.MEMBER_ENGAGEMENT,      // 11. Member Engagement
+    SHEETS.COST_IMPACT,            // 12. Cost Impact
+    SHEETS.MEMBER_SATISFACTION,    // 13. Member Satisfaction
+    SHEETS.FEEDBACK,               // 14. Feedback & Development
     SHEETS.ANALYTICS,              // 15. Analytics Data
     SHEETS.CONFIG,                 // 16. Config
-    SHEETS.FUTURE_FEATURES,        // 17. Future
-    SHEETS.PENDING_FEATURES,       // 18. Pending
-    SHEETS.ARCHIVE,                // 19. Archive
-    SHEETS.DIAGNOSTICS             // 20. Diagnostics
+    SHEETS.ARCHIVE,                // 17. Archive
+    SHEETS.DIAGNOSTICS             // 18. Diagnostics
   ];
 
   // Move sheets to correct positions

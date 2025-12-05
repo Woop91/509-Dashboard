@@ -153,6 +153,10 @@ function CREATE_509_DASHBOARD() {
     createDiagnosticsSheet();
     SpreadsheetApp.getActive().toast("✅ Utility sheets created", "85%", 2);
 
+    // Create Audit Log sheet
+    createAuditLogSheet();
+    SpreadsheetApp.getActive().toast("✅ Audit Log created", "90%", 2);
+
     setupDataValidations();
     setupFormulasAndCalculations();
     setupInteractiveDashboardControls();
@@ -1068,7 +1072,15 @@ function onOpen() {
       .addItem("Seed 5k Grievances", "SEED_5K_GRIEVANCES")
       .addSeparator()
       .addItem("Clear All Data", "clearAllData")
-      .addItem("🗑️ Nuke All Seed Data", "nukeSeedData"))
+      .addItem("🗑️ Nuke All Seed Data", "nukeSeedData")
+      .addSeparator()
+      .addSubMenu(ui.createMenu("👥 User Roles (RBAC)")
+        .addItem("Initialize RBAC", "initializeRBAC")
+        .addItem("Configure Roles", "configureUserRoles")
+        .addItem("Add Admin", "addAdmin")
+        .addItem("Add Steward", "addSteward")
+        .addItem("Add Viewer", "addViewer")
+        .addItem("My Permissions", "showMyPermissions")))
     .addSeparator()
     .addSubMenu(ui.createMenu("♿ ADHD Features")
       .addItem("Hide Gridlines (Focus Mode)", "hideAllGridlines")
@@ -1424,12 +1436,15 @@ function updateMemberDirectorySnapshots() {
     if (snapshot) {
       const contactDate = new Date(Date.now() - Math.floor(Math.random() * 14) * 24 * 60 * 60 * 1000);
       const contactNotes = ["Discussed case progress", "Member updated on next steps", "Reviewed timeline and deadlines", "Answered member questions", "Scheduled follow-up meeting"][Math.floor(Math.random() * 5)];
-      updateData.push([snapshot.status || "", snapshot.nextDeadline || "", contactDate, snapshot.stewardWhoContacted || "", contactNotes]);
+      // FIXED: Update only contact data columns (AC, AD, AE = columns 29, 30, 31)
+      // Columns Z, AA, AB (26, 27, 28) are FORMULA columns and should NOT be overwritten
+      updateData.push([contactDate, snapshot.stewardWhoContacted || "", contactNotes]);
     } else {
-      updateData.push(["", "", "", "", ""]);
+      updateData.push(["", "", ""]);
     }
   }
-  if (updateData.length > 0) memberDir.getRange(2, 25, updateData.length, 5).setValues(updateData);
+  // FIXED: Write to columns 29-31 (AC, AD, AE) instead of 25-29
+  if (updateData.length > 0) memberDir.getRange(2, 29, updateData.length, 3).setValues(updateData);
 }
 
 function clearAllData() {
@@ -1446,13 +1461,212 @@ function clearAllData() {
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
-  if (memberDir.getLastRow() > 1) {
+  if (memberDir && memberDir.getLastRow() > 1) {
     memberDir.getRange(2, 1, memberDir.getLastRow() - 1, memberDir.getLastColumn()).clear();
   }
 
-  if (grievanceLog.getLastRow() > 1) {
+  if (grievanceLog && grievanceLog.getLastRow() > 1) {
     grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, grievanceLog.getLastColumn()).clear();
   }
 
   SpreadsheetApp.getActive().toast("✅ All data cleared", "Complete", 3);
+}
+
+function nukeSeedData() {
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    '🗑️ NUCLEAR OPTION: Delete ALL Seed Data',
+    '⚠️ WARNING: This will DELETE:\n' +
+    '• All members from Member Directory\n' +
+    '• All grievances from Grievance Log\n' +
+    '• All analytics data\n' +
+    '• All satisfaction surveys\n' +
+    '• All feedback entries\n\n' +
+    'This action CANNOT be undone!\n\n' +
+    'Are you absolutely sure?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    SpreadsheetApp.getActive().toast("❌ Nuke cancelled", "Cancelled", 2);
+    return;
+  }
+
+  SpreadsheetApp.getActive().toast("💥 Nuking all seed data...", "Processing", -1);
+
+  const ss = SpreadsheetApp.getActive();
+
+  // Clear Member Directory
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (memberDir && memberDir.getLastRow() > 1) {
+    memberDir.getRange(2, 1, memberDir.getLastRow() - 1, memberDir.getLastColumn()).clear();
+  }
+
+  // Clear Grievance Log
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (grievanceLog && grievanceLog.getLastRow() > 1) {
+    grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, grievanceLog.getLastColumn()).clear();
+  }
+
+  // Clear Analytics Data
+  const analytics = ss.getSheetByName(SHEETS.ANALYTICS);
+  if (analytics && analytics.getLastRow() > 1) {
+    analytics.getRange(5, 1, analytics.getLastRow() - 4, analytics.getLastColumn()).clear();
+  }
+
+  // Clear Member Satisfaction
+  const satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
+  if (satisfaction && satisfaction.getLastRow() > 3) {
+    satisfaction.getRange(4, 1, satisfaction.getLastRow() - 3, satisfaction.getLastColumn()).clear();
+  }
+
+  // Clear Feedback & Development
+  const feedback = ss.getSheetByName(SHEETS.FEEDBACK);
+  if (feedback && feedback.getLastRow() > 3) {
+    feedback.getRange(4, 1, feedback.getLastRow() - 3, feedback.getLastColumn()).clear();
+  }
+
+  // Clear Archive
+  const archive = ss.getSheetByName(SHEETS.ARCHIVE);
+  if (archive && archive.getLastRow() > 3) {
+    archive.getRange(4, 1, archive.getLastRow() - 3, archive.getLastColumn()).clear();
+  }
+
+  // Log to Diagnostics
+  const diagnostics = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  if (diagnostics) {
+    diagnostics.appendRow([
+      new Date(),
+      "Data Nuke",
+      "All Sheets",
+      "Completed",
+      "All seed data deleted via nukeSeedData()",
+      "Critical",
+      "Data cleared successfully"
+    ]);
+  }
+
+  SpreadsheetApp.getActive().toast("✅ All seed data has been nuked!", "Complete", 5);
+}
+
+/* ===================== DIAGNOSTICS ===================== */
+function DIAGNOSE_SETUP() {
+  const ss = SpreadsheetApp.getActive();
+  const ui = SpreadsheetApp.getUi();
+
+  // Expected sheets (21 total)
+  const expectedSheets = [
+    SHEETS.CONFIG,
+    SHEETS.MEMBER_DIR,
+    SHEETS.GRIEVANCE_LOG,
+    SHEETS.DASHBOARD,
+    SHEETS.ANALYTICS,
+    SHEETS.FEEDBACK,
+    SHEETS.MEMBER_SATISFACTION,
+    SHEETS.INTERACTIVE_DASHBOARD,
+    "📚 Getting Started",
+    "❓ FAQ",
+    "⚙️ User Settings",
+    SHEETS.STEWARD_WORKLOAD,
+    SHEETS.TRENDS,
+    SHEETS.LOCATION,
+    SHEETS.TYPE_ANALYSIS,
+    SHEETS.EXECUTIVE_DASHBOARD,
+    SHEETS.KPI_PERFORMANCE,
+    SHEETS.MEMBER_ENGAGEMENT,
+    SHEETS.COST_IMPACT,
+    SHEETS.ARCHIVE,
+    SHEETS.DIAGNOSTICS
+  ];
+
+  const missingSheets = [];
+  const foundSheets = [];
+
+  expectedSheets.forEach(sheetName => {
+    const sheet = ss.getSheetByName(sheetName);
+    if (sheet) {
+      foundSheets.push(sheetName);
+    } else {
+      missingSheets.push(sheetName);
+    }
+  });
+
+  // Check column counts
+  const columnChecks = [];
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const config = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (memberDir) {
+    const memberCols = memberDir.getLastColumn();
+    columnChecks.push(`Member Directory: ${memberCols} columns ${memberCols === 31 ? '✅' : '⚠️ Expected 31'}`);
+  }
+
+  if (grievanceLog) {
+    const grievanceCols = grievanceLog.getLastColumn();
+    columnChecks.push(`Grievance Log: ${grievanceCols} columns ${grievanceCols === 28 ? '✅' : '⚠️ Expected 28'}`);
+  }
+
+  if (config) {
+    const configCols = config.getLastColumn();
+    columnChecks.push(`Config: ${configCols} columns ${configCols === 13 ? '✅' : '⚠️ Expected 13'}`);
+  }
+
+  // Build report
+  let report = "🔧 DIAGNOSTIC REPORT\n\n";
+  report += `📊 Sheets Found: ${foundSheets.length} / ${expectedSheets.length}\n\n`;
+
+  if (missingSheets.length > 0) {
+    report += "❌ MISSING SHEETS:\n";
+    missingSheets.forEach(sheet => {
+      report += `   • ${sheet}\n`;
+    });
+    report += "\n";
+  } else {
+    report += "✅ All sheets present!\n\n";
+  }
+
+  report += "📋 COLUMN COUNTS:\n";
+  columnChecks.forEach(check => {
+    report += `   ${check}\n`;
+  });
+
+  report += "\n";
+
+  // Data validation checks
+  if (memberDir && grievanceLog) {
+    const memberRows = memberDir.getLastRow() - 1;
+    const grievanceRows = grievanceLog.getLastRow() - 1;
+    report += `📈 DATA STATUS:\n`;
+    report += `   Members: ${memberRows} rows\n`;
+    report += `   Grievances: ${grievanceRows} rows\n`;
+  }
+
+  report += "\n";
+
+  if (missingSheets.length === 0 && columnChecks.every(c => c.includes('✅'))) {
+    report += "🎉 VERDICT: System is healthy!\n";
+  } else {
+    report += "⚠️ VERDICT: Issues detected. Run CREATE_509_DASHBOARD() to fix.\n";
+  }
+
+  ui.alert("🔧 System Diagnostics", report, ui.ButtonSet.OK);
+
+  // Log to Diagnostics sheet
+  const diagnosticsSheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  if (diagnosticsSheet) {
+    const timestamp = new Date();
+    const status = missingSheets.length === 0 ? "OK" : "Warning";
+    const details = missingSheets.length > 0 ? `Missing: ${missingSheets.join(", ")}` : "All sheets present";
+
+    diagnosticsSheet.appendRow([
+      timestamp,
+      "Setup Check",
+      "System",
+      status,
+      details,
+      missingSheets.length > 0 ? "High" : "Low",
+      missingSheets.length > 0 ? "Run CREATE_509_DASHBOARD()" : "No action needed"
+    ]);
+  }
 }
