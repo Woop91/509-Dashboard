@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-04T17:27:50.504Z
+ * - Build Date: 2025-12-05T05:49:47.918Z
  * - Build Type: DEVELOPMENT
  * - Modules: 53 files
  * - Tests Included: Yes
@@ -142,37 +142,45 @@ const COLORS = {
  * @const {Object}
  */
 const MEMBER_COLS = {
-  // 31 columns total - Added: COMMITTEES, HOME_TOWN, PREFERRED_COMM, BEST_TIME
+  // 31 columns total - Reorganized for logical grouping
+  // Section 1: Identity & Core Info (A-D)
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
   JOB_TITLE: 4,                    // D
+  // Section 2: Location & Work (E-G)
   WORK_LOCATION: 5,                // E
   UNIT: 6,                         // F
   OFFICE_DAYS: 7,                  // G
+  // Section 3: Contact Information (H-K)
   EMAIL: 8,                        // H
   PHONE: 9,                        // I
-  IS_STEWARD: 10,                  // J
-  COMMITTEES: 11,                  // K - Multi-select: which committees steward is in
+  PREFERRED_COMM: 10,              // J - Multi-select: preferred communication methods
+  BEST_TIME: 11,                   // K - Multi-select: best times to reach member
+  // Section 4: Organizational Structure (L-P)
   SUPERVISOR: 12,                  // L
   MANAGER: 13,                     // M
-  ASSIGNED_STEWARD: 14,            // N
-  PREFERRED_COMM: 15,              // O - Multi-select: preferred communication methods
-  BEST_TIME: 16,                   // P - Multi-select: best times to reach member
+  IS_STEWARD: 14,                  // N
+  COMMITTEES: 15,                  // O - Multi-select: which committees steward is in
+  ASSIGNED_STEWARD: 16,            // P
+  // Section 5: Engagement Metrics (Q-T) - Hidden by default
   LAST_VIRTUAL_MTG: 17,            // Q
   LAST_INPERSON_MTG: 18,           // R
   OPEN_RATE: 19,                   // S
   VOLUNTEER_HOURS: 20,             // T
+  // Section 6: Member Interests (U-X) - Hidden by default
   INTEREST_LOCAL: 21,              // U
-  HOME_TOWN: 22,                   // V - Member's home town
-  INTEREST_CHAPTER: 23,            // W
-  INTEREST_ALLIED: 24,             // X
-  HAS_OPEN_GRIEVANCE: 25,          // Y
-  GRIEVANCE_STATUS: 26,            // Z
-  NEXT_DEADLINE: 27,               // AA
-  RECENT_CONTACT_DATE: 28,         // AB
-  CONTACT_STEWARD: 29,             // AC
-  CONTACT_NOTES: 30,               // AD
+  INTEREST_CHAPTER: 22,            // V
+  INTEREST_ALLIED: 23,             // W
+  HOME_TOWN: 24,                   // X - Connection building (last in interests section)
+  // Section 7: Steward Contact Tracking (Y-AA)
+  RECENT_CONTACT_DATE: 25,         // Y
+  CONTACT_STEWARD: 26,             // Z
+  CONTACT_NOTES: 27,               // AA
+  // Section 8: Grievance Management (AB-AE)
+  HAS_OPEN_GRIEVANCE: 28,          // AB
+  GRIEVANCE_STATUS: 29,            // AC
+  NEXT_DEADLINE: 30,               // AD
   START_GRIEVANCE: 31              // AE - Checkbox to start grievance with prepopulated member info
 };
 
@@ -2159,39 +2167,46 @@ function createMemberDirectory() {
     memberDir = ss.insertSheet(SHEETS.MEMBER_DIR);
   }
 
-  // Member Directory columns (31 total)
-  // Added: Committees, Home Town, Preferred Communication Method, Best Time to Contact
+  // Member Directory columns (31 total) - Reorganized for logical grouping
   const headers = [
+    // Section 1: Identity & Core Info (A-D)
     "Member ID",                       // A - 1
     "First Name",                      // B - 2
     "Last Name",                       // C - 3
     "Job Title",                       // D - 4
+    // Section 2: Location & Work (E-G)
     "Work Location (Site)",            // E - 5
     "Unit",                            // F - 6
     "Office Days",                     // G - 7
+    // Section 3: Contact Information (H-K)
     "Email Address",                   // H - 8
     "Phone Number",                    // I - 9
-    "Is Steward (Y/N)",                // J - 10
-    "Committees",                      // K - 11 (multi-select for stewards)
+    "Preferred Communication",         // J - 10 (multi-select)
+    "Best Time to Contact",            // K - 11 (multi-select)
+    // Section 4: Organizational Structure (L-P)
     "Supervisor (Name)",               // L - 12
     "Manager (Name)",                  // M - 13
-    "Assigned Steward (Name)",         // N - 14
-    "Preferred Communication",         // O - 15 (multi-select)
-    "Best Time to Contact",            // P - 16 (multi-select)
+    "Is Steward (Y/N)",                // N - 14
+    "Committees",                      // O - 15 (multi-select for stewards)
+    "Assigned Steward (Name)",         // P - 16
+    // Section 5: Engagement Metrics (Q-T) - Hidden by default
     "Last Virtual Mtg (Date)",         // Q - 17
     "Last In-Person Mtg (Date)",       // R - 18
     "Open Rate (%)",                   // S - 19
     "Volunteer Hours (YTD)",           // T - 20
+    // Section 6: Member Interests (U-X) - Hidden by default
     "Interest: Local Actions",         // U - 21
-    "Home Town",                       // V - 22
-    "Interest: Chapter Actions",       // W - 23
-    "Interest: Allied Chapter Actions",// X - 24
-    "Has Open Grievance?",             // Y - 25
-    "Grievance Status Snapshot",       // Z - 26
-    "Next Grievance Deadline",         // AA - 27
-    "Most Recent Steward Contact Date",// AB - 28
-    "Steward Who Contacted Member",    // AC - 29
-    "Notes from Steward Contact",      // AD - 30
+    "Interest: Chapter Actions",       // V - 22
+    "Interest: Allied Chapter Actions",// W - 23
+    "Home Town",                       // X - 24 (connection building)
+    // Section 7: Steward Contact Tracking (Y-AA)
+    "Most Recent Steward Contact Date",// Y - 25
+    "Steward Who Contacted Member",    // Z - 26
+    "Notes from Steward Contact",      // AA - 27
+    // Section 8: Grievance Management (AB-AE)
+    "Has Open Grievance?",             // AB - 28
+    "Grievance Status Snapshot",       // AC - 29
+    "Next Grievance Deadline",         // AD - 30
     "Start Grievance"                  // AE - 31
   ];
 
@@ -2223,6 +2238,12 @@ function createMemberDirectory() {
   memberDir.setColumnWidth(MEMBER_COLS.HOME_TOWN, 120);     // Home Town
   memberDir.setColumnWidth(MEMBER_COLS.CONTACT_NOTES, 250); // Notes from Steward Contact
   memberDir.setColumnWidth(MEMBER_COLS.START_GRIEVANCE, 120);// Start Grievance checkbox
+
+  // Hide Engagement Metrics columns (Q-T) by default
+  memberDir.hideColumns(MEMBER_COLS.LAST_VIRTUAL_MTG, 4);   // Columns 17-20
+
+  // Hide Member Interests columns (U-X) by default
+  memberDir.hideColumns(MEMBER_COLS.INTEREST_LOCAL, 4);     // Columns 21-24
 
   memberDir.setTabColor("#059669");
 }
@@ -3472,6 +3493,10 @@ function onOpen() {
       .addItem("📦 Batch Update State", "batchUpdateWorkflowState"))
     .addSeparator()
     .addSubMenu(ui.createMenu("👁️ View & Display")
+      .addItem("📊 Toggle Engagement Metrics", "toggleEngagementMetricsColumns")
+      .addItem("💡 Toggle Member Interests", "toggleMemberInterestsColumns")
+      .addItem("📊💡 Toggle Both (Metrics & Interests)", "toggleEngagementAndInterestsColumns")
+      .addSeparator()
       .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
       .addItem("Show All Member Columns", "showAllMemberColumns")
       .addSeparator()
@@ -9816,16 +9841,18 @@ function showUpcomingDeadlinesFromCalendar() {
  * ------------------------------------------------------------------------====
  *
  * Functions to show/hide column groups in Member Directory
- * - Grievance columns toggle
+ * - Engagement Metrics toggle (Q-T: Last Virtual Mtg, Last In-Person Mtg, Open Rate, Volunteer Hours)
+ * - Member Interests toggle (U-X: Interest Local, Interest Chapter, Interest Allied, Home Town)
  * - Level 2 columns toggle
  *
  * ------------------------------------------------------------------------====
  */
 
 /**
- * Toggles visibility of grievance columns in Member Directory
+ * Toggles visibility of Engagement Metrics columns in Member Directory
+ * Columns Q-T: Last Virtual Mtg, Last In-Person Mtg, Open Rate, Volunteer Hours
  */
-function toggleGrievanceColumns() {
+function toggleEngagementMetricsColumns() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
@@ -9834,35 +9861,75 @@ function toggleGrievanceColumns() {
     return;
   }
 
-  // Note: This feature expects specific grievance tracking columns (Total Grievances Filed,
-  // Active Grievances, etc.) at columns 12-21 which are not present in the current Member
-  // Directory structure. The current columns 12-21 contain engagement/contact data.
+  // Engagement Metrics: columns 17-20 (Q-T)
+  const firstCol = MEMBER_COLS.LAST_VIRTUAL_MTG;  // 17
+  const numCols = 4;  // LAST_VIRTUAL_MTG, LAST_INPERSON_MTG, OPEN_RATE, VOLUNTEER_HOURS
 
-  SpreadsheetApp.getUi().alert(
-    '⚠️ Feature Not Available',
-    'This column toggle feature is designed for a different Member Directory structure.\n\n' +
-    'The current Member Directory (31 columns) does not include the advanced grievance tracking columns this feature expects.\n\n' +
-    'You can manually hide/show columns by right-clicking column headers.',
-    SpreadsheetApp.getUi().ButtonSet.OK
-  );
-  return;
-
-  /*
-  // Legacy code - disabled because columns don't match current structure
-  const firstGrievanceCol = 12; // Column L
-  const lastGrievanceCol = 21;  // Column U
-  const numCols = lastGrievanceCol - firstGrievanceCol + 1;
-
-  const isHidden = sheet.isColumnHiddenByUser(firstGrievanceCol);
+  const isHidden = sheet.isColumnHiddenByUser(firstCol);
 
   if (isHidden) {
-    sheet.showColumns(firstGrievanceCol, numCols);
-    SpreadsheetApp.getUi().alert('✅ Grievance columns are now visible');
+    sheet.showColumns(firstCol, numCols);
+    SpreadsheetApp.getUi().alert('✅ Engagement Metrics columns are now visible');
   } else {
-    sheet.hideColumns(firstGrievanceCol, numCols);
-    SpreadsheetApp.getUi().alert('✅ Grievance columns are now hidden');
+    sheet.hideColumns(firstCol, numCols);
+    SpreadsheetApp.getUi().alert('✅ Engagement Metrics columns are now hidden');
   }
-  */
+}
+
+/**
+ * Toggles visibility of Member Interests columns in Member Directory
+ * Columns U-X: Interest Local, Interest Chapter, Interest Allied, Home Town
+ */
+function toggleMemberInterestsColumns() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('❌ Member Directory sheet not found!');
+    return;
+  }
+
+  // Member Interests: columns 21-24 (U-X)
+  const firstCol = MEMBER_COLS.INTEREST_LOCAL;  // 21
+  const numCols = 4;  // INTEREST_LOCAL, INTEREST_CHAPTER, INTEREST_ALLIED, HOME_TOWN
+
+  const isHidden = sheet.isColumnHiddenByUser(firstCol);
+
+  if (isHidden) {
+    sheet.showColumns(firstCol, numCols);
+    SpreadsheetApp.getUi().alert('✅ Member Interests columns are now visible');
+  } else {
+    sheet.hideColumns(firstCol, numCols);
+    SpreadsheetApp.getUi().alert('✅ Member Interests columns are now hidden');
+  }
+}
+
+/**
+ * Toggles visibility of both Engagement Metrics and Member Interests columns
+ */
+function toggleEngagementAndInterestsColumns() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('❌ Member Directory sheet not found!');
+    return;
+  }
+
+  // Check if Engagement Metrics columns are hidden (use first column as indicator)
+  const engagementHidden = sheet.isColumnHiddenByUser(MEMBER_COLS.LAST_VIRTUAL_MTG);
+  const interestsHidden = sheet.isColumnHiddenByUser(MEMBER_COLS.INTEREST_LOCAL);
+
+  // If both are hidden, show both. Otherwise hide both.
+  if (engagementHidden && interestsHidden) {
+    sheet.showColumns(MEMBER_COLS.LAST_VIRTUAL_MTG, 4);
+    sheet.showColumns(MEMBER_COLS.INTEREST_LOCAL, 4);
+    SpreadsheetApp.getUi().alert('✅ Engagement Metrics & Member Interests columns are now visible');
+  } else {
+    sheet.hideColumns(MEMBER_COLS.LAST_VIRTUAL_MTG, 4);
+    sheet.hideColumns(MEMBER_COLS.INTEREST_LOCAL, 4);
+    SpreadsheetApp.getUi().alert('✅ Engagement Metrics & Member Interests columns are now hidden');
+  }
 }
 
 /**
@@ -17864,10 +17931,10 @@ function rebuildDashboardMinimal() {
     const totalMembers = memberData.length - 1;
     const totalGrievances = grievanceData.length - 1;
 
-    // Count open grievances
+    // Count open grievances using GRIEVANCE_COLS.STATUS constant
     let openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
-      if (grievanceData[i][4] === 'Open') { // Column E (index 4)
+      if (grievanceData[i][GRIEVANCE_COLS.STATUS - 1] === 'Open') {
         openGrievances++;
       }
     }
@@ -17987,7 +18054,7 @@ function cacheDashboardState() {
 
     let openGrievances = 0;
     for (let i = 1; i < grievanceData.length; i++) {
-      if (grievanceData[i][4] === 'Open') {
+      if (grievanceData[i][GRIEVANCE_COLS.STATUS - 1] === 'Open') {
         openGrievances++;
       }
     }
@@ -18059,17 +18126,18 @@ function recalcMembersGrievanceFieldsOnly() {
 
   // For each member, find their open grievances
   for (let i = 1; i < memberData.length; i++) {
-    const memberID = memberData[i][0];
+    const memberID = memberData[i][MEMBER_COLS.MEMBER_ID - 1];
     let hasOpen = 'No';
     let status = '';
     let deadline = '';
 
     // Find grievances for this member
     for (let j = 1; j < grievanceData.length; j++) {
-      if (grievanceData[j][1] === memberID && grievanceData[j][4] === 'Open') {
+      if (grievanceData[j][GRIEVANCE_COLS.MEMBER_ID - 1] === memberID &&
+          grievanceData[j][GRIEVANCE_COLS.STATUS - 1] === 'Open') {
         hasOpen = 'Yes';
-        status = grievanceData[j][4];
-        deadline = grievanceData[j][19] || ''; // Next action due
+        status = grievanceData[j][GRIEVANCE_COLS.STATUS - 1];
+        deadline = grievanceData[j][GRIEVANCE_COLS.NEXT_ACTION_DUE - 1] || '';
         break;
       }
     }
@@ -18077,9 +18145,9 @@ function recalcMembersGrievanceFieldsOnly() {
     updates.push([hasOpen, status, deadline]);
   }
 
-  // Update columns Z, AA, AB
+  // Update Has Open Grievance (AB), Grievance Status (AC), Next Deadline (AD)
   if (updates.length > 0) {
-    memberSheet.getRange(2, 26, updates.length, 3).setValues(updates);
+    memberSheet.getRange(2, MEMBER_COLS.HAS_OPEN_GRIEVANCE, updates.length, 3).setValues(updates);
   }
 
   Logger.log(`✅ Updated grievance fields for ${updates.length} members`);
@@ -23981,6 +24049,7 @@ function openMemberGoogleForm() {
 
 /**
  * Gets member data from a specific row
+ * Uses MEMBER_COLS constants for correct column mapping
  * @param {number} row - Row number
  * @returns {Object} Member data object
  */
@@ -23992,23 +24061,24 @@ function getMemberDataFromRow(row) {
     throw new Error('Member Directory not found');
   }
 
-  // Get member data from row
-  const data = memberSheet.getRange(row, 1, 1, 13).getValues()[0];
+  // Get member data from row - read enough columns to cover ASSIGNED_STEWARD (col 16)
+  const data = memberSheet.getRange(row, 1, 1, MEMBER_COLS.ASSIGNED_STEWARD).getValues()[0];
 
+  // Use MEMBER_COLS constants for correct column mapping (subtract 1 for 0-based array index)
   return {
-    memberId: data[0],          // A: Member ID
-    firstName: data[1],         // B: First Name
-    lastName: data[2],          // C: Last Name
-    jobTitle: data[3],          // D: Job Title
-    workLocation: data[4],      // E: Work Location
-    unit: data[5],              // F: Unit
-    officeDays: data[6],        // G: Office Days
-    email: data[7],             // H: Email
-    phone: data[8],             // I: Phone
-    isSteward: data[9],         // J: Is Steward
-    supervisor: data[10],       // K: Supervisor
-    manager: data[11],          // L: Manager
-    assignedSteward: data[12]   // M: Assigned Steward
+    memberId: data[MEMBER_COLS.MEMBER_ID - 1],          // A: Member ID
+    firstName: data[MEMBER_COLS.FIRST_NAME - 1],        // B: First Name
+    lastName: data[MEMBER_COLS.LAST_NAME - 1],          // C: Last Name
+    jobTitle: data[MEMBER_COLS.JOB_TITLE - 1],          // D: Job Title
+    workLocation: data[MEMBER_COLS.WORK_LOCATION - 1],  // E: Work Location
+    unit: data[MEMBER_COLS.UNIT - 1],                   // F: Unit
+    officeDays: data[MEMBER_COLS.OFFICE_DAYS - 1],      // G: Office Days
+    email: data[MEMBER_COLS.EMAIL - 1],                 // H: Email
+    phone: data[MEMBER_COLS.PHONE - 1],                 // I: Phone
+    isSteward: data[MEMBER_COLS.IS_STEWARD - 1],        // N: Is Steward
+    supervisor: data[MEMBER_COLS.SUPERVISOR - 1],       // L: Supervisor
+    manager: data[MEMBER_COLS.MANAGER - 1],             // M: Manager
+    assignedSteward: data[MEMBER_COLS.ASSIGNED_STEWARD - 1]  // P: Assigned Steward
   };
 }
 
