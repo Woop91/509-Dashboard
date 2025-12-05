@@ -41,6 +41,7 @@ const CORE_MODULES = [
 
   // Features (alphabetical within categories)
   'ADHDEnhancements.gs',
+  'AdminGrievanceMessages.gs',
   'EnhancedADHDFeatures.gs',
   'AddRecommendations.gs',
   'AutomatedNotifications.gs',
