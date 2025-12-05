@@ -5930,7 +5930,7 @@ function createADHDControlPanelHTML() {
       document.querySelectorAll('.theme-card').forEach(function(card) {
         card.classList.remove('selected');
       });
-      event.target.closest('.theme-card').classList.add('selected');
+      event.target.closest('.theme-card').classList['selected'] = true;
     }
 
     function updateSlider(sliderId) {
@@ -10571,7 +10571,7 @@ function createThemeManagerHTML() {
       document.querySelectorAll('.theme-card').forEach(function(card) {
         card.classList.remove('active');
       });
-      event.target.closest('.theme-card').classList.add('active');
+      event.target.closest('.theme-card').classList['active'] = true;
     }
 
     function applySelectedTheme() {
@@ -14243,7 +14243,7 @@ function createErrorTrendReport() {
   trendsSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
   trendsSheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#f44336').setFontColor('#ffffff');
 
-  const rows = Object.entries(dailyStats).map(([date, stats]) => [
+  const rows = Object.entries(dailyStats).map(function(item) { var date = item[0]; var stats = item[1]; return [
     date,
     stats.info,
     stats.warning,
@@ -14454,19 +14454,21 @@ function seedInitialFAQs() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const faqSheet = ss.getSheetByName('📚 FAQ Database');
 
-  const rows = initialFAQs.map((faq, index) => [
-    index + 1,
-    faq.category,
-    faq.question,
-    faq.answer,
-    faq.tags,
-    '',
-    0,
-    0,
-    new Date(),
-    new Date(),
-    Session.getActiveUser().getEmail() || 'System'
-  ]);
+  const rows = initialFAQs.map(function(faq, index) {
+    return [
+      index + 1,
+      faq.category,
+      faq.question,
+      faq.answer,
+      faq.tags,
+      '',
+      0,
+      0,
+      new Date(),
+      new Date(),
+      Session.getActiveUser().getEmail() || 'System'
+    ];
+  });
 
   faqSheet.getRange(2, 1, rows.length, 11).setValues(rows);
 }
@@ -14720,7 +14722,7 @@ function createFAQSearchHTML() {
       document.querySelectorAll('.category-badge').forEach(function(badge) {
         badge.classList.remove('active');
       });
-      event.target.classList.add('active');
+      event.target.classList['active'] = true;
 
       searchFAQs();
     }
@@ -16689,7 +16691,7 @@ function createFileListHTML(grievanceId, folderId, files) {
             <a href="${file.url}" target="_blank">${file.name}</a>
           </div>
           <div class="file-meta">
-            ${file.path ? `${file.path} • ` : ''}${file.size} • Modified: ${file.modified}
+            ${file.path ? `${file.path} • ` : ''}${Object.keys(file).length} • Modified: ${file.modified}
           </div>
         </div>
       </div>
@@ -19782,7 +19784,7 @@ function showBackupInfo() {
       Session.getScriptTimeZone(),
       'yyyy-MM-dd HH:mm:ss'
     );
-    const sizeMB = (backup.size / (1024 * 1024)).toFixed(2);
+    const sizeMB = (Object.keys(backup).length / (1024 * 1024)).toFixed(2);
 
     message += `${dateStr} - ${sizeMB} MB\n`;
   }
@@ -21004,7 +21006,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       tableData = Object.entries(typeCounts)
         .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(function([type, total], index) {
+        .map(function(item, index) { var type = item[0]; var total = item[1]; {
           const active = typeActive[type] || 0;
           const resolved = typeResolved[type] || 0;
           const won = typeWon[type] || 0;
@@ -21043,7 +21045,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       tableData = Object.entries(locationCounts)
         .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(function([location, total], index) {
+        .map(function(item, index) { var location = item[0]; var total = item[1]; {
           const active = locationActive[location] || 0;
           const resolved = locationResolved[location] || 0;
           const won = locationWon[location] || 0;
@@ -21082,7 +21084,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       tableData = Object.entries(stewardCounts)
         .sort(function(a, b) { return (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0); })
         .slice(0, 15)
-        .map(function([steward, total], index) {
+        .map(function(item, index) { var steward = item[0]; var total = item[1]; {
           const active = stewardActive[steward] || 0;
           const resolved = stewardResolved[steward] || 0;
           const won = stewardWon[steward] || 0;
@@ -21106,7 +21108,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       tableData = Object.entries(defaultLocationCounts)
         .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(function([location, count], index) {
+        .map(function(item, index) { var location = item[0]; var count = item[1]; {
           return [index + 1, location, count, "-", "-", "-", "📊 Data"];
         });
       break;
@@ -24278,7 +24280,7 @@ function createMobileGrievanceListHTML() {
     function filterByStatus(status) {
       // Update active tab
       document.querySelectorAll('.filter-tab').forEach(function(tab) { return tab.classList.remove('active'); });
-      event.target.classList.add('active');
+      event.target.classList['active'] = true;
 
       // Filter grievances
       const filtered = status === 'all'
@@ -29110,7 +29112,14 @@ class Transaction {
    * @param {string} sheetName - Name of the sheet to snapshot
    * @returns {boolean} Success status
    */
-  snapshot(sheetName) {
+}
+
+  /**
+   * Take a snapshot of a sheet's current state
+   * @param {string} sheetName - Name of the sheet to snapshot
+   * @returns {boolean} Success status
+   */
+Transaction.prototype.snapshot = function(sheetName) {
     try {
       const sheet = this.ss.getSheetByName(sheetName);
 
@@ -29160,7 +29169,12 @@ class Transaction {
    * @param {Array<string>} sheetNames - Array of sheet names
    * @returns {number} Number of successful snapshots
    */
-  snapshotMultiple(sheetNames) {
+  /**
+   * Snapshot multiple sheets at once
+   * @param {Array<string>} sheetNames - Array of sheet names
+   * @returns {number} Number of successful snapshots
+   */
+Transaction.prototype.snapshotMultiple = function(sheetNames) {
     var successCount = 0;
 
     for (const sheetName of sheetNames) {
@@ -29175,7 +29189,10 @@ class Transaction {
   /**
    * Commit the transaction and clear snapshots
    */
-  commit() {
+  /**
+   * Commit the transaction and clear snapshots
+   */
+Transaction.prototype.commit = function() {
     if (this.rolledBack) {
       throw new Error('Cannot commit a rolled-back transaction');
     }
@@ -29192,12 +29209,12 @@ class Transaction {
       auditLog('TRANSACTION_COMMIT', {
         transactionId: this.transactionId,
         duration: duration,
-        sheetsModified: this.snapshots.size,
+        sheetsModified: this.Object.keys(snapshots).length,
         status: 'SUCCESS'
       });
     }
 
-    Logger.log(`Transaction ${this.transactionId}: Committed (${duration}ms, ${this.snapshots.size} sheets)`);
+    Logger.log(`Transaction ${this.transactionId}: Committed (${duration}ms, ${this.Object.keys(snapshots).length} sheets)`);
 
     // Clear snapshots to free memory
     this.snapshots.clear();
@@ -29208,7 +29225,11 @@ class Transaction {
    * Rollback the transaction and restore all snapshotted sheets
    * @returns {Object} Rollback statistics
    */
-  rollback() {
+  /**
+   * Rollback the transaction and restore all snapshotted sheets
+   * @returns {Object} Rollback statistics
+   */
+Transaction.prototype.rollback = function() {
     if (this.committed) {
       throw new Error('Cannot rollback a committed transaction');
     }
@@ -29225,7 +29246,7 @@ class Transaction {
     var sheetsRestored = 0;
     var errors = [];
 
-    Logger.log(`Transaction ${this.transactionId}: Starting rollback of ${this.snapshots.size} sheets...`);
+    Logger.log(`Transaction ${this.transactionId}: Starting rollback of ${this.Object.keys(snapshots).length} sheets...`);
 
     // Restore each snapshotted sheet
     for (const [sheetName, snapshot] of this.snapshots) {
@@ -29293,12 +29314,16 @@ class Transaction {
    * Get transaction status
    * @returns {Object} Status information
    */
-  getStatus() {
+  /**
+   * Get transaction status
+   * @returns {Object} Status information
+   */
+Transaction.prototype.getStatus = function() {
     return {
       transactionId: this.transactionId,
       startTime: this.startTime,
       duration: new Date() - this.startTime,
-      snapshotCount: this.snapshots.size,
+      snapshotCount: this.Object.keys(snapshots).length,
       committed: this.committed,
       rolledBack: this.rolledBack
     };
@@ -30467,12 +30492,12 @@ function calculateStepEfficiency(grievances) {
 }
 
 function calculateEngagementRate(grievances, members) {
-  const membersWithGrievances = new Set();
+  const membersWithGrievances = {};
   grievances.forEach(function(g) {
-    if (g[GRIEVANCE_COLS.MEMBER_ID - 1]) membersWithGrievances.add(g[GRIEVANCE_COLS.MEMBER_ID - 1]);
+    if (g[GRIEVANCE_COLS.MEMBER_ID - 1]) membersWithGrievances[g[GRIEVANCE_COLS.MEMBER_ID - 1]] = true;
   });
   const totalMembers = members.filter(function(m) { return m[MEMBER_COLS.MEMBER_ID - 1]; }).length;
-  return totalMembers > 0 ? (membersWithGrievances.size / totalMembers) * 100 : 0;
+  return totalMembers > 0 ? (Object.keys(membersWithGrievances).length / totalMembers) * 100 : 0;
 }
 
 function calculateNoContact(members, today) {
@@ -30487,12 +30512,12 @@ function calculateNoContact(members, today) {
 }
 
 function calculateActiveStewards(grievances) {
-  const stewards = new Set();
+  const stewards = {};
   grievances.forEach(function(g) {
     const steward = g[GRIEVANCE_COLS.STEWARD - 1];
-    if (steward) stewards.add(steward);
+    if (steward) stewards[steward] = true;
   });
-  return stewards.size;
+  return Object.keys(stewards).length;
 }
 
 function calculateAvgLoad(grievances) {
@@ -32040,7 +32065,10 @@ function createWorkflowVisualizerHTML() {
     </div>
 
     <div class="workflow-diagram">
-      ${Object.entries(WORKFLOW_STATES).map(([key, state]) => `
+      ${Object.entries(WORKFLOW_STATES).map(function(entry) {
+        var key = entry[0];
+        var state = entry[1];
+        return `
         <div class="workflow-stage" style="border-left-color: ${state.color}">
           <div class="stage-header">
             <div class="stage-name">${state.name}</div>
@@ -32059,15 +32087,20 @@ function createWorkflowVisualizerHTML() {
             : ''}
         </div>
         ${state.allowedNextStates.length > 0 ? '<div class="arrow">↓</div>' : ''}
-      `).join('')}
+      `;
+      }).join('')}
     </div>
 
     <div class="legend">
       <h3>📋 Required Fields by State</h3>
       <ul>
-        ${Object.entries(WORKFLOW_STATES).map(([key, state]) => `
+        ${Object.entries(WORKFLOW_STATES).map(function(entry) {
+          var key = entry[0];
+          var state = entry[1];
+          return `
           <li><strong>${state.name}:</strong> ${state.requiredFields.join(', ')}</li>
-        `).join('')}
+        `;
+        }).join('')}
       </ul>
     </div>
   </div>
@@ -33621,21 +33654,21 @@ function testMemberEmailFormat() {
  * Test: Member IDs are unique
  */
 function testMemberIDUniqueness() {
-  const memberIds = new Set();
+  const memberIds = {};
 
   // Simulate generating 100 member IDs
   for (let i = 1; i <= 100; i++) {
     const memberId = "M" + String(i).padStart(6, '0');
     Assert.assertFalse(
-      memberIds.has(memberId),
+      (memberId in memberIds),
       `Member ID ${memberId} should be unique`
     );
-    memberIds.add(memberId);
+    memberIds[memberId] = true;
   }
 
   Assert.assertEquals(
     100,
-    memberIds.size,
+    Object.keys(memberIds).length,
     'Should have 100 unique member IDs'
   );
 
