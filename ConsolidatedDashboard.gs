@@ -2562,11 +2562,12 @@ function createAnalyticsDataSheet() {
   analytics.getRange("D5").setFormula(`=UNIQUE(FILTER('Grievance Log'!${unitCol}:${unitCol}, 'Grievance Log'!${unitCol}:${unitCol}<>"", 'Grievance Log'!${unitCol}:${unitCol}<>"Unit"))`);
   analytics.getRange("E5").setFormula(`=ARRAYFORMULA(IF(D5:D<>"", COUNTIF('Grievance Log'!${unitCol}:${unitCol}, D5:D), ""))`);
 
-  // Members by Location
+  // Members by Location (dynamic column references)
+  const workLocationCol = getColumnLetter(MEMBER_COLS.WORK_LOCATION);
   analytics.getRange("G3").setValue("Members by Location");
   analytics.getRange("G4:H4").setValues([["Location", "Count"]]).setFontWeight("bold");
-  analytics.getRange("G5").setFormula('=UNIQUE(FILTER(\'Member Directory\'!E:E, \'Member Directory\'!E:E<>"", \'Member Directory\'!E:E<>"Work Location (Site)"))');
-  analytics.getRange("H5").setFormula('=ARRAYFORMULA(IF(G5:G<>"", COUNTIF(\'Member Directory\'!E:E, G5:G), ""))');
+  analytics.getRange("G5").setFormula(`=UNIQUE(FILTER('Member Directory'!${workLocationCol}:${workLocationCol}, 'Member Directory'!${workLocationCol}:${workLocationCol}<>"", 'Member Directory'!${workLocationCol}:${workLocationCol}<>"Work Location (Site)"))`);
+  analytics.getRange("H5").setFormula(`=ARRAYFORMULA(IF(G5:G<>"", COUNTIF('Member Directory'!${workLocationCol}:${workLocationCol}, G5:G), ""))`);
 
   // Steward Workload (dynamic column references)
   const stewardCol = getColumnLetter(GRIEVANCE_COLS.STEWARD);
@@ -24672,6 +24673,7 @@ function refreshDashboardDeadlines() {
   const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
   const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
   const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const lastGrievanceCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION); // Last column (28)
 
   // Clear existing deadline data
   dashboard.getRange("A22:E31").clearContent();
@@ -24680,7 +24682,7 @@ function refreshDashboardDeadlines() {
   // Only shows items where Days to Deadline is numeric and >= 0 (future deadlines)
   // Formats Next Action as date
   dashboard.getRange("A22").setFormula(
-    `=IFERROR(QUERY('Grievance Log'!A:AB, ` +
+    `=IFERROR(QUERY('Grievance Log'!A:${lastGrievanceCol}, ` +
     `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${daysToDeadlineCol}, ${statusCol} ` +
     `WHERE ${statusCol} = 'Open' ` +
     `AND ${daysToDeadlineCol} IS NOT NULL ` +
