@@ -343,7 +343,7 @@ All deadline formulas (columns H, J, L, N, P, S, T, U) are set for first 100 row
   - Active Grievances (dynamic: STATUS column)
   - Win Rate (dynamic: STATUS + RESOLUTION columns)
   - Avg Resolution Days (dynamic: DAYS_OPEN column)
-  - Overdue Cases (dynamic: DAYS_TO_DEADLINE column)
+  - Overdue Cases (dynamic: calculated from NEXT_ACTION_DUE < TODAY())
   - Active Stewards
 
 **Section 2: Detailed KPIs (A13:C22)**
@@ -353,22 +353,26 @@ All deadline formulas (columns H, J, L, N, P, S, T, U) are set for first 100 row
   - Total Active Grievances (dynamic)
   - Overall Win Rate (dynamic: STATUS + RESOLUTION)
   - Avg Resolution Time (dynamic: DAYS_OPEN)
-  - Cases Overdue (dynamic: DAYS_TO_DEADLINE)
+  - Cases Overdue (dynamic: NEXT_ACTION_DUE < TODAY())
   - Member Satisfaction Score
   - Total Grievances Filed YTD
   - Resolved Grievances (dynamic: STATUS)
 
 **Dynamic Column Implementation:**
 ```javascript
-const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);  // AB
-const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);          // E
-const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);    // S
-const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE); // U
+const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);  // G
+const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);          // I
+const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);     // X
+const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE); // Y
 
 // Win Rate formula (dynamic):
 `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",
   'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/
   COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0%")`
+
+// Overdue Cases formula (dynamic - no DAYS_TO_DEADLINE column):
+`=COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Open",
+  'Grievance Log'!${nextActionCol}:${nextActionCol},"<"&TODAY())`
 ```
 
 **Styling:**
@@ -1171,39 +1175,57 @@ const MEMBER_COLS = {
 - Formulas scattered throughout codebase would all need manual updates
 - Dynamic system allows updating one constant to fix all formulas
 
-**Implementation:**
+**Implementation (32 columns - reorganized layout):**
 
 ```javascript
 const GRIEVANCE_COLS = {
-  GRIEVANCE_ID: 1,      // A
-  MEMBER_ID: 2,         // B
-  FIRST_NAME: 3,        // C
-  LAST_NAME: 4,         // D
-  STATUS: 5,            // E
-  CURRENT_STEP: 6,      // F
-  INCIDENT_DATE: 7,     // G
-  FILING_DEADLINE: 8,   // H
-  DATE_FILED: 9,        // I
-  STEP1_DUE: 10,        // J
-  STEP1_RCVD: 11,       // K
-  STEP2_APPEAL_DUE: 12, // L
-  STEP2_APPEAL_FILED: 13, // M
-  STEP2_DUE: 14,        // N
-  STEP2_RCVD: 15,       // O
-  STEP3_APPEAL_DUE: 16, // P
-  STEP3_APPEAL_FILED: 17, // Q
-  DATE_CLOSED: 18,      // R
-  DAYS_OPEN: 19,        // S
-  NEXT_ACTION_DUE: 20,  // T
-  DAYS_TO_DEADLINE: 21, // U
-  ARTICLES: 22,         // V
-  ISSUE_CATEGORY: 23,   // W
-  MEMBER_EMAIL: 24,     // X
-  UNIT: 25,             // Y
-  LOCATION: 26,         // Z
-  STEWARD: 27,          // AA
-  RESOLUTION: 28        // AB
+  // Section 1: Identity (A-D)
+  GRIEVANCE_ID: 1,        // A
+  MEMBER_ID: 2,           // B
+  FIRST_NAME: 3,          // C
+  LAST_NAME: 4,           // D
+  // Section 2: Case Details (E-H)
+  ISSUE_CATEGORY: 5,      // E
+  ARTICLES: 6,            // F
+  RESOLUTION: 7,          // G
+  COMMENTS: 8,            // H
+  // Section 3: Status & Assignment (I-K)
+  STATUS: 9,              // I
+  CURRENT_STEP: 10,       // J
+  STEWARD: 11,            // K
+  // Section 4: Timeline - Filing (L-N)
+  INCIDENT_DATE: 12,      // L
+  FILING_DEADLINE: 13,    // M (auto-calc: INCIDENT_DATE + 21)
+  DATE_FILED: 14,         // N
+  // Section 5: Timeline - Step I (O-P)
+  STEP1_DUE: 15,          // O (auto-calc: DATE_FILED + 30)
+  STEP1_RCVD: 16,         // P
+  // Section 6: Timeline - Step II (Q-T)
+  STEP2_APPEAL_DUE: 17,   // Q (auto-calc: STEP1_RCVD + 10)
+  STEP2_APPEAL_FILED: 18, // R
+  STEP2_DUE: 19,          // S (auto-calc: STEP2_APPEAL_FILED + 30)
+  STEP2_RCVD: 20,         // T
+  // Section 7: Timeline - Step III (U-W)
+  STEP3_APPEAL_DUE: 21,   // U (auto-calc: STEP2_RCVD + 30)
+  STEP3_APPEAL_FILED: 22, // V
+  DATE_CLOSED: 23,        // W
+  // Section 8: Calculated Metrics (X-Y)
+  DAYS_OPEN: 24,          // X (auto-calc: DATE_FILED to DATE_CLOSED or TODAY)
+  NEXT_ACTION_DUE: 25,    // Y (auto-calc: based on CURRENT_STEP)
+  // Section 9: Contact & Location (Z-AB)
+  MEMBER_EMAIL: 26,       // Z
+  UNIT: 27,               // AA
+  LOCATION: 28,           // AB
+  // Section 10: Integration (AC)
+  DRIVE_FOLDER_LINK: 29,  // AC
+  // Section 11: Admin Messages (AD-AF) - Hidden by default
+  ADMIN_FLAG: 30,         // AD (checkbox: triggers highlight, move to top, send message)
+  ADMIN_MESSAGE: 31,      // AE (text: message from grievance coordinator)
+  MESSAGE_ACKNOWLEDGED: 32 // AF (checkbox: steward confirms message read, clears highlight)
 };
+
+// NOTE: DAYS_TO_DEADLINE was removed - calculate dynamically from NEXT_ACTION_DUE:
+// const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
 ```
 
 ### getColumnLetter() Helper Function
@@ -1268,7 +1290,7 @@ const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);
 
 **✅ Grievance Log (All References Dynamic):**
 - Analytics Data Sheet: UNIT, STEWARD, STATUS
-- Executive Dashboard: RESOLUTION, STATUS, DAYS_OPEN, DAYS_TO_DEADLINE
+- Executive Dashboard: RESOLUTION, STATUS, DAYS_OPEN, NEXT_ACTION_DUE (overdue calculated dynamically)
 - Main Dashboard: STATUS, DATE_CLOSED, DAYS_OPEN
 - All QUERY formulas use dynamic column ranges
 - Verification: `grep "'Grievance Log'![A-Z]:[A-Z]" *.gs` → 0 matches ✅
@@ -1778,20 +1800,26 @@ Commit f1b28a9 completed the dynamic column conversion. ALL formulas now use dyn
 - Next Grievance Deadline: NEXT_ACTION_DUE (T), MEMBER_ID (B)
 
 **Executive Dashboard:**
-- Quick Stats: RESOLUTION (AB), STATUS (E), DAYS_OPEN (S), DAYS_TO_DEADLINE (U)
+- Quick Stats: RESOLUTION (G), STATUS (I), DAYS_OPEN (X), NEXT_ACTION_DUE (Y)
+- Note: Overdue cases now calculated as COUNTIFS(STATUS="Open", NEXT_ACTION_DUE < TODAY())
 
-**Columns Using Dynamic References:**
+**Columns Using Dynamic References (Updated Layout):**
 - GRIEVANCE_ID (A)
 - MEMBER_ID (B)
 - FIRST_NAME (C)
-- STATUS (E)
-- DATE_CLOSED (R)
-- DAYS_OPEN (S)
-- NEXT_ACTION_DUE (T)
-- DAYS_TO_DEADLINE (U)
-- UNIT (Y)
-- STEWARD (AA)
-- RESOLUTION (AB)
+- ISSUE_CATEGORY (E)
+- ARTICLES (F)
+- RESOLUTION (G)
+- STATUS (I)
+- STEWARD (K)
+- DATE_CLOSED (W)
+- DAYS_OPEN (X)
+- NEXT_ACTION_DUE (Y)
+- UNIT (AA)
+- LOCATION (AB)
+- DRIVE_FOLDER_LINK (AC)
+- ADMIN_FLAG (AD)
+- Note: DAYS_TO_DEADLINE removed - calculate from NEXT_ACTION_DUE
 
 **Verification:** `grep "'Grievance Log'![A-Z]+:[A-Z]+"` returns ZERO hardcoded references.
 

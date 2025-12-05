@@ -13,6 +13,34 @@
  */
 
 /**
+ * Extracts folder ID from a Google Drive folder URL
+ * @param {string} url - The Google Drive folder URL
+ * @returns {string|null} The folder ID or null if not found
+ */
+function extractFolderIdFromUrl(url) {
+  if (!url) return null;
+
+  // Handle format: https://drive.google.com/drive/folders/FOLDER_ID
+  const folderMatch = url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if (folderMatch) {
+    return folderMatch[1];
+  }
+
+  // Handle format: https://drive.google.com/drive/u/0/folders/FOLDER_ID
+  const altMatch = url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if (altMatch) {
+    return altMatch[1];
+  }
+
+  // If URL is just the folder ID itself (for backward compatibility)
+  if (/^[a-zA-Z0-9_-]+$/.test(url)) {
+    return url;
+  }
+
+  return null;
+}
+
+/**
  * Creates root folder for 509 Dashboard in Google Drive
  * @returns {Folder} Root folder
  */
@@ -87,14 +115,9 @@ function linkFolderToGrievance(grievanceId, folderId) {
     if (data[i][0] === grievanceId) {
       const row = i + 2;
 
-      // Store folder ID in column AC (29) - Extension column not in GRIEVANCE_COLS
-      // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
-      grievanceSheet.getRange(row, 29).setValue(folderId);
-
-      // Create hyperlink to folder in column AD (30) - Extension column not in GRIEVANCE_COLS
-      // TODO: Add FOLDER_URL constant to GRIEVANCE_COLS
+      // Store folder URL in DRIVE_FOLDER_LINK column (AC/29)
       const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
-      grievanceSheet.getRange(row, 30).setValue(folderUrl);
+      grievanceSheet.getRange(row, GRIEVANCE_COLS.DRIVE_FOLDER_LINK).setValue(folderUrl);
 
       Logger.log(`Linked folder ${folderId} to grievance ${grievanceId}`);
       return;
@@ -169,7 +192,7 @@ function setupDriveFolderForGrievance() {
       '✅ Folder Created',
       `Drive folder created successfully for ${grievanceId}.\n\n` +
       `Folder link has been added to the grievance record.\n\n` +
-      `Click the link in column AD to open the folder.`,
+      `Click the link in column AC (Drive Folder Link) to open the folder.`,
       ui.ButtonSet.OK
     );
 
@@ -390,17 +413,22 @@ function showGrievanceFiles() {
   }
 
   const grievanceId = activeSheet.getRange(activeRow, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
-  // Column AC (29) - Extension column not in GRIEVANCE_COLS
-  // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
-  const folderId = activeSheet.getRange(activeRow, 29).getValue();
+  const folderLink = activeSheet.getRange(activeRow, GRIEVANCE_COLS.DRIVE_FOLDER_LINK).getValue();
 
-  if (!folderId) {
+  if (!folderLink) {
     ui.alert(
       'ℹ️ No Folder Linked',
       `No Drive folder has been set up for ${grievanceId}.\n\n` +
       'Use "Setup Drive Folder" to create one.',
       ui.ButtonSet.OK
     );
+    return;
+  }
+
+  // Extract folder ID from URL
+  const folderId = extractFolderIdFromUrl(folderLink);
+  if (!folderId) {
+    ui.alert('❌ Error', 'Could not extract folder ID from the link.', ui.ButtonSet.OK);
     return;
   }
 
@@ -650,22 +678,20 @@ function batchCreateGrievanceFolders() {
       return;
     }
 
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 29).getValues();
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.DRIVE_FOLDER_LINK).getValues();
     let created = 0;
     let skipped = 0;
 
     data.forEach(function(row, index) {
       const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
-      // Array index 28 = Column AC (29) - Extension column not in GRIEVANCE_COLS
-      // TODO: Add FOLDER_ID constant to GRIEVANCE_COLS
-      const folderId = row[28];
+      const folderLink = row[GRIEVANCE_COLS.DRIVE_FOLDER_LINK - 1];
 
       if (!grievanceId) {
         skipped++;
         return;
       }
 
-      if (folderId) {
+      if (folderLink) {
         skipped++;
         return;
       }
