@@ -115,9 +115,12 @@ function linkFolderToGrievance(grievanceId, folderId) {
     if (data[i][0] === grievanceId) {
       const row = i + 2;
 
-      // Store folder URL in DRIVE_FOLDER_LINK column (AC/29)
+      // Store folder ID (Column AC / DRIVE_FOLDER_ID)
+      grievanceSheet.getRange(row, GRIEVANCE_COLS.DRIVE_FOLDER_ID).setValue(folderId);
+
+      // Create hyperlink to folder (Column AD / DRIVE_FOLDER_URL)
       const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
-      grievanceSheet.getRange(row, GRIEVANCE_COLS.DRIVE_FOLDER_LINK).setValue(folderUrl);
+      grievanceSheet.getRange(row, GRIEVANCE_COLS.DRIVE_FOLDER_URL).setValue(folderUrl);
 
       Logger.log(`Linked folder ${folderId} to grievance ${grievanceId}`);
       return;
@@ -413,22 +416,15 @@ function showGrievanceFiles() {
   }
 
   const grievanceId = activeSheet.getRange(activeRow, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
-  const folderLink = activeSheet.getRange(activeRow, GRIEVANCE_COLS.DRIVE_FOLDER_LINK).getValue();
+  const folderId = activeSheet.getRange(activeRow, GRIEVANCE_COLS.DRIVE_FOLDER_ID).getValue();
 
-  if (!folderLink) {
+  if (!folderId) {
     ui.alert(
       'ℹ️ No Folder Linked',
       `No Drive folder has been set up for ${grievanceId}.\n\n` +
       'Use "Setup Drive Folder" to create one.',
       ui.ButtonSet.OK
     );
-    return;
-  }
-
-  // Extract folder ID from URL
-  const folderId = extractFolderIdFromUrl(folderLink);
-  if (!folderId) {
-    ui.alert('❌ Error', 'Could not extract folder ID from the link.', ui.ButtonSet.OK);
     return;
   }
 
@@ -678,20 +674,20 @@ function batchCreateGrievanceFolders() {
       return;
     }
 
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.DRIVE_FOLDER_LINK).getValues();
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.DRIVE_FOLDER_URL).getValues();
     let created = 0;
     let skipped = 0;
 
-    data.forEach(function(row, index) {
-      const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
-      const folderLink = row[GRIEVANCE_COLS.DRIVE_FOLDER_LINK - 1];
+    data.forEach((row, index) => {
+      const grievanceId = row[0];
+      const folderId = row[GRIEVANCE_COLS.DRIVE_FOLDER_ID - 1]; // Column AC (0-indexed array)
 
       if (!grievanceId) {
         skipped++;
         return;
       }
 
-      if (folderLink) {
+      if (folderId) {
         skipped++;
         return;
       }

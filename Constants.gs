@@ -201,7 +201,10 @@ const GRIEVANCE_COLS = {
   LOCATION: 26,           // Z - Work Location (Site)
   STEWARD: 27,            // AA - Assigned Steward (Name)
   // Section 10: Resolution (AB)
-  RESOLUTION: 28          // AB - Resolution Summary
+  RESOLUTION: 28,         // AB - Resolution Summary
+  // Section 11: Drive Integration (AC-AD)
+  DRIVE_FOLDER_ID: 29,    // AC - Google Drive folder ID
+  DRIVE_FOLDER_URL: 30    // AD - Google Drive folder URL
 };
 
 /* --------------------= INTERNAL SYSTEM COLUMN MAPPINGS --------------------= */

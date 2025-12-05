@@ -77,6 +77,7 @@ const MODULES = [
   // ===== LEVEL 3: FEATURE MODULES (ALPHABETICAL) =====
   // All feature modules depend on: Constants, SecurityUtils, Code.gs
   'ADHDEnhancements.gs',
+  'AdminGrievanceMessages.gs',
   'EnhancedADHDFeatures.gs',
   'AddRecommendations.gs',
   'AutomatedNotifications.gs',

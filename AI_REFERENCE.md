@@ -18,7 +18,7 @@
 
 **Why This Matters:**
 - Prevents re-introducing bugs that were already fixed
-- Ensures consistency across all 21 sheets and 15+ code files
+- Ensures consistency across all 22 sheets and 15+ code files
 - Maintains 100% dynamic column coverage (critical for system stability)
 - Documents all design decisions and architectural choices
 
@@ -36,10 +36,34 @@
 
 ---
 
+## 🆕 Changelog - Version 2.4 (2025-12-05)
+
+**Major Features Added:**
+- ✅ **Audit Logging System** - Full audit trail for all data modifications
+- ✅ **Role-Based Access Control (RBAC)** - Admin, Steward, and Viewer roles
+- ✅ **DIAGNOSE_SETUP()** - Comprehensive system health check function
+- ✅ **Enhanced nukeSeedData()** - True nuclear option for clearing all test data
+
+**Critical Bug Fixes:**
+- 🐛 **Fixed updateMemberDirectorySnapshots() column bug** - Was overwriting formula columns (Z, AA, AB), now correctly writes to AC, AD, AE
+- 🐛 **Fixed ADHDEnhancements.gs sheet references** - Removed invalid sheet name constants
+- 🐛 **Added null checks to clearAllData()** - Prevents errors if sheets don't exist
+
+**New File:**
+- `AuditLoggingRBAC.gs` - Complete implementation of audit logging and role-based access control
+
+**Documentation Updates:**
+- Added sheet #22: Audit_Log
+- Updated menu system with RBAC submenu
+- Added Security & Compliance section
+- Updated seed data function documentation
+
+---
+
 ## Table of Contents
 
 1. [System Overview](#system-overview)
-2. [Sheet Structure (21 Sheets)](#sheet-structure-21-sheets)
+2. [Sheet Structure (22 Sheets)](#sheet-structure-22-sheets)
 3. [Core Data Sheets](#core-data-sheets)
 4. [Dashboard Sheets](#dashboard-sheets)
 5. [Analytics Sheets](#analytics-sheets)
@@ -79,7 +103,7 @@ The 509 Dashboard is a comprehensive Google Apps Script-based union management s
 
 ---
 
-## Sheet Structure (21 Sheets)
+## Sheet Structure (22 Sheets)
 
 ### Complete Sheet List
 
@@ -106,8 +130,9 @@ The 509 Dashboard is a comprehensive Google Apps Script-based union management s
 | 19 | 💰 Cost Impact | Analytics | Financial impact analysis |
 | 20 | 📦 Archive | Utility | Archived records |
 | 21 | 🔧 Diagnostics | Utility | System health checks |
+| 22 | 📋 Audit_Log | Security | Complete audit trail of all data changes |
 
-**Recent Consolidations (25 → 21 sheets):**
+**Recent Consolidations (25 → 22 sheets):**
 - Merged: Feedback & Development + Future Features + Pending Features → "Feedback & Development"
 - Merged: Executive Summary + Quick Stats → "💼 Executive Dashboard"
 - Merged: Performance Metrics + KPI Board → "📊 KPI Performance Dashboard"
@@ -229,55 +254,83 @@ AE (31): Start Grievance (CHECKBOX ONLY - triggers grievance creation)
 
 **Purpose:** Complete grievance case tracking with automatic deadline calculations
 
-**Columns (28 total) - See GRIEVANCE_COLS constant:**
+**Columns (32 total) - See GRIEVANCE_COLS constant in Constants.gs:**
 ```
-A: Grievance ID (G-000001, G-000002, etc.)
-B: Member ID (links to Member Directory)
-C: First Name
-D: Last Name
-E: Status (validated: Open, Pending Info, Settled, Withdrawn, Closed, Appealed)
-F: Current Step (validated: Informal, Step I, Step II, Step III, Mediation, Arbitration)
-G: Incident Date
-H: Filing Deadline (21d) (Formula: =IF(G2<>"",G2+21,""))
-I: Date Filed (Step I)
-J: Step I Decision Due (30d) (Formula: =IF(I2<>"",I2+30,""))
-K: Step I Decision Rcvd
-L: Step II Appeal Due (10d) (Formula: =IF(K2<>"",K2+10,""))
-M: Step II Appeal Filed
-N: Step II Decision Due (30d) (Formula: =IF(M2<>"",M2+30,""))
-O: Step II Decision Rcvd
-P: Step III Appeal Due (30d) (Formula: =IF(O2<>"",O2+30,""))
-Q: Step III Appeal Filed
-R: Date Closed
-S: Days Open (Formula: =IF(I2<>"",IF(R2<>"",R2-I2,TODAY()-I2),""))
-T: Next Action Due (Formula: =IF(E2="Open",IF(F2="Step I",J2,IF(F2="Step II",N2,IF(F2="Step III",P2,H2))),""))
-U: Days to Deadline (Formula: =IF(T2<>"",T2-TODAY(),""))
-V: Articles Violated (validated from Config)
-W: Issue Category (validated from Config)
-X: Member Email
-Y: Unit (validated from Config)
-Z: Work Location (Site) (validated from Config)
-AA: Assigned Steward (Name) (validated from Config)
-AB: Resolution Summary (e.g., "Won - Resolved favorably", "Lost - No violation found")
+Section 1: Identity (A-D)
+A (1):  Grievance ID (G-000001, G-000002, etc.)
+B (2):  Member ID (links to Member Directory)
+C (3):  First Name
+D (4):  Last Name
+
+Section 2: Case Details (E-H)
+E (5):  Issue Category (validated from Config)
+F (6):  Articles Violated (validated from Config)
+G (7):  Resolution Summary (e.g., "Won - Resolved favorably", "Lost - No violation found")
+H (8):  Comments
+
+Section 3: Status & Assignment (I-K)
+I (9):  Status (validated: Open, Pending Info, Settled, Withdrawn, Closed, Appealed)
+J (10): Current Step (validated: Informal, Step I, Step II, Step III, Mediation, Arbitration)
+K (11): Assigned Steward (Name) (validated from Config)
+
+Section 4: Timeline - Filing (L-N)
+L (12): Incident Date
+M (13): Filing Deadline (21d) (auto-calc: INCIDENT_DATE + 21)
+N (14): Date Filed (Step I)
+
+Section 5: Timeline - Step I (O-P)
+O (15): Step I Decision Due (30d) (auto-calc: DATE_FILED + 30)
+P (16): Step I Decision Rcvd
+
+Section 6: Timeline - Step II (Q-T)
+Q (17): Step II Appeal Due (10d) (auto-calc: STEP1_RCVD + 10)
+R (18): Step II Appeal Filed
+S (19): Step II Decision Due (30d) (auto-calc: STEP2_APPEAL_FILED + 30)
+T (20): Step II Decision Rcvd
+
+Section 7: Timeline - Step III (U-W)
+U (21): Step III Appeal Due (30d) (auto-calc: STEP2_RCVD + 30)
+V (22): Step III Appeal Filed
+W (23): Date Closed
+
+Section 8: Calculated Metrics (X-Y)
+X (24): Days Open (auto-calc: DATE_FILED to DATE_CLOSED or TODAY)
+Y (25): Next Action Due (auto-calc: based on CURRENT_STEP)
+
+Section 9: Contact & Location (Z-AB)
+Z (26): Member Email
+AA (27): Unit (validated from Config)
+AB (28): Work Location (Site) (validated from Config)
+
+Section 10: Integration (AC)
+AC (29): Drive Folder Link
+
+Section 11: Admin Messages (AD-AF) - Hidden by default
+AD (30): Admin Flag (checkbox: triggers highlight, move to top, send message)
+AE (31): Admin Message (text: message from grievance coordinator)
+AF (32): Message Acknowledged (checkbox: steward confirms message read, clears highlight)
 ```
 
+**NOTE:** DAYS_TO_DEADLINE column was removed. Overdue status is now calculated dynamically:
+`=COUNTIFS('Grievance Log'!StatusCol:StatusCol,"Open",'Grievance Log'!NextActionCol:NextActionCol,"<"&TODAY())`
+
 **Data Validations:**
-- Column E (Status): Config!I2:I14
-- Column F (Current Step): Config!J2:J14
-- Column V (Articles): Config!L2:L14
-- Column W (Issue Category): Config!K2:K14
-- Column Y (Unit): Config!C2:C7
-- Column Z (Location): Config!B2:B14
-- Column AA (Steward): Config!H2:H14
+- Column E (Issue Category): Config!K2:K14
+- Column F (Articles): Config!L2:L14
+- Column I (Status): Config!I2:I14
+- Column J (Current Step): Config!J2:J14
+- Column K (Steward): Config!H2:H14
+- Column AA (Unit): Config!C2:C7
+- Column AB (Location): Config!B2:B14
 
 **Styling:**
 - Header: Bold, red background (#DC2626), white text, wrapped
 - Tab color: Red (#DC2626)
-- Column widths: A=110px, V=180px, AB=250px
+- Column widths: A=110px, F=180px, G=250px
 - Frozen first row, header height 50px
 
 **Auto-Calculated Deadlines:**
-All deadline formulas (columns H, J, L, N, P, S, T, U) are set for first 100 rows in `setupFormulasAndCalculations()`
+All deadline formulas (columns M, O, Q, S, U, X, Y) are set for first 100 rows in `setupFormulasAndCalculations()`
 
 **Contract Rules Built Into Formulas:**
 - Filing deadline: Incident date + 21 days
@@ -761,6 +814,87 @@ G: Action Needed
 
 ---
 
+### 22. 📋 Audit_Log
+
+**Purpose:** Complete audit trail of all data modifications for compliance and security
+
+**Columns (9 total):**
+```
+A: Timestamp
+B: User Email
+C: Action (CREATE, UPDATE, DELETE)
+D: Sheet Name
+E: Row Number
+F: Column
+G: Old Value
+H: New Value
+I: Details
+```
+
+**Key Features:**
+- Automatic logging via `logDataModification()` function
+- Tracks user, action type, location, and values
+- Auto-cleanup (keeps last 10,000 entries)
+- Non-intrusive (won't break main functionality if logging fails)
+- Created automatically during `CREATE_509_DASHBOARD()`
+
+**Helper Functions:**
+- `logMemberCreation()` - Logs new member additions
+- `logGrievanceCreation()` - Logs new grievance filings
+- `logMemberUpdate()` - Logs member data changes
+- `logGrievanceUpdate()` - Logs grievance data changes
+- `logDataDeletion()` - Logs record deletions
+
+**Styling:**
+- Header: Red background (COLORS.SOLIDARITY_RED), white text
+- Tab color: Red (COLORS.SOLIDARITY_RED)
+- Frozen header row
+
+**Implementation:**
+- File: `AuditLoggingRBAC.gs`
+- Created via: `createAuditLogSheet()`
+- All logging functions are failure-safe (won't throw errors)
+
+---
+
+## Security & Compliance
+
+### Role-Based Access Control (RBAC)
+
+**Purpose:** Control user permissions based on roles
+
+**Roles (Hierarchical):**
+1. **ADMIN** - Full access to all features including role management
+2. **STEWARD** - Can create and edit members and grievances
+3. **VIEWER** - Read-only access
+
+**Script Properties Configuration:**
+```
+ADMINS:   ["admin@union.org", "president@union.org"]
+STEWARDS: ["steward1@union.org", "steward2@union.org"]
+VIEWERS:  ["member@union.org", "observer@union.org"]
+```
+
+**Key Functions:**
+- `checkUserPermission(role)` - Returns true if user has specified role or higher
+- `getUserRole()` - Returns user's current role
+- `initializeRBAC()` - Sets up RBAC script properties
+- `configureUserRoles()` - Shows current role assignments
+- `addAdmin()`, `addSteward()`, `addViewer()` - Add users to roles
+- `showMyPermissions()` - Shows current user's permissions
+
+**Menu Integration:**
+- Located under: 509 Tools > Admin > User Roles (RBAC)
+- Only accessible to administrators
+- Role changes are logged to Audit_Log
+
+**Implementation:**
+- File: `AuditLoggingRBAC.gs`
+- Storage: Script Properties Service
+- Session: Uses `Session.getActiveUser().getEmail()`
+
+---
+
 ## Menu System
 
 ### Main Menu: "📊 509 Dashboard"
@@ -783,7 +917,15 @@ G: Action Needed
 │   ├── Seed 5k Grievances             → SEED_5K_GRIEVANCES()
 │   ├── ──────────────────
 │   ├── Clear All Data                 → clearAllData()
-│   └── 🗑️ Nuke All Seed Data         → nukeSeedData()
+│   ├── 🗑️ Nuke All Seed Data         → nukeSeedData()
+│   ├── ──────────────────
+│   └── 👥 User Roles (RBAC)
+│       ├── Initialize RBAC             → initializeRBAC()
+│       ├── Configure Roles             → configureUserRoles()
+│       ├── Add Admin                   → addAdmin()
+│       ├── Add Steward                 → addSteward()
+│       ├── Add Viewer                  → addViewer()
+│       └── My Permissions              → showMyPermissions()
 ├── ──────────────────
 ├── ♿ ADHD Features
 │   ├── Hide Gridlines (Focus Mode)   → hideAllGridlines()
@@ -1050,11 +1192,81 @@ const resolution = isClosed ? [
 
 ### nukeSeedData()
 
-**Purpose:** Complete nuclear option - delete all seed data
+**Purpose:** Complete nuclear option - delete ALL seed data across all sheets
 
-**Implementation:** Currently calls clearAllData()
+**Implementation:**
+1. Shows comprehensive warning dialog
+2. Requires explicit confirmation
+3. Clears data from:
+   - Member Directory (all member rows)
+   - Grievance Log (all grievance rows)
+   - Analytics Data (computed rows)
+   - Member Satisfaction (survey rows)
+   - Feedback & Development (feedback rows)
+   - Archive (archived items)
+4. Keeps all headers and structure intact
+5. Logs action to Diagnostics sheet
+6. Toast notification
 
-**Future Enhancement:** Could also reset Config, clear Analytics cache, etc.
+**Safety Features:**
+- Dual confirmation dialogs
+- Clear warning about irreversibility
+- Can be cancelled at any point
+- Null-safe (won't error if sheets don't exist)
+
+**File:** Code.gs (lines 1463-1538)
+
+**Note:** This is NOT the same as clearAllData() - it's much more comprehensive and clears test data from all sheets, not just Member Directory and Grievance Log.
+
+---
+
+### DIAGNOSE_SETUP()
+
+**Purpose:** Comprehensive system health check and diagnostic tool
+
+**Functionality:**
+1. Checks for all 22 expected sheets
+2. Validates column counts:
+   - Member Directory: 31 columns
+   - Grievance Log: 28 columns
+   - Config: 13 columns
+3. Reports data status (row counts)
+4. Generates health report with ✅/⚠️ indicators
+5. Logs diagnostic run to Diagnostics sheet
+
+**Expected Sheets (22 total):**
+- Config, Member Directory, Grievance Log
+- Dashboard, Analytics, Feedback, Member Satisfaction
+- Interactive Dashboard, Getting Started, FAQ, User Settings
+- Steward Workload, Trends, Location, Type Analysis
+- Executive Dashboard, KPI Performance, Member Engagement, Cost Impact
+- Archive, Diagnostics, Audit_Log
+
+**Report Format:**
+```
+🔧 DIAGNOSTIC REPORT
+
+📊 Sheets Found: 22 / 22
+
+✅ All sheets present!
+
+📋 COLUMN COUNTS:
+   Member Directory: 31 columns ✅
+   Grievance Log: 28 columns ✅
+   Config: 13 columns ✅
+
+📈 DATA STATUS:
+   Members: 150 rows
+   Grievances: 75 rows
+
+🎉 VERDICT: System is healthy!
+```
+
+**Access:** 509 Tools > Help & Support > Diagnose Setup
+
+**File:** Code.gs (lines 1541-1583)
+
+**Added:** Version 2.4
 
 ---
 
@@ -1319,9 +1531,14 @@ const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);
 ├── ColumnToggles.gs            # Column visibility functions
 ├── InteractiveDashboard.gs     # Interactive dashboard logic
 ├── ADHDEnhancements.gs         # ADHD-friendly features
+├── AuditLoggingRBAC.gs         # Audit logging & role-based access control (NEW v2.4)
+├── GrievanceWorkflow.gs        # Grievance creation workflow
+├── GettingStartedAndFAQ.gs     # Help sheets creation
+├── SeedNuke.gs                 # Seed and nuke data functions
+├── UnifiedOperationsMonitor.gs # Comprehensive operations dashboard
 ├── MenuItems.gs                # Menu creation (if separate)
 ├── SeedData.gs                 # Seed functions (if separate)
-└── FEATURES.md                 # This document
+└── AI_REFERENCE.md             # This document (formerly FEATURES.md)
 ```
 
 ### Code.gs vs Complete509Dashboard.gs
@@ -1347,14 +1564,29 @@ const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);
 
 **Code.gs / Complete509Dashboard.gs:**
 - `CREATE_509_DASHBOARD()` - Main setup function
-- `DIAGNOSE_SETUP()` - Health check function
+- `DIAGNOSE_SETUP()` - Comprehensive health check function (v2.4)
 - All sheet creation functions (createMemberDirectory, createGrievanceLog, etc.)
 - `setupDataValidations()` - Apply all validations
 - `setupFormulasAndCalculations()` - Set formulas for first 100 rows
 - `SEED_20K_MEMBERS()` - Generate member data
 - `SEED_5K_GRIEVANCES()` - Generate grievance data
-- `updateMemberDirectorySnapshots()` - Update member columns from grievances
+- `updateMemberDirectorySnapshots()` - Update member columns from grievances (FIXED v2.4)
+- `clearAllData()` - Clear member and grievance data
+- `nukeSeedData()` - Nuclear option - clear ALL seed data (ENHANCED v2.4)
 - `onOpen()` - Create menu system
+
+**AuditLoggingRBAC.gs:** (NEW in v2.4)
+- `createAuditLogSheet()` - Create audit log sheet
+- `logDataModification()` - Main audit logging function
+- `logMemberCreation()`, `logGrievanceCreation()` - Specific log helpers
+- `logMemberUpdate()`, `logGrievanceUpdate()` - Update logging
+- `logDataDeletion()` - Deletion logging
+- `initializeRBAC()` - Set up RBAC script properties
+- `checkUserPermission(role)` - Permission checking
+- `getUserRole()` - Get current user's role
+- `configureUserRoles()` - Show/manage roles
+- `addAdmin()`, `addSteward()`, `addViewer()` - Add users to roles
+- `showMyPermissions()` - Show current user permissions
 
 **ColumnToggles.gs:**
 - `toggleGrievanceColumns()` - [DISABLED] Show/hide grievance columns
