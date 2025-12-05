@@ -156,7 +156,7 @@ function gatherMonthlyData() {
     };
   }
 
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.RESOLUTION).getValues();
 
   let totalGrievances = 0;
   let newGrievances = 0;
@@ -166,8 +166,6 @@ function gatherMonthlyData() {
   const byIssueType = {};
   const bySteward = {};
   let overdueCount = 0;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
 
   data.forEach(function(row) {
     const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
@@ -175,8 +173,7 @@ function gatherMonthlyData() {
     const status = row[GRIEVANCE_COLS.STATUS - 1];
     const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
     const steward = row[GRIEVANCE_COLS.STEWARD - 1];
-    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-    const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
+    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
 
     totalGrievances++;
 
@@ -212,7 +209,7 @@ function gatherMonthlyData() {
     }
 
     // Count overdue
-    if (daysToDeadline !== null && daysToDeadline < 0) {
+    if (daysToDeadline < 0) {
       overdueCount++;
     }
   });

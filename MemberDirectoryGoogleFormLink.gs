@@ -90,6 +90,7 @@ function openMemberGoogleForm() {
 
 /**
  * Gets member data from a specific row
+ * Uses MEMBER_COLS constants for correct column mapping
  * @param {number} row - Row number
  * @returns {Object} Member data object
  */
@@ -101,23 +102,24 @@ function getMemberDataFromRow(row) {
     throw new Error('Member Directory not found');
   }
 
-  // Get member data from row
-  const data = memberSheet.getRange(row, 1, 1, 13).getValues()[0];
+  // Get member data from row - read enough columns to cover ASSIGNED_STEWARD (col 16)
+  const data = memberSheet.getRange(row, 1, 1, MEMBER_COLS.ASSIGNED_STEWARD).getValues()[0];
 
+  // Use MEMBER_COLS constants for correct column mapping (subtract 1 for 0-based array index)
   return {
-    memberId: data[0],          // A: Member ID
-    firstName: data[1],         // B: First Name
-    lastName: data[2],          // C: Last Name
-    jobTitle: data[3],          // D: Job Title
-    workLocation: data[4],      // E: Work Location
-    unit: data[5],              // F: Unit
-    officeDays: data[6],        // G: Office Days
-    email: data[7],             // H: Email
-    phone: data[8],             // I: Phone
-    isSteward: data[9],         // J: Is Steward
-    supervisor: data[10],       // K: Supervisor
-    manager: data[11],          // L: Manager
-    assignedSteward: data[12]   // M: Assigned Steward
+    memberId: data[MEMBER_COLS.MEMBER_ID - 1],          // A: Member ID
+    firstName: data[MEMBER_COLS.FIRST_NAME - 1],        // B: First Name
+    lastName: data[MEMBER_COLS.LAST_NAME - 1],          // C: Last Name
+    jobTitle: data[MEMBER_COLS.JOB_TITLE - 1],          // D: Job Title
+    workLocation: data[MEMBER_COLS.WORK_LOCATION - 1],  // E: Work Location
+    unit: data[MEMBER_COLS.UNIT - 1],                   // F: Unit
+    officeDays: data[MEMBER_COLS.OFFICE_DAYS - 1],      // G: Office Days
+    email: data[MEMBER_COLS.EMAIL - 1],                 // H: Email
+    phone: data[MEMBER_COLS.PHONE - 1],                 // I: Phone
+    isSteward: data[MEMBER_COLS.IS_STEWARD - 1],        // N: Is Steward
+    supervisor: data[MEMBER_COLS.SUPERVISOR - 1],       // L: Supervisor
+    manager: data[MEMBER_COLS.MANAGER - 1],             // M: Manager
+    assignedSteward: data[MEMBER_COLS.ASSIGNED_STEWARD - 1]  // P: Assigned Steward
   };
 }
 

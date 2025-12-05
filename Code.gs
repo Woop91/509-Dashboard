@@ -102,6 +102,10 @@ function CREATE_509_DASHBOARD() {
     Logger.log("Completed createDiagnosticsSheet");
     SpreadsheetApp.getActive().toast("✅ Utility sheets created", "85%", 2);
 
+    // Create Audit Log sheet
+    createAuditLogSheet();
+    SpreadsheetApp.getActive().toast("✅ Audit Log created", "90%", 2);
+
     Logger.log("Starting setupDataValidations...");
     setupDataValidations();
     Logger.log("Completed setupDataValidations");
@@ -703,13 +707,16 @@ function createMainDashboard() {
   const grievanceIdCol = getColumnLetter(GRIEVANCE_COLS.GRIEVANCE_ID);
   const firstNameCol = getColumnLetter(GRIEVANCE_COLS.FIRST_NAME);
   const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
-  const lastCol = getColumnLetter(GRIEVANCE_COLS.LOCATION); // AB - last visible column
+  const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+  const lastCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION); // AB - last column
 
   // Formula to populate upcoming deadlines (open grievances with deadlines in next 14 days)
   dashboard.getRange("A22").setFormula(
     `=IFERROR(QUERY('Grievance Log'!${grievanceIdCol}:${lastCol}, ` +
-    `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${statusCol} ` +
-    `WHERE ${statusCol} = 'Open' AND ${nextActionCol} IS NOT NULL AND ${nextActionCol} <= date '"&TEXT(TODAY()+14,"yyyy-mm-dd")&"' ` +
+    `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${daysToDeadlineCol}, ${statusCol} ` +
+    `WHERE ${statusCol} = 'Open' AND ${nextActionCol} IS NOT NULL ` +
+    `AND ${nextActionCol} >= date '"&TEXT(TODAY(),"yyyy-mm-dd")&"' ` +
+    `AND ${nextActionCol} <= date '"&TEXT(TODAY()+14,"yyyy-mm-dd")&"' ` +
     `ORDER BY ${nextActionCol} ASC ` +
     `LIMIT 10", 0), "No upcoming deadlines")`
   );
@@ -1075,7 +1082,7 @@ function createExecutiveDashboard() {
   const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);
   const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
-  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
   const grievanceIdCol = getColumnLetter(GRIEVANCE_COLS.GRIEVANCE_ID);
 
   const execMemberIdCol = getColumnLetter(MEMBER_COLS.MEMBER_ID);
@@ -1086,7 +1093,7 @@ function createExecutiveDashboard() {
     ["Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, "", ""],
     ["Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0%")`, "", ""],
     ["Avg Resolution (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, "", ""],
-    ["Overdue Cases", `=COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Open",'Grievance Log'!${nextActionCol}:${nextActionCol},"<"&TODAY())`, "", ""],
+    ["Overdue Cases", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"OVERDUE*")`, "", ""],
     ["Active Stewards", `=COUNTIF('Member Directory'!${execIsStewardCol}:${execIsStewardCol},"Yes")`, "", ""]
   ];
 
@@ -1111,7 +1118,7 @@ function createExecutiveDashboard() {
     ["Total Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, ""],
     ["Overall Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0.0%")`, ""],
     ["Avg Resolution Time (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, ""],
-    ["Cases Overdue", `=COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Open",'Grievance Log'!${nextActionCol}:${nextActionCol},"<"&TODAY())`, ""],
+    ["Cases Overdue", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"OVERDUE*")`, ""],
     ["Member Satisfaction Score", "=TEXT(AVERAGE('Member Satisfaction'!C:C),\"0.0\")", ""],
     ["Total Grievances Filed YTD", `=COUNTA('Grievance Log'!${grievanceIdCol}2:${grievanceIdCol})`, ""],
     ["Resolved Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved")`, ""]
@@ -1490,6 +1497,7 @@ function setupFormulasAndCalculations() {
   const gDateClosedCol = getColumnLetter(GRIEVANCE_COLS.DATE_CLOSED);
   const gDaysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
   const gNextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const gDaysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
   const gStatusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const gCurrentStepCol = getColumnLetter(GRIEVANCE_COLS.CURRENT_STEP);
   const gMemberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
@@ -1524,12 +1532,57 @@ function setupFormulasAndCalculations() {
     `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",IF(${gDateClosedCol}2:${gDateClosedCol}1000<>"",${gDateClosedCol}2:${gDateClosedCol}1000-${gDateFiledCol}2:${gDateFiledCol}1000,TODAY()-${gDateFiledCol}2:${gDateFiledCol}1000),""))`
   );
 
-  // Next Action Due - Column Y (determines based on current step)
+  // Next Action Due - Column T (determines based on current step)
   grievanceLog.getRange(gNextActionCol + "2").setFormula(
     `=ARRAYFORMULA(IF(${gStatusCol}2:${gStatusCol}1000="Open",IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step I",${gStep1DueCol}2:${gStep1DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step II",${gStep2DueCol}2:${gStep2DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step III",${gStep3AppealDueCol}2:${gStep3AppealDueCol}1000,${gFilingDeadlineCol}2:${gFilingDeadlineCol}1000))),""))`
   );
 
-  // Note: Days to Deadline is calculated dynamically from NEXT_ACTION_DUE - no separate column needed
+  // Days to Deadline - Column U (shows descriptive text for overdue items)
+  // Positive = days remaining, 0 = "DUE TODAY", Negative = "OVERDUE Xd"
+  grievanceLog.getRange(gDaysToDeadlineCol + "2").setFormula(
+    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}1000<>"",IF(${gNextActionCol}2:${gNextActionCol}1000-TODAY()<0,"OVERDUE "&ABS(${gNextActionCol}2:${gNextActionCol}1000-TODAY())&"d",IF(${gNextActionCol}2:${gNextActionCol}1000-TODAY()=0,"DUE TODAY",${gNextActionCol}2:${gNextActionCol}1000-TODAY())),""))`
+  );
+
+  // Add conditional formatting for Days to Deadline column
+  const daysToDeadlineRange = grievanceLog.getRange(gDaysToDeadlineCol + "2:" + gDaysToDeadlineCol + "1000");
+
+  // Rule 1: OVERDUE - Red background
+  const overdueRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextContains("OVERDUE")
+    .setBackground("#FEE2E2")  // Light red
+    .setFontColor("#DC2626")   // Dark red text
+    .setBold(true)
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Rule 2: DUE TODAY - Orange background
+  const dueTodayRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenTextEqualTo("DUE TODAY")
+    .setBackground("#FEF3C7")  // Light amber
+    .setFontColor("#D97706")   // Dark amber text
+    .setBold(true)
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Rule 3: Due within 7 days - Yellow background (numbers 1-7)
+  const dueSoonRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberBetween(1, 7)
+    .setBackground("#FEF9C3")  // Light yellow
+    .setFontColor("#CA8A04")   // Dark yellow text
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Rule 4: More than 7 days - Green background
+  const onTrackRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberGreaterThan(7)
+    .setBackground("#DCFCE7")  // Light green
+    .setFontColor("#16A34A")   // Dark green text
+    .setRanges([daysToDeadlineRange])
+    .build();
+
+  // Apply all rules
+  const existingRules = grievanceLog.getConditionalFormatRules();
+  grievanceLog.setConditionalFormatRules([overdueRule, dueTodayRule, dueSoonRule, onTrackRule, ...existingRules]);
 
   // ----- MEMBER DIRECTORY FORMULAS -----
   // Has Open Grievance? - Column Y (25)
@@ -1764,13 +1817,14 @@ function cleanupGrievanceLog() {
 
   // Clear any existing formulas in calculated columns before reapplying
   const calculatedCols = [
-    GRIEVANCE_COLS.FILING_DEADLINE,    // M
-    GRIEVANCE_COLS.STEP1_DUE,          // O
-    GRIEVANCE_COLS.STEP2_APPEAL_DUE,   // Q
-    GRIEVANCE_COLS.STEP2_DUE,          // S
-    GRIEVANCE_COLS.STEP3_APPEAL_DUE,   // U
-    GRIEVANCE_COLS.DAYS_OPEN,          // X
-    GRIEVANCE_COLS.NEXT_ACTION_DUE     // Y
+    GRIEVANCE_COLS.FILING_DEADLINE,    // H
+    GRIEVANCE_COLS.STEP1_DUE,          // J
+    GRIEVANCE_COLS.STEP2_APPEAL_DUE,   // L
+    GRIEVANCE_COLS.STEP2_DUE,          // N
+    GRIEVANCE_COLS.STEP3_APPEAL_DUE,   // P
+    GRIEVANCE_COLS.DAYS_OPEN,          // S
+    GRIEVANCE_COLS.NEXT_ACTION_DUE,    // T
+    GRIEVANCE_COLS.DAYS_TO_DEADLINE    // U
   ];
 
   const lastRow = Math.max(grievanceLog.getLastRow(), 2);
@@ -2075,7 +2129,15 @@ function onOpen() {
         .addItem("Seed All 5k Grievances (Legacy)", "SEED_5K_GRIEVANCES"))
       .addSeparator()
       .addItem("🗑️ Nuke All Seed Data", "nukeSeedData")
-      .addItem("⚠️ Clear All Data", "clearAllData"))
+      .addItem("⚠️ Clear All Data", "clearAllData")
+      .addSeparator()
+      .addSubMenu(ui.createMenu("👥 User Roles (RBAC)")
+        .addItem("Initialize RBAC", "initializeRBAC")
+        .addItem("Configure Roles", "configureUserRoles")
+        .addItem("Add Admin", "addAdmin")
+        .addItem("Add Steward", "addSteward")
+        .addItem("Add Viewer", "addViewer")
+        .addItem("My Permissions", "showMyPermissions")))
     .addToUi();
 
   // ============ 🧪 TESTING MENU ============
@@ -3203,6 +3265,87 @@ function clearAllData() {
   }
 
   SpreadsheetApp.getActive().toast("✅ All data cleared", "Complete", 3);
+}
+
+/**
+ * NUCLEAR OPTION: Delete ALL seed data from all sheets
+ * More thorough than clearAllData - clears analytics, surveys, feedback too
+ */
+function nukeSeedData() {
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    '🗑️ NUCLEAR OPTION: Delete ALL Seed Data',
+    '⚠️ WARNING: This will DELETE:\n' +
+    '• All members from Member Directory\n' +
+    '• All grievances from Grievance Log\n' +
+    '• All analytics data\n' +
+    '• All satisfaction surveys\n' +
+    '• All feedback entries\n\n' +
+    'This action CANNOT be undone!\n\n' +
+    'Are you absolutely sure?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    SpreadsheetApp.getActive().toast("❌ Nuke cancelled", "Cancelled", 2);
+    return;
+  }
+
+  SpreadsheetApp.getActive().toast("💥 Nuking all seed data...", "Processing", -1);
+
+  const ss = SpreadsheetApp.getActive();
+
+  // Clear Member Directory
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  if (memberDir && memberDir.getLastRow() > 1) {
+    memberDir.getRange(2, 1, memberDir.getLastRow() - 1, memberDir.getLastColumn()).clear();
+  }
+
+  // Clear Grievance Log
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (grievanceLog && grievanceLog.getLastRow() > 1) {
+    grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, grievanceLog.getLastColumn()).clear();
+  }
+
+  // Clear Analytics Data
+  const analytics = ss.getSheetByName(SHEETS.ANALYTICS);
+  if (analytics && analytics.getLastRow() > 1) {
+    analytics.getRange(5, 1, analytics.getLastRow() - 4, analytics.getLastColumn()).clear();
+  }
+
+  // Clear Member Satisfaction
+  const satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
+  if (satisfaction && satisfaction.getLastRow() > 3) {
+    satisfaction.getRange(4, 1, satisfaction.getLastRow() - 3, satisfaction.getLastColumn()).clear();
+  }
+
+  // Clear Feedback & Development
+  const feedback = ss.getSheetByName(SHEETS.FEEDBACK);
+  if (feedback && feedback.getLastRow() > 3) {
+    feedback.getRange(4, 1, feedback.getLastRow() - 3, feedback.getLastColumn()).clear();
+  }
+
+  // Clear Archive
+  const archive = ss.getSheetByName(SHEETS.ARCHIVE);
+  if (archive && archive.getLastRow() > 3) {
+    archive.getRange(4, 1, archive.getLastRow() - 3, archive.getLastColumn()).clear();
+  }
+
+  // Log to Diagnostics
+  const diagnostics = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  if (diagnostics) {
+    diagnostics.appendRow([
+      new Date(),
+      "Data Nuke",
+      "All Sheets",
+      "Completed",
+      "All seed data deleted via nukeSeedData()",
+      "Critical",
+      "Data cleared successfully"
+    ]);
+  }
+
+  SpreadsheetApp.getActive().toast("✅ All seed data has been nuked!", "Complete", 5);
 }
 
 /**
