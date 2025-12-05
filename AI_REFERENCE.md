@@ -1,7 +1,7 @@
 # 509 Dashboard - Complete Feature Reference
 
-**Version:** 2.3
-**Last Updated:** 2025-12-02
+**Version:** 2.4
+**Last Updated:** 2025-12-05
 **Purpose:** Union grievance tracking and member engagement system for SEIU Local 509
 
 ---
@@ -118,23 +118,61 @@ The 509 Dashboard is a comprehensive Google Apps Script-based union management s
 
 ### 1. Config Sheet
 
-**Purpose:** Master source for all dropdown validations
+**Purpose:** Master source for all dropdown validations and system configuration
 
-**Columns (13 total):**
+**Columns (32 total) - See CONFIG_COLS constant in Constants.gs:**
 ```
-A: Job Titles (Coordinator, Analyst, Case Manager, etc.)
-B: Office Locations (Boston HQ, Worcester Office, etc.)
-C: Units (Unit A - Administrative, Unit B - Technical, etc.)
-D: Office Days (Monday-Sunday)
-E: Yes/No (generic Y/N validation)
-F: Supervisors (names)
-G: Managers (names)
-H: Stewards (names)
-I: Grievance Status (Open, Pending Info, Settled, Withdrawn, etc.)
-J: Grievance Step (Informal, Step I, Step II, Step III, Mediation, Arbitration)
-K: Issue Category (Discipline, Workload, Scheduling, Pay, etc.)
-L: Articles Violated (Art. 1 - Recognition, Art. 23 - Grievance Procedure, etc.)
-M: Communication Methods (Email, Phone, Text, In Person)
+Employment Info (1-5):
+  A: Job Titles (Coordinator, Analyst, Case Manager, etc.)
+  B: Office Locations (Boston HQ, Worcester Office, etc.)
+  C: Units (Unit A - Administrative, Unit B - Technical, etc.)
+  D: Office Days (Monday-Sunday)
+  E: Yes/No (generic Y/N validation)
+
+Supervision (6-7):
+  F: Supervisors (names - full name format)
+  G: Managers (names - full name format)
+
+Steward Info (8-9):
+  H: Stewards (names)
+  I: Steward Committees (committees stewards can serve on)
+
+Grievance Settings (10-14):
+  J: Grievance Status (Open, Pending Info, Settled, Withdrawn, Closed, Appealed, In Arbitration, Denied)
+  K: Grievance Step (Informal, Step I, Step II, Step III, Mediation, Arbitration)
+  L: Issue Category (Discipline, Workload, Scheduling, Pay, etc.)
+  M: Articles Violated (Art. 1 - Recognition, Art. 23 - Grievance Procedure, etc.)
+  N: Communication Methods (Email, Phone, Text, In Person)
+
+Links & Coordinators (15-17):
+  O: Grievance Coordinators (comma-separated list)
+  P: Grievance Form URL
+  Q: Contact Form URL
+
+Notifications (18-20):
+  R: Admin Emails
+  S: Alert Days (days before deadline to alert, e.g., "3, 7, 14")
+  T: Notification Recipients (default CC)
+
+Organization (21-24):
+  U: Organization Name
+  V: Local Number
+  W: Main Address
+  X: Main Phone
+
+Integration (25-26):
+  Y: Drive Folder ID (Google Drive root folder)
+  Z: Calendar ID (Google Calendar)
+
+Deadlines (27-30):
+  AA: Filing Deadline Days (default: 21)
+  AB: Step 1 Response Days (default: 30)
+  AC: Step 2 Appeal Days (default: 10)
+  AD: Step 2 Response Days (default: 30)
+
+Multi-select Options (31-32):
+  AE: Best Times (best times to contact members)
+  AF: Home Towns (list of home towns in area)
 ```
 
 **Styling:**
@@ -149,61 +187,67 @@ M: Communication Methods (Email, Phone, Text, In Person)
 
 **Purpose:** Complete member database with engagement tracking
 
-**Columns (31 total):**
+**Columns (31 total) - See MEMBER_COLS constant:**
 ```
 A: Member ID (M000001, M000002, etc.)
 B: First Name
 C: Last Name
-D: Job Title (validated from Config)
-E: Work Location (Site) (validated from Config)
-F: Unit (validated from Config)
+D: Job Title (validated from Config!A)
+E: Work Location (Site) (validated from Config!B)
+F: Unit (validated from Config!C)
 G: Office Days
 H: Email Address
 I: Phone Number
-J: Is Steward (Y/N) (validated from Config)
-K: Supervisor (Name) (validated from Config)
-L: Manager (Name) (validated from Config)
-M: Assigned Steward (Name) (validated from Config)
-N: Last Virtual Mtg (Date)
-O: Last In-Person Mtg (Date)
-P: Last Survey (Date)
-Q: Last Email Open (Date)
-R: Open Rate (%)
-S: Volunteer Hours (YTD)
-T: Interest: Local Actions (Y/N)
-U: Interest: Chapter Actions (Y/N)
-V: Interest: Allied Chapter Actions (Y/N)
-W: Timestamp
-X: Preferred Communication Methods (validated from Config)
-Y: Best Time(s) to Reach Member
-Z: Has Open Grievance? (Formula: =IF(COUNTIFS('Grievance Log'!B:B,A2,'Grievance Log'!E:E,"Open")>0,"Yes","No"))
-AA: Grievance Status Snapshot (Formula: =IFERROR(INDEX('Grievance Log'!E:E,MATCH(A2,'Grievance Log'!B:B,0)),""))
-AB: Next Grievance Deadline (Formula: =IFERROR(INDEX('Grievance Log'!T:T,MATCH(A2,'Grievance Log'!B:B,0)),""))
-AC: Most Recent Steward Contact Date
-AD: Steward Who Contacted Member
-AE: Notes from Steward Contact
+J: Is Steward (Y/N) (validated from Config!E)
+K: Committees (multi-select, comma-separated - references Config!I)
+L: Supervisor (Name)
+M: Manager (Name)
+N: Assigned Steward (Name) (validated from Config!H)
+O: Preferred Communication Methods (multi-select - references Config!N)
+P: Best Time(s) to Reach Member (multi-select - references Config!AE)
+Q: Last Virtual Mtg (Date)
+R: Last In-Person Mtg (Date)
+S: Open Rate (%)
+T: Volunteer Hours (YTD)
+U: Interest: Local Actions (Y/N) (validated from Config!E)
+V: Home Town (validated from Config!AF)
+W: Interest: Chapter Actions (Y/N) (validated from Config!E)
+X: Interest: Allied Chapter Actions (Y/N) (validated from Config!E)
+Y: Has Open Grievance? (Formula: SUMPRODUCT with active statuses)
+Z: Grievance Status Snapshot (Formula)
+AA: Next Grievance Deadline (Formula)
+AB: Most Recent Steward Contact Date
+AC: Steward Who Contacted Member
+AD: Notes from Steward Contact
+AE: Start Grievance (Checkbox to start grievance with prepopulated member info)
+```
+
+**Key Formulas (Column Y - Has Open Grievance):**
+Uses SUMPRODUCT to check ALL active grievance statuses:
+- Open, Pending Info, Appealed, In Arbitration
+```
+=ARRAYFORMULA(IF(A2:A1000<>"",IF(SUMPRODUCT((('Grievance Log'!B:B=A2:A1000)*(('Grievance Log'!E:E="Open")+('Grievance Log'!E:E="Pending Info")+('Grievance Log'!E:E="Appealed")+('Grievance Log'!E:E="In Arbitration"))))>0,"Yes","No"),""))
 ```
 
 **Data Validations:**
-- Column D (Job Title): Config!A2:A14
-- Column E (Work Location): Config!B2:B14
-- Column F (Unit): Config!C2:C7
-- Column J (Is Steward): Config!E2:E14 (Yes/No)
-- Column K (Supervisor): Config!F2:F14
-- Column L (Manager): Config!G2:G14
-- Column M (Assigned Steward): Config!H2:H14
-- Column T, U, V (Interests): Config!E2:E14 (Yes/No)
-- Column X (Comm Methods): Config!M2:M14
+- Column D (Job Title): Config!A (CONFIG_COLS.JOB_TITLES)
+- Column E (Work Location): Config!B (CONFIG_COLS.OFFICE_LOCATIONS)
+- Column F (Unit): Config!C (CONFIG_COLS.UNITS)
+- Column J (Is Steward): Config!E (CONFIG_COLS.YES_NO)
+- Column N (Assigned Steward): Config!H (CONFIG_COLS.STEWARDS)
+- Column U, W, X (Interests): Config!E (CONFIG_COLS.YES_NO)
+- Column V (Home Town): Config!AF (CONFIG_COLS.HOME_TOWNS)
 
 **Styling:**
 - Header: Bold, green background (#059669), white text, wrapped
 - Tab color: Green (#059669)
-- Column widths: A=90px, H=180px, AE=250px
+- Column widths: A=90px, H=180px, AD=250px
 - Frozen first row, header height 50px
 
 **Implementation Notes:**
 - Sheet is deleted and recreated on setup (prevents column group errors)
-- Formulas in columns Z, AA, AB are set for first 100 rows via `setupFormulasAndCalculations()`
+- Formulas in columns Y, Z, AA are set for first 1000 rows via `setupFormulasAndCalculations()`
+- ARRAYFORMULA used for "Has Open Grievance" to handle all rows at once
 
 ---
 
@@ -790,23 +834,26 @@ This function is currently disabled because it expects grievance tracking column
 
 ### Member Directory Validations
 
-Applied via `setupDataValidations()`:
+Applied via `setupDataValidations()` using MEMBER_COLS and CONFIG_COLS constants:
 
 ```javascript
 const memberValidations = [
-  { col: 4, configCol: 1 },   // Job Title → Config A
-  { col: 5, configCol: 2 },   // Work Location → Config B
-  { col: 6, configCol: 3 },   // Unit → Config C
-  { col: 10, configCol: 5 },  // Is Steward → Config E (Yes/No)
-  { col: 11, configCol: 6 },  // Supervisor → Config F
-  { col: 12, configCol: 7 },  // Manager → Config G
-  { col: 13, configCol: 8 },  // Assigned Steward → Config H
-  { col: 20, configCol: 5 },  // Interest: Local → Config E (Yes/No)
-  { col: 21, configCol: 5 },  // Interest: Chapter → Config E (Yes/No)
-  { col: 22, configCol: 5 },  // Interest: Allied → Config E (Yes/No)
-  { col: 24, configCol: 13 }  // Comm Methods → Config M
+  { col: MEMBER_COLS.JOB_TITLE, configCol: CONFIG_COLS.JOB_TITLES },       // Job Title (4) → Config A
+  { col: MEMBER_COLS.WORK_LOCATION, configCol: CONFIG_COLS.OFFICE_LOCATIONS }, // Work Location (5) → Config B
+  { col: MEMBER_COLS.UNIT, configCol: CONFIG_COLS.UNITS },                 // Unit (6) → Config C
+  { col: MEMBER_COLS.IS_STEWARD, configCol: CONFIG_COLS.YES_NO },          // Is Steward (10) → Config E
+  { col: MEMBER_COLS.ASSIGNED_STEWARD, configCol: CONFIG_COLS.STEWARDS },  // Assigned Steward (14) → Config H
+  { col: MEMBER_COLS.INTEREST_LOCAL, configCol: CONFIG_COLS.YES_NO },      // Interest: Local (21) → Config E
+  { col: MEMBER_COLS.HOME_TOWN, configCol: CONFIG_COLS.HOME_TOWNS },       // Home Town (22) → Config AF
+  { col: MEMBER_COLS.INTEREST_CHAPTER, configCol: CONFIG_COLS.YES_NO },    // Interest: Chapter (23) → Config E
+  { col: MEMBER_COLS.INTEREST_ALLIED, configCol: CONFIG_COLS.YES_NO }      // Interest: Allied (24) → Config E
 ];
 ```
+
+Multi-select columns use text validation with help text:
+- COMMITTEES (11) → Config!I (STEWARD_COMMITTEES)
+- PREFERRED_COMM (15) → Config!N (COMM_METHODS)
+- BEST_TIME (16) → Config!AE (BEST_TIMES)
 
 Applied to rows 2-5000 for each column.
 
@@ -814,13 +861,13 @@ Applied to rows 2-5000 for each column.
 
 ```javascript
 const grievanceValidations = [
-  { col: 5, configCol: 9 },   // Status → Config I
-  { col: 6, configCol: 10 },  // Current Step → Config J
-  { col: 22, configCol: 12 }, // Articles Violated → Config L
-  { col: 23, configCol: 11 }, // Issue Category → Config K
-  { col: 25, configCol: 3 },  // Unit → Config C
-  { col: 26, configCol: 2 },  // Work Location → Config B
-  { col: 27, configCol: 8 }   // Assigned Steward → Config H
+  { col: GRIEVANCE_COLS.STATUS, configCol: CONFIG_COLS.GRIEVANCE_STATUS },         // Status (5) → Config J
+  { col: GRIEVANCE_COLS.CURRENT_STEP, configCol: CONFIG_COLS.GRIEVANCE_STEP },     // Current Step (6) → Config K
+  { col: GRIEVANCE_COLS.ARTICLES, configCol: CONFIG_COLS.ARTICLES_VIOLATED },      // Articles Violated (22) → Config M
+  { col: GRIEVANCE_COLS.ISSUE_CATEGORY, configCol: CONFIG_COLS.ISSUE_CATEGORY },   // Issue Category (23) → Config L
+  { col: GRIEVANCE_COLS.UNIT, configCol: CONFIG_COLS.UNITS },                      // Unit (25) → Config C
+  { col: GRIEVANCE_COLS.LOCATION, configCol: CONFIG_COLS.OFFICE_LOCATIONS },       // Work Location (26) → Config B
+  { col: GRIEVANCE_COLS.STEWARD, configCol: CONFIG_COLS.STEWARDS }                 // Assigned Steward (27) → Config H
 ];
 ```
 
@@ -1106,10 +1153,11 @@ const COLORS = {
 
 **Purpose:** Single source of truth for all Member Directory column positions (31 columns)
 
-**Implementation:**
+**Implementation (from Constants.gs):**
 
 ```javascript
 const MEMBER_COLS = {
+  // 31 columns total - Added: COMMITTEES, HOME_TOWN, PREFERRED_COMM, BEST_TIME
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -1120,27 +1168,27 @@ const MEMBER_COLS = {
   EMAIL: 8,                        // H
   PHONE: 9,                        // I
   IS_STEWARD: 10,                  // J
-  SUPERVISOR: 11,                  // K
-  MANAGER: 12,                     // L
-  ASSIGNED_STEWARD: 13,            // M
-  LAST_VIRTUAL_MTG: 14,            // N
-  LAST_INPERSON_MTG: 15,           // O
-  LAST_SURVEY: 16,                 // P
-  LAST_EMAIL_OPEN: 17,             // Q
-  OPEN_RATE: 18,                   // R
-  VOLUNTEER_HOURS: 19,             // S
-  INTEREST_LOCAL: 20,              // T
-  INTEREST_CHAPTER: 21,            // U
-  INTEREST_ALLIED: 22,             // V
-  TIMESTAMP: 23,                   // W
-  PREFERRED_COMM: 24,              // X
-  BEST_TIME: 25,                   // Y
-  HAS_OPEN_GRIEVANCE: 26,          // Z
-  GRIEVANCE_STATUS: 27,            // AA
-  NEXT_DEADLINE: 28,               // AB
-  RECENT_CONTACT_DATE: 29,         // AC
-  CONTACT_STEWARD: 30,             // AD
-  CONTACT_NOTES: 31                // AE
+  COMMITTEES: 11,                  // K - Multi-select: which committees steward is in
+  SUPERVISOR: 12,                  // L
+  MANAGER: 13,                     // M
+  ASSIGNED_STEWARD: 14,            // N
+  PREFERRED_COMM: 15,              // O - Multi-select: preferred communication methods
+  BEST_TIME: 16,                   // P - Multi-select: best times to reach member
+  LAST_VIRTUAL_MTG: 17,            // Q
+  LAST_INPERSON_MTG: 18,           // R
+  OPEN_RATE: 19,                   // S
+  VOLUNTEER_HOURS: 20,             // T
+  INTEREST_LOCAL: 21,              // U
+  HOME_TOWN: 22,                   // V - Member's home town
+  INTEREST_CHAPTER: 23,            // W
+  INTEREST_ALLIED: 24,             // X
+  HAS_OPEN_GRIEVANCE: 25,          // Y
+  GRIEVANCE_STATUS: 26,            // Z
+  NEXT_DEADLINE: 27,               // AA
+  RECENT_CONTACT_DATE: 28,         // AB
+  CONTACT_STEWARD: 29,             // AC
+  CONTACT_NOTES: 30,               // AD
+  START_GRIEVANCE: 31              // AE - Checkbox to start grievance with prepopulated member info
 };
 ```
 
@@ -1535,7 +1583,27 @@ const SHEETS = {
 
 ## Changelog
 
-### Version 2.3 (Current)
+### Version 2.4 (Current)
+
+**🔄 CONFIG & DOCUMENTATION SYNC: Constants Updated**
+
+**Changes:**
+- Updated AI_REFERENCE.md to match current Constants.gs structure
+- Config sheet now documented with all 32 columns (was showing old 13-column structure)
+- MEMBER_COLS now includes COMMITTEES (K), HOME_TOWN (V), START_GRIEVANCE (AE)
+- Fixed incorrect help text in Code.gs referencing wrong Config columns:
+  - Committees: Changed "column AD" to "column I" (STEWARD_COMMITTEES)
+  - Preferred Comm: Changed "column M" to "column N" (COMM_METHODS)
+- Updated Data Validation Rules documentation to use CONFIG_COLS/MEMBER_COLS constants
+- Documented multi-status "Has Open Grievance" formula (Open, Pending Info, Appealed, In Arbitration)
+
+**Files Changed:**
+- Code.gs: Fixed help text in setupDataValidations()
+- AI_REFERENCE.md: Updated Config, Member Directory, and Data Validation sections
+
+---
+
+### Version 2.3
 
 **🔴 CRITICAL BUG FIX: hideGridlines() TypeError Resolved**
 
@@ -1815,8 +1883,8 @@ All errors logged here with timestamps.
 
 ---
 
-**Document Version:** 2.1
-**Last Updated:** 2025-01-27
+**Document Version:** 2.4
+**Last Updated:** 2025-12-05
 **Maintained By:** Claude (AI Assistant)
 **Repository:** [Add GitHub URL]
 
