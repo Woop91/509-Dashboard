@@ -1544,8 +1544,249 @@ All errors logged here with timestamps.
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** 2025-01-XX
+## Advanced Features (79-94)
+
+### Security & Audit Features
+
+**Feature 79: Audit Logging**
+- **Function:** `logDataModification(actionType, sheetName, recordId, fieldChanged, oldValue, newValue)`
+- **Sheet:** Audit_Log (auto-created)
+- **Purpose:** Tracks all data modifications with user, timestamp, and change details
+- **Columns:** Timestamp, User Email, Action Type, Sheet Name, Record ID, Field Changed, Old Value, New Value, IP Address, Session ID
+- **Usage:** Automatically called when data is modified, or manually for custom tracking
+- **Dependencies:** None
+- **Setup:** Menu → Security & Audit → View Audit Log (auto-creates sheet)
+
+**Feature 80: Role-Based Access Control (RBAC)**
+- **Function:** `checkUserPermission(requiredRole)`
+- **Roles:** ADMIN, STEWARD, VIEWER (hierarchical)
+- **Configuration:** `configureRBAC()` - Menu → Security & Audit → Configure RBAC Roles
+- **Script Properties Required:**
+  - `ADMINS`: Comma-separated list of admin emails
+  - `STEWARDS`: Comma-separated list of steward emails
+  - `VIEWERS`: Comma-separated list of viewer emails
+- **Usage:** Call before sensitive operations to verify permissions
+- **Hierarchy:** ADMIN > STEWARD > VIEWER
+
+**Feature 83: Input Sanitization**
+- **Function:** `sanitizeInput(input, type)`
+- **Types:** 'text', 'email', 'number', 'date', 'html'
+- **Purpose:** Prevents script injection, XSS attacks, and malicious input
+- **Features:**
+  - Removes script tags and event handlers
+  - Escapes HTML entities
+  - Validates email and date formats
+  - Logs significant sanitization events
+- **Usage:** Always sanitize user input before processing or storing
+
+**Feature 84: Audit Reporting**
+- **Function:** `generateAuditReport(startDate, endDate)`
+- **Dialog:** `showAuditReportDialog()` - Menu → Security & Audit → Generate Audit Report
+- **Output:** Creates "Audit Report" sheet with:
+  - Summary statistics (total actions, unique users)
+  - Actions by type breakdown
+  - Detailed audit records for date range
+- **Dependencies:** Feature 79 (Audit_Log must exist)
+- **Permissions:** Admin only
+
+**Feature 85: Data Retention Policy**
+- **Function:** `enforceDataRetention(retentionYears = 7)`
+- **Default:** 7 years retention
+- **Process:**
+  - Identifies records older than retention period
+  - Moves old records to Archive sheet
+  - Deletes from source sheets (Grievance Log, Audit_Log)
+- **Archive Format:** Item Type, Item ID, Archive Date, Archived By, Reason, Original Data (JSON)
+- **Dependencies:** Feature 79 (uses Archive sheet structure)
+- **Permissions:** Admin only
+
+**Feature 86: Suspicious Activity Detection**
+- **Function:** `detectSuspiciousActivity()`
+- **Threshold:** >50 changes/hour per user
+- **Features:**
+  - Analyzes last hour of audit log
+  - Identifies users with abnormal activity
+  - Sends security alerts with details
+  - Logs detection events
+- **Setup:** `setupSuspiciousActivityMonitoring()` - Creates hourly trigger
+- **Dependencies:** Feature 79 (Audit_Log)
+- **Use Cases:** Detects data breaches, automated scripts, bulk operations
+
+### Performance & Backup Features
+
+**Feature 91: Performance Monitoring**
+- **Function:** `trackPerformance(functionName, callback, options)`
+- **Sheet:** Performance_Log (auto-created)
+- **Tracks:** Execution time, status, records processed, memory usage, user
+- **Usage:**
+  ```javascript
+  trackPerformance('myFunction', () => {
+    // Your code here
+  }, { recordsProcessed: 1000, notes: 'Optional notes' });
+  ```
+- **Report:** `generatePerformanceReport()` - Shows avg/min/max times, error rates
+- **Color Coding:** Red for errors, yellow for slow operations (>30s)
+
+**Feature 90: Automated Backups**
+- **Function:** `createAutomatedBackup()`
+- **Configuration:** `configureBackupFolder()` - Sets BACKUP_FOLDER_ID
+- **Daily Setup:** `setupDailyBackups()` - Creates daily trigger at 2 AM
+- **Cleanup:** `cleanupOldBackups()` - Removes backups older than 30 days
+- **Backup Format:** 509_Dashboard_Backup_YYYY-MM-DD_HHmmss
+- **Script Property:** BACKUP_FOLDER_ID (Google Drive folder ID)
+- **Dependencies:** None
+- **Logs:** All backups logged to Audit_Log (if enabled)
+
+### UI & Productivity Features
+
+**Feature 87: Quick Actions Sidebar**
+- **Function:** `showQuickActionsSidebar()`
+- **Access:** Menu → Quick Actions Sidebar (top level)
+- **Features:**
+  - One-click access to common actions
+  - Categorized by: Dashboards, Create New, Search & Filter, Export & Reports, Backup & Security
+  - Live status feedback
+  - HTML-based interactive sidebar
+- **Actions Included:**
+  - Dashboard navigation
+  - Create grievance, import data
+  - Advanced search & filtering
+  - Export wizard, reports
+  - Backup, security checks
+
+**Feature 88: Advanced Search**
+- **Function:** `showSearchDialog()`
+- **Dialog:** `searchGrievances(searchType, searchTerm)`
+- **Search Types:** Grievance ID, Member Name, Issue Type, Steward Name, Status
+- **Features:**
+  - Interactive dialog with results preview
+  - Searches across Grievance Log
+  - Returns matching records with key details
+- **Usage:** Menu → Grievance Tools → Advanced Search
+
+**Feature 89: Advanced Filtering**
+- **Function:** `showFilterDialog()`
+- **Apply:** `applyGrievanceFilters(filters)` - Creates Google Sheets filter
+- **Clear:** `clearGrievanceFilters()` - Removes all filters
+- **Filter Options:**
+  - Status (Open, Closed, Pending Info, etc.)
+  - Issue Type
+  - Date Range (start/end dates)
+  - Steward Name
+  - Location
+- **Features:** Native Google Sheets filtering with custom criteria
+- **Usage:** Menu → Grievance Tools → Advanced Filtering
+
+**Feature 92: Keyboard Shortcuts**
+- **Function:** `setupKeyboardShortcuts()`
+- **Features:**
+  - Creates named ranges for quick navigation
+  - Reference guide for available shortcuts
+  - Named ranges: Dashboard_Home, Members_Start, Grievances_Start, Config_Start, Executive_Dashboard
+- **Usage:** Ctrl+J (Windows) or Cmd+J (Mac) to jump to named ranges
+- **Note:** Apps Script has limited keyboard shortcut support; uses named ranges instead
+
+**Feature 93: Export Wizard**
+- **Function:** `showExportWizard()`
+- **Export Options:**
+  - Data Types: Grievances, Members, Both, Audit Log, Performance Log
+  - Formats: CSV, Excel (XLSX), PDF Report, New Google Sheet
+  - Filters: Status filter, date range
+- **Functions:** `exportData(options)`, `exportToCSV()`, `exportToNewSheet()`, etc.
+- **Features:**
+  - Guided export with filter options
+  - Creates files in Google Drive
+  - Returns file URLs for easy access
+- **Usage:** Menu → Import/Export → Export Wizard
+
+**Feature 94: Data Import**
+- **Function:** `showImportWizard()`
+- **Import Types:** Members, Grievances
+- **Source:** Google Sheets (URL or File ID)
+- **Process:**
+  - Validates column headers match
+  - Imports data to appropriate sheet
+  - Logs import action
+  - Returns record count
+- **Features:**
+  - Interactive dialog
+  - Validates data structure
+  - Bulk import capability
+- **Usage:** Menu → Import/Export → Import Wizard
+
+### File Architecture Updates
+
+**New Files Added:**
+1. **SecurityAndAdmin.gs** - Features 79, 80, 83, 84, 85, 86 + helper functions
+2. **PerformanceAndBackup.gs** - Features 90, 91
+3. **UIFeatures.gs** - Features 87, 88, 89, 92, 93, 94
+
+### Menu System Updates
+
+**New Menus Added:**
+- **🔒 Security & Audit** - RBAC, audit logs, suspicious activity, data retention
+- **💾 Backup & Performance** - Backups, performance monitoring, cleanup
+- **📤 Import/Export** - Import wizard, export wizard, report generation
+
+**Updated Menus:**
+- **📋 Grievance Tools** - Added Advanced Search, Advanced Filtering
+- **❓ Help & Support** - Added Keyboard Shortcuts
+- **⚙️ Admin** - Added Setup Audit & Security
+
+**Top-Level Addition:**
+- **⚡ Quick Actions Sidebar** - Direct access to quick actions
+
+### Setup Instructions
+
+**Quick Setup (All Features):**
+1. Menu → Admin → Setup Audit & Security
+   - Creates Audit_Log and Performance_Log sheets
+   - Configures RBAC roles
+   - Enables activity monitoring
+
+**Manual Setup:**
+1. **Audit Logging:** Menu → Security & Audit → View Audit Log (auto-creates)
+2. **RBAC:** Menu → Security & Audit → Configure RBAC Roles
+3. **Backups:** Menu → Backup & Performance → Configure Backup Folder
+4. **Daily Backups:** Menu → Backup & Performance → Setup Daily Backups
+5. **Activity Monitoring:** Menu → Security & Audit → Setup Activity Monitoring
+
+### Script Properties Configuration
+
+**Required for Features:**
+- **ADMINS**: Comma-separated admin emails (Feature 80)
+- **STEWARDS**: Comma-separated steward emails (Feature 80)
+- **VIEWERS**: Comma-separated viewer emails (Feature 80)
+- **BACKUP_FOLDER_ID**: Google Drive folder ID for backups (Feature 90)
+- **CURRENT_SESSION_ID**: Auto-generated session tracking (Feature 79)
+
+### Dependencies Matrix
+
+| Feature | Depends On | Optional Dependencies |
+|---------|------------|----------------------|
+| 79 - Audit Logging | None | - |
+| 80 - RBAC | Script Properties | - |
+| 83 - Input Sanitization | None | Feature 79 (logs sanitization) |
+| 84 - Audit Reporting | Feature 79 | Feature 80 (RBAC) |
+| 85 - Data Retention | Archive sheet | Feature 79 (logs retention) |
+| 86 - Suspicious Activity | Feature 79 | - |
+| 87 - Quick Actions | All menu functions | - |
+| 88 - Advanced Search | Grievance Log | Feature 79 (logs searches) |
+| 89 - Advanced Filtering | Grievance Log | Feature 79 (logs filters) |
+| 90 - Automated Backups | Google Drive access | Feature 79 (logs backups) |
+| 91 - Performance Monitoring | None | - |
+| 92 - Keyboard Shortcuts | None | - |
+| 93 - Export Wizard | Source sheets | Feature 79 (logs exports) |
+| 94 - Data Import | Source sheets | Feature 79 (logs imports) |
+
+### Feature Status: ALL IMPLEMENTED ✅
+
+All 16 features (79-94) are fully implemented and integrated into the menu system.
+
+---
+
+**Document Version:** 2.0
+**Last Updated:** 2025-12-05
 **Maintained By:** Claude (AI Assistant)
 **Repository:** [Add GitHub URL]
 
