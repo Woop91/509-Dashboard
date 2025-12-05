@@ -68,7 +68,7 @@ function composeGrievanceEmail(grievanceId) {
 
   if (grievanceId) {
     const lastRow = grievanceSheet.getLastRow();
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.MEMBER_EMAIL).getValues();
 
     for (let i = 0; i < data.length; i++) {
       if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
@@ -77,7 +77,7 @@ function composeGrievanceEmail(grievanceId) {
           memberName: `${data[i][GRIEVANCE_COLS.FIRST_NAME - 1]} ${data[i][GRIEVANCE_COLS.LAST_NAME - 1]}`,
           memberEmail: data[i][GRIEVANCE_COLS.MEMBER_EMAIL - 1] || '',
           steward: data[i][GRIEVANCE_COLS.STEWARD - 1] || '',
-          issueType: data[i][5] || '',
+          issueType: data[i][GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '',
           status: data[i][GRIEVANCE_COLS.STATUS - 1] || ''
         };
         break;
