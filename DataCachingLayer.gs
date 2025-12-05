@@ -248,15 +248,19 @@ function getCachedDashboardMetrics() {
         bySteward: {}
       };
 
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
       grievances.forEach(function(row) {
         const status = row[GRIEVANCE_COLS.STATUS - 1];
         const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
         const steward = row[GRIEVANCE_COLS.STEWARD - 1];
-        const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
+        const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+        const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
 
         if (status === 'Open') metrics.open++;
         if (status === 'Closed' || status === 'Resolved') metrics.closed++;
-        if (daysToDeadline < 0) metrics.overdue++;
+        if (daysToDeadline !== null && daysToDeadline < 0) metrics.overdue++;
 
         metrics.byStatus[status] = (metrics.byStatus[status] || 0) + 1;
 

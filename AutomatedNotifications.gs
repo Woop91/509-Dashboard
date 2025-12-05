@@ -79,13 +79,16 @@ function checkDeadlinesAndNotify() {
   }
 
   // Get all grievance data
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
 
   const notifications = {
     overdue: [],
     urgent: [],      // 3 days or less
     upcoming: []     // 7 days or less
   };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   // Categorize grievances by deadline urgency
   data.forEach(function(row, index) {
@@ -95,7 +98,7 @@ function checkDeadlinesAndNotify() {
     const status = row[GRIEVANCE_COLS.STATUS - 1];
     const issueType = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
     const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
+    const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
     const steward = row[GRIEVANCE_COLS.STEWARD - 1];
     const manager = row[GRIEVANCE_COLS.STEP2_APPEAL_DUE - 1];
 

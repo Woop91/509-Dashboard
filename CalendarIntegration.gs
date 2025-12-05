@@ -50,19 +50,22 @@ function syncDeadlinesToCalendar() {
       return;
     }
 
-    // Get all grievance data
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+    // Get all grievance data (up to NEXT_ACTION_DUE column)
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
 
     const calendar = CalendarApp.getDefaultCalendar();
     let eventsCreated = 0;
     let eventsSkipped = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     data.forEach(function(row, index) {
       const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
       const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
       const status = row[GRIEVANCE_COLS.STATUS - 1];
       const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-      const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
+      // Calculate days to deadline from NEXT_ACTION_DUE
+      const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
 
       // Only create events for open grievances with deadlines
       if (status !== 'Open' || !nextActionDue) {
@@ -180,7 +183,9 @@ function syncSingleDeadlineToCalendar(grievanceId) {
 
   // Find the grievance
   const lastRow = grievanceSheet.getLastRow();
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   for (let i = 0; i < data.length; i++) {
     if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
@@ -188,7 +193,8 @@ function syncSingleDeadlineToCalendar(grievanceId) {
       const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
       const status = row[GRIEVANCE_COLS.STATUS - 1];
       const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
-      const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
+      // Calculate days to deadline from NEXT_ACTION_DUE
+      const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
 
       if (status !== 'Open' || !nextActionDue) {
         return; // Skip if not open or no deadline

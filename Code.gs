@@ -653,13 +653,12 @@ function createMainDashboard() {
   const grievanceIdCol = getColumnLetter(GRIEVANCE_COLS.GRIEVANCE_ID);
   const firstNameCol = getColumnLetter(GRIEVANCE_COLS.FIRST_NAME);
   const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
-  const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
-  const lastCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION); // AB - last column
+  const lastCol = getColumnLetter(GRIEVANCE_COLS.LOCATION); // AB - last visible column
 
   // Formula to populate upcoming deadlines (open grievances with deadlines in next 14 days)
   dashboard.getRange("A22").setFormula(
     `=IFERROR(QUERY('Grievance Log'!${grievanceIdCol}:${lastCol}, ` +
-    `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${daysToDeadlineCol}, ${statusCol} ` +
+    `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${statusCol} ` +
     `WHERE ${statusCol} = 'Open' AND ${nextActionCol} IS NOT NULL AND ${nextActionCol} <= date '"&TEXT(TODAY()+14,"yyyy-mm-dd")&"' ` +
     `ORDER BY ${nextActionCol} ASC ` +
     `LIMIT 10", 0), "No upcoming deadlines")`
@@ -884,7 +883,7 @@ function createExecutiveDashboard() {
   const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);
   const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
-  const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
   const grievanceIdCol = getColumnLetter(GRIEVANCE_COLS.GRIEVANCE_ID);
 
   const execMemberIdCol = getColumnLetter(MEMBER_COLS.MEMBER_ID);
@@ -895,7 +894,7 @@ function createExecutiveDashboard() {
     ["Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, "", ""],
     ["Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0%")`, "", ""],
     ["Avg Resolution (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, "", ""],
-    ["Overdue Cases", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"<0")`, "", ""],
+    ["Overdue Cases", `=COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Open",'Grievance Log'!${nextActionCol}:${nextActionCol},"<"&TODAY())`, "", ""],
     ["Active Stewards", `=COUNTIF('Member Directory'!${execIsStewardCol}:${execIsStewardCol},"Yes")`, "", ""]
   ];
 
@@ -920,7 +919,7 @@ function createExecutiveDashboard() {
     ["Total Active Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, ""],
     ["Overall Win Rate", `=TEXT(IFERROR(COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Resolved*",'Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),0),"0.0%")`, ""],
     ["Avg Resolution Time (Days)", `=ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),1)`, ""],
-    ["Cases Overdue", `=COUNTIF('Grievance Log'!${daysToDeadlineCol}:${daysToDeadlineCol},"<0")`, ""],
+    ["Cases Overdue", `=COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Open",'Grievance Log'!${nextActionCol}:${nextActionCol},"<"&TODAY())`, ""],
     ["Member Satisfaction Score", "=TEXT(AVERAGE('Member Satisfaction'!C:C),\"0.0\")", ""],
     ["Total Grievances Filed YTD", `=COUNTA('Grievance Log'!${grievanceIdCol}2:${grievanceIdCol})`, ""],
     ["Resolved Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved")`, ""]
@@ -1213,7 +1212,6 @@ function setupFormulasAndCalculations() {
   const gDateClosedCol = getColumnLetter(GRIEVANCE_COLS.DATE_CLOSED);
   const gDaysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
   const gNextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
-  const gDaysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
   const gStatusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const gCurrentStepCol = getColumnLetter(GRIEVANCE_COLS.CURRENT_STEP);
   const gMemberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
@@ -1248,15 +1246,12 @@ function setupFormulasAndCalculations() {
     `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",IF(${gDateClosedCol}2:${gDateClosedCol}1000<>"",${gDateClosedCol}2:${gDateClosedCol}1000-${gDateFiledCol}2:${gDateFiledCol}1000,TODAY()-${gDateFiledCol}2:${gDateFiledCol}1000),""))`
   );
 
-  // Next Action Due - Column T (determines based on current step)
+  // Next Action Due - Column Y (determines based on current step)
   grievanceLog.getRange(gNextActionCol + "2").setFormula(
     `=ARRAYFORMULA(IF(${gStatusCol}2:${gStatusCol}1000="Open",IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step I",${gStep1DueCol}2:${gStep1DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step II",${gStep2DueCol}2:${gStep2DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step III",${gStep3AppealDueCol}2:${gStep3AppealDueCol}1000,${gFilingDeadlineCol}2:${gFilingDeadlineCol}1000))),""))`
   );
 
-  // Days to Deadline - Column U (Next Action Due - Today)
-  grievanceLog.getRange(gDaysToDeadlineCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}1000<>"",${gNextActionCol}2:${gNextActionCol}1000-TODAY(),""))`
-  );
+  // Note: Days to Deadline is calculated dynamically from NEXT_ACTION_DUE - no separate column needed
 
   // ----- MEMBER DIRECTORY FORMULAS -----
   // Has Open Grievance? - Column Y (25)
@@ -1491,14 +1486,13 @@ function cleanupGrievanceLog() {
 
   // Clear any existing formulas in calculated columns before reapplying
   const calculatedCols = [
-    GRIEVANCE_COLS.FILING_DEADLINE,    // H
-    GRIEVANCE_COLS.STEP1_DUE,          // J
-    GRIEVANCE_COLS.STEP2_APPEAL_DUE,   // L
-    GRIEVANCE_COLS.STEP2_DUE,          // N
-    GRIEVANCE_COLS.STEP3_APPEAL_DUE,   // P
-    GRIEVANCE_COLS.DAYS_OPEN,          // S
-    GRIEVANCE_COLS.NEXT_ACTION_DUE,    // T
-    GRIEVANCE_COLS.DAYS_TO_DEADLINE    // U
+    GRIEVANCE_COLS.FILING_DEADLINE,    // M
+    GRIEVANCE_COLS.STEP1_DUE,          // O
+    GRIEVANCE_COLS.STEP2_APPEAL_DUE,   // Q
+    GRIEVANCE_COLS.STEP2_DUE,          // S
+    GRIEVANCE_COLS.STEP3_APPEAL_DUE,   // U
+    GRIEVANCE_COLS.DAYS_OPEN,          // X
+    GRIEVANCE_COLS.NEXT_ACTION_DUE     // Y
   ];
 
   const lastRow = Math.max(grievanceLog.getLastRow(), 2);

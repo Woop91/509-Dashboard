@@ -35,7 +35,7 @@ function performPredictiveAnalysis() {
       };
     }
 
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
 
     const analytics = {
       volumeTrend: analyzeVolumeTrend(data),
@@ -316,12 +316,15 @@ function forecastStewardWorkload(data) {
  */
 function identifyRiskFactors(data) {
   const risks = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   // Check for overdue cases
   let overdueCount = 0;
   data.forEach(function(row) {
-    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
-    if (daysToDeadline < 0) overdueCount++;
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+    const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
+    if (daysToDeadline !== null && daysToDeadline < 0) overdueCount++;
   });
 
   if (overdueCount > 0) {
