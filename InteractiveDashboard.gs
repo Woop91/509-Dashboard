@@ -842,6 +842,18 @@ function writeChartData(sheet, startCell, data) {
 
   try {
     const range = sheet.getRange(startCell).offset(1, 0, data.length, 2);
+
+    // IMPORTANT: Break any merged cells before writing data
+    // This prevents "You must select all cells in a merged range" error
+    try {
+      range.breakApart();
+    } catch (e) {
+      // Range wasn't merged, ignore
+    }
+
+    // Clear existing content and formatting
+    range.clearContent();
+
     range.setValues(data);
 
     // Hide this data area - OPTIMIZED: batch hide instead of one-by-one
