@@ -3930,6 +3930,9 @@ function getConfigColumnValues(columnIndex, maxRows) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
+  // Debug logging
+  Logger.log('getConfigColumnValues called with columnIndex=' + columnIndex);
+
   if (!config) {
     Logger.log('Config sheet not found');
     return [];
@@ -3937,12 +3940,19 @@ function getConfigColumnValues(columnIndex, maxRows) {
 
   // Row 1 is category headers, Row 2 is column headers, Row 3+ is data
   const colLetter = getColumnLetter(columnIndex);
-  const values = config.getRange(colLetter + "3:" + colLetter + (maxRows + 2))
-    .getValues()
-    .flat()
+  Logger.log('Column letter for index ' + columnIndex + ' = "' + colLetter + '"');
+
+  const rangeStr = colLetter + "3:" + colLetter + (maxRows + 2);
+  Logger.log('Reading range: ' + rangeStr);
+
+  const rawValues = config.getRange(rangeStr).getValues().flat();
+  Logger.log('Raw values count: ' + rawValues.length + ', first 5: ' + JSON.stringify(rawValues.slice(0, 5)));
+
+  const values = rawValues
     .filter(function(val) { return val !== '' && val !== null; })
     .map(function(val) { return String(val).trim(); });
 
+  Logger.log('Filtered values count: ' + values.length);
   return values;
 }
 
@@ -23863,37 +23873,37 @@ function setupMemberDirectoryDropdowns() {
     // ==================== SINGLE-SELECT DROPDOWNS ====================
 
     // Job Title (Column D / MEMBER_COLS.JOB_TITLE)
-    const jobTitles = getConfigColumnValues(configSheet, CONFIG_COLS.JOB_TITLES);
+    const jobTitles = getConfigValuesFromSheet(configSheet, CONFIG_COLS.JOB_TITLES);
     if (jobTitles.length > 0) {
       setDropdownByCol(memberSheet, MEMBER_COLS.JOB_TITLE, lastRow, jobTitles, 'Job Title', true);
     }
 
     // Work Location (Column E / MEMBER_COLS.WORK_LOCATION)
-    const locations = getConfigColumnValues(configSheet, CONFIG_COLS.OFFICE_LOCATIONS);
+    const locations = getConfigValuesFromSheet(configSheet, CONFIG_COLS.OFFICE_LOCATIONS);
     if (locations.length > 0) {
       setDropdownByCol(memberSheet, MEMBER_COLS.WORK_LOCATION, lastRow, locations, 'Work Location', true);
     }
 
     // Unit (Column F / MEMBER_COLS.UNIT)
-    const units = getConfigColumnValues(configSheet, CONFIG_COLS.UNITS);
+    const units = getConfigValuesFromSheet(configSheet, CONFIG_COLS.UNITS);
     if (units.length > 0) {
       setDropdownByCol(memberSheet, MEMBER_COLS.UNIT, lastRow, units, 'Unit', true);
     }
 
     // Is Steward (Column N / MEMBER_COLS.IS_STEWARD)
-    const yesNo = getConfigColumnValues(configSheet, CONFIG_COLS.YES_NO);
+    const yesNo = getConfigValuesFromSheet(configSheet, CONFIG_COLS.YES_NO);
     if (yesNo.length > 0) {
       setDropdownByCol(memberSheet, MEMBER_COLS.IS_STEWARD, lastRow, yesNo, 'Is Steward', true);
     }
 
     // Supervisor Name (Column L / MEMBER_COLS.SUPERVISOR)
-    const supervisors = getConfigColumnValues(configSheet, CONFIG_COLS.SUPERVISORS);
+    const supervisors = getConfigValuesFromSheet(configSheet, CONFIG_COLS.SUPERVISORS);
     if (supervisors.length > 0) {
       setDropdownByCol(memberSheet, MEMBER_COLS.SUPERVISOR, lastRow, supervisors, 'Supervisor', true);
     }
 
     // Manager Name (Column M / MEMBER_COLS.MANAGER)
-    const managers = getConfigColumnValues(configSheet, CONFIG_COLS.MANAGERS);
+    const managers = getConfigValuesFromSheet(configSheet, CONFIG_COLS.MANAGERS);
     if (managers.length > 0) {
       setDropdownByCol(memberSheet, MEMBER_COLS.MANAGER, lastRow, managers, 'Manager', true);
     }
@@ -23913,25 +23923,25 @@ function setupMemberDirectoryDropdowns() {
     // These allow comma-separated values (setAllowInvalid = true)
 
     // Office Days (Column G / MEMBER_COLS.OFFICE_DAYS) - MULTI-SELECT
-    const officeDays = getConfigColumnValues(configSheet, CONFIG_COLS.OFFICE_DAYS);
+    const officeDays = getConfigValuesFromSheet(configSheet, CONFIG_COLS.OFFICE_DAYS);
     if (officeDays.length > 0) {
       setDropdownByCol(memberSheet, MEMBER_COLS.OFFICE_DAYS, lastRow, officeDays, 'Office Days', false);
     }
 
     // Preferred Communication (Column J / MEMBER_COLS.PREFERRED_COMM) - MULTI-SELECT
-    const commMethods = getConfigColumnValues(configSheet, CONFIG_COLS.COMM_METHODS);
+    const commMethods = getConfigValuesFromSheet(configSheet, CONFIG_COLS.COMM_METHODS);
     if (commMethods.length > 0) {
       setDropdownByCol(memberSheet, MEMBER_COLS.PREFERRED_COMM, lastRow, commMethods, 'Preferred Communication', false);
     }
 
     // Best Time to Contact (Column K / MEMBER_COLS.BEST_TIME) - MULTI-SELECT
-    const bestTimes = getConfigColumnValues(configSheet, CONFIG_COLS.BEST_TIMES);
+    const bestTimes = getConfigValuesFromSheet(configSheet, CONFIG_COLS.BEST_TIMES);
     if (bestTimes.length > 0) {
       setDropdownByCol(memberSheet, MEMBER_COLS.BEST_TIME, lastRow, bestTimes, 'Best Time to Contact', false);
     }
 
     // Committees (Column O / MEMBER_COLS.COMMITTEES) - MULTI-SELECT
-    const committees = getConfigColumnValues(configSheet, CONFIG_COLS.STEWARD_COMMITTEES);
+    const committees = getConfigValuesFromSheet(configSheet, CONFIG_COLS.STEWARD_COMMITTEES);
     if (committees.length > 0) {
       setDropdownByCol(memberSheet, MEMBER_COLS.COMMITTEES, lastRow, committees, 'Committees', false);
     }
@@ -23984,25 +23994,25 @@ function setupGrievanceLogDropdowns() {
     const lastRow = Math.max(grievanceSheet.getLastRow(), 500);
 
     // Issue Category (Column E / GRIEVANCE_COLS.ISSUE_CATEGORY) - MULTI-SELECT
-    const issueCategories = getConfigColumnValues(configSheet, CONFIG_COLS.ISSUE_CATEGORY);
+    const issueCategories = getConfigValuesFromSheet(configSheet, CONFIG_COLS.ISSUE_CATEGORY);
     if (issueCategories.length > 0) {
       setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ISSUE_CATEGORY, lastRow, issueCategories, 'Issue Category', false);
     }
 
     // Articles Violated (Column F / GRIEVANCE_COLS.ARTICLES) - MULTI-SELECT
-    const articles = getConfigColumnValues(configSheet, CONFIG_COLS.ARTICLES_VIOLATED);
+    const articles = getConfigValuesFromSheet(configSheet, CONFIG_COLS.ARTICLES_VIOLATED);
     if (articles.length > 0) {
       setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.ARTICLES, lastRow, articles, 'Articles Violated', false);
     }
 
     // Status (Column I / GRIEVANCE_COLS.STATUS) - SINGLE-SELECT
-    const statuses = getConfigColumnValues(configSheet, CONFIG_COLS.GRIEVANCE_STATUS);
+    const statuses = getConfigValuesFromSheet(configSheet, CONFIG_COLS.GRIEVANCE_STATUS);
     if (statuses.length > 0) {
       setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.STATUS, lastRow, statuses, 'Status', true);
     }
 
     // Current Step (Column J / GRIEVANCE_COLS.CURRENT_STEP) - SINGLE-SELECT
-    const steps = getConfigColumnValues(configSheet, CONFIG_COLS.GRIEVANCE_STEP);
+    const steps = getConfigValuesFromSheet(configSheet, CONFIG_COLS.GRIEVANCE_STEP);
     if (steps.length > 0) {
       setDropdownByCol(grievanceSheet, GRIEVANCE_COLS.CURRENT_STEP, lastRow, steps, 'Current Step', true);
     }
@@ -24022,12 +24032,13 @@ function setupGrievanceLogDropdowns() {
 }
 
 /**
- * Gets values from a column in the Config sheet
+ * Gets values from a column in the Config sheet (sheet-based version)
+ * NOTE: This is different from getConfigColumnValues which takes columnIndex only.
  * @param {Sheet} configSheet - The Config sheet
  * @param {number} colNum - Column number (1-indexed)
  * @returns {Array} Array of non-empty values
  */
-function getConfigColumnValues(configSheet, colNum) {
+function getConfigValuesFromSheet(configSheet, colNum) {
   try {
     const lastRow = configSheet.getLastRow();
     if (lastRow < 2) return [];
