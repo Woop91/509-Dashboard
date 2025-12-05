@@ -571,10 +571,14 @@ function calculateAllMetrics(memberData, grievanceData) {
     ? ((metrics.grievancesWon / metrics.resolvedGrievances) * 100).toFixed(1)
     : 0;
 
-  // Overdue = Days to Deadline is negative
+  // Overdue = Next Action Due is in the past
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) {
-    const daysToDeadline = row[GRIEVANCE_COLS.DAYS_TO_DEADLINE - 1];
-    return daysToDeadline && daysToDeadline < 0;
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+    if (!nextActionDue) return false;
+    const daysToDeadline = Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24));
+    return daysToDeadline < 0;
   }).length;
 
   // Additional metrics
