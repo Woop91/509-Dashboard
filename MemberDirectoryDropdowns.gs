@@ -260,9 +260,8 @@ function setDropdownByCol(sheet, colNum, lastRow, values, name, strictValidation
       const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
       if (configSheet) {
-        // Use column based on name to avoid conflicts
-        // Steward-related dropdowns go to column H (CONFIG_COLS.STEWARDS = 8)
-        const targetCol = CONFIG_COLS.STEWARDS; // Column H
+        // Use CONFIG_COLS.STEWARDS for steward-related dropdowns
+        const targetCol = CONFIG_COLS.STEWARDS;
 
         // Clear existing values and write new ones (starting from row 2 to preserve header)
         const existingLastRow = configSheet.getLastRow();
