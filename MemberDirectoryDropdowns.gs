@@ -250,13 +250,59 @@ function setDropdownByCol(sheet, colNum, lastRow, values, name, strictValidation
     const colLetter = getColumnLetter(colNum);
     const range = sheet.getRange(`${colLetter}2:${colLetter}${lastRow}`);
 
-    const rule = SpreadsheetApp.newDataValidation()
-      .requireValueInList(values, true)
-      .setAllowInvalid(!strictValidation)
-      .build();
+    // Google Sheets has a 500 item limit for requireValueInList
+    // For larger lists, use requireValueInRange with a helper column in Config
+    if (values.length > 500) {
+      Logger.log(`${name} has ${values.length} items (>500 limit). Using range reference instead.`);
 
-    range.setDataValidation(rule);
-    Logger.log(`Set dropdown for ${name} (column ${colLetter}): ${values.length} options, strict=${strictValidation}`);
+      // Write values to a dynamic range in Config sheet and use range reference
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      const configSheet = ss.getSheetByName(SHEETS.CONFIG);
+
+      if (configSheet) {
+        // Use column based on name to avoid conflicts
+        // Steward-related dropdowns go to column H (CONFIG_COLS.STEWARDS = 8)
+        const targetCol = CONFIG_COLS.STEWARDS; // Column H
+
+        // Clear existing values and write new ones (starting from row 2 to preserve header)
+        const existingLastRow = configSheet.getLastRow();
+        if (existingLastRow > 1) {
+          configSheet.getRange(2, targetCol, Math.max(existingLastRow - 1, 1), 1).clearContent();
+        }
+
+        // Write the values
+        const valuesToWrite = values.map(function(v) { return [v]; });
+        configSheet.getRange(2, targetCol, values.length, 1).setValues(valuesToWrite);
+
+        // Create validation using range reference
+        const configRange = configSheet.getRange(2, targetCol, values.length, 1);
+        const rule = SpreadsheetApp.newDataValidation()
+          .requireValueInRange(configRange, true)
+          .setAllowInvalid(!strictValidation)
+          .build();
+
+        range.setDataValidation(rule);
+        Logger.log(`Set dropdown for ${name} (column ${colLetter}): ${values.length} options via range reference, strict=${strictValidation}`);
+      } else {
+        // Fallback: use text validation with help text
+        const rule = SpreadsheetApp.newDataValidation()
+          .requireTextContains('')
+          .setAllowInvalid(true)
+          .setHelpText(`Select a ${name}. ${values.length} options available.`)
+          .build();
+        range.setDataValidation(rule);
+        Logger.log(`Set text validation for ${name} (column ${colLetter}): ${values.length} options (no dropdown due to limit)`);
+      }
+    } else {
+      // Standard approach for <= 500 items
+      const rule = SpreadsheetApp.newDataValidation()
+        .requireValueInList(values, true)
+        .setAllowInvalid(!strictValidation)
+        .build();
+
+      range.setDataValidation(rule);
+      Logger.log(`Set dropdown for ${name} (column ${colLetter}): ${values.length} options, strict=${strictValidation}`);
+    }
   } catch (error) {
     Logger.log(`Error setting dropdown for ${name}: ${error.message}`);
   }
