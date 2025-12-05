@@ -1,7 +1,7 @@
 # 509 Dashboard - Complete Feature Reference
 
-**Version:** 2.3
-**Last Updated:** 2025-12-02
+**Version:** 2.4
+**Last Updated:** 2025-12-05
 **Purpose:** Union grievance tracking and member engagement system for SEIU Local 509
 
 ---
@@ -1553,7 +1553,78 @@ const SHEETS = {
 
 ## Changelog
 
-### Version 2.3 (Current)
+### Version 2.4 (Current)
+
+**🔴 CRITICAL: Comprehensive 3-Day Audit - All Hardcoded Column Violations Fixed**
+
+**Issue:**
+- Multiple hardcoded column references discovered across 9+ files
+- Violations introduced over 3 days (158 commits) without referencing AI_REFERENCE.md
+- Hardcoded column numbers, array indices, and range specifications
+
+**Fixes Applied:**
+
+1. **Test Files - Hardcoded Column Numbers:**
+   - Code.test.gs:273 - `getRange(2, 4)` → `getRange(2, MEMBER_COLS.JOB_TITLE)`
+   - Integration.test.gs:292 - `getRange(2, 5)` → `getRange(2, MEMBER_COLS.WORK_LOCATION)`
+
+2. **GrievanceWorkflow.gs - Wrong Config Column:**
+   - Line 448: `getRange(2, 16, 10, 3)` → `getRange(2, CONFIG_COLS.GRIEVANCE_COORDINATORS, 10, 1)`
+   - Was reading wrong columns (P, Q, R instead of O)
+   - Fixed to use comma-separated list parsing
+
+3. **AdminGrievanceMessages.gs - Hardcoded Array Indices:**
+   - Line 458: `row[2]`, `row[1]` → `row[COMM_LOG_COLS.GRIEVANCE_ID - 1]`, `row[COMM_LOG_COLS.TYPE - 1]`
+
+4. **BatchOperations.gs - Hardcoded Column Counts:**
+   - Line 207: Hardcoded 10 → `MEMBER_COLS.IS_STEWARD`
+   - Line 409: Hardcoded 28 → `GRIEVANCE_COLS.RESOLUTION`
+
+5. **AutomatedNotifications.gs, AutomatedReports.gs, CalendarIntegration.gs:**
+   - All hardcoded 28 → `GRIEVANCE_COLS.RESOLUTION`
+
+6. **MemberDirectoryDropdowns.gs - 500 Item Limit Fix:**
+   - Added logic to use `requireValueInRange` for lists > 500 items
+   - Steward dropdowns now work with 1000+ options
+
+7. **Code.gs - Hardcoded Sheet Column References:**
+   - `'Member Directory'!E:E` → `${workLocationCol}` using `getColumnLetter(MEMBER_COLS.WORK_LOCATION)`
+   - `'Grievance Log'!A:AB` → `A:${lastGrievanceCol}` using `getColumnLetter(GRIEVANCE_COLS.RESOLUTION)`
+
+8. **ConsolidatedDashboard.gs - All Fixes Synced:**
+   - All corresponding fixes applied to maintain parity
+
+**Files Changed (9):**
+- AdminGrievanceMessages.gs
+- AutomatedNotifications.gs
+- AutomatedReports.gs
+- BatchOperations.gs
+- CalendarIntegration.gs
+- Code.test.gs
+- ConsolidatedDashboard.gs
+- GrievanceWorkflow.gs
+- Integration.test.gs
+- MemberDirectoryDropdowns.gs
+- Code.gs
+- AI_REFERENCE.md
+
+**Verification:**
+```bash
+grep "'Member Directory'![A-Z]:[A-Z]" *.gs | wc -l  # Returns 0 ✅
+grep "'Grievance Log'![A-Z]:[A-Z]" *.gs | wc -l     # Returns 0 ✅
+grep "g\[[0-9]+\]|m\[[0-9]+\]" UnifiedOperationsMonitor.gs | wc -l  # Returns 0 ✅
+```
+
+**Commits:**
+- 87f0b55: Fix all persistent issues: dropdowns, formulas, columns, tests
+- d9d29c3: Fix 500 item limit for dropdown validation
+- 2e26c9b: Remove hardcoded column references from comments
+- c3effbb: Fix hardcoded column violations found by AI_REFERENCE.md audit
+- 49ba490: Fix all hardcoded column violations from 3-day audit
+
+---
+
+### Version 2.3
 
 **🔴 CRITICAL BUG FIX: hideGridlines() TypeError Resolved**
 
