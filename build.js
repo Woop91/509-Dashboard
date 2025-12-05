@@ -60,7 +60,8 @@ const path = require('path');
  */
 
 // Module order matters - dependencies must come first
-const MODULES = [
+// CORE_MODULES - All production modules (no tests)
+const CORE_MODULES = [
   // ===== LEVEL 0: CORE INFRASTRUCTURE (NO DEPENDENCIES) =====
   'Constants.gs',  // [CORE] Provides: SHEETS, MEMBER_COLS, COLORS, ERROR_MESSAGES, etc.
 
@@ -78,6 +79,7 @@ const MODULES = [
   // All feature modules depend on: Constants, SecurityUtils, Code.gs
   'ADHDEnhancements.gs',
   'AdminGrievanceMessages.gs',
+  'AuditLoggingRBAC.gs',          // Audit logging and role-based access control
   'EnhancedADHDFeatures.gs',
   'AddRecommendations.gs',
   'AutomatedNotifications.gs',
@@ -111,22 +113,26 @@ const MODULES = [
   'MemberSearch.gs',
   'MobileOptimization.gs',
   'OptimizedDashboardRebuild.gs',
+  'PerformanceAndBackup.gs',      // Performance monitoring and backup features
   'PerformanceMonitoring.gs',
   'Phase6Integration.gs',
   'PredictiveAnalytics.gs',
   'ReorganizedMenu.gs',
   'RootCauseAnalysis.gs',
+  'SecurityAndAdmin.gs',          // Security and admin functions
+  'SecurityService.gs',           // Advanced security service layer
   'SeedNuke.gs',
   'SmartAutoAssignment.gs',
   'TransactionRollback.gs',
+  'UIFeatures.gs',                // UI-specific features
   'UndoRedoSystem.gs',
   'UnifiedOperationsMonitor.gs',
   'UtilityService.gs',
   'WorkflowStateMachine.gs'
 ];
 
-  // ===== LEVEL 4: TESTING MODULES (LAST) =====
-  // Test modules should be loaded last
+// TEST_MODULES - Test modules (excluded in production builds)
+const TEST_MODULES = [
   'TestFramework.gs',     // [DEPENDS: Constants, TestConfig] Provides: runAllTests, Assert
   'Code.test.gs',         // [DEPENDS: TestFramework, Code.gs] Unit tests
   'Integration.test.gs'   // [DEPENDS: TestFramework, All modules] Integration tests
@@ -139,7 +145,8 @@ const MODULES = [
 function validateModuleDependencies() {
   console.log('🔍 Validating module dependencies...\n');
 
-  const moduleSet = new Set(MODULES);
+  const ALL_MODULES = [...CORE_MODULES, ...TEST_MODULES];
+  const moduleSet = new Set(ALL_MODULES);
   const warnings = [];
 
   // Define known dependencies
@@ -156,10 +163,10 @@ function validateModuleDependencies() {
   };
 
   // Check each module's dependencies
-  MODULES.forEach((module, index) => {
+  ALL_MODULES.forEach((module, index) => {
     if (dependencies[module]) {
       dependencies[module].forEach(dep => {
-        const depIndex = MODULES.indexOf(dep);
+        const depIndex = ALL_MODULES.indexOf(dep);
 
         if (depIndex === -1) {
           warnings.push(`⚠️  ${module} depends on ${dep}, but ${dep} is not in build list`);
