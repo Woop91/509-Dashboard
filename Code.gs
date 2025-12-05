@@ -121,7 +121,9 @@ const GRIEVANCE_COLS = {
   UNIT: 25,             // Y
   LOCATION: 26,         // Z
   STEWARD: 27,          // AA
-  RESOLUTION: 28        // AB
+  RESOLUTION: 28,       // AB
+  DRIVE_FOLDER_ID: 29,  // AC - Google Drive folder ID
+  DRIVE_FOLDER_URL: 30  // AD - Google Drive folder URL
 };
 
 /**
@@ -398,7 +400,9 @@ function createGrievanceLog() {
     "Unit",
     "Work Location (Site)",
     "Assigned Steward (Name)",
-    "Resolution Summary"
+    "Resolution Summary",
+    "Drive Folder ID",
+    "Drive Folder Link"
   ];
 
   grievanceLog.getRange(1, 1, 1, headers.length).setValues([headers]);

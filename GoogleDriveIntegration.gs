@@ -87,12 +87,12 @@ function linkFolderToGrievance(grievanceId, folderId) {
     if (data[i][0] === grievanceId) {
       const row = i + 2;
 
-      // Store folder ID in column AC (29)
-      grievanceSheet.getRange(row, 29).setValue(folderId);
+      // Store folder ID (Column AC / DRIVE_FOLDER_ID)
+      grievanceSheet.getRange(row, GRIEVANCE_COLS.DRIVE_FOLDER_ID).setValue(folderId);
 
-      // Create hyperlink to folder in column AD (30)
+      // Create hyperlink to folder (Column AD / DRIVE_FOLDER_URL)
       const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
-      grievanceSheet.getRange(row, 30).setValue(folderUrl);
+      grievanceSheet.getRange(row, GRIEVANCE_COLS.DRIVE_FOLDER_URL).setValue(folderUrl);
 
       Logger.log(`Linked folder ${folderId} to grievance ${grievanceId}`);
       return;
@@ -388,7 +388,7 @@ function showGrievanceFiles() {
   }
 
   const grievanceId = activeSheet.getRange(activeRow, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
-  const folderId = activeSheet.getRange(activeRow, 29).getValue(); // Column AC
+  const folderId = activeSheet.getRange(activeRow, GRIEVANCE_COLS.DRIVE_FOLDER_ID).getValue();
 
   if (!folderId) {
     ui.alert(
@@ -646,13 +646,13 @@ function batchCreateGrievanceFolders() {
       return;
     }
 
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 29).getValues();
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.DRIVE_FOLDER_URL).getValues();
     let created = 0;
     let skipped = 0;
 
     data.forEach((row, index) => {
       const grievanceId = row[0];
-      const folderId = row[28]; // Column AC
+      const folderId = row[GRIEVANCE_COLS.DRIVE_FOLDER_ID - 1]; // Column AC (0-indexed array)
 
       if (!grievanceId) {
         skipped++;
