@@ -29,8 +29,9 @@ FAQ_CATEGORIES = {
 
 /**
  * Creates FAQ database sheet if it doesn't exist
+ * Note: Renamed from createFAQSheet to avoid collision with GettingStartedAndFAQ.gs
  */
-function createFAQSheet() {
+function createFAQDatabaseSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let faqSheet = ss.getSheetByName('📚 FAQ Database');
 
@@ -667,7 +668,7 @@ function addNewFAQ(faq) {
   let faqSheet = ss.getSheetByName('📚 FAQ Database');
 
   if (!faqSheet) {
-    createFAQSheet();
+    createFAQDatabaseSheet();
     faqSheet = ss.getSheetByName('📚 FAQ Database');
   }
 
