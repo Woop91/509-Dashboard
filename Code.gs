@@ -504,7 +504,7 @@ function createGrievanceLog() {
     grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
   }
 
-  // EXACT 28 columns as specified - no extra columns
+  // 30 columns - includes Drive folder integration columns
   const headers = [
     "Grievance ID",                    // A - 1
     "Member ID",                       // B - 2
@@ -533,7 +533,9 @@ function createGrievanceLog() {
     "Unit",                            // Y - 25
     "Work Location (Site)",            // Z - 26
     "Assigned Steward (Name)",         // AA - 27
-    "Resolution Summary"               // AB - 28
+    "Resolution Summary",              // AB - 28
+    "Drive Folder ID",                 // AC - 29 (Drive integration)
+    "Drive Folder Link"                // AD - 30 (Drive integration)
   ];
 
   // Update headers (row 1 only - preserves data in rows 2+)

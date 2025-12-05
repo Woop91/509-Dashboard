@@ -151,16 +151,45 @@ Dropdowns have been added for these columns via `setupMemberDirectoryDropdowns()
 
 ## Applying Changes to ConsolidatedDashboard.gs
 
-To apply all changes to the consolidated dashboard file, append the following files' contents:
+⚠️ **CRITICAL**: The following changes MUST be applied to both ConsolidatedDashboard.gs and Complete509Dashboard.gs:
 
+### 1. Update GRIEVANCE_COLS Constant
+Add two new columns to GRIEVANCE_COLS (around line 96):
+```javascript
+  STEWARD: 27,          // AA
+  RESOLUTION: 28,       // AB
+  DRIVE_FOLDER_ID: 29,  // AC - Google Drive folder ID
+  DRIVE_FOLDER_URL: 30  // AD - Google Drive folder URL
+};
+```
+
+### 2. Update createGrievanceLog() Headers
+Add two new headers to the headers array (around line 403):
+```javascript
+    "Resolution Summary",
+    "Drive Folder ID",
+    "Drive Folder Link"
+  ];
+```
+
+### 3. Append New Feature Files
+Append these files' contents to the consolidated files:
 1. `GrievanceFloatToggle.gs` - Append entire file
 2. `MemberDirectoryDropdowns.gs` - Append entire file
 3. `MemberDirectoryGoogleFormLink.gs` - Append entire file
 4. `ReorganizedMenu.gs` - Replace onOpen() function or add as alternative
 
-Also update these sections in ConsolidatedDashboard.gs:
-- Google Drive Integration: Update `createGrievanceFolder()` function
-- Grievance Workflow: Update `addGrievanceToLog()` function to auto-create folders
+### 4. Update Existing Functions
+The following changes have already been made to modular files and need to be synced:
+- `GoogleDriveIntegration.gs`: Updated to use GRIEVANCE_COLS.DRIVE_FOLDER_ID and GRIEVANCE_COLS.DRIVE_FOLDER_URL
+- `GrievanceWorkflow.gs`: Added auto-folder creation in `addGrievanceToLog()`
+
+### 5. Fix Remaining Hardcoded Column References (CRITICAL)
+The consolidated files still have hardcoded column references that need to be made dynamic:
+- Complete509Dashboard.gs: Lines 1288, 1292, 1345, 1350, 1358
+- ConsolidatedDashboard.gs: Lines 1058, 1062, 1115, 1120, 1128
+
+These references to 'Grievance Log'!A:A and 'Member Directory'!J:J should use dynamic column constants per AI_REFERENCE requirements.
 
 ## Testing Checklist
 
