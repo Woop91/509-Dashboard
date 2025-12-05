@@ -446,7 +446,11 @@ const ERROR_MESSAGES = {
 
   // Data integrity
   DATA_INTEGRITY_ERROR: 'Data integrity check failed',
-  DUPLICATE_ENTRY: (field) => `⚠️ Duplicate Entry: ${field} already exists`
+  DUPLICATE_ENTRY: (field) => `⚠️ Duplicate Entry: ${field} already exists`,
+
+  // Operation errors
+  OPERATION_FAILED: (operation, reason) => `❌ Operation Failed: ${operation} - ${reason}`,
+  NO_DATA_FOUND: (dataType) => `❌ No ${dataType} found`
 };
 
 /* ===================== ADMIN CONFIGURATION ===================== */

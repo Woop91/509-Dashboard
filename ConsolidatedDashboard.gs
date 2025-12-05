@@ -13,7 +13,7 @@
  *
  * Build Info:
  * - Version: 2.0.0
- * - Build Date: 2025-12-02T03:15:39.837Z
+ * - Build Date: 2025-12-05T06:01:38.417Z
  * - Modules: 55 files
  *
  * ============================================================================
@@ -473,7 +473,11 @@ const ERROR_MESSAGES = {
 
   // Data integrity
   DATA_INTEGRITY_ERROR: 'Data integrity check failed',
-  DUPLICATE_ENTRY: (field) => `⚠️ Duplicate Entry: ${field} already exists`
+  DUPLICATE_ENTRY: (field) => `⚠️ Duplicate Entry: ${field} already exists`,
+
+  // Operation errors
+  OPERATION_FAILED: (operation, reason) => `❌ Operation Failed: ${operation} - ${reason}`,
+  NO_DATA_FOUND: (dataType) => `❌ No ${dataType} found`
 };
 
 /* ===================== ADMIN CONFIGURATION ===================== */
@@ -18063,7 +18067,7 @@ function showStartGrievanceDialog() {
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
   if (!memberSheet) {
-    SpreadsheetApp.getUi().alert('❌ Member Directory not found!');
+    SpreadsheetApp.getUi().alert(ERROR_MESSAGES.SHEET_NOT_FOUND(SHEETS.MEMBER_DIR));
     return;
   }
 
@@ -18071,7 +18075,7 @@ function showStartGrievanceDialog() {
   const members = getMemberList();
 
   if (members.length === 0) {
-    SpreadsheetApp.getUi().alert('❌ No members found in the directory.');
+    SpreadsheetApp.getUi().alert(ERROR_MESSAGES.NO_DATA_FOUND('members'));
     return;
   }
 
@@ -18361,7 +18365,7 @@ function generatePreFilledGrievanceForm(memberRowIndex) {
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
   if (!memberSheet) {
-    throw new Error('Member Directory not found');
+    throw new Error(ERROR_MESSAGES.SHEET_NOT_FOUND(SHEETS.MEMBER_DIR));
   }
 
   // Get member data
@@ -18471,7 +18475,7 @@ function addStewardContactInfoToConfig() {
   let configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
-    SpreadsheetApp.getUi().alert('❌ Config sheet not found!');
+    SpreadsheetApp.getUi().alert(ERROR_MESSAGES.SHEET_NOT_FOUND(SHEETS.CONFIG));
     return;
   }
 
@@ -18516,7 +18520,7 @@ function addStewardContactInfoToConfig() {
   }
 
   SpreadsheetApp.getUi().alert(
-    '✅ Steward Contact Info Section Added',
+    ERROR_MESSAGES.SUCCESS('Steward Contact Info Section Added'),
     'A new section has been added to the Config sheet.\n\n' +
     'Please enter your steward contact information in column U (rows 2-4).',
     SpreadsheetApp.getUi().ButtonSet.OK
@@ -18561,7 +18565,7 @@ function onGrievanceFormSubmit(e) {
 
   } catch (error) {
     Logger.log('Error in onGrievanceFormSubmit: ' + error.message);
-    SpreadsheetApp.getUi().alert('❌ Error processing form submission: ' + error.message);
+    SpreadsheetApp.getUi().alert(ERROR_MESSAGES.OPERATION_FAILED('form submission', error.message));
   }
 }
 
@@ -18610,7 +18614,7 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
   let grievanceRow = grievanceData.find(row => row[0] === grievanceId);
 
   if (!grievanceRow) {
-    SpreadsheetApp.getUi().alert('❌ Grievance not found');
+    SpreadsheetApp.getUi().alert(ERROR_MESSAGES.GRIEVANCE_NOT_FOUND(grievanceId));
     return;
   }
 
@@ -18927,7 +18931,7 @@ function addGrievanceToLog(formData) {
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
   if (!grievanceSheet) {
-    throw new Error('Grievance Log sheet not found');
+    throw new Error(ERROR_MESSAGES.SHEET_NOT_FOUND(SHEETS.GRIEVANCE_LOG));
   }
 
   // Generate grievance ID
@@ -19137,7 +19141,7 @@ function generateGrievancePDF(grievanceId) {
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
   if (!grievanceSheet) {
-    throw new Error('Grievance Log not found');
+    throw new Error(ERROR_MESSAGES.SHEET_NOT_FOUND(SHEETS.GRIEVANCE_LOG));
   }
 
   // Find grievance row
@@ -19152,7 +19156,7 @@ function generateGrievancePDF(grievanceId) {
   }
 
   if (grievanceRow === -1) {
-    throw new Error('Grievance not found');
+    throw new Error(ERROR_MESSAGES.GRIEVANCE_NOT_FOUND(grievanceId));
   }
 
   const grievanceData = data[grievanceRow];

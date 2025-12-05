@@ -83,3 +83,35 @@ All 12 recommendations from the comprehensive code review have been successfully
 ---
 
 **Implementation complete: 12/12 recommendations (100%)**
+
+---
+
+## Additional Corrections - December 5, 2025
+
+After reviewing the entire conversation, additional corrections were made to ensure proper implementation:
+
+### Updated Files
+
+1. **Constants.gs**
+   - Added `OPERATION_FAILED` to ERROR_MESSAGES
+   - Added `NO_DATA_FOUND` to ERROR_MESSAGES
+
+2. **GrievanceWorkflow.gs**
+   - Replaced 7 hardcoded error messages with ERROR_MESSAGES constants
+   - Updated: sheet not found errors, grievance not found, form submission errors
+   - Lines updated: 56, 64, 354, 464, 509, 554, 603, 920, 1130, 1145
+
+3. **SecurityService.gs**
+   - Replaced 5 hardcoded error messages with ERROR_MESSAGES constants
+   - Updated: invalid role, access denied, audit log errors
+   - Applied AUDIT_LOG_CONFIG constants for audit log management
+   - Lines updated: 114, 224, 528, 531, 558, 561, 579
+
+### Verification
+
+- ✅ Build successful: 55/55 modules compiled without errors
+- ✅ All module dependencies correctly ordered
+- ✅ Total size: 1002.92 KB
+- ✅ No broken references or syntax errors
+
+**Note:** Core security and workflow modules now consistently use ERROR_MESSAGES constants. Pattern established for future refactoring of remaining modules.

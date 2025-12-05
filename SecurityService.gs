@@ -111,7 +111,7 @@ function getUserRole(userEmail) {
 function assignRole(userEmail, role) {
   try {
     if (!ROLES[role]) {
-      throw new Error(`Invalid role: ${role}`);
+      throw new Error(ERROR_MESSAGES.INVALID_INPUT(`role: ${role}`));
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -221,7 +221,7 @@ function requirePermission(permission, action) {
       action: action
     });
 
-    throw new Error(`Access Denied: You need ${permission} permission to ${action}. Your role: ${role}`);
+    throw new Error(ERROR_MESSAGES.INSUFFICIENT_ROLE(permission, role) + ` to ${action}`);
   }
 }
 
@@ -525,10 +525,10 @@ function showAuditLog() {
   requirePermission('view_audit_log', 'view audit log');
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let auditSheet = ss.getSheetByName('Audit Log');
+  let auditSheet = ss.getSheetByName(AUDIT_LOG_CONFIG.LOG_SHEET_NAME);
 
   if (!auditSheet) {
-    SpreadsheetApp.getUi().alert('No audit log found.');
+    SpreadsheetApp.getUi().alert(ERROR_MESSAGES.SHEET_NOT_FOUND(AUDIT_LOG_CONFIG.LOG_SHEET_NAME));
     return;
   }
 
@@ -543,7 +543,7 @@ function showAuditLog() {
     '• Data changes\n' +
     '• Permission checks\n' +
     '• Security events\n\n' +
-    'Log is limited to last 10,000 events.',
+    `Log is limited to last ${AUDIT_LOG_CONFIG.MAX_ENTRIES.toLocaleString()} events.`,
     SpreadsheetApp.getUi().ButtonSet.OK
   );
 }
@@ -555,10 +555,10 @@ function exportAuditLog() {
   requirePermission('view_audit_log', 'export audit log');
 
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const auditSheet = ss.getSheetByName('Audit Log');
+  const auditSheet = ss.getSheetByName(AUDIT_LOG_CONFIG.LOG_SHEET_NAME);
 
   if (!auditSheet) {
-    SpreadsheetApp.getUi().alert('No audit log found.');
+    SpreadsheetApp.getUi().alert(ERROR_MESSAGES.SHEET_NOT_FOUND(AUDIT_LOG_CONFIG.LOG_SHEET_NAME));
     return;
   }
 
@@ -576,7 +576,7 @@ function exportAuditLog() {
   logAudit('EXPORT_AUDIT_LOG', 'Exported audit log to CSV');
 
   SpreadsheetApp.getUi().alert(
-    '✅ Export Complete',
+    ERROR_MESSAGES.SUCCESS('Export Complete'),
     `Audit log exported to:\n${file.getName()}\n\nFile ID: ${file.getId()}`,
     SpreadsheetApp.getUi().ButtonSet.OK
   );
