@@ -4544,6 +4544,7 @@ function populateStewardWorkload() {
   const stewards = {};
   for (let i = 1; i < memberData.length; i++) {
     const row = memberData[i];
+    if (!row || row.length < 10) continue;
     const isSteward = row[9]; // Column J - Is Steward
     if (isSteward === 'Yes') {
       const memberId = row[0];
@@ -4567,6 +4568,7 @@ function populateStewardWorkload() {
   const today = new Date();
   for (let i = 1; i < grievanceData.length; i++) {
     const row = grievanceData[i];
+    if (!row || row.length < 19) continue;
     const stewardId = row[6]; // Column G - Assigned Steward ID
     const status = row[4]; // Column E - Status
     const outcome = row[16]; // Column Q - Outcome
@@ -6752,8 +6754,13 @@ function resetADHDSettings() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
-    sheet.setFontSize(10);
+  sheets.forEach(function(sheet) {
+    // Reset font size for data range (setFontSize only works on ranges, not sheets)
+    const maxRows = sheet.getMaxRows();
+    const maxCols = sheet.getMaxColumns();
+    if (maxRows > 0 && maxCols > 0) {
+      sheet.getRange(1, 1, maxRows, maxCols).setFontSize(10);
+    }
     sheet.setHiddenGridlines(false);
     removeZebraStripes(sheet);
   });
@@ -11314,7 +11321,14 @@ function logBackup(backupName, fileId, automated) {
  */
 function createBackupLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('💾 Backup Log');
+
+  // Check if sheet already exists
+  let sheet = ss.getSheetByName('💾 Backup Log');
+  if (sheet) {
+    return sheet; // Return existing sheet
+  }
+
+  sheet = ss.insertSheet('💾 Backup Log');
 
   const headers = [
     'Timestamp',
@@ -16236,7 +16250,14 @@ function logCommunication(grievanceId, type, details) {
  */
 function createCommunicationsLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('📞 Communications Log');
+
+  // Check if sheet already exists
+  let sheet = ss.getSheetByName('📞 Communications Log');
+  if (sheet) {
+    return sheet; // Return existing sheet
+  }
+
+  sheet = ss.insertSheet('📞 Communications Log');
 
   // Set headers
   const headers = [
@@ -17209,6 +17230,17 @@ function batchCreateGrievanceFolders() {
  */
 function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
   const errors = [];
+
+  // Validate that all parameters are functions
+  if (typeof primaryFn !== 'function') {
+    throw new Error('primaryFn must be a function');
+  }
+  if (typeof fallbackFn !== 'function') {
+    throw new Error('fallbackFn must be a function');
+  }
+  if (typeof minimalFn !== 'function') {
+    throw new Error('minimalFn must be a function');
+  }
 
   // Try primary function
   try {
@@ -18369,7 +18401,14 @@ function generatePreFilledGrievanceForm(memberRowIndex) {
   }
 
   // Get member data
-  const memberData = memberSheet.getRange(memberRowIndex, 1, 1, 11).getValues()[0];
+  const memberDataArray = memberSheet.getRange(memberRowIndex, 1, 1, 11).getValues();
+  if (!memberDataArray || memberDataArray.length === 0 || !memberDataArray[0]) {
+    throw new Error('Member data not found at row ' + memberRowIndex);
+  }
+  const memberData = memberDataArray[0];
+  if (memberData.length < 11) {
+    throw new Error('Incomplete member data at row ' + memberRowIndex);
+  }
   const member = {
     id: memberData[0],
     firstName: memberData[1],
@@ -18542,6 +18581,12 @@ function addStewardContactInfoToConfig() {
  * 2. Add trigger: onGrievanceFormSubmit, From spreadsheet, On form submit
  */
 function onGrievanceFormSubmit(e) {
+  if (!e) {
+    Logger.log('Error: Form submission event is null or undefined');
+    SpreadsheetApp.getUi().alert('❌ Error: Invalid form submission event');
+    return;
+  }
+
   try {
     // Extract form responses
     const formData = extractFormData(e);
@@ -18902,6 +18947,10 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
  * Extracts and structures data from form submission
  */
 function extractFormData(e) {
+  if (!e || !e.namedValues) {
+    throw new Error('Invalid form submission event: missing namedValues');
+  }
+
   const responses = e.namedValues;
 
   // Map form responses to grievance data structure
@@ -19008,6 +19057,8 @@ function addGrievanceToLog(formData) {
  * Sets deadline formulas (Filing Deadline, Step deadlines, Days Open, etc.)
  */
 function recalcGrievanceRow(row) {
+  if (!row || row < 2) return;
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   if (!grievanceLog) return;
@@ -19047,6 +19098,8 @@ function recalcGrievanceRow(row) {
  * Updates grievance snapshot columns (Has Open Grievance, Status, Next Deadline)
  */
 function recalcMemberRow(row) {
+  if (!row || row < 2) return;
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   if (!memberDir) return;
@@ -20736,10 +20789,10 @@ function calculateAllMetrics(memberData, grievanceData) {
 
   // Member metrics
   metrics.totalMembers = memberData.length - 1;
-  metrics.activeMembers = memberData.slice(1).filter(row => row[10] === 'Active').length;
-  metrics.totalStewards = memberData.slice(1).filter(row => row[9] === 'Yes').length;
-  metrics.unit8Members = memberData.slice(1).filter(row => row[5] === 'Unit 8').length;
-  metrics.unit10Members = memberData.slice(1).filter(row => row[5] === 'Unit 10').length;
+  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row && row.length > 10 && row[10] === 'Active'; }).length;
+  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row && row.length > 9 && row[9] === 'Yes'; }).length;
+  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row && row.length > 5 && row[5] === 'Unit 8'; }).length;
+  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row && row.length > 5 && row[5] === 'Unit 10'; }).length;
 
   // Grievance metrics
   metrics.totalGrievances = grievanceData.length - 1;
@@ -21301,7 +21354,8 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const locationResolved = {};
       const locationWon = {};
 
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
+        if (!row || row.length < 26) return;
         const location = row[25]; // Work Location column (Z)
         const status = row[4]; // Status column (E)
 
@@ -21340,7 +21394,8 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const stewardResolved = {};
       const stewardWon = {};
 
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
+        if (!row || row.length < 27) return;
         const steward = row[26]; // Assigned Steward column (AA)
         const status = row[4]; // Status column (E)
 
@@ -21359,7 +21414,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(stewardCounts)
-        .sort((a, b) => (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0))
+        .sort(function(a, b) { return (stewardActive[b[0]] || 0) - (stewardActive[a[0]] || 0); })
         .slice(0, 15)
         .map(([steward, total], index) => {
           const active = stewardActive[steward] || 0;
