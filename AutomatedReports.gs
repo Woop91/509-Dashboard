@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * AUTOMATED REPORT GENERATION
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Schedule automated reports with email distribution
  * Features:
@@ -18,7 +18,7 @@
 function setupMonthlyReports() {
   // Delete existing monthly triggers
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'generateMonthlyReport') {
       ScriptApp.deleteTrigger(trigger);
     }
@@ -44,14 +44,14 @@ function setupMonthlyReports() {
 function setupQuarterlyReports() {
   // Delete existing quarterly triggers
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'generateQuarterlyReport') {
       ScriptApp.deleteTrigger(trigger);
     }
   });
 
   // Create triggers for 1st day of Jan, Apr, Jul, Oct
-  [1, 4, 7, 10].forEach(month => {
+  [1, 4, 7, 10].forEach(function(month) {
     ScriptApp.newTrigger('generateQuarterlyReport')
       .timeBased()
       .onMonthDay(1)
@@ -74,7 +74,7 @@ function disableAutomatedReports() {
   const triggers = ScriptApp.getProjectTriggers();
   let removed = 0;
 
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     const func = trigger.getHandlerFunction();
     if (func === 'generateMonthlyReport' || func === 'generateQuarterlyReport') {
       ScriptApp.deleteTrigger(trigger);
@@ -156,24 +156,27 @@ function gatherMonthlyData() {
     };
   }
 
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
 
   let totalGrievances = 0;
   let newGrievances = 0;
   let closedGrievances = 0;
   let openGrievances = 0;
-  let resolutionTimes = [];
+  const resolutionTimes = [];
   const byIssueType = {};
   const bySteward = {};
   let overdueCount = 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  data.forEach(row => {
-    const filedDate = row[6];
-    const closedDate = row[18];
-    const status = row[4];
-    const issueType = row[5];
-    const steward = row[13];
-    const daysToDeadline = row[20];
+  data.forEach(function(row) {
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+    const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
 
     totalGrievances++;
 
@@ -209,13 +212,13 @@ function gatherMonthlyData() {
     }
 
     // Count overdue
-    if (daysToDeadline < 0) {
+    if (daysToDeadline !== null && daysToDeadline < 0) {
       overdueCount++;
     }
   });
 
   const avgResolutionTime = resolutionTimes.length > 0
-    ? Math.round(resolutionTimes.reduce((a, b) => a + b, 0) / resolutionTimes.length)
+    ? Math.round(resolutionTimes.reduce(function(a, b) { return a + b; }, 0) / resolutionTimes.length)
     : 0;
 
   return {
@@ -260,8 +263,8 @@ function gatherQuarterlyData() {
   const monthlyTrends = [0, 0, 0]; // Three months in a quarter
   let totalGrievances = 0;
 
-  data.forEach(row => {
-    const filedDate = row[6];
+  data.forEach(function(row) {
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
     if (filedDate && filedDate >= firstDayOfQuarter && filedDate <= lastDayOfQuarter) {
       totalGrievances++;
@@ -337,11 +340,11 @@ function createMonthlyReportDoc(data) {
     .setHeading(DocumentApp.ParagraphHeading.HEADING2);
 
   const issueTypes = Object.entries(data.byIssueType)
-    .sort((a, b) => b[1] - a[1])
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const issueTable = [['Issue Type', 'Count']];
-  issueTypes.forEach(([type, count]) => {
+  issueTypes.forEach(function([type, count]) {
     issueTable.push([type, count.toString()]);
   });
 
@@ -355,11 +358,11 @@ function createMonthlyReportDoc(data) {
     .setHeading(DocumentApp.ParagraphHeading.HEADING2);
 
   const stewards = Object.entries(data.bySteward)
-    .sort((a, b) => b[1] - a[1])
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const stewardTable = [['Steward', 'Active Grievances']];
-  stewards.forEach(([steward, count]) => {
+  stewards.forEach(function([steward, count]) {
     stewardTable.push([steward, count.toString()]);
   });
 
@@ -391,7 +394,7 @@ function createMonthlyReportDoc(data) {
   if (insights.length === 0) {
     body.appendParagraph('No significant issues identified. Operations are running smoothly.');
   } else {
-    insights.forEach(insight => {
+    insights.forEach(function(insight) {
       body.appendListItem(insight);
     });
   }
@@ -454,7 +457,7 @@ function createQuarterlyReportDoc(data) {
   const monthNames = ['Month 1', 'Month 2', 'Month 3'];
   const monthTable = [['Month', 'Grievances Filed']];
 
-  data.monthlyTrends.forEach((count, index) => {
+  data.monthlyTrends.forEach(function(count, index) {
     monthTable.push([monthNames[index], count.toString()]);
   });
 
@@ -553,7 +556,7 @@ function getReportRecipients(reportType) {
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === `${reportType}_recipients`) {
-      const emails = data[i][1].toString().split(',').map(e => e.trim()).filter(e => e);
+      const emails = data[i][1].toString().split(',').map(function(e) { return e.trim(); }).filter(function(e) { return e; });
       return emails;
     }
   }
@@ -585,8 +588,8 @@ function showReportAutomationSettings() {
   const ui = SpreadsheetApp.getUi();
 
   const triggers = ScriptApp.getProjectTriggers();
-  const monthlyEnabled = triggers.some(t => t.getHandlerFunction() === 'generateMonthlyReport');
-  const quarterlyEnabled = triggers.some(t => t.getHandlerFunction() === 'generateQuarterlyReport');
+  const monthlyEnabled = triggers.some(function(t) { return t.getHandlerFunction() === 'generateMonthlyReport'; });
+  const quarterlyEnabled = triggers.some(function(t) { return t.getHandlerFunction() === 'generateQuarterlyReport'; });
 
   const html = HtmlService.createHtmlOutput(`
 <!DOCTYPE html>
@@ -614,7 +617,7 @@ function showReportAutomationSettings() {
     <div class="status ${monthlyEnabled ? 'enabled' : 'disabled'}">
       ${monthlyEnabled ? '✅ Monthly reports ENABLED (1st of month, 9 AM)' : '🔕 Monthly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).setupMonthlyReports()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).setupMonthlyReports()">
       ${monthlyEnabled ? '🔄 Refresh Monthly Trigger' : '✅ Enable Monthly Reports'}
     </button>
 
@@ -622,21 +625,21 @@ function showReportAutomationSettings() {
     <div class="status ${quarterlyEnabled ? 'enabled' : 'disabled'}">
       ${quarterlyEnabled ? '✅ Quarterly reports ENABLED (Jan/Apr/Jul/Oct, 10 AM)' : '🔕 Quarterly reports DISABLED'}
     </div>
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).setupQuarterlyReports()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).setupQuarterlyReports()">
       ${quarterlyEnabled ? '🔄 Refresh Quarterly Trigger' : '✅ Enable Quarterly Reports'}
     </button>
 
     <hr style="margin: 30px 0;">
 
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).generateMonthlyReport()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).generateMonthlyReport()">
       🧪 Test Monthly Report
     </button>
 
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).generateQuarterlyReport()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).generateQuarterlyReport()">
       🧪 Test Quarterly Report
     </button>
 
-    <button class="danger" onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).disableAutomatedReports()">
+    <button class="danger" onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).disableAutomatedReports()">
       🔕 Disable All Reports
     </button>
   </div>

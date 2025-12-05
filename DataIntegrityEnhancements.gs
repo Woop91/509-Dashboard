@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * DATA INTEGRITY ENHANCEMENTS
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Enhancements for data quality and integrity:
  * - Duplicate ID detection
@@ -62,9 +62,9 @@ function generateNextMemberID() {
 
   // Extract numbers and find max
   const numbers = existingIds
-    .filter(id => id && id.toString().startsWith('M'))
-    .map(id => parseInt(id.toString().substring(1)))
-    .filter(num => !isNaN(num));
+    .filter(function(id) { return id && id.toString().startsWith('M'); })
+    .map(function(id) { return parseInt(id.toString().substring(1)); })
+    .filter(function(num) { return !isNaN(num); });
 
   const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
   const nextNumber = maxNumber + 1;
@@ -229,6 +229,22 @@ function onEdit(e) {
   const sheet = e.range.getSheet();
   const sheetName = sheet.getName();
 
+  // Handle Start Grievance checkbox in Member Directory
+  if (sheetName === SHEETS.MEMBER_DIR) {
+    const row = e.range.getRow();
+    const col = e.range.getColumn();
+
+    // Check if Start Grievance checkbox was clicked (column 32/AF)
+    if (col === MEMBER_COLS.START_GRIEVANCE && row > 1 && e.value === true) {
+      // Reset checkbox immediately to allow re-use
+      e.range.setValue(false);
+
+      // Open grievance form with prepopulated member data
+      openGrievanceFormForMember(row);
+      return;
+    }
+  }
+
   // Only track changes to core data sheets
   if (sheetName !== SHEETS.MEMBER_DIR && sheetName !== SHEETS.GRIEVANCE_LOG) {
     return;
@@ -292,17 +308,17 @@ function showDataQualityDashboard() {
 
   // Check email completeness (Column H in Member Directory)
   const emailData = memberSheet.getRange(2, 8, memberLastRow, 1).getValues().flat();
-  const emailsComplete = emailData.filter(email => email && email.toString().trim() !== '').length;
+  const emailsComplete = emailData.filter(function(email) { return email && email.toString().trim() !== ''; }).length;
   const emailCompleteness = memberLastRow > 0 ? ((emailsComplete / memberLastRow) * 100).toFixed(1) : 0;
 
   // Check phone completeness (Column I in Member Directory)
   const phoneData = memberSheet.getRange(2, 9, memberLastRow, 1).getValues().flat();
-  const phonesComplete = phoneData.filter(phone => phone && phone.toString().trim() !== '').length;
+  const phonesComplete = phoneData.filter(function(phone) { return phone && phone.toString().trim() !== ''; }).length;
   const phoneCompleteness = memberLastRow > 0 ? ((phonesComplete / memberLastRow) * 100).toFixed(1) : 0;
 
   // Check steward assignment in grievances (Column AA)
   const stewardData = grievanceSheet.getRange(2, 27, grievanceLastRow, 1).getValues().flat();
-  const stewardsAssigned = stewardData.filter(s => s && s.toString().trim() !== '').length;
+  const stewardsAssigned = stewardData.filter(function(s) { return s && s.toString().trim() !== ''; }).length;
   const stewardCompleteness = grievanceLastRow > 0 ? ((stewardsAssigned / grievanceLastRow) * 100).toFixed(1) : 0;
 
   // Overall quality score (average of all metrics)
@@ -366,9 +382,9 @@ function checkReferentialIntegrity() {
       SpreadsheetApp.getUi().ButtonSet.OK
     );
   } else {
-    const orphanedList = orphaned.slice(0, 10).map(o =>
-      `  Row ${o.row}: ${o.grievanceId} (Member ID: ${o.memberId})`
-    ).join('\n');
+    const orphanedList = orphaned.slice(0, 10).map(function(o) {
+      return `  Row ${o.row}: ${o.grievanceId} (Member ID: ${o.memberId})`;
+    }).join('\n');
 
     SpreadsheetApp.getUi().alert(
       '⚠️ Referential Integrity Issues Found',

@@ -1,6 +1,6 @@
-// ============================================================================
+// ------------------------------------------------------------------------====
 // ADHD-FRIENDLY ENHANCEMENTS
-// ============================================================================
+// ------------------------------------------------------------------------====
 //
 // Features optimized for ADHD users:
 // - No gridlines (cleaner visual)
@@ -10,7 +10,7 @@
 // - Quick-glance data display
 // - User customization options
 //
-// ============================================================================
+// ------------------------------------------------------------------------====
 
 /**
  * Hide gridlines on all dashboard sheets for cleaner, less distracting view
@@ -19,14 +19,14 @@ function hideAllGridlines() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     const sheetName = sheet.getName();
 
     // Hide gridlines on all sheets except Config (for editing)
     if (!sheetName.includes('Config') &&
         !sheetName.includes('Member Directory') &&
         !sheetName.includes('Grievance Log')) {
-      sheet.hideGridlines();
+      sheet.setHiddenGridlines(true);
     }
   });
 
@@ -40,7 +40,7 @@ function showAllGridlines() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     sheet.showGridlines();
   });
 
@@ -85,7 +85,7 @@ function reorderSheetsLogically() {
   ];
 
   // Move sheets to correct positions
-  sheetOrder.forEach((sheetName, index) => {
+  sheetOrder.forEach(function(sheetName, index) {
     const sheet = ss.getSheetByName(sheetName);
     if (sheet) {
       ss.setActiveSheet(sheet);
@@ -144,7 +144,7 @@ function addStewardWorkloadInstructions() {
   ];
 
   // Create colored instruction boxes
-  instructionData.forEach((instruction, index) => {
+  instructionData.forEach(function(instruction, index) {
     const row = index + 2;
 
     // Label column (A-B)
@@ -186,7 +186,7 @@ function addStewardWorkloadInstructions() {
   sheet.setRowHeight(8, 30);
 
   // Hide gridlines for cleaner look
-  sheet.hideGridlines();
+  sheet.setHiddenGridlines(true);
 
   SpreadsheetApp.getUi().alert('✅ Visual instructions added to Steward Workload!\n\n' +
     'The sheet now has a clear guide at the top showing:\n' +
@@ -318,7 +318,7 @@ function createUserSettingsSheet() {
     ["🔔", "Set up desktop notifications for overdue items (Future Feature)"]
   ];
 
-  tips.forEach((tip, index) => {
+  tips.forEach(function(tip, index) {
     const row = 15 + index;
     sheet.getRange(row, 1).setValue(tip[0])
       .setFontSize(18)
@@ -341,7 +341,7 @@ function createUserSettingsSheet() {
   sheet.setColumnWidth(6, 300);
 
   // Hide gridlines
-  sheet.hideGridlines();
+  sheet.setHiddenGridlines(true);
 
   SpreadsheetApp.getUi().alert('✅ User Settings sheet created!\n\n' +
     'You can now customize:\n' +
@@ -389,7 +389,7 @@ function applyUserSettings() {
 
   const targetSize = fontSizeMap[fontSize] || 11;
 
-  [SHEETS.INTERACTIVE_DASHBOARD, SHEETS.DASHBOARD].forEach(sheetName => {
+  [SHEETS.INTERACTIVE_DASHBOARD, SHEETS.DASHBOARD].forEach(function(sheetName) {
     const sheet = ss.getSheetByName(sheetName);
     if (sheet) {
       sheet.getDataRange().setFontSize(targetSize);

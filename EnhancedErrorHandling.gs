@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * ENHANCED ERROR HANDLING & RECOVERY
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Comprehensive error handling, logging, and recovery system
  * Features:
@@ -12,36 +12,10 @@
  * - Validation helpers
  * - Graceful degradation
  * - Error notification system
+ *
+ * Configuration: Uses ERROR_CONFIG and ERROR_CATEGORIES from Constants.gs
+ * @see Constants.gs for configuration
  */
-
-/**
- * Error handling configuration
- */
-const ERROR_CONFIG = {
-  LOG_SHEET_NAME: 'Error_Log',
-  MAX_LOG_ENTRIES: 1000,
-  ERROR_LEVELS: {
-    INFO: 'INFO',
-    WARNING: 'WARNING',
-    ERROR: 'ERROR',
-    CRITICAL: 'CRITICAL'
-  },
-  NOTIFICATION_THRESHOLD: 'ERROR',  // Send notifications for ERROR and CRITICAL
-  AUTO_RECOVERY_ENABLED: true
-};
-
-/**
- * Error categories
- */
-const ERROR_CATEGORIES = {
-  VALIDATION: 'Data Validation',
-  PERMISSION: 'Permission Error',
-  NETWORK: 'Network Error',
-  DATA_INTEGRITY: 'Data Integrity',
-  USER_INPUT: 'User Input',
-  SYSTEM: 'System Error',
-  INTEGRATION: 'Integration Error'
-};
 
 /**
  * Shows error dashboard
@@ -66,7 +40,7 @@ function createErrorDashboardHTML() {
   if (recentErrors.length === 0) {
     errorRows = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: #999;">No errors logged</td></tr>';
   } else {
-    recentErrors.forEach(error => {
+    recentErrors.forEach(function(error) {
       const levelClass = error.level.toLowerCase();
       errorRows += `
         <tr>
@@ -279,7 +253,7 @@ function createErrorDashboardHTML() {
   <script>
     function runHealthCheck() {
       google.script.run
-        .withSuccessHandler((result) => {
+        .withSuccessHandler(function(result) {
           alert('🏥 Health Check Complete:\\n\\n' + result.summary);
           location.reload();
         })
@@ -288,7 +262,7 @@ function createErrorDashboardHTML() {
 
     function exportErrorLog() {
       google.script.run
-        .withSuccessHandler((url) => {
+        .withSuccessHandler(function(url) {
           alert('✅ Error log exported!');
           window.open(url, '_blank');
         })
@@ -298,7 +272,7 @@ function createErrorDashboardHTML() {
     function clearErrorLog() {
       if (confirm('Clear all error logs? This cannot be undone.')) {
         google.script.run
-          .withSuccessHandler(() => {
+          .withSuccessHandler(function() {
             alert('✅ Error log cleared!');
             location.reload();
           })
@@ -308,7 +282,7 @@ function createErrorDashboardHTML() {
 
     function testErrorHandling() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('✅ Test error logged successfully!');
           location.reload();
         })
@@ -317,7 +291,7 @@ function createErrorDashboardHTML() {
 
     function viewErrorTrends() {
       google.script.run
-        .withSuccessHandler((url) => {
+        .withSuccessHandler(function(url) {
           window.open(url, '_blank');
         })
         .createErrorTrendReport();
@@ -461,8 +435,8 @@ function getErrorStats() {
     critical: 0
   };
 
-  data.forEach(row => {
-    const level = row[1];
+  data.forEach(function(row) {
+    const level = row[ERROR_LOG_COLS.LEVEL - 1];
     if (level === 'INFO') stats.info++;
     else if (level === 'WARNING') stats.warning++;
     else if (level === 'ERROR') stats.error++;
@@ -506,16 +480,16 @@ function getRecentErrors(limit = 20) {
 
   const data = errorSheet.getRange(startRow, 1, numRows, 8).getValues();
 
-  return data.map(row => ({
-    timestamp: row[0],
-    level: row[1],
-    category: row[2],
-    message: row[3],
-    context: row[4],
-    stackTrace: row[5],
-    user: row[6],
-    recovered: row[7]
-  })).reverse();
+  return data.map(function(row) { return {
+    timestamp: row[ERROR_LOG_COLS.TIMESTAMP - 1],
+    level: row[ERROR_LOG_COLS.LEVEL - 1],
+    category: row[ERROR_LOG_COLS.CATEGORY - 1],
+    message: row[ERROR_LOG_COLS.MESSAGE - 1],
+    context: row[ERROR_LOG_COLS.CONTEXT - 1],
+    stackTrace: row[ERROR_LOG_COLS.STACK_TRACE - 1],
+    user: row[ERROR_LOG_COLS.USER - 1],
+    recovered: row[ERROR_LOG_COLS.RECOVERED - 1]
+  };}).reverse();
 }
 
 /**
@@ -559,7 +533,7 @@ function withErrorHandling(func, context) {
 function validateRequiredFields(data, requiredFields) {
   const missing = [];
 
-  requiredFields.forEach(field => {
+  requiredFields.forEach(function(field) {
     if (!data[field] || data[field] === '') {
       missing.push(field);
     }
@@ -612,9 +586,9 @@ function performSystemHealthCheck() {
   // Check 1: Verify all required sheets exist
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const requiredSheets = Object.values(SHEETS);
-  const existingSheets = ss.getSheets().map(s => s.getName());
+  const existingSheets = ss.getSheets().map(function(s) { return s.getName(); });
 
-  requiredSheets.forEach(sheetName => {
+  requiredSheets.forEach(function(sheetName) {
     const exists = existingSheets.includes(sheetName);
     results.checks.push({
       name: `Sheet: ${sheetName}`,
@@ -663,7 +637,7 @@ function performSystemHealthCheck() {
   }
 
   // Generate summary
-  const passCount = results.checks.filter(c => c.status === 'PASS').length;
+  const passCount = results.checks.filter(function(c) { return c.status === 'PASS'; }).length;
   const totalCount = results.checks.length;
   results.summary = `Health Check: ${passCount}/${totalCount} checks passed\nOverall Status: ${results.overall}`;
 
@@ -765,9 +739,9 @@ function createErrorTrendReport() {
   const data = errorSheet.getRange(2, 1, errorSheet.getLastRow() - 1, 2).getValues();
 
   const dailyStats = {};
-  data.forEach(row => {
-    const date = Utilities.formatDate(new Date(row[0]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
-    const level = row[1];
+  data.forEach(function(row) {
+    const date = Utilities.formatDate(new Date(row[ERROR_LOG_COLS.TIMESTAMP - 1]), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    const level = row[ERROR_LOG_COLS.LEVEL - 1];
 
     if (!dailyStats[date]) {
       dailyStats[date] = { info: 0, warning: 0, error: 0, critical: 0 };

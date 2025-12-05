@@ -87,11 +87,11 @@ const addMemberIdempotent = makeIdempotent(
       throw new Error('Member Directory sheet not found');
     }
 
-    const memberID = memberData[0];
+    const memberID = memberData[MEMBER_COLS.MEMBER_ID - 1];
 
     // Check if member already exists
     const data = memberSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(row => row[0] === memberID);
+    const existingRow = data.findIndex(function(row) { return row[MEMBER_COLS.MEMBER_ID - 1] === memberID; });
 
     if (existingRow > 0) {
       // Update existing member
@@ -116,7 +116,7 @@ const addMemberIdempotent = makeIdempotent(
       };
     }
   },
-  (memberData) => `add_member_${memberData[0]}` // Use Member ID as key
+  function(memberData) { return `add_member_${memberData[MEMBER_COLS.MEMBER_ID - 1]}`; } // Use Member ID as key
 );
 
 /**
@@ -131,11 +131,11 @@ const addGrievanceIdempotent = makeIdempotent(
       throw new Error('Grievance Log sheet not found');
     }
 
-    const grievanceID = grievanceData[0];
+    const grievanceID = grievanceData[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
 
     // Check if grievance already exists
     const data = grievanceSheet.getDataRange().getValues();
-    const existingRow = data.findIndex(row => row[0] === grievanceID);
+    const existingRow = data.findIndex(function(row) { return row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceID; });
 
     if (existingRow > 0) {
       // Update existing grievance
@@ -160,7 +160,7 @@ const addGrievanceIdempotent = makeIdempotent(
       };
     }
   },
-  (grievanceData) => `add_grievance_${grievanceData[0]}` // Use Grievance ID as key
+  function(grievanceData) { return `add_grievance_${grievanceData[GRIEVANCE_COLS.GRIEVANCE_ID - 1]}`; } // Use Grievance ID as key
 );
 
 /**
@@ -175,7 +175,7 @@ const createBackupIdempotent = makeIdempotent(
 
     throw new Error('createIncrementalBackup function not available');
   },
-  () => {
+  function() {
     // Key is based on current hour - allows one backup per hour
     const now = new Date();
     const hourKey = Utilities.formatDate(now, Session.getScriptTimeZone(), 'yyyy-MM-dd-HH');
@@ -203,7 +203,7 @@ const recalcAllIdempotent = makeIdempotent(
 
     return results;
   },
-  () => {
+  function() {
     // Key is based on current 5-minute window
     const now = new Date();
     const minutes = Math.floor(now.getMinutes() / 5) * 5;
@@ -226,7 +226,7 @@ const rebuildDashboardIdempotent = makeIdempotent(
 
     throw new Error('No dashboard rebuild function available');
   },
-  () => {
+  function() {
     // Key is based on current 5-minute window
     const now = new Date();
     const minutes = Math.floor(now.getMinutes() / 5) * 5;
@@ -335,7 +335,7 @@ function trackIdempotentKey(key) {
   const props = PropertiesService.getScriptProperties();
   const activeKeys = props.getProperty('IDEMPOTENT_KEYS');
 
-  let keys = activeKeys ? JSON.parse(activeKeys) : [];
+  const keys = activeKeys ? JSON.parse(activeKeys) : [];
 
   if (!keys.includes(key)) {
     keys.push(key);

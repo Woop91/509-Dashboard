@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * PREDICTIVE ANALYTICS
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Forecasts trends and provides actionable insights
  * Features:
@@ -35,7 +35,7 @@ function performPredictiveAnalysis() {
       };
     }
 
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
 
     const analytics = {
       volumeTrend: analyzeVolumeTrend(data),
@@ -67,8 +67,8 @@ function analyzeVolumeTrend(data) {
     // Group by month
     const monthlyVolumes = {};
 
-    data.forEach(row => {
-      const filedDate = row[6]; // Column G: Filed Date
+    data.forEach(function(row) {
+      const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
       if (!filedDate) return;
 
@@ -79,7 +79,7 @@ function analyzeVolumeTrend(data) {
 
     // Convert to array and sort
     const months = Object.keys(monthlyVolumes).sort();
-    const volumes = months.map(m => monthlyVolumes[m]);
+    const volumes = months.map(function(m) { return monthlyVolumes[m]; });
 
     // Calculate trend (simple linear regression)
     const trend = calculateLinearTrend(volumes);
@@ -121,9 +121,9 @@ function analyzeIssueTypeTrends(data) {
   try {
     const issueTypesByMonth = {};
 
-    data.forEach(row => {
-      const filedDate = row[6];
-      const issueType = row[5];
+    data.forEach(function(row) {
+      const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+      const issueType = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
 
       if (!filedDate || !issueType) return;
 
@@ -147,19 +147,19 @@ function analyzeIssueTypeTrends(data) {
       const recentCounts = {};
       const olderCounts = {};
 
-      recentMonths.forEach(month => {
-        Object.entries(issueTypesByMonth[month]).forEach(([type, count]) => {
+      recentMonths.forEach(function(month) {
+        Object.entries(issueTypesByMonth[month]).forEach(function([type, count]) {
           recentCounts[type] = (recentCounts[type] || 0) + count;
         });
       });
 
-      olderMonths.forEach(month => {
-        Object.entries(issueTypesByMonth[month]).forEach(([type, count]) => {
+      olderMonths.forEach(function(month) {
+        Object.entries(issueTypesByMonth[month]).forEach(function([type, count]) {
           olderCounts[type] = (olderCounts[type] || 0) + count;
         });
       });
 
-      Object.keys(recentCounts).forEach(type => {
+      Object.keys(recentCounts).forEach(function(type) {
         const recentAvg = recentCounts[type] / recentMonths.length;
         const olderAvg = olderCounts[type] ? olderCounts[type] / olderMonths.length : 0;
 
@@ -195,8 +195,8 @@ function analyzeIssueTypeTrends(data) {
 function detectSeasonalPatterns(data) {
   const quarterlyVolumes = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
 
-  data.forEach(row => {
-    const filedDate = row[6];
+  data.forEach(function(row) {
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
     if (!filedDate) return;
 
@@ -208,7 +208,7 @@ function detectSeasonalPatterns(data) {
   let peakQuarter = 'Q1';
   let peakVolume = 0;
 
-  Object.entries(quarterlyVolumes).forEach(([quarter, volume]) => {
+  Object.entries(quarterlyVolumes).forEach(function([quarter, volume]) {
     if (volume > peakVolume) {
       peakQuarter = quarter;
       peakVolume = volume;
@@ -231,9 +231,9 @@ function detectSeasonalPatterns(data) {
 function analyzeResolutionTimeTrend(data) {
   const resolutionTimes = [];
 
-  data.forEach(row => {
-    const filedDate = row[6];
-    const closedDate = row[18];
+  data.forEach(function(row) {
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
 
     if (filedDate && closedDate && closedDate > filedDate) {
       const days = Math.floor((closedDate - filedDate) / (1000 * 60 * 60 * 24));
@@ -250,17 +250,17 @@ function analyzeResolutionTimeTrend(data) {
   }
 
   // Sort for median
-  resolutionTimes.sort((a, b) => a - b);
+  resolutionTimes.sort(function(a, b) { return a - b; });
 
-  const average = resolutionTimes.reduce((sum, val) => sum + val, 0) / resolutionTimes.length;
+  const average = resolutionTimes.reduce(function(sum, val) { return sum + val; }, 0) / resolutionTimes.length;
   const median = resolutionTimes[Math.floor(resolutionTimes.length / 2)];
 
   // Recent vs older comparison
   const recent = resolutionTimes.slice(-10);
   const older = resolutionTimes.slice(0, -10);
 
-  const recentAvg = recent.reduce((sum, val) => sum + val, 0) / recent.length;
-  const olderAvg = older.length > 0 ? older.reduce((sum, val) => sum + val, 0) / older.length : recentAvg;
+  const recentAvg = recent.reduce(function(sum, val) { return sum + val; }, 0) / recent.length;
+  const olderAvg = older.length > 0 ? older.reduce(function(sum, val) { return sum + val; }, 0) / older.length : recentAvg;
 
   return {
     average: Math.round(average),
@@ -279,9 +279,9 @@ function analyzeResolutionTimeTrend(data) {
 function forecastStewardWorkload(data) {
   const stewardCases = {};
 
-  data.forEach(row => {
-    const steward = row[13];
-    const status = row[4];
+  data.forEach(function(row) {
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
 
     if (steward && status === 'Open') {
       stewardCases[steward] = (stewardCases[steward] || 0) + 1;
@@ -292,7 +292,7 @@ function forecastStewardWorkload(data) {
   const overloaded = [];
   const underutilized = [];
 
-  Object.entries(stewardCases).forEach(([steward, count]) => {
+  Object.entries(stewardCases).forEach(function([steward, count]) {
     if (count > 15) {
       overloaded.push({ steward, caseload: count });
     } else if (count < 3) {
@@ -316,12 +316,15 @@ function forecastStewardWorkload(data) {
  */
 function identifyRiskFactors(data) {
   const risks = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   // Check for overdue cases
   let overdueCount = 0;
-  data.forEach(row => {
-    const daysToDeadline = row[20];
-    if (daysToDeadline < 0) overdueCount++;
+  data.forEach(function(row) {
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+    const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
+    if (daysToDeadline !== null && daysToDeadline < 0) overdueCount++;
   });
 
   if (overdueCount > 0) {
@@ -335,9 +338,9 @@ function identifyRiskFactors(data) {
 
   // Check for cases with no steward assigned
   let unassignedCount = 0;
-  data.forEach(row => {
-    const steward = row[13];
-    const status = row[4];
+  data.forEach(function(row) {
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
     if (!steward && status === 'Open') unassignedCount++;
   });
 
@@ -374,8 +377,8 @@ function detectAnomalies(data) {
 
   // Check for unusual spike in last month
   const monthlyVolumes = {};
-  data.forEach(row => {
-    const filedDate = row[6];
+  data.forEach(function(row) {
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
     if (!filedDate) return;
 
     const monthKey = `${filedDate.getFullYear()}-${String(filedDate.getMonth() + 1).padStart(2, '0')}`;
@@ -384,7 +387,7 @@ function detectAnomalies(data) {
 
   const volumes = Object.values(monthlyVolumes);
   if (volumes.length >= 3) {
-    const average = volumes.slice(0, -1).reduce((sum, val) => sum + val, 0) / (volumes.length - 1);
+    const average = volumes.slice(0, -1).reduce(function(sum, val) { return sum + val; }, 0) / (volumes.length - 1);
     const latest = volumes[volumes.length - 1];
 
     if (latest > average * 1.5) {
@@ -398,15 +401,15 @@ function detectAnomalies(data) {
 
   // Check for concentration of cases in one location
   const locationCounts = {};
-  data.forEach(row => {
-    const location = row[9];
+  data.forEach(function(row) {
+    const location = row[GRIEVANCE_COLS.LOCATION - 1];
     if (location) {
       locationCounts[location] = (locationCounts[location] || 0) + 1;
     }
   });
 
-  const totalCases = Object.values(locationCounts).reduce((sum, val) => sum + val, 0);
-  Object.entries(locationCounts).forEach(([location, count]) => {
+  const totalCases = Object.values(locationCounts).reduce(function(sum, val) { return sum + val; }, 0);
+  Object.entries(locationCounts).forEach(function([location, count]) {
     if (count > totalCases * 0.4) {
       anomalies.push({
         type: 'Location Concentration',
@@ -539,7 +542,7 @@ function showPredictiveAnalyticsDashboard() {
  */
 function createAnalyticsDashboardHTML(analytics) {
   const risksHTML = analytics.riskFactors.length > 0
-    ? analytics.riskFactors.map(risk => `
+    ? analytics.riskFactors.map(function(risk) { return `
         <div class="risk-item severity-${risk.severity.toLowerCase()}">
           <div class="risk-header">
             <span class="risk-type">${risk.type}</span>
@@ -548,11 +551,11 @@ function createAnalyticsDashboardHTML(analytics) {
           <div class="risk-desc">${risk.description}</div>
           <div class="risk-action">⚡ ${risk.action}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No significant risks identified. ✅</p>';
 
   const recommendationsHTML = analytics.recommendations.length > 0
-    ? analytics.recommendations.map(rec => `
+    ? analytics.recommendations.map(function(rec) { return `
         <div class="recommendation priority-${rec.priority.toLowerCase()}">
           <div class="rec-header">
             <span class="rec-category">${rec.category}</span>
@@ -561,17 +564,17 @@ function createAnalyticsDashboardHTML(analytics) {
           <div class="rec-text">${rec.recommendation}</div>
           <div class="rec-impact">📊 ${rec.expectedImpact}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No specific recommendations at this time.</p>';
 
   const anomaliesHTML = analytics.anomalies.length > 0
-    ? analytics.anomalies.map(anomaly => `
+    ? analytics.anomalies.map(function(anomaly) { return `
         <div class="anomaly-item">
           <div class="anomaly-type">${anomaly.type}</div>
           <div class="anomaly-desc">${anomaly.description}</div>
           <div class="anomaly-impact">${anomaly.impact}</div>
         </div>
-      `).join('')
+      `; }).join('')
     : '<p>No anomalies detected. ✅</p>';
 
   return `

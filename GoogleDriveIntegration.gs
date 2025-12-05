@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GOOGLE DRIVE INTEGRATION
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Attach and manage documents for grievances
  * Features:
@@ -11,6 +11,34 @@
  * - Version control
  * - Quick access to attachments
  */
+
+/**
+ * Extracts folder ID from a Google Drive folder URL
+ * @param {string} url - The Google Drive folder URL
+ * @returns {string|null} The folder ID or null if not found
+ */
+function extractFolderIdFromUrl(url) {
+  if (!url) return null;
+
+  // Handle format: https://drive.google.com/drive/folders/FOLDER_ID
+  const folderMatch = url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if (folderMatch) {
+    return folderMatch[1];
+  }
+
+  // Handle format: https://drive.google.com/drive/u/0/folders/FOLDER_ID
+  const altMatch = url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if (altMatch) {
+    return altMatch[1];
+  }
+
+  // If URL is just the folder ID itself (for backward compatibility)
+  if (/^[a-zA-Z0-9_-]+$/.test(url)) {
+    return url;
+  }
+
+  return null;
+}
 
 /**
  * Creates root folder for 509 Dashboard in Google Drive
@@ -87,12 +115,9 @@ function linkFolderToGrievance(grievanceId, folderId) {
     if (data[i][0] === grievanceId) {
       const row = i + 2;
 
-      // Store folder ID in column AC (29)
-      grievanceSheet.getRange(row, 29).setValue(folderId);
-
-      // Create hyperlink to folder in column AD (30)
+      // Store folder URL in DRIVE_FOLDER_LINK column (AC/29)
       const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
-      grievanceSheet.getRange(row, 30).setValue(folderUrl);
+      grievanceSheet.getRange(row, GRIEVANCE_COLS.DRIVE_FOLDER_LINK).setValue(folderUrl);
 
       Logger.log(`Linked folder ${folderId} to grievance ${grievanceId}`);
       return;
@@ -167,7 +192,7 @@ function setupDriveFolderForGrievance() {
       '✅ Folder Created',
       `Drive folder created successfully for ${grievanceId}.\n\n` +
       `Folder link has been added to the grievance record.\n\n` +
-      `Click the link in column AD to open the folder.`,
+      `Click the link in column AC (Drive Folder Link) to open the folder.`,
       ui.ButtonSet.OK
     );
 
@@ -388,15 +413,22 @@ function showGrievanceFiles() {
   }
 
   const grievanceId = activeSheet.getRange(activeRow, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
-  const folderId = activeSheet.getRange(activeRow, 29).getValue(); // Column AC
+  const folderLink = activeSheet.getRange(activeRow, GRIEVANCE_COLS.DRIVE_FOLDER_LINK).getValue();
 
-  if (!folderId) {
+  if (!folderLink) {
     ui.alert(
       'ℹ️ No Folder Linked',
       `No Drive folder has been set up for ${grievanceId}.\n\n` +
       'Use "Setup Drive Folder" to create one.',
       ui.ButtonSet.OK
     );
+    return;
+  }
+
+  // Extract folder ID from URL
+  const folderId = extractFolderIdFromUrl(folderLink);
+  if (!folderId) {
+    ui.alert('❌ Error', 'Could not extract folder ID from the link.', ui.ButtonSet.OK);
     return;
   }
 
@@ -486,7 +518,7 @@ function createFileListHTML(grievanceId, folderId, files) {
   const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
 
   const filesList = files
-    .map(file => `
+    .map(function(file) { return `
       <div class="file-item">
         <div class="file-icon">${getFileIcon(file.type)}</div>
         <div class="file-details">
@@ -498,7 +530,7 @@ function createFileListHTML(grievanceId, folderId, files) {
           </div>
         </div>
       </div>
-    `)
+    `; })
     .join('');
 
   return `
@@ -646,20 +678,20 @@ function batchCreateGrievanceFolders() {
       return;
     }
 
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 29).getValues();
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.DRIVE_FOLDER_LINK).getValues();
     let created = 0;
     let skipped = 0;
 
-    data.forEach((row, index) => {
-      const grievanceId = row[0];
-      const folderId = row[28]; // Column AC
+    data.forEach(function(row, index) {
+      const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+      const folderLink = row[GRIEVANCE_COLS.DRIVE_FOLDER_LINK - 1];
 
       if (!grievanceId) {
         skipped++;
         return;
       }
 
-      if (folderId) {
+      if (folderLink) {
         skipped++;
         return;
       }

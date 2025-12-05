@@ -20,6 +20,17 @@
 function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
   const errors = [];
 
+  // Validate that all parameters are functions
+  if (typeof primaryFn !== 'function') {
+    throw new Error('primaryFn must be a function');
+  }
+  if (typeof fallbackFn !== 'function') {
+    throw new Error('fallbackFn must be a function');
+  }
+  if (typeof minimalFn !== 'function') {
+    throw new Error('minimalFn must be a function');
+  }
+
   // Try primary function
   try {
     Logger.log('Attempting primary function...');
@@ -68,7 +79,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
         // All functions failed - log critical error
         if (typeof logError === 'function') {
           logError(
-            new Error(`All degradation levels failed: ${errors.map(e => e.error.message).join('; ')}`),
+            new Error(`All degradation levels failed: ${errors.map(function(e) { return e.error.message; }).join('; ')}`),
             'GracefulDegradation.complete_failure',
             'CRITICAL'
           );
@@ -77,7 +88,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
         // Throw aggregate error
         throw new Error(
           `Complete failure - all degradation levels failed:\n` +
-          errors.map(e => `${e.level}: ${e.error.message}`).join('\n')
+          errors.map(function(e) { return `${e.level}: ${e.error.message}`; }).join('\n')
         );
       }
     }
@@ -93,7 +104,7 @@ function withGracefulDegradation(primaryFn, fallbackFn, minimalFn) {
 function rebuildDashboardSafe() {
   return withGracefulDegradation(
     // Primary: Full rebuild (optimized if available)
-    () => {
+    function() {
       if (typeof rebuildDashboardOptimized === 'function') {
         return rebuildDashboardOptimized();
       } else if (typeof rebuildDashboard === 'function') {
@@ -103,12 +114,12 @@ function rebuildDashboardSafe() {
     },
 
     // Fallback: Minimal rebuild (KPIs only, no charts)
-    () => {
+    function() {
       return rebuildDashboardMinimal();
     },
 
     // Minimal: Show cached dashboard
-    () => {
+    function() {
       return showCachedDashboard();
     }
   );
@@ -303,7 +314,7 @@ function cacheDashboardState() {
 function recalcMembersSafe() {
   return withGracefulDegradation(
     // Primary: Batched recalculation
-    () => {
+    function() {
       if (typeof recalcAllMembers === 'function') {
         return recalcAllMembers();
       }
@@ -311,12 +322,12 @@ function recalcMembersSafe() {
     },
 
     // Fallback: Recalculate just grievance status fields
-    () => {
+    function() {
       return recalcMembersGrievanceFieldsOnly();
     },
 
     // Minimal: Skip recalculation, return success
-    () => {
+    function() {
       Logger.log('Skipping member recalculation (minimal mode)');
       return { mode: 'minimal', message: 'Recalculation skipped' };
     }
@@ -383,7 +394,7 @@ function recalcMembersGrievanceFieldsOnly() {
 function seedDataSafe() {
   return withGracefulDegradation(
     // Primary: Full seed with rollback protection
-    () => {
+    function() {
       if (typeof seedAllWithRollback === 'function') {
         return seedAllWithRollback();
       }
@@ -391,7 +402,7 @@ function seedDataSafe() {
     },
 
     // Fallback: Seed without rollback protection
-    () => {
+    function() {
       Logger.log('Seeding without rollback protection...');
       if (typeof SEED_20K_MEMBERS === 'function') {
         SEED_20K_MEMBERS();
@@ -403,7 +414,7 @@ function seedDataSafe() {
     },
 
     // Minimal: Skip seeding
-    () => {
+    function() {
       return { mode: 'skipped', message: 'Seeding skipped due to errors' };
     }
   );

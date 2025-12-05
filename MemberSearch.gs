@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * MEMBER SEARCH & LOOKUP FUNCTIONALITY
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Fast member search with autocomplete and filtering
  * Features:
@@ -185,9 +185,9 @@ function createMemberSearchHTML() {
 
     function populateFilters() {
       // Get unique locations
-      const locations = [...new Set(allMembers.map(m => m.location).filter(l => l))];
+      const locations = [...new Set(allMembers.map(function(m) { return m.location; }).filter(function(l) { return l; }))];
       const locationFilter = document.getElementById('locationFilter');
-      locations.forEach(loc => {
+      locations.forEach(function(loc) {
         const option = document.createElement('option');
         option.value = loc;
         option.textContent = loc;
@@ -195,9 +195,9 @@ function createMemberSearchHTML() {
       });
 
       // Get unique units
-      const units = [...new Set(allMembers.map(m => m.unit).filter(u => u))];
+      const units = [...new Set(allMembers.map(function(m) { return m.unit; }).filter(function(u) { return u; }))];
       const unitFilter = document.getElementById('unitFilter');
-      units.forEach(unit => {
+      units.forEach(function(unit) {
         const option = document.createElement('option');
         option.value = unit;
         option.textContent = unit;
@@ -211,7 +211,7 @@ function createMemberSearchHTML() {
       const unitFilter = document.getElementById('unitFilter').value;
       const stewardFilter = document.getElementById('stewardFilter').value;
 
-      filteredMembers = allMembers.filter(member => {
+      filteredMembers = allMembers.filter(function(member) {
         // Text search
         const matchesSearch = !searchTerm ||
           member.name.toLowerCase().includes(searchTerm) ||
@@ -260,7 +260,7 @@ function createMemberSearchHTML() {
 
     function selectMember(row, memberId) {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           google.script.host.close();
         })
         .navigateToMember(parseInt(row));
@@ -289,24 +289,24 @@ function getAllMembers() {
   const lastRow = memberSheet.getLastRow();
   if (lastRow < 2) return [];
 
-  const data = memberSheet.getRange(2, 1, lastRow - 1, 13).getValues();
+  const data = memberSheet.getRange(2, 1, lastRow - 1, MEMBER_COLS.ASSIGNED_STEWARD).getValues();
 
-  return data.map((row, index) => ({
+  return data.map(function(row, index) { return {
     row: index + 2,
-    id: row[0] || '',
-    name: `${row[1]} ${row[2]}`.trim(),
-    firstName: row[1] || '',
-    lastName: row[2] || '',
-    jobTitle: row[3] || '',
-    location: row[4] || '',
-    unit: row[5] || '',
-    email: row[7] || '',
-    phone: row[8] || '',
-    isSteward: row[9] || '',
-    supervisor: row[10] || '',
-    manager: row[11] || '',
-    assignedSteward: row[12] || ''
-  })).filter(m => m.id); // Filter out empty rows
+    id: row[MEMBER_COLS.MEMBER_ID - 1] || '',
+    name: `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`.trim(),
+    firstName: row[MEMBER_COLS.FIRST_NAME - 1] || '',
+    lastName: row[MEMBER_COLS.LAST_NAME - 1] || '',
+    jobTitle: row[MEMBER_COLS.JOB_TITLE - 1] || '',
+    location: row[MEMBER_COLS.WORK_LOCATION - 1] || '',
+    unit: row[MEMBER_COLS.UNIT - 1] || '',
+    email: row[MEMBER_COLS.EMAIL - 1] || '',
+    phone: row[MEMBER_COLS.PHONE - 1] || '',
+    isSteward: row[MEMBER_COLS.IS_STEWARD - 1] || '',
+    supervisor: row[MEMBER_COLS.SUPERVISOR - 1] || '',
+    manager: row[MEMBER_COLS.MANAGER - 1] || '',
+    assignedSteward: row[MEMBER_COLS.ASSIGNED_STEWARD - 1] || ''
+  };}).filter(function(m) { return m.id; }); // Filter out empty rows
 }
 
 /**

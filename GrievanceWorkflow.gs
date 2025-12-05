@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GRIEVANCE WORKFLOW - Start Grievance from Member Directory
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Allows stewards to click a member in the directory and start a grievance
  * with pre-filled member and steward information via Google Form.
@@ -12,13 +12,21 @@
  * - PDF generation with fillable grievance form
  * - Email to multiple addresses or download option
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
-// Configuration - Update this with your Google Form URL
-const GRIEVANCE_FORM_CONFIG = {
+/**
+ * Configuration for grievance workflow and Google Form integration
+ * @type {Object}
+ */
+GRIEVANCE_FORM_CONFIG = {
   // Replace with your actual Google Form URL
+  // To find: Create a Google Form, then copy the URL from the browser
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform",
+
+  // Email address for grievance notifications
+  // Configure this with your union's actual grievance email
+  GRIEVANCE_EMAIL: "grievances@seiu509.org",
 
   // Form field entry IDs (found by inspecting your form)
   // To find these: Open your form, right-click a field, inspect element, find "entry.XXXXXXX"
@@ -67,42 +75,67 @@ function showStartGrievanceDialog() {
 
 /**
  * Gets list of all members from Member Directory
+ * @returns {Array<Object>} Array of member objects with properties
  */
 function getMemberList() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-  if (!memberSheet) return [];
+    if (!memberSheet) {
+      logWarning('getMemberList', 'Member Directory sheet not found');
+      return [];
+    }
 
-  const lastRow = memberSheet.getLastRow();
-  if (lastRow < 2) return [];
+    const lastRow = memberSheet.getLastRow();
+    if (lastRow < 2) return [];
 
-  // Get all member data (columns A-K: ID, First, Last, Job, Location, Unit, Office Days, Email, Phone, Is Steward, Status)
-  const data = memberSheet.getRange(2, 1, lastRow - 1, 11).getValues();
+    // Get all member data - using MEMBER_COLS constants
+    const numCols = Math.max(
+      MEMBER_COLS.MEMBER_ID,
+      MEMBER_COLS.FIRST_NAME,
+      MEMBER_COLS.LAST_NAME,
+      MEMBER_COLS.JOB_TITLE,
+      MEMBER_COLS.WORK_LOCATION,
+      MEMBER_COLS.UNIT,
+      MEMBER_COLS.OFFICE_DAYS,
+      MEMBER_COLS.EMAIL,
+      MEMBER_COLS.PHONE,
+      MEMBER_COLS.IS_STEWARD,
+      MEMBER_COLS.SUPERVISOR
+    );
 
-  return data.map((row, index) => ({
-    rowIndex: index + 2,
-    memberId: row[0],
-    firstName: row[1],
-    lastName: row[2],
-    jobTitle: row[3],
-    location: row[4],
-    unit: row[5],
-    officeDays: row[6],
-    email: row[7],
-    phone: row[8],
-    isSteward: row[9],
-    status: row[10]
-  })).filter(member => member.memberId); // Filter out empty rows
+    const data = memberSheet.getRange(2, 1, lastRow - 1, numCols).getValues();
+
+    return data.map(function(row, index) { return {
+      rowIndex: index + 2,
+      memberId: safeArrayGet(row, MEMBER_COLS.MEMBER_ID - 1, ''),
+      firstName: safeArrayGet(row, MEMBER_COLS.FIRST_NAME - 1, ''),
+      lastName: safeArrayGet(row, MEMBER_COLS.LAST_NAME - 1, ''),
+      jobTitle: safeArrayGet(row, MEMBER_COLS.JOB_TITLE - 1, ''),
+      location: safeArrayGet(row, MEMBER_COLS.WORK_LOCATION - 1, ''),
+      unit: safeArrayGet(row, MEMBER_COLS.UNIT - 1, ''),
+      officeDays: safeArrayGet(row, MEMBER_COLS.OFFICE_DAYS - 1, ''),
+      email: safeArrayGet(row, MEMBER_COLS.EMAIL - 1, ''),
+      phone: safeArrayGet(row, MEMBER_COLS.PHONE - 1, ''),
+      isSteward: safeArrayGet(row, MEMBER_COLS.IS_STEWARD - 1, ''),
+      supervisor: safeArrayGet(row, MEMBER_COLS.SUPERVISOR - 1, '')
+    };}).filter(function(member) { return member.memberId; }); // Filter out empty rows
+  } catch (error) {
+    return handleError(error, 'getMemberList', true, true) || [];
+  }
 }
 
 /**
  * Creates HTML dialog for member selection
+ * @param {Array<Object>} members - Array of member objects
+ * @returns {string} HTML content for dialog
  */
 function createMemberSelectionDialog(members) {
-  const memberOptions = members.map(m =>
-    `<option value="${m.rowIndex}">${m.lastName}, ${m.firstName} (${m.memberId}) - ${m.location}</option>`
-  ).join('');
+  // Use HTML escaping to prevent XSS
+  const memberOptions = members.map(function(m) {
+    return `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`;
+  }).join('');
 
   return `
 <!DOCTYPE html>
@@ -237,7 +270,7 @@ function createMemberSelectionDialog(members) {
   </div>
 
   <script>
-    let members = ${JSON.stringify(members)};
+    const members = ${JSON.stringify(members)};
 
     function showMemberDetails() {
       const select = document.getElementById('memberSelect');
@@ -245,7 +278,7 @@ function createMemberSelectionDialog(members) {
       const startBtn = document.getElementById('startBtn');
 
       if (select.value) {
-        const member = members.find(m => m.rowIndex == select.value);
+        const member = members.find(function(m) { return m.rowIndex == select.value; });
         if (member) {
           detailsDiv.innerHTML = \`
             <div class="detail-item"><strong>Name:</strong> \${member.firstName} \${member.lastName}</div>
@@ -324,15 +357,15 @@ function generatePreFilledGrievanceForm(memberRowIndex) {
   // Get member data
   const memberData = memberSheet.getRange(memberRowIndex, 1, 1, 11).getValues()[0];
   const member = {
-    id: memberData[0],
-    firstName: memberData[1],
-    lastName: memberData[2],
-    jobTitle: memberData[3],
-    location: memberData[4],
-    unit: memberData[5],
-    officeDays: memberData[6],
-    email: memberData[7],
-    phone: memberData[8]
+    id: memberData[MEMBER_COLS.MEMBER_ID - 1],
+    firstName: memberData[MEMBER_COLS.FIRST_NAME - 1],
+    lastName: memberData[MEMBER_COLS.LAST_NAME - 1],
+    jobTitle: memberData[MEMBER_COLS.JOB_TITLE - 1],
+    location: memberData[MEMBER_COLS.WORK_LOCATION - 1],
+    unit: memberData[MEMBER_COLS.UNIT - 1],
+    officeDays: memberData[MEMBER_COLS.OFFICE_DAYS - 1],
+    email: memberData[MEMBER_COLS.EMAIL - 1],
+    phone: memberData[MEMBER_COLS.PHONE - 1]
   };
 
   // Get steward contact info from Config
@@ -368,6 +401,7 @@ function getStewardContactInfo() {
   const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
+    logWarning('getStewardContactInfo', 'Config sheet not found - steward contact info not available');
     return { name: '', email: '', phone: '', location: '' };
   }
 
@@ -377,14 +411,22 @@ function getStewardContactInfo() {
 
   try {
     const stewardData = configSheet.getRange(2, CONFIG_STEWARD_INFO_COL, 3, 1).getValues();
-    return {
+    const result = {
       name: stewardData[0][0] || '',
       email: stewardData[1][0] || '',
       phone: stewardData[2][0] || '',
       location: stewardData[0][0] || '' // Can be added if needed
     };
-  } catch (e) {
-    Logger.log('Error getting steward info: ' + e.message);
+
+    // Check if any data was found
+    if (!result.name && !result.email && !result.phone) {
+      logWarning('getStewardContactInfo', 'No steward contact information configured in Config sheet');
+    }
+
+    return result;
+  } catch (error) {
+    handleError(error, 'getStewardContactInfo', false, true);
+    logWarning('getStewardContactInfo', 'Error fetching steward contact info - returning empty values');
     return { name: '', email: '', phone: '', location: '' };
   }
 }
@@ -397,6 +439,7 @@ function getGrievanceCoordinators() {
   const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
+    logWarning('getGrievanceCoordinators', 'Config sheet not found - grievance coordinators not available');
     return { coordinator1: '', coordinator2: '', coordinator3: '' };
   }
 
@@ -405,17 +448,25 @@ function getGrievanceCoordinators() {
     const coordinatorData = configSheet.getRange(2, 16, 10, 3).getValues();
 
     // Get unique coordinator names
-    const coordinator1List = coordinatorData.map(row => row[0]).filter(String);
-    const coordinator2List = coordinatorData.map(row => row[1]).filter(String);
-    const coordinator3List = coordinatorData.map(row => row[2]).filter(String);
+    const coordinator1List = coordinatorData.map(function(row) { return row[0]; }).filter(String);
+    const coordinator2List = coordinatorData.map(function(row) { return row[1]; }).filter(String);
+    const coordinator3List = coordinatorData.map(function(row) { return row[2]; }).filter(String);
 
-    return {
+    const result = {
       coordinator1: coordinator1List.length > 0 ? coordinator1List[0] : '',
       coordinator2: coordinator2List.length > 0 ? coordinator2List[0] : '',
       coordinator3: coordinator3List.length > 0 ? coordinator3List[0] : ''
     };
-  } catch (e) {
-    Logger.log('Error getting grievance coordinators: ' + e.message);
+
+    // Check if any coordinators were found
+    if (!result.coordinator1 && !result.coordinator2 && !result.coordinator3) {
+      logWarning('getGrievanceCoordinators', 'No grievance coordinators configured in Config sheet');
+    }
+
+    return result;
+  } catch (error) {
+    handleError(error, 'getGrievanceCoordinators', false, true);
+    logWarning('getGrievanceCoordinators', 'Error fetching grievance coordinators - returning empty values');
     return { coordinator1: '', coordinator2: '', coordinator3: '' };
   }
 }
@@ -425,7 +476,7 @@ function getGrievanceCoordinators() {
  */
 function addStewardContactInfoToConfig() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let configSheet = ss.getSheetByName(SHEETS.CONFIG);
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
     SpreadsheetApp.getUi().alert('❌ Config sheet not found!');
@@ -481,9 +532,9 @@ function addStewardContactInfoToConfig() {
 }
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GOOGLE FORM SUBMISSION HANDLING
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -564,22 +615,22 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
 
   // Get grievance data
   const grievanceData = grievanceLog.getDataRange().getValues();
-  let grievanceRow = grievanceData.find(row => row[0] === grievanceId);
+  const grievanceRow = grievanceData.find(function(row) { return row[GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId; });
 
   if (!grievanceRow) {
     SpreadsheetApp.getUi().alert('❌ Grievance not found');
     return;
   }
 
-  const memberId = grievanceRow[1];
-  const memberEmail = grievanceRow[23];
+  const memberId = grievanceRow[GRIEVANCE_COLS.MEMBER_ID - 1];
+  const memberEmail = grievanceRow[GRIEVANCE_COLS.MEMBER_EMAIL - 1];
   const stewardEmail = getStewardContactInfo().email;
   const coordinators = getGrievanceCoordinators();
   const folderUrl = folder ? folder.getUrl() : '';
 
-  // Note: This would need actual email addresses for coordinators
-  // For now, we'll use placeholder emails
-  const grievanceEmail = 'grievances@seiu509.org'; // This should be configured
+  // Grievance email is configured via EMAIL_CONFIG.GRIEVANCE_EMAIL in Constants.gs
+  // and can be overridden in GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL
+  const grievanceEmail = GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL || 'grievances@seiu509.org';
 
   const html = HtmlService.createHtmlOutput(`
 <!DOCTYPE html>
@@ -756,7 +807,7 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
   <script>
     function shareWithSelected() {
       const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
-      const recipients = Array.from(checkboxes).map(cb => cb.value);
+      const recipients = Array.from(checkboxes).map(function(cb) { return cb.value; });
 
       if (recipients.length === 0) {
         alert('Please select at least one recipient.');
@@ -766,11 +817,11 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
       const folderUrl = '${folderUrl}';
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('✅ Sharing invitations sent successfully!');
           google.script.host.close();
         })
-        .withFailureHandler(error => {
+        .withFailureHandler(function(error) {
           alert('❌ Error: ' + error.message);
         })
         .shareGrievanceWithRecipients('${grievanceId}', recipients, folderUrl);
@@ -800,15 +851,20 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
     }
 
     // Share folder with each recipient
-    if (folder) {
-      recipients.forEach(email => {
+    // Note: Requires valid email addresses. Configure coordinator emails in Config sheet.
+    if (folder && recipients && recipients.length > 0) {
+      recipients.forEach(function(email) {
         try {
-          // Note: These should be actual email addresses
-          // For now, we're using names, so we'll skip the actual sharing
-          // folder.addEditor(email);
-          Logger.log(`Would share folder with: ${email}`);
+          // Validate email before sharing
+          const validEmail = sanitizeEmail(email);
+          if (validEmail) {
+            folder.addEditor(validEmail);
+            logInfo('shareGrievanceWithRecipients', `Shared folder with: ${validEmail}`);
+          } else {
+            logWarning('shareGrievanceWithRecipients', `Invalid email address: ${email}`);
+          }
         } catch (e) {
-          Logger.log(`Could not share with ${email}: ${e.message}`);
+          handleError(e, `shareGrievanceWithRecipients - sharing with ${email}`, false);
         }
       });
     }
@@ -821,18 +877,24 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
                  `Please review the attached grievance form and folder for details.\n\n` +
                  `This is an automated message from the SEIU Local 509 Dashboard.`;
 
-    // Note: Email sending would require actual email addresses
-    // For now, we'll just log the intended recipients
-    Logger.log(`Would send email to: ${recipients.join(', ')}`);
-    Logger.log(`Subject: ${subject}`);
-    Logger.log(`Body: ${body}`);
-
-    // Uncomment when actual emails are configured:
-    // recipients.forEach(email => {
-    //   GmailApp.sendEmail(email, subject, body, {
-    //     attachments: [pdfBlob]
-    //   });
-    // });
+    // Send email notification with grievance PDF
+    // Note: Requires valid email addresses and Gmail permissions
+    recipients.forEach(function(email) {
+      try {
+        const validEmail = sanitizeEmail(email);
+        if (validEmail) {
+          GmailApp.sendEmail(validEmail, subject, body, {
+            attachments: [pdfBlob],
+            name: 'SEIU Local 509 Dashboard'
+          });
+          logInfo('shareGrievanceWithRecipients', `Sent email to: ${validEmail}`);
+        } else {
+          logWarning('shareGrievanceWithRecipients', `Skipped invalid email: ${email}`);
+        }
+      } catch (e) {
+        handleError(e, `shareGrievanceWithRecipients - emailing ${email}`, false);
+      }
+    });
 
   } catch (error) {
     Logger.log('Error sharing grievance: ' + error.message);
@@ -844,6 +906,15 @@ function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
  * Extracts and structures data from form submission
  */
 function extractFormData(e) {
+  // Validate event object
+  validateRequired(e, 'e', 'extractFormData');
+
+  if (!e.namedValues || typeof e.namedValues !== 'object') {
+    const error = new Error('Event object is missing namedValues property or it is not an object');
+    handleError(error, 'extractFormData', true, true);
+    throw error;
+  }
+
   const responses = e.namedValues;
 
   // Map form responses to grievance data structure
@@ -947,41 +1018,65 @@ function addGrievanceToLog(formData) {
 
 /**
  * Recalculates formulas for a specific grievance row
- * Sets deadline formulas (Filing Deadline, Step deadlines, Days Open, etc.)
+ * Sets deadline formulas (Filing Deadline, Step deadlines, Days Open, Next Action Due)
+ * Uses GRIEVANCE_COLS constants for column references
  */
 function recalcGrievanceRow(row) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   if (!grievanceLog) return;
 
-  // Set all deadline formulas for this row
-  // Filing Deadline (Column H): Incident Date + 21 days
-  grievanceLog.getRange(row, 8).setFormula(`=IF(G${row}<>"",G${row}+21,"")`);
+  // Get column letters for formula references
+  const incidentDateCol = getColumnLetter(GRIEVANCE_COLS.INCIDENT_DATE);
+  const filingDeadlineCol = getColumnLetter(GRIEVANCE_COLS.FILING_DEADLINE);
+  const dateFiledCol = getColumnLetter(GRIEVANCE_COLS.DATE_FILED);
+  const step1DueCol = getColumnLetter(GRIEVANCE_COLS.STEP1_DUE);
+  const step1RcvdCol = getColumnLetter(GRIEVANCE_COLS.STEP1_RCVD);
+  const step2AppealDueCol = getColumnLetter(GRIEVANCE_COLS.STEP2_APPEAL_DUE);
+  const step2AppealFiledCol = getColumnLetter(GRIEVANCE_COLS.STEP2_APPEAL_FILED);
+  const step2DueCol = getColumnLetter(GRIEVANCE_COLS.STEP2_DUE);
+  const step2RcvdCol = getColumnLetter(GRIEVANCE_COLS.STEP2_RCVD);
+  const step3AppealDueCol = getColumnLetter(GRIEVANCE_COLS.STEP3_APPEAL_DUE);
+  const dateClosedCol = getColumnLetter(GRIEVANCE_COLS.DATE_CLOSED);
+  const daysOpenCol = getColumnLetter(GRIEVANCE_COLS.DAYS_OPEN);
+  const nextActionDueCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const currentStepCol = getColumnLetter(GRIEVANCE_COLS.CURRENT_STEP);
 
-  // Step I Decision Due (Column J): Date Filed + 30 days
-  grievanceLog.getRange(row, 10).setFormula(`=IF(I${row}<>"",I${row}+30,"")`);
-
-  // Step II Appeal Due (Column L): Step I Decision + 10 days
-  grievanceLog.getRange(row, 12).setFormula(`=IF(K${row}<>"",K${row}+10,"")`);
-
-  // Step II Decision Due (Column N): Step II Appeal + 30 days
-  grievanceLog.getRange(row, 14).setFormula(`=IF(M${row}<>"",M${row}+30,"")`);
-
-  // Step III Appeal Due (Column P): Step II Decision + 30 days
-  grievanceLog.getRange(row, 16).setFormula(`=IF(O${row}<>"",O${row}+30,"")`);
-
-  // Days Open (Column S): Today - Date Filed (or Date Closed - Date Filed)
-  grievanceLog.getRange(row, 19).setFormula(
-    `=IF(I${row}<>"",IF(R${row}<>"",R${row}-I${row},TODAY()-I${row}),"")`
+  // Filing Deadline: Incident Date + 21 days
+  grievanceLog.getRange(row, GRIEVANCE_COLS.FILING_DEADLINE).setFormula(
+    `=IF(${incidentDateCol}${row}<>"",${incidentDateCol}${row}+21,"")`
   );
 
-  // Next Action Due (Column T): Based on current step
-  grievanceLog.getRange(row, 20).setFormula(
-    `=IF(E${row}="Open",IF(F${row}="Step I",J${row},IF(F${row}="Step II",N${row},IF(F${row}="Step III",P${row},H${row}))),"")`
+  // Step I Decision Due: Date Filed + 30 days
+  grievanceLog.getRange(row, GRIEVANCE_COLS.STEP1_DUE).setFormula(
+    `=IF(${dateFiledCol}${row}<>"",${dateFiledCol}${row}+30,"")`
   );
 
-  // Days to Deadline (Column U): Next Action - Today
-  grievanceLog.getRange(row, 21).setFormula(`=IF(T${row}<>"",T${row}-TODAY(),"")`);
+  // Step II Appeal Due: Step I Decision Received + 10 days
+  grievanceLog.getRange(row, GRIEVANCE_COLS.STEP2_APPEAL_DUE).setFormula(
+    `=IF(${step1RcvdCol}${row}<>"",${step1RcvdCol}${row}+10,"")`
+  );
+
+  // Step II Decision Due: Step II Appeal Filed + 30 days
+  grievanceLog.getRange(row, GRIEVANCE_COLS.STEP2_DUE).setFormula(
+    `=IF(${step2AppealFiledCol}${row}<>"",${step2AppealFiledCol}${row}+30,"")`
+  );
+
+  // Step III Appeal Due: Step II Decision Received + 30 days
+  grievanceLog.getRange(row, GRIEVANCE_COLS.STEP3_APPEAL_DUE).setFormula(
+    `=IF(${step2RcvdCol}${row}<>"",${step2RcvdCol}${row}+30,"")`
+  );
+
+  // Days Open: Today - Date Filed (or Date Closed - Date Filed if closed)
+  grievanceLog.getRange(row, GRIEVANCE_COLS.DAYS_OPEN).setFormula(
+    `=IF(${dateFiledCol}${row}<>"",IF(${dateClosedCol}${row}<>"",${dateClosedCol}${row}-${dateFiledCol}${row},TODAY()-${dateFiledCol}${row}),"")`
+  );
+
+  // Next Action Due: Based on current step
+  grievanceLog.getRange(row, GRIEVANCE_COLS.NEXT_ACTION_DUE).setFormula(
+    `=IF(${statusCol}${row}="Open",IF(${currentStepCol}${row}="Step I",${step1DueCol}${row},IF(${currentStepCol}${row}="Step II",${step2DueCol}${row},IF(${currentStepCol}${row}="Step III",${step3AppealDueCol}${row},${filingDeadlineCol}${row}))),"")`
+  );
 }
 
 /**
@@ -999,17 +1094,17 @@ function recalcMemberRow(row) {
   const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
 
-  // Has Open Grievance? (Column Z / 26)
+  // Has Open Grievance? (Column Y / 25) - counts all active statuses
   memberDir.getRange(row, MEMBER_COLS.HAS_OPEN_GRIEVANCE).setFormula(
-    `=IF(COUNTIFS('Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},${memberIdCol}${row},'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No")`
+    `=IF(SUMPRODUCT(('Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol}=${memberIdCol}${row})*(('Grievance Log'!${statusCol}:${statusCol}="Open")+('Grievance Log'!${statusCol}:${statusCol}="Pending Info")+('Grievance Log'!${statusCol}:${statusCol}="Appealed")+('Grievance Log'!${statusCol}:${statusCol}="In Arbitration")))>0,"Yes","No")`
   );
 
-  // Grievance Status Snapshot (Column AA / 27)
+  // Grievance Status Snapshot (Column Z / 26)
   memberDir.getRange(row, MEMBER_COLS.GRIEVANCE_STATUS).setFormula(
     `=IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(${memberIdCol}${row},'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),"")`
   );
 
-  // Next Grievance Deadline (Column AB / 28)
+  // Next Grievance Deadline (Column AA / 27)
   memberDir.getRange(row, MEMBER_COLS.NEXT_DEADLINE).setFormula(
     `=IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(${memberIdCol}${row},'Grievance Log'!${grievanceMemberIdCol}:${grievanceMemberIdCol},0)),"")`
   );
@@ -1055,24 +1150,42 @@ function generateUniqueGrievanceId() {
  * Finds member row by member ID
  */
 function findMemberRow(memberId) {
+  // Validate memberId parameter
+  validateMemberId(memberId, 'findMemberRow');
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-  if (!memberSheet) return -1;
+  if (!memberSheet) {
+    logWarning('findMemberRow', `Member Directory sheet not found when searching for member ID: ${memberId}`);
+    return -1;
+  }
 
   const lastRow = memberSheet.getLastRow();
-  if (lastRow < 2) return -1;
+  if (lastRow < 2) {
+    logWarning('findMemberRow', `Member Directory is empty - no member found for ID: ${memberId}`);
+    return -1;
+  }
 
-  const memberIds = memberSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
-  const index = memberIds.indexOf(memberId);
+  try {
+    const memberIds = memberSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
+    const index = memberIds.indexOf(memberId);
 
-  return index >= 0 ? index + 2 : -1;
+    if (index < 0) {
+      logWarning('findMemberRow', `Member ID ${memberId} not found in Member Directory`);
+    }
+
+    return index >= 0 ? index + 2 : -1;
+  } catch (error) {
+    handleError(error, `findMemberRow - searching for member ID: ${memberId}`, false, true);
+    return -1;
+  }
 }
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * PDF GENERATION AND DISTRIBUTION
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -1091,7 +1204,7 @@ function generateGrievancePDF(grievanceId) {
   let grievanceRow = -1;
 
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === grievanceId) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       grievanceRow = i;
       break;
     }
@@ -1164,9 +1277,9 @@ function formatGrievancePDFSheet(sheet, data) {
     .setBackground('#E8F0FE');
   row++;
 
-  addPDFField(sheet, row++, 'Grievance ID:', data[0]);
-  addPDFField(sheet, row++, 'Member ID:', data[1]);
-  addPDFField(sheet, row++, 'Name:', data[2] + ' ' + data[3]);
+  addPDFField(sheet, row++, 'Grievance ID:', data[GRIEVANCE_COLS.GRIEVANCE_ID - 1]);
+  addPDFField(sheet, row++, 'Member ID:', data[GRIEVANCE_COLS.MEMBER_ID - 1]);
+  addPDFField(sheet, row++, 'Name:', data[GRIEVANCE_COLS.FIRST_NAME - 1] + ' ' + data[GRIEVANCE_COLS.LAST_NAME - 1]);
   row++;
 
   // Grievance Details
@@ -1176,11 +1289,11 @@ function formatGrievancePDFSheet(sheet, data) {
     .setBackground('#E8F0FE');
   row++;
 
-  addPDFField(sheet, row++, 'Status:', data[4]);
-  addPDFField(sheet, row++, 'Current Step:', data[5]);
-  addPDFField(sheet, row++, 'Incident Date:', data[6] ? Utilities.formatDate(new Date(data[6]), Session.getScriptTimeZone(), 'MM/dd/yyyy') : '');
-  addPDFField(sheet, row++, 'Grievance Type:', data[23]);
-  addPDFField(sheet, row++, 'Steward:', data[25]);
+  addPDFField(sheet, row++, 'Status:', data[GRIEVANCE_COLS.STATUS - 1]);
+  addPDFField(sheet, row++, 'Current Step:', data[GRIEVANCE_COLS.CURRENT_STEP - 1]);
+  addPDFField(sheet, row++, 'Incident Date:', data[GRIEVANCE_COLS.INCIDENT_DATE - 1] ? Utilities.formatDate(new Date(data[GRIEVANCE_COLS.INCIDENT_DATE - 1]), Session.getScriptTimeZone(), 'MM/dd/yyyy') : '');
+  addPDFField(sheet, row++, 'Grievance Type:', data[GRIEVANCE_COLS.ISSUE_CATEGORY - 1]);
+  addPDFField(sheet, row++, 'Steward:', data[GRIEVANCE_COLS.STEWARD - 1]);
   row++;
 
   // Description
@@ -1191,7 +1304,7 @@ function formatGrievancePDFSheet(sheet, data) {
   row++;
 
   sheet.getRange(row, 1, 3, 4).merge()
-    .setValue(data[24] || '')
+    .setValue(data[GRIEVANCE_COLS.LOCATION - 1] || '')
     .setWrap(true)
     .setVerticalAlignment('top')
     .setBorder(true, true, true, true, false, false);
@@ -1294,22 +1407,22 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
       }
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('✅ Email sent successfully!');
           google.script.host.close();
         })
-        .withFailureHandler(e => alert('❌ Error: ' + e.message))
+        .withFailureHandler(function(e) { return alert('❌ Error: ' + e.message); })
         .emailGrievancePDF('${grievanceId}', emails);
     }
 
     function downloadPDF() {
       alert('PDF download will start automatically.\\n\\nPlease check your Downloads folder.');
       google.script.run
-        .withSuccessHandler(url => {
+        .withSuccessHandler(function(url) {
           window.open(url, '_blank');
           google.script.host.close();
         })
-        .withFailureHandler(e => alert('❌ Error: ' + e.message))
+        .withFailureHandler(function(e) { return alert('❌ Error: ' + e.message); })
         .getGrievancePDFUrl('${grievanceId}');
     }
   </script>
@@ -1325,14 +1438,14 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
  */
 function emailGrievancePDF(grievanceId, emailAddresses) {
   const pdfBlob = generateGrievancePDF(grievanceId);
-  const emails = emailAddresses.split(',').map(e => e.trim());
+  const emails = emailAddresses.split(',').map(function(e) { return e.trim(); });
 
   const subject = 'SEIU Local 509 - Grievance ' + grievanceId;
   const body = 'Please find attached the grievance form for ' + grievanceId + '.\n\n' +
                'This grievance was automatically generated from the SEIU Local 509 Dashboard.\n\n' +
                'For questions, please contact your steward.';
 
-  emails.forEach(email => {
+  emails.forEach(function(email) {
     if (email) {
       GmailApp.sendEmail(email, subject, body, {
         attachments: [pdfBlob]
@@ -1359,4 +1472,228 @@ function getGrievancePDFUrl(grievanceId) {
     '&portrait=true' +
     '&fitw=true' +
     '&gid=' + sheetId;
+}
+
+/* --------------------= START GRIEVANCE FROM MEMBER DIRECTORY --------------------= */
+
+/**
+ * Opens the grievance intake form with prepopulated member information
+ * Called when user clicks the Start Grievance checkbox in Member Directory
+ * @param {number} memberRow - The row number of the member in Member Directory
+ */
+function openGrievanceFormForMember(memberRow) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) {
+    SpreadsheetApp.getUi().alert('❌ Member Directory not found!');
+    return;
+  }
+
+  // Get grievance form URL from Config sheet
+  const formUrl = getGrievanceIntakeFormUrl();
+
+  if (!formUrl) {
+    SpreadsheetApp.getUi().alert(
+      '📝 Grievance Intake Form URL Not Configured',
+      'No Grievance Form URL has been added to the Config tab.\n\n' +
+      'To configure:\n' +
+      '1. Go to the Config tab\n' +
+      '2. Find the "Grievance Form URL" column (column O)\n' +
+      '3. Paste your Google Form URL in row 3\n\n' +
+      'The form URL should look like:\n' +
+      'https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  // Get member data from the row
+  const memberData = memberSheet.getRange(memberRow, 1, 1, MEMBER_COLS.START_GRIEVANCE).getValues()[0];
+  const member = {
+    id: memberData[MEMBER_COLS.MEMBER_ID - 1] || '',
+    firstName: memberData[MEMBER_COLS.FIRST_NAME - 1] || '',
+    lastName: memberData[MEMBER_COLS.LAST_NAME - 1] || '',
+    jobTitle: memberData[MEMBER_COLS.JOB_TITLE - 1] || '',
+    location: memberData[MEMBER_COLS.WORK_LOCATION - 1] || '',
+    unit: memberData[MEMBER_COLS.UNIT - 1] || '',
+    email: memberData[MEMBER_COLS.EMAIL - 1] || '',
+    phone: memberData[MEMBER_COLS.PHONE - 1] || '',
+    supervisor: memberData[MEMBER_COLS.SUPERVISOR - 1] || '',
+    manager: memberData[MEMBER_COLS.MANAGER - 1] || '',
+    assignedSteward: memberData[MEMBER_COLS.ASSIGNED_STEWARD - 1] || ''
+  };
+
+  // Build pre-filled form URL
+  const preFilledUrl = buildPreFilledGrievanceUrl(formUrl, member);
+
+  // Show dialog with member info and open form button
+  const html = HtmlService.createHtmlOutput(`
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #5B4B9E;
+      margin-top: 0;
+      border-bottom: 3px solid #5B4B9E;
+      padding-bottom: 10px;
+    }
+    .member-info {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 15px 0;
+      border-left: 4px solid #5B4B9E;
+    }
+    .info-row {
+      margin: 8px 0;
+      display: flex;
+    }
+    .info-label {
+      font-weight: bold;
+      width: 120px;
+      color: #333;
+    }
+    .info-value {
+      color: #555;
+    }
+    .button-group {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #5B4B9E;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #4a3d82;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(91, 75, 158, 0.4);
+    }
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+    .note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 15px;
+      padding: 10px;
+      background: #e8f4fd;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📋 Start Grievance for Member</h2>
+
+    <div class="member-info">
+      <div class="info-row"><span class="info-label">Name:</span><span class="info-value">${escapeHtml(member.firstName)} ${escapeHtml(member.lastName)}</span></div>
+      <div class="info-row"><span class="info-label">Member ID:</span><span class="info-value">${escapeHtml(member.id)}</span></div>
+      <div class="info-row"><span class="info-label">Email:</span><span class="info-value">${escapeHtml(member.email) || 'Not provided'}</span></div>
+      <div class="info-row"><span class="info-label">Phone:</span><span class="info-value">${escapeHtml(member.phone) || 'Not provided'}</span></div>
+      <div class="info-row"><span class="info-label">Job Title:</span><span class="info-value">${escapeHtml(member.jobTitle)}</span></div>
+      <div class="info-row"><span class="info-label">Location:</span><span class="info-value">${escapeHtml(member.location)}</span></div>
+      <div class="info-row"><span class="info-label">Unit:</span><span class="info-value">${escapeHtml(member.unit)}</span></div>
+    </div>
+
+    <div class="note">
+      ℹ️ Clicking "Open Grievance Form" will open the grievance intake form in a new window with the member's information pre-filled.
+    </div>
+
+    <div class="button-group">
+      <button class="btn-primary" onclick="openForm()">📝 Open Grievance Form</button>
+      <button class="btn-secondary" onclick="google.script.host.close()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    function openForm() {
+      window.open('${preFilledUrl}', '_blank');
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>
+  `).setWidth(500).setHeight(450);
+
+  SpreadsheetApp.getUi().showModalDialog(html, '📋 Start Grievance');
+}
+
+/**
+ * Gets the Grievance Intake Form URL from the Config sheet
+ * @returns {string} The form URL or empty string if not configured
+ */
+function getGrievanceIntakeFormUrl() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!configSheet) {
+    Logger.log('Config sheet not found');
+    return '';
+  }
+
+  // Grievance Form URL is in column O (15), row 3 (first data row)
+  const url = configSheet.getRange(3, CONFIG_COLS.GRIEVANCE_FORM_URL).getValue();
+  return url ? url.toString().trim() : '';
+}
+
+/**
+ * Builds a pre-filled Google Form URL with member information
+ * @param {string} baseUrl - The base Google Form URL
+ * @param {Object} member - Member data object
+ * @returns {string} Pre-filled form URL
+ */
+function buildPreFilledGrievanceUrl(baseUrl, member) {
+  // If form field IDs are configured, use them
+  const fieldIds = GRIEVANCE_FORM_CONFIG.FIELD_IDS;
+
+  const params = new URLSearchParams();
+  params.append(fieldIds.MEMBER_ID, member.id);
+  params.append(fieldIds.MEMBER_FIRST_NAME, member.firstName);
+  params.append(fieldIds.MEMBER_LAST_NAME, member.lastName);
+  params.append(fieldIds.MEMBER_EMAIL, member.email);
+  params.append(fieldIds.MEMBER_PHONE, member.phone);
+  params.append(fieldIds.MEMBER_JOB_TITLE, member.jobTitle);
+  params.append(fieldIds.MEMBER_LOCATION, member.location);
+  params.append(fieldIds.MEMBER_UNIT, member.unit);
+
+  // Get steward info if available
+  const steward = getStewardContactInfo();
+  if (steward.name) {
+    params.append(fieldIds.STEWARD_NAME, steward.name);
+  }
+  if (steward.email) {
+    params.append(fieldIds.STEWARD_EMAIL, steward.email);
+  }
+
+  return baseUrl + '?' + params.toString();
 }

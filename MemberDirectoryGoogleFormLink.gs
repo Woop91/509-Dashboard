@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * MEMBER DIRECTORY GOOGLE FORM LINK
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Adds a button/checkbox feature to link to a Google Form
  * that auto-populates with member information
@@ -14,7 +14,7 @@
  */
 
 // Configuration for the member info Google Form
-const MEMBER_FORM_CONFIG = {
+MEMBER_FORM_CONFIG = {
   // Replace with your actual Google Form URL
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_MEMBER_FORM_ID/viewform",
 

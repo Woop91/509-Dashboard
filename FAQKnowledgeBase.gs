@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * FAQ DATABASE & KNOWLEDGE BASE
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Searchable knowledge base for common questions and procedures
  * Features:
@@ -17,7 +17,7 @@
 /**
  * FAQ categories
  */
-const FAQ_CATEGORIES = {
+FAQ_CATEGORIES = {
   GETTING_STARTED: 'Getting Started',
   GRIEVANCES: 'Grievance Process',
   MEMBERS: 'Member Management',
@@ -370,9 +370,9 @@ function createFAQSearchHTML() {
 
     <div class="categories">
       <div class="category-badge active" onclick="filterByCategory('')">All Categories</div>
-      ${categories.map(cat => `
+      ${categories.map(function(cat) { return `
         <div class="category-badge" onclick="filterByCategory('${cat}')">${cat}</div>
-      `).join('')}
+      `; }).join('')}
     </div>
 
     <div class="stats" id="stats">
@@ -403,7 +403,7 @@ function createFAQSearchHTML() {
       const stats = document.getElementById('stats');
       stats.innerHTML = \`
         <strong>📊 Knowledge Base Stats:</strong>
-        ${allFAQs.length} articles across ${new Set(allFAQs.map(f => f.category)).size} categories
+        ${allFAQs.length} articles across ${new Set(allFAQs.map(function(f) { return f.category; })).size} categories
       \`;
     }
 
@@ -418,11 +418,11 @@ function createFAQSearchHTML() {
       let filtered = allFAQs;
 
       if (currentCategory) {
-        filtered = filtered.filter(faq => faq.category === currentCategory);
+        filtered = filtered.filter(function(faq) { return faq.category === currentCategory; });
       }
 
       if (searchTerm) {
-        filtered = filtered.filter(faq => {
+        filtered = filtered.filter(function(faq) {
           return faq.question.toLowerCase().includes(searchTerm) ||
                  faq.answer.toLowerCase().includes(searchTerm) ||
                  (faq.tags && faq.tags.toLowerCase().includes(searchTerm));
@@ -436,7 +436,7 @@ function createFAQSearchHTML() {
       currentCategory = category;
 
       // Update active badge
-      document.querySelectorAll('.category-badge').forEach(badge => {
+      document.querySelectorAll('.category-badge').forEach(function(badge) {
         badge.classList.remove('active');
       });
       event.target.classList.add('active');
@@ -487,7 +487,7 @@ function createFAQSearchHTML() {
 
     function markHelpful(faqId, isHelpful) {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           // Reload FAQs to get updated counts
           google.script.run
             .withSuccessHandler(onFAQsLoaded)
@@ -520,19 +520,19 @@ function getAllFAQs() {
 
   const data = faqSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
-  return data.map(row => ({
-    id: row[0],
-    category: row[1],
-    question: row[2],
-    answer: row[3],
-    tags: row[4],
-    relatedFAQs: row[5],
-    helpfulCount: row[6] || 0,
-    notHelpfulCount: row[7] || 0,
-    createdDate: row[8],
-    lastUpdated: row[9],
-    createdBy: row[10]
-  }));
+  return data.map(function(row) { return {
+    id: row[FAQ_COLS.ID - 1],
+    category: row[FAQ_COLS.CATEGORY - 1],
+    question: row[FAQ_COLS.QUESTION - 1],
+    answer: row[FAQ_COLS.ANSWER - 1],
+    tags: row[FAQ_COLS.TAGS - 1],
+    relatedFAQs: row[FAQ_COLS.RELATED_FAQS - 1],
+    helpfulCount: row[FAQ_COLS.HELPFUL_COUNT - 1] || 0,
+    notHelpfulCount: row[FAQ_COLS.NOT_HELPFUL_COUNT - 1] || 0,
+    createdDate: row[FAQ_COLS.CREATED_DATE - 1],
+    lastUpdated: row[FAQ_COLS.LAST_UPDATED - 1],
+    createdBy: row[FAQ_COLS.CREATED_BY - 1]
+  };});
 }
 
 /**
@@ -550,9 +550,9 @@ function updateFAQHelpfulness(faqId, isHelpful) {
   const data = faqSheet.getRange(2, 1, lastRow - 1, 1).getValues();
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === faqId) {
+    if (data[i][FAQ_COLS.ID - 1] === faqId) {
       const row = i + 2;
-      const col = isHelpful ? 7 : 8; // Column G or H
+      const col = isHelpful ? FAQ_COLS.HELPFUL_COUNT : FAQ_COLS.NOT_HELPFUL_COUNT;
 
       const currentCount = faqSheet.getRange(row, col).getValue() || 0;
       faqSheet.getRange(row, col).setValue(currentCount + 1);
@@ -605,7 +605,7 @@ function createFAQAdminHTML() {
     <div class="form-group">
       <label>Category:</label>
       <select id="category">
-        ${categories.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+        ${categories.map(function(cat) { return `<option value="${cat}">${cat}</option>`; }).join('')}
       </select>
     </div>
 
@@ -643,11 +643,11 @@ function createFAQAdminHTML() {
       }
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('✅ FAQ saved successfully!');
           google.script.host.close();
         })
-        .withFailureHandler((error) => {
+        .withFailureHandler(function(error) {
           alert('Error: ' + error.message);
         })
         .addNewFAQ(faq);

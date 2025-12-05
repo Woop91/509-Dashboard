@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * AUTOMATED DEADLINE NOTIFICATIONS
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Automated email alerts for approaching grievance deadlines
  * Features:
@@ -18,7 +18,7 @@
 function setupDailyDeadlineNotifications() {
   // Delete existing triggers to avoid duplicates
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'checkDeadlinesAndNotify') {
       ScriptApp.deleteTrigger(trigger);
     }
@@ -45,7 +45,7 @@ function disableDailyDeadlineNotifications() {
   const triggers = ScriptApp.getProjectTriggers();
   let removed = 0;
 
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'checkDeadlinesAndNotify') {
       ScriptApp.deleteTrigger(trigger);
       removed++;
@@ -79,7 +79,7 @@ function checkDeadlinesAndNotify() {
   }
 
   // Get all grievance data
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
 
   const notifications = {
     overdue: [],
@@ -87,17 +87,20 @@ function checkDeadlinesAndNotify() {
     upcoming: []     // 7 days or less
   };
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   // Categorize grievances by deadline urgency
-  data.forEach((row, index) => {
-    const grievanceId = row[0];
-    const memberFirstName = row[2];
-    const memberLastName = row[3];
-    const status = row[4];
-    const issueType = row[5];
-    const nextActionDue = row[19];
-    const daysToDeadline = row[20];
-    const steward = row[13];
-    const manager = row[11];
+  data.forEach(function(row, index) {
+    const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+    const memberFirstName = row[GRIEVANCE_COLS.FIRST_NAME - 1];
+    const memberLastName = row[GRIEVANCE_COLS.LAST_NAME - 1];
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const issueType = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+    const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+    const manager = row[GRIEVANCE_COLS.STEP2_APPEAL_DUE - 1];
 
     // Only check open grievances with deadlines
     if (status !== 'Open' || !nextActionDue || !steward) {
@@ -128,19 +131,19 @@ function checkDeadlinesAndNotify() {
   let emailsSent = 0;
 
   // Send overdue notifications
-  notifications.overdue.forEach(grievance => {
+  notifications.overdue.forEach(function(grievance) {
     sendDeadlineNotification(grievance, 'OVERDUE');
     emailsSent++;
   });
 
   // Send urgent notifications (escalate to manager)
-  notifications.urgent.forEach(grievance => {
+  notifications.urgent.forEach(function(grievance) {
     sendDeadlineNotification(grievance, 'URGENT');
     emailsSent++;
   });
 
   // Send upcoming notifications
-  notifications.upcoming.forEach(grievance => {
+  notifications.upcoming.forEach(function(grievance) {
     sendDeadlineNotification(grievance, 'UPCOMING');
     emailsSent++;
   });
@@ -335,7 +338,7 @@ function testDeadlineNotifications() {
  */
 function showNotificationSettings() {
   const triggers = ScriptApp.getProjectTriggers();
-  const isEnabled = triggers.some(t => t.getHandlerFunction() === 'checkDeadlinesAndNotify');
+  const isEnabled = triggers.some(function(t) { return t.getHandlerFunction() === 'checkDeadlinesAndNotify'; });
 
   const html = HtmlService.createHtmlOutput(`
 <!DOCTYPE html>
@@ -444,13 +447,13 @@ function showNotificationSettings() {
       </ul>
     </div>
 
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).setupDailyDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).setupDailyDeadlineNotifications()">
       ${isEnabled ? '🔄 Refresh Trigger' : '✅ Enable Notifications'}
     </button>
 
-    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
+    ${isEnabled ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).disableDailyDeadlineNotifications()">🔕 Disable Notifications</button>' : ''}
 
-    <button onclick="google.script.run.withSuccessHandler(() => { google.script.host.close(); }).testDeadlineNotifications()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).testDeadlineNotifications()">
       🧪 Test Now
     </button>
   </div>

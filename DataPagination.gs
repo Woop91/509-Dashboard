@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * DATA PAGINATION & VIRTUAL SCROLLING
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Advanced pagination system for handling large datasets efficiently
  * Features:
@@ -17,7 +17,7 @@
 /**
  * Pagination configuration
  */
-const PAGINATION_CONFIG = {
+PAGINATION_CONFIG = {
   DEFAULT_PAGE_SIZE: 100,
   PAGE_SIZE_OPTIONS: [25, 50, 100, 200, 500],
   MAX_CACHED_PAGES: 10,
@@ -283,7 +283,7 @@ function createPaginatedViewerHTML() {
   <script>
     let currentPage = 1;
     let pageSize = ${pageSize};
-    let totalRecords = ${totalRows};
+    const totalRecords = ${totalRows};
     let totalPages = ${totalPages};
     let currentData = [];
     let allHeaders = [];
@@ -318,7 +318,7 @@ function createPaginatedViewerHTML() {
       let html = '<table><thead><tr>';
 
       // Headers
-      data.headers.forEach(header => {
+      data.headers.forEach(function(header) {
         html += '<th>' + escapeHtml(header) + '</th>';
       });
 
@@ -328,9 +328,9 @@ function createPaginatedViewerHTML() {
       if (data.rows.length === 0) {
         html += '<tr><td colspan="' + data.headers.length + '" class="no-data">No records found</td></tr>';
       } else {
-        data.rows.forEach(row => {
+        data.rows.forEach(function(row) {
           html += '<tr>';
-          row.forEach(cell => {
+          row.forEach(function(cell) {
             let cellValue = cell;
             if (cell instanceof Date) {
               cellValue = cell.toLocaleDateString();
@@ -408,8 +408,8 @@ function createPaginatedViewerHTML() {
         return;
       }
 
-      const filteredRows = currentData.filter(row => {
-        return row.some(cell => {
+      const filteredRows = currentData.filter(function(row) {
+        return row.some(function(cell) {
           return String(cell).toLowerCase().includes(searchTerm);
         });
       });
@@ -419,7 +419,7 @@ function createPaginatedViewerHTML() {
 
     function exportCurrentPage() {
       google.script.run
-        .withSuccessHandler((url) => {
+        .withSuccessHandler(function(url) {
           alert('✅ Page exported!');
           window.open(url, '_blank');
         })
@@ -490,11 +490,11 @@ function exportPageToCSV(page, pageSize) {
   let csv = '';
 
   // Headers
-  csv += data.headers.map(h => `"${h}"`).join(',') + '\n';
+  csv += data.headers.map(function(h) { return `"${h}"`; }).join(',') + '\n';
 
   // Rows
-  data.rows.forEach(row => {
-    csv += row.map(cell => {
+  data.rows.forEach(function(row) {
+    csv += row.map(function(cell) {
       let value = String(cell);
       if (cell instanceof Date) {
         value = Utilities.formatDate(cell, Session.getScriptTimeZone(), 'yyyy-MM-dd');

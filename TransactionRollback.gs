@@ -152,7 +152,7 @@ class Transaction {
 
     const duration = new Date() - this.startTime;
     let sheetsRestored = 0;
-    let errors = [];
+    const errors = [];
 
     Logger.log(`Transaction ${this.transactionId}: Starting rollback of ${this.snapshots.size} sheets...`);
 

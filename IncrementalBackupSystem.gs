@@ -231,7 +231,7 @@ function listBackups() {
     }
 
     // Sort by creation date (newest first)
-    backups.sort((a, b) => b.created - a.created);
+    backups.sort(function(a, b) { return b.created - a.created; });
 
     return backups;
 

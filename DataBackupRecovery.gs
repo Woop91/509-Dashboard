@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * DATA BACKUP & RECOVERY SYSTEM
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Automated and manual backup/recovery capabilities
  * Features:
@@ -112,7 +112,14 @@ function logBackup(backupName, fileId, automated) {
  */
 function createBackupLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('💾 Backup Log');
+
+  // Check if sheet already exists
+  let sheet = ss.getSheetByName('💾 Backup Log');
+  if (sheet) {
+    return sheet; // Return existing sheet
+  }
+
+  sheet = ss.insertSheet('💾 Backup Log');
 
   const headers = [
     'Timestamp',
@@ -167,13 +174,13 @@ function cleanOldBackups() {
     }
 
     // Sort by date (oldest first)
-    backupFiles.sort((a, b) => a.created - b.created);
+    backupFiles.sort(function(a, b) { return a.created - b.created; });
 
     const now = new Date();
     const cutoffDate = new Date(now.getTime() - (RETENTION_DAYS * 24 * 60 * 60 * 1000));
 
     // Delete old backups
-    backupFiles.forEach((backup, index) => {
+    backupFiles.forEach(function(backup, index) {
       // Keep if:
       // 1. Within retention period
       // 2. One of the most recent MAX_BACKUPS
@@ -197,7 +204,7 @@ function cleanOldBackups() {
 function setupAutomatedBackups() {
   // Delete existing triggers
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'runAutomatedBackup') {
       ScriptApp.deleteTrigger(trigger);
     }
@@ -224,7 +231,7 @@ function disableAutomatedBackups() {
   const triggers = ScriptApp.getProjectTriggers();
   let removed = 0;
 
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'runAutomatedBackup') {
       ScriptApp.deleteTrigger(trigger);
       removed++;
@@ -283,7 +290,7 @@ function showBackupManager() {
  */
 function createBackupManagerHTML() {
   const triggers = ScriptApp.getProjectTriggers();
-  const isAutomated = triggers.some(t => t.getHandlerFunction() === 'runAutomatedBackup');
+  const isAutomated = triggers.some(function(t) { return t.getHandlerFunction() === 'runAutomatedBackup'; });
 
   return `
 <!DOCTYPE html>
@@ -326,10 +333,10 @@ function createBackupManagerHTML() {
       <div class="status ${isAutomated ? 'enabled' : 'disabled'}">
         ${isAutomated ? '✅ Automated backups are ENABLED (Weekly, Sundays 2 AM)' : '🔕 Automated backups are DISABLED'}
       </div>
-      <button onclick="google.script.run.withSuccessHandler(() => location.reload()).setupAutomatedBackups()">
+      <button onclick="google.script.run.withSuccessHandler(function() { location.reload(); }).setupAutomatedBackups()">
         ${isAutomated ? '🔄 Refresh Schedule' : '✅ Enable Automated Backups'}
       </button>
-      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(() => location.reload()).disableAutomatedBackups()">🔕 Disable</button>' : ''}
+      ${isAutomated ? '<button class="danger" onclick="google.script.run.withSuccessHandler(function() { location.reload(); }).disableAutomatedBackups()">🔕 Disable</button>' : ''}
     </div>
 
     <div class="section">
@@ -367,10 +374,10 @@ function createBackupManagerHTML() {
       alert('Creating backup... This may take a moment.');
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('✅ Backup created successfully!');
         })
-        .withFailureHandler((error) => {
+        .withFailureHandler(function(error) {
           alert('❌ Backup failed: ' + error.message);
         })
         .createBackup(false);
@@ -383,7 +390,7 @@ function createBackupManagerHTML() {
 
     function showBackupLog() {
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('Opening Backup Log sheet...');
           google.script.host.close();
         })
@@ -393,7 +400,7 @@ function createBackupManagerHTML() {
     function exportGrievances() {
       alert('Exporting grievances to CSV...');
       google.script.run
-        .withSuccessHandler((csv) => {
+        .withSuccessHandler(function(csv) {
           downloadCSV(csv, 'grievances.csv');
         })
         .exportGrievancesToCSV();
@@ -402,7 +409,7 @@ function createBackupManagerHTML() {
     function exportMembers() {
       alert('Exporting members to CSV...');
       google.script.run
-        .withSuccessHandler((csv) => {
+        .withSuccessHandler(function(csv) {
           downloadCSV(csv, 'members.csv');
         })
         .exportMembersToCSV();
@@ -455,8 +462,8 @@ function exportGrievancesToCSV() {
   const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
 
   let csv = '';
-  data.forEach(row => {
-    const values = row.map(v => {
+  data.forEach(function(row) {
+    const values = row.map(function(v) {
       const str = v.toString();
       return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
     });
@@ -480,8 +487,8 @@ function exportMembersToCSV() {
   const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
 
   let csv = '';
-  data.forEach(row => {
-    const values = row.map(v => {
+  data.forEach(function(row) {
+    const values = row.map(function(v) {
       const str = v.toString();
       return str.includes(',') || str.includes('"') ? `"${str.replace(/"/g, '""')}"` : str;
     });
@@ -506,13 +513,13 @@ function verifyBackup(backupFileId) {
     const verification = {
       valid: true,
       sheetCount: sheets.length,
-      sheets: sheets.map(s => s.getName()),
+      sheets: sheets.map(function(s) { return s.getName(); }),
       dataRows: {}
     };
 
     // Check key sheets
     const keySheets = [SHEETS.GRIEVANCE_LOG, SHEETS.MEMBER_DIR];
-    keySheets.forEach(sheetName => {
+    keySheets.forEach(function(sheetName) {
       const sheet = backupSS.getSheetByName(sheetName);
       if (sheet) {
         verification.dataRows[sheetName] = sheet.getLastRow() - 1; // Minus header

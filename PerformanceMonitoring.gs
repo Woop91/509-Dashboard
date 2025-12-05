@@ -49,7 +49,7 @@ function logPerformanceMetric(funcName, duration, error = false) {
   const keys = Object.keys(perfLog);
   if (keys.length > 100) {
     // Remove oldest entries
-    const sorted = keys.sort((a, b) => (perfLog[a].lastRun || 0) - (perfLog[b].lastRun || 0));
+    const sorted = keys.sort(function(a, b) { return (perfLog[a].lastRun || 0) - (perfLog[b].lastRun || 0); });
     delete perfLog[sorted[0]];
   }
 
@@ -105,7 +105,7 @@ function createPerformanceMonitoringSheet() {
   }
 
   // Sort by average time (descending) to show slowest functions first
-  rows.sort((a, b) => b[1] - a[1]);
+  rows.sort(function(a, b) { return b[1] - a[1]; });
 
   if (rows.length > 0) {
     perfSheet.getRange(2, 1, rows.length, 7).setValues(rows);
@@ -167,7 +167,7 @@ function createPerformanceMonitoringSheet() {
 
   perfSheet.getRange(summaryRow + 2, 1).setValue('Total Calls:');
   perfSheet.getRange(summaryRow + 2, 2).setValue(
-    rows.reduce((sum, row) => sum + row[4], 0)
+    rows.reduce(function(sum, row) { return sum + row[4]; }, 0)
   );
 
   perfSheet.getRange(summaryRow + 3, 1).setValue('Last Updated:');

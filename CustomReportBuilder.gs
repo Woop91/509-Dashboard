@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * CUSTOM REPORT BUILDER
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Build custom reports with filters, grouping, and export
  * Features:
@@ -203,7 +203,7 @@ function createReportBuilderHTML() {
       <div class="form-group">
         <label>Fields (hold Ctrl/Cmd to select multiple):</label>
         <select id="fields" multiple class="multi-select">
-          ${grievanceFields.map(f => `<option value="${f.key}">${f.name}</option>`).join('')}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <button class="small secondary" onclick="selectAllFields()">Select All</button>
@@ -218,7 +218,7 @@ function createReportBuilderHTML() {
           <div>
             <label>Field:</label>
             <select id="filter0_field">
-              ${grievanceFields.map(f => `<option value="${f.key}">${f.name}</option>`).join('')}
+              ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
             </select>
           </div>
           <div>
@@ -251,13 +251,13 @@ function createReportBuilderHTML() {
         <label>Group By (optional):</label>
         <select id="groupBy">
           <option value="">No Grouping</option>
-          ${grievanceFields.map(f => `<option value="${f.key}">${f.name}</option>`).join('')}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <div class="form-group">
         <label>Sort By:</label>
         <select id="sortBy">
-          ${grievanceFields.map(f => `<option value="${f.key}">${f.name}</option>`).join('')}
+          ${grievanceFields.map(function(f) { return `<option value="${f.key}">${f.name}</option>`; }).join('')}
         </select>
       </div>
       <div class="form-group">
@@ -316,7 +316,7 @@ function createReportBuilderHTML() {
 
       const fields = dataSource === 'members' ? memberFields : grievanceFields;
 
-      fields.forEach(f => {
+      fields.forEach(function(f) {
         const option = document.createElement('option');
         option.value = f.key;
         option.textContent = f.name;
@@ -347,7 +347,7 @@ function createReportBuilderHTML() {
         <div>
           <label>Field:</label>
           <select id="filter\${filterCount}_field">
-            \${grievanceFields.map(f => '<option value="' + f.key + '">' + f.name + '</option>').join('')}
+            \${grievanceFields.map(function(f) { return '<option value="' + f.key + '">' + f.name + '</option>'; }).join('')}
           </select>
         </div>
         <div>
@@ -382,7 +382,7 @@ function createReportBuilderHTML() {
 
     function getReportConfig() {
       const fieldsSelect = document.getElementById('fields');
-      const selectedFields = Array.from(fieldsSelect.selectedOptions).map(opt => opt.value);
+      const selectedFields = Array.from(fieldsSelect.selectedOptions).map(function(opt) { return opt.value; });
 
       const filters = [];
       for (let i = 0; i < filterCount; i++) {
@@ -435,15 +435,15 @@ function createReportBuilderHTML() {
       let html = '<table><thead><tr>';
 
       // Headers
-      Object.keys(data[0]).forEach(key => {
+      Object.keys(data[0]).forEach(function(key) {
         html += '<th>' + key + '</th>';
       });
       html += '</tr></thead><tbody>';
 
       // Data rows
-      data.forEach(row => {
+      data.forEach(function(row) {
         html += '<tr>';
-        Object.values(row).forEach(value => {
+        Object.values(row).forEach(function(value) {
           html += '<td>' + (value || '') + '</td>';
         });
         html += '</tr>';
@@ -471,7 +471,7 @@ function createReportBuilderHTML() {
       alert('Generating PDF report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('✅ PDF report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -487,7 +487,7 @@ function createReportBuilderHTML() {
       }
 
       google.script.run
-        .withSuccessHandler((csvData) => {
+        .withSuccessHandler(function(csvData) {
           downloadCSV(csvData);
         })
         .withFailureHandler(onError)
@@ -505,7 +505,7 @@ function createReportBuilderHTML() {
       alert('Generating Excel report... This may take a moment.');
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('✅ Excel report generated and saved to Google Drive!');
         })
         .withFailureHandler(onError)
@@ -529,7 +529,7 @@ function createReportBuilderHTML() {
       if (!name) return;
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('✅ Template saved: ' + name);
         })
         .withFailureHandler(onError)
@@ -549,12 +549,12 @@ function createReportBuilderHTML() {
         return;
       }
 
-      const templateNames = templates.map(t => t.name).join('\\n');
+      const templateNames = templates.map(function(t) { return t.name; }).join('\\n');
       const selected = prompt('Available templates:\\n' + templateNames + '\\n\\nEnter template name to load:');
 
       if (!selected) return;
 
-      const template = templates.find(t => t.name === selected);
+      const template = templates.find(function(t) { return t.name === selected; });
       if (template) {
         applyTemplate(template.config);
       } else {
@@ -661,7 +661,7 @@ function generateReportData(config, limit = null) {
   }
 
   // Apply filters
-  let filteredData = sourceData.filter(row => {
+  let filteredData = sourceData.filter(function(row) {
     return applyFilters(row, config.filters, fieldMapping);
   });
 
@@ -681,9 +681,9 @@ function generateReportData(config, limit = null) {
   }
 
   // Select fields and format
-  const reportData = filteredData.map(row => {
+  const reportData = filteredData.map(function(row) {
     const reportRow = {};
-    config.fields.forEach(fieldKey => {
+    config.fields.forEach(function(fieldKey) {
       const field = fieldMapping[fieldKey];
       if (field) {
         reportRow[field.name] = formatValue(row[field.index], field.type);
@@ -743,7 +743,7 @@ function getMemberFieldMapping() {
 function applyFilters(row, filters, fieldMapping) {
   if (!filters || filters.length === 0) return true;
 
-  return filters.every(filter => {
+  return filters.every(function(filter) {
     if (!filter.value) return true;
 
     const field = fieldMapping[filter.field];
@@ -783,8 +783,9 @@ function applyDateRange(data, dateFrom, dateTo, fieldMapping) {
   const fromDate = dateFrom ? new Date(dateFrom) : null;
   const toDate = dateTo ? new Date(dateTo) : null;
 
-  return data.filter(row => {
-    const filedDate = row[6]; // Assuming column G is filed date
+  return data.filter(function(row) {
+    // Use DATE_FILED column for filed date filtering
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
 
     if (!filedDate) return true;
 
@@ -807,7 +808,7 @@ function sortData(data, sortBy, sortOrder, fieldMapping) {
   const field = fieldMapping[sortBy];
   if (!field) return data;
 
-  return data.sort((a, b) => {
+  return data.sort(function(a, b) {
     const aVal = a[field.index];
     const bVal = b[field.index];
 
@@ -865,8 +866,8 @@ function exportReportToPDF(config) {
     const headers = Object.keys(data[0]);
     const tableData = [headers];
 
-    data.forEach(row => {
-      tableData.push(Object.values(row).map(v => v.toString()));
+    data.forEach(function(row) {
+      tableData.push(Object.values(row).map(function(v) { return v.toString(); }));
     });
 
     const table = body.appendTable(tableData);
@@ -901,8 +902,8 @@ function exportReportToCSV(config) {
   const headers = Object.keys(data[0]);
   let csv = headers.join(',') + '\n';
 
-  data.forEach(row => {
-    const values = Object.values(row).map(v => {
+  data.forEach(function(row) {
+    const values = Object.values(row).map(function(v) {
       const str = v.toString();
       return str.includes(',') ? `"${str}"` : str;
     });
@@ -932,7 +933,7 @@ function exportReportToExcel(config) {
       .setFontColor('#ffffff')
       .setFontWeight('bold');
 
-    const rows = data.map(row => Object.values(row));
+    const rows = data.map(function(row) { return Object.values(row); });
     sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
   }
 
@@ -949,7 +950,7 @@ function saveReportTemplate(name, config) {
   const templates = JSON.parse(props.getProperty('reportTemplates') || '[]');
 
   // Remove existing template with same name
-  const filtered = templates.filter(t => t.name !== name);
+  const filtered = templates.filter(function(t) { return t.name !== name; });
 
   // Add new template
   filtered.push({ name: name, config: config });

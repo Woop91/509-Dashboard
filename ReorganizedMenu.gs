@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * REORGANIZED MENU SYSTEM
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Organizes dashboard menus into three categories:
  * 1. Average User - Daily operations and common tasks
@@ -16,7 +16,7 @@
 function onOpen_Reorganized() {
   const ui = SpreadsheetApp.getUi();
 
-  // ============ AVERAGE USER MENU ============
+  // ------------ AVERAGE USER MENU ------------
   ui.createMenu("👤 Dashboard")
     .addItem("🔄 Refresh All", "refreshCalculations")
     .addSeparator()
@@ -33,7 +33,10 @@ function onOpen_Reorganized() {
     .addSubMenu(ui.createMenu("📋 Grievance Tools")
       .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
       .addItem("🔄 Grievance Float Toggle", "toggleGrievanceFloat")
-      .addItem("🎛️ Float Control Panel", "showGrievanceFloatPanel"))
+      .addItem("🎛️ Float Control Panel", "showGrievanceFloatPanel")
+      .addSeparator()
+      .addItem("📨 View Message Trail", "showMessageTrail")
+      .addItem("🔄 Refresh Admin Highlights", "refreshAdminMessageHighlights"))
     .addSeparator()
     .addSubMenu(ui.createMenu("📁 Google Drive")
       .addItem("📁 Setup Folder for Grievance", "setupDriveFolderForGrievance")
@@ -66,7 +69,7 @@ function onOpen_Reorganized() {
       .addItem("⌨️ Keyboard Shortcuts", "showKeyboardShortcuts"))
     .addToUi();
 
-  // ============ SHEET MANAGER MENU ============
+  // ------------ SHEET MANAGER MENU ------------
   ui.createMenu("📊 Sheet Manager")
     .addSubMenu(ui.createMenu("💾 Data Management")
       .addItem("💾 Backup & Recovery Manager", "showBackupManager")
@@ -139,7 +142,7 @@ function onOpen_Reorganized() {
       .addItem("📝 Create FAQ Database", "createFAQSheet"))
     .addToUi();
 
-  // ============ ADMINISTRATOR MENU ============
+  // ------------ ADMINISTRATOR MENU ------------
   ui.createMenu("⚙️ Administrator")
     .addSubMenu(ui.createMenu("🌱 Seed Functions")
       .addSubMenu(ui.createMenu("👥 Seed Members")
@@ -180,15 +183,22 @@ function onOpen_Reorganized() {
       .addItem("📊 Populate Analytics Sheets", "populateAllAnalyticsSheets")
       .addItem("📝 Add Sample Feedback Entries", "addSampleFeedbackEntries")
       .addSeparator()
+      .addItem("📋 Setup All Dropdowns", "setupAllDropdowns")
       .addItem("📋 Setup Member Directory Dropdowns", "setupMemberDirectoryDropdowns")
+      .addItem("📋 Setup Grievance Log Dropdowns", "setupGrievanceLogDropdowns")
       .addItem("🔄 Refresh Steward Dropdowns", "refreshStewardDropdowns")
-      .addItem("🗑️ Remove Emergency Contact Columns", "removeEmergencyContactColumns")
       .addSeparator()
+      .addItem("🗑️ Remove Emergency Contact Columns", "removeEmergencyContactColumns")
       .addItem("📝 Open Member Google Form", "openMemberGoogleForm"))
     .addSeparator()
     .addSubMenu(ui.createMenu("👁️ Column Toggles & View")
       .addItem("Toggle Level 2 Member Columns", "toggleLevel2Columns")
       .addItem("Show All Member Columns", "showAllMemberColumns")
+      .addSeparator()
+      .addItem("📨 Toggle Admin Message Columns", "toggleAdminMessageColumns")
+      .addItem("Show All Grievance Columns", "showAllGrievanceColumns")
+      .addItem("🔧 Setup Admin Message Columns", "setupAdminMessageColumns")
+      .addItem("⚡ Install Admin Message Trigger", "installAdminMessageTrigger")
       .addSeparator()
       .addItem("👁️ Hide Diagnostics Tab", "hideDiagnosticsTab")
       .addItem("Reorder Sheets Logically", "reorderSheetsLogically")

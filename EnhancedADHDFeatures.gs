@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * ENHANCED ADHD FEATURES
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Advanced accessibility and focus features for neurodivergent users
  * Features:
@@ -20,7 +20,7 @@
 /**
  * ADHD configuration
  */
-const ADHD_CONFIG = {
+ADHD_CONFIG = {
   FOCUS_MODE_COLORS: {
     background: '#f5f5f5',
     header: '#4a4a4a',
@@ -342,7 +342,7 @@ function createADHDControlPanelHTML() {
 
     function selectTheme(theme) {
       selectedTheme = theme;
-      document.querySelectorAll('.theme-card').forEach(card => {
+      document.querySelectorAll('.theme-card').forEach(function(card) {
         card.classList.remove('selected');
       });
       event.target.closest('.theme-card').classList.add('selected');
@@ -356,22 +356,22 @@ function createADHDControlPanelHTML() {
 
     function toggleZebraStripes() {
       google.script.run.toggleZebraStripes();
-      setTimeout(() => location.reload(), 1000);
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function toggleGridlines() {
       google.script.run.toggleGridlinesADHD();
-      setTimeout(() => location.reload(), 1000);
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function toggleReducedMotion() {
       google.script.run.toggleReducedMotion();
-      setTimeout(() => location.reload(), 1000);
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function toggleComplexityIndicators() {
       google.script.run.toggleComplexityIndicators();
-      setTimeout(() => location.reload(), 1000);
+      setTimeout(function() { return location.reload(), 1000; });
     }
 
     function activateFocusMode() {
@@ -401,7 +401,7 @@ function createADHDControlPanelHTML() {
       };
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('✅ Settings saved!');
           google.script.host.close();
         })
@@ -411,7 +411,7 @@ function createADHDControlPanelHTML() {
     function resetToDefaults() {
       if (confirm('Reset all ADHD settings to defaults?')) {
         google.script.run
-          .withSuccessHandler(() => {
+          .withSuccessHandler(function() {
             alert('✅ Settings reset!');
             location.reload();
           })
@@ -473,7 +473,7 @@ function applyADHDSettings(settings) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     // Font size
     if (settings.fontSize) {
       sheet.getDataRange().setFontSize(parseInt(settings.fontSize));
@@ -502,7 +502,7 @@ function toggleZebraStripes() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     if (settings.zebraStripes) {
       applyZebraStripes(sheet);
     } else {
@@ -542,7 +542,7 @@ function applyZebraStripes(sheet) {
  */
 function removeZebraStripes(sheet) {
   const bandings = sheet.getBandings();
-  bandings.forEach(banding => banding.remove());
+  bandings.forEach(function(banding) { return banding.remove(); });
 }
 
 /**
@@ -582,7 +582,7 @@ function activateFocusMode() {
   const activeSheet = ss.getActiveSheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     if (sheet.getName() !== activeSheet.getName()) {
       sheet.hideSheet();
     }
@@ -609,7 +609,7 @@ function deactivateFocusMode() {
   const sheets = ss.getSheets();
 
   // Show all sheets
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     if (sheet.isSheetHidden()) {
       sheet.showSheet();
     }
@@ -668,7 +668,7 @@ function showQuickCaptureNotepad() {
     function saveNotes() {
       const notes = document.getElementById('notes').value;
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('✅ Notes saved!');
         })
         .saveQuickCaptureNotes(notes);
@@ -682,7 +682,7 @@ function showQuickCaptureNotepad() {
     }
 
     // Auto-save every 30 seconds
-    setInterval(() => {
+    setInterval(function() {
       const notes = document.getElementById('notes').value;
       if (notes) {
         google.script.run.saveQuickCaptureNotes(notes);
@@ -770,7 +770,7 @@ function startPomodoroTimer() {
       isRunning = true;
       document.querySelector('button').textContent = '⏸️ Pause';
 
-      interval = setInterval(() => {
+      interval = setInterval(function() {
         if (timeLeft > 0) {
           timeLeft--;
           updateDisplay();
@@ -852,7 +852,7 @@ function setBreakReminders(intervalMinutes) {
 
   // Delete existing triggers
   const triggers = ScriptApp.getProjectTriggers();
-  triggers.forEach(trigger => {
+  triggers.forEach(function(trigger) {
     if (trigger.getHandlerFunction() === 'showBreakReminder') {
       ScriptApp.deleteTrigger(trigger);
     }
@@ -894,8 +894,13 @@ function resetADHDSettings() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
-    sheet.setFontSize(10);
+  sheets.forEach(function(sheet) {
+    // Reset font size for data range (setFontSize only works on ranges, not sheets)
+    const maxRows = sheet.getMaxRows();
+    const maxCols = sheet.getMaxColumns();
+    if (maxRows > 0 && maxCols > 0) {
+      sheet.getRange(1, 1, maxRows, maxCols).setFontSize(10);
+    }
     sheet.setHiddenGridlines(false);
     removeZebraStripes(sheet);
   });

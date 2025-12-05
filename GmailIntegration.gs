@@ -1,22 +1,66 @@
 /**
- * ============================================================================
- * GMAIL INTEGRATION
- * ============================================================================
+ * ------------------------------------------------------------------------====
+ * GMAIL INTEGRATION - Secure Email Communications
+ * ------------------------------------------------------------------------====
  *
- * Send and receive grievance-related emails via Gmail
+ * Send and receive grievance-related emails via Gmail with security controls.
+ *
  * Features:
  * - Send PDFs directly from dashboard
  * - Email templates library
  * - Track communications
  * - Auto-log sent emails
  * - Compose emails with templates
+ *
+ * Security Features (v2.0):
+ * - Role-based access control (Steward+ only)
+ * - Email validation and whitelist checking
+ * - Rate limiting to prevent spam
+ * - HTML sanitization to prevent XSS
+ * - Audit logging of all email sends
+ * - Input validation
+ *
+ * @module GmailIntegration
+ * @version 2.0.0
+ * @author SEIU Local 509 Tech Team
+ * ------------------------------------------------------------------------====
  */
 
 /**
+ * Column positions for the simplified Communications Log created by this module (1-indexed for spreadsheet, 0-indexed for arrays)
+ *
+ * NOTE: This is a simplified 5-column structure used by GmailIntegration.gs
+ * It differs from the main COMM_LOG_COLS (7 columns) defined in Constants.gs
+ * which is designed for a more comprehensive communication tracking system.
+ *
+ * This simplified structure focuses on basic email logging within grievances.
+ *
+ * @const {Object}
+ */
+const GMAIL_COMM_LOG_COLS = {
+  TIMESTAMP: 0,      // Column A - When the communication occurred
+  GRIEVANCE_ID: 1,   // Column B - Related grievance ID
+  TYPE: 2,           // Column C - Communication type (e.g., "Email Sent")
+  USER: 3,           // Column D - User who sent/logged the communication
+  DETAILS: 4         // Column E - Full communication details/message body
+};
+
+/**
  * Shows email composition dialog for a grievance
+ * Requires STEWARD role or higher
+ *
  * @param {string} grievanceId - Optional grievance ID to pre-populate
+ * @throws {Error} If user doesn't have STEWARD role
  */
 function composeGrievanceEmail(grievanceId) {
+  // Security: Require steward role
+  try {
+    requireRole('STEWARD', 'Compose Email');
+  } catch (e) {
+    showAccessDeniedDialog('Compose Email', 'STEWARD');
+    return;
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
@@ -24,17 +68,17 @@ function composeGrievanceEmail(grievanceId) {
 
   if (grievanceId) {
     const lastRow = grievanceSheet.getLastRow();
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.MEMBER_EMAIL).getValues();
 
     for (let i = 0; i < data.length; i++) {
-      if (data[i][0] === grievanceId) {
+      if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
         grievanceData = {
-          id: data[i][0],
-          memberName: `${data[i][2]} ${data[i][3]}`,
-          memberEmail: data[i][7] || '',
-          steward: data[i][13] || '',
-          issueType: data[i][5] || '',
-          status: data[i][4] || ''
+          id: data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1],
+          memberName: `${data[i][GRIEVANCE_COLS.FIRST_NAME - 1]} ${data[i][GRIEVANCE_COLS.LAST_NAME - 1]}`,
+          memberEmail: data[i][GRIEVANCE_COLS.MEMBER_EMAIL - 1] || '',
+          steward: data[i][GRIEVANCE_COLS.STEWARD - 1] || '',
+          issueType: data[i][GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || '',
+          status: data[i][GRIEVANCE_COLS.STATUS - 1] || ''
         };
         break;
       }
@@ -50,12 +94,16 @@ function composeGrievanceEmail(grievanceId) {
 }
 
 /**
- * Creates HTML for email composer
- * @param {Object} grievanceData - Grievance information
- * @returns {string} HTML content
+ * Creates HTML for email composer with sanitized data
+ *
+ * @param {Object} grievanceData - Grievance information (will be sanitized)
+ * @returns {string} HTML content with sanitized values
  */
 function createEmailComposerHTML(grievanceData) {
   const templates = getEmailTemplates();
+
+  // Security: Sanitize all grievance data before embedding in HTML
+  const sanitizedGrievanceData = grievanceData ? sanitizeObject(grievanceData) : null;
 
   return `
 <!DOCTYPE html>
@@ -160,10 +208,10 @@ function createEmailComposerHTML(grievanceData) {
   <div class="container">
     <h2>📧 Compose Email</h2>
 
-    ${grievanceData ? `
+    ${sanitizedGrievanceData ? `
     <div class="info-box">
-      <strong>Grievance:</strong> ${grievanceData.id} - ${grievanceData.memberName}<br>
-      <strong>Status:</strong> ${grievanceData.status} | <strong>Issue:</strong> ${grievanceData.issueType}
+      <strong>Grievance:</strong> ${sanitizedGrievanceData.id} - ${sanitizedGrievanceData.memberName}<br>
+      <strong>Status:</strong> ${sanitizedGrievanceData.status} | <strong>Issue:</strong> ${sanitizedGrievanceData.issueType}
     </div>
     ` : ''}
 
@@ -171,23 +219,23 @@ function createEmailComposerHTML(grievanceData) {
       <label>Template (optional):</label>
       <select id="templateSelect" onchange="loadTemplate()">
         <option value="">-- Select a template --</option>
-        ${templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+        ${templates.map(function(t) { return `<option value="${sanitizeHTML(t.id)}">${sanitizeHTML(t.name)}</option>`; }).join('')}
       </select>
     </div>
 
     <div class="form-group">
       <label>To:</label>
-      <input type="email" id="toEmail" value="${grievanceData ? grievanceData.memberEmail : ''}" placeholder="recipient@example.com">
+      <input type="email" id="toEmail" value="${sanitizedGrievanceData ? sanitizedGrievanceData.memberEmail : ''}" placeholder="recipient@example.com">
     </div>
 
     <div class="form-group">
       <label>CC (optional):</label>
-      <input type="email" id="ccEmail" value="${grievanceData ? grievanceData.steward : ''}" placeholder="cc@example.com">
+      <input type="email" id="ccEmail" value="${sanitizedGrievanceData ? sanitizedGrievanceData.steward : ''}" placeholder="cc@example.com">
     </div>
 
     <div class="form-group">
       <label>Subject:</label>
-      <input type="text" id="subject" value="${grievanceData ? `Re: Grievance ${grievanceData.id}` : ''}" placeholder="Email subject">
+      <input type="text" id="subject" value="${sanitizedGrievanceData ? `Re: Grievance ${sanitizedGrievanceData.id}` : ''}" placeholder="Email subject">
     </div>
 
     <div class="form-group">
@@ -221,7 +269,7 @@ function createEmailComposerHTML(grievanceData) {
       const templateId = document.getElementById('templateSelect').value;
       if (!templateId) return;
 
-      const template = templates.find(t => t.id === templateId);
+      const template = templates.find(function(t) { return t.id === templateId; });
       if (!template) return;
 
       document.getElementById('subject').value = template.subject || '';
@@ -271,7 +319,7 @@ function createEmailComposerHTML(grievanceData) {
 
     function onEmailSent(result) {
       showStatus('✅ Email sent successfully!', 'success');
-      setTimeout(() => {
+      setTimeout(function() {
         google.script.host.close();
       }, 2000);
     }
@@ -297,26 +345,88 @@ function createEmailComposerHTML(grievanceData) {
 
 /**
  * Sends email with optional PDF attachment
+ * Includes comprehensive security checks:
+ * - Role-based access control
+ * - Email validation
+ * - Whitelist verification
+ * - Rate limiting
+ * - Content length limits
+ * - Audit logging
+ *
  * @param {Object} emailData - Email information
+ * @param {string} emailData.to - Recipient email
+ * @param {string} emailData.cc - CC email (optional)
+ * @param {string} emailData.subject - Email subject
+ * @param {string} emailData.message - Email body
+ * @param {boolean} emailData.attachPDF - Whether to attach PDF
+ * @param {boolean} emailData.logCommunication - Whether to log
+ * @param {string} emailData.grievanceId - Grievance ID (optional)
+ * @returns {Object} {success: boolean, message: string}
+ * @throws {Error} If security checks fail or sending fails
  */
 function sendGrievanceEmail(emailData) {
   try {
+    // Security Check 1: Require steward role
+    requireRole('STEWARD', 'Send Email');
+
+    // Security Check 2: Validate email addresses
+    if (!isValidEmail(emailData.to)) {
+      throw new Error('Invalid recipient email address');
+    }
+
+    if (emailData.cc && !isValidEmail(emailData.cc)) {
+      throw new Error('Invalid CC email address');
+    }
+
+    // Security Check 3: Verify recipient is registered (whitelist)
+    if (!isRegisteredEmail(emailData.to)) {
+      throw new Error(
+        'Security Error: Can only send emails to registered members in Member Directory. ' +
+        'Please add the recipient to the Member Directory first.'
+      );
+    }
+
+    // Security Check 4: Rate limiting (5 seconds between emails)
+    enforceRateLimit('EMAIL_SEND', RATE_LIMITS.EMAIL_MIN_INTERVAL);
+
+    // Security Check 5: Content length limits
+    const subject = String(emailData.subject || '').substring(0, EMAIL_CONFIG.MAX_SUBJECT_LENGTH);
+    const message = String(emailData.message || '').substring(0, EMAIL_CONFIG.MAX_BODY_LENGTH);
+
+    if (!subject || !message) {
+      throw new Error('Subject and message are required');
+    }
+
+    // Sanitize subject and message (defense in depth)
+    const sanitizedSubject = sanitizeHTML(subject);
+    const sanitizedMessage = sanitizeHTML(message);
+
+    // Build email options
     const options = {
       to: emailData.to,
-      subject: emailData.subject,
-      body: emailData.message,
-      name: 'SEIU Local 509'
+      subject: sanitizedSubject,
+      body: sanitizedMessage,
+      name: EMAIL_CONFIG.FROM_NAME
     };
 
-    if (emailData.cc) {
+    if (emailData.cc && isRegisteredEmail(emailData.cc)) {
       options.cc = emailData.cc;
     }
 
+    if (EMAIL_CONFIG.REPLY_TO) {
+      options.replyTo = EMAIL_CONFIG.REPLY_TO;
+    }
+
     // Attach PDF if requested
-    if (emailData.attachPDF && emailData.grievanceId) {
-      const pdf = exportGrievanceToPDF(emailData.grievanceId);
-      if (pdf) {
-        options.attachments = [pdf];
+    if (emailData.attachPDF && emailData.grievanceId && EMAIL_CONFIG.ATTACHMENTS_ENABLED) {
+      try {
+        const pdf = exportGrievanceToPDF(emailData.grievanceId);
+        if (pdf) {
+          options.attachments = [pdf];
+        }
+      } catch (pdfError) {
+        Logger.log('Error attaching PDF: ' + pdfError.message);
+        // Continue sending email without attachment
       }
     }
 
@@ -328,14 +438,37 @@ function sendGrievanceEmail(emailData) {
       logCommunication(
         emailData.grievanceId,
         'Email Sent',
-        `To: ${emailData.to}\nSubject: ${emailData.subject}\n\n${emailData.message}`
+        `To: ${emailData.to}\nSubject: ${sanitizedSubject}\n\n${sanitizedMessage}`
       );
     }
 
-    return { success: true };
+    // Security: Audit logging
+    logAuditEvent('EMAIL_SENT', {
+      to: emailData.to,
+      cc: emailData.cc || 'none',
+      grievanceId: emailData.grievanceId || 'none',
+      attachedPDF: emailData.attachPDF || false,
+      subjectLength: sanitizedSubject.length,
+      messageLength: sanitizedMessage.length
+    }, 'INFO');
+
+    return {
+      success: true,
+      message: 'Email sent successfully'
+    };
 
   } catch (error) {
+    // Log error for debugging
     Logger.log('Error sending email: ' + error.message);
+
+    // Security: Log failed email attempts
+    logAuditEvent('EMAIL_SEND_FAILED', {
+      to: emailData.to || 'unknown',
+      error: error.message,
+      grievanceId: emailData.grievanceId || 'none'
+    }, 'WARNING');
+
+    // Re-throw error for UI handling
     throw new Error('Failed to send email: ' + error.message);
   }
 }
@@ -358,12 +491,13 @@ function logCommunication(grievanceId, type, details) {
   const user = Session.getActiveUser().getEmail() || 'System';
 
   const lastRow = commLog.getLastRow();
+  // Row structure matches GMAIL_COMM_LOG_COLS: [timestamp, grievanceId, type, user, details]
   const newRow = [
-    timestamp,
-    grievanceId,
-    type,
-    user,
-    details
+    timestamp,      // GMAIL_COMM_LOG_COLS.TIMESTAMP (Column A)
+    grievanceId,    // GMAIL_COMM_LOG_COLS.GRIEVANCE_ID (Column B)
+    type,           // GMAIL_COMM_LOG_COLS.TYPE (Column C)
+    user,           // GMAIL_COMM_LOG_COLS.USER (Column D)
+    details         // GMAIL_COMM_LOG_COLS.DETAILS (Column E)
   ];
 
   commLog.getRange(lastRow + 1, 1, 1, 5).setValues([newRow]);
@@ -371,19 +505,27 @@ function logCommunication(grievanceId, type, details) {
 
 /**
  * Creates Communications Log sheet
+ * Structure follows GMAIL_COMM_LOG_COLS (simplified 5-column format)
  * @returns {Sheet} Communications Log sheet
  */
 function createCommunicationsLogSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.insertSheet('📞 Communications Log');
 
-  // Set headers
+  // Check if sheet already exists
+  let sheet = ss.getSheetByName('📞 Communications Log');
+  if (sheet) {
+    return sheet; // Return existing sheet
+  }
+
+  sheet = ss.insertSheet('📞 Communications Log');
+
+  // Set headers - Structure matches GMAIL_COMM_LOG_COLS
   const headers = [
-    'Timestamp',
-    'Grievance ID',
-    'Type',
-    'User',
-    'Details'
+    'Timestamp',      // Column A - GMAIL_COMM_LOG_COLS.TIMESTAMP
+    'Grievance ID',   // Column B - GMAIL_COMM_LOG_COLS.GRIEVANCE_ID
+    'Type',           // Column C - GMAIL_COMM_LOG_COLS.TYPE
+    'User',           // Column D - GMAIL_COMM_LOG_COLS.USER
+    'Details'         // Column E - GMAIL_COMM_LOG_COLS.DETAILS
   ];
 
   sheet.getRange(1, 1, 1, 5).setValues([headers]);
@@ -533,14 +675,14 @@ function showEmailTemplateManager() {
       {GRIEVANCE_ID}, {MEMBER_NAME}, {ISSUE_TYPE}, {STATUS}
     </div>
 
-    ${templates.map(t => `
+    ${templates.map(function(t) { return `
       <div class="template">
         <h3>${t.name}</h3>
         <strong>Subject:</strong> ${t.subject}<br><br>
         <strong>Body:</strong>
         <div class="template-body">${t.body}</div>
       </div>
-    `).join('')}
+    `; }).join('')}
   </div>
 </body>
 </html>
@@ -573,7 +715,7 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const data = commLog.getRange(2, 1, lastRow - 1, 5).getValues();
-  const grievanceComms = data.filter(row => row[1] === grievanceId);
+  const grievanceComms = data.filter(function(row) { return row[GMAIL_COMM_LOG_COLS.GRIEVANCE_ID] === grievanceId; });
 
   if (grievanceComms.length === 0) {
     SpreadsheetApp.getUi().alert('No communications logged for this grievance.');
@@ -581,13 +723,13 @@ function showGrievanceCommunications(grievanceId) {
   }
 
   const commsList = grievanceComms
-    .map(row => `
+    .map(function(row) { return `
       <div style="background: #f8f9fa; padding: 12px; margin: 10px 0; border-radius: 4px; border-left: 4px solid #1a73e8;">
-        <strong>${row[2]}</strong> - ${row[0].toLocaleString()}<br>
-        <em>By: ${row[3]}</em><br><br>
-        <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[4]}</div>
+        <strong>${row[GMAIL_COMM_LOG_COLS.TYPE]}</strong> - ${row[GMAIL_COMM_LOG_COLS.TIMESTAMP].toLocaleString()}<br>
+        <em>By: ${row[GMAIL_COMM_LOG_COLS.USER]}</em><br><br>
+        <div style="white-space: pre-wrap; background: white; padding: 10px; border-radius: 4px;">${row[GMAIL_COMM_LOG_COLS.DETAILS]}</div>
       </div>
-    `)
+    `; })
     .join('');
 
   const html = `

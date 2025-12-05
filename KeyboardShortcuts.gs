@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * KEYBOARD SHORTCUTS SYSTEM
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Power user keyboard shortcuts for common actions
  * Features:
@@ -345,7 +345,7 @@ function quickRefresh() {
 /**
  * Keyboard shortcut registry and handler
  */
-const KEYBOARD_SHORTCUTS = {
+KEYBOARD_SHORTCUTS = {
   // Navigation
   'Ctrl+G': 'navigateToGrievanceLog',
   'Ctrl+M': 'navigateToMemberDirectory',
@@ -551,7 +551,7 @@ function showKeyboardShortcutsConfig() {
       </tbody>
     </table>
 
-    <button onclick="google.script.run.withSuccessHandler(() => google.script.host.close()).showKeyboardShortcuts()">
+    <button onclick="google.script.run.withSuccessHandler(function() { google.script.host.close(); }).showKeyboardShortcuts()">
       📖 View Shortcuts Guide
     </button>
   </div>

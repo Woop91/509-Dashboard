@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * WORKFLOW STATE MACHINE
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Structured grievance workflow with defined states and transitions
  * Features:
@@ -17,7 +17,7 @@
 /**
  * Workflow state definitions
  */
-const WORKFLOW_STATES = {
+WORKFLOW_STATES = {
   FILED: {
     name: 'Filed',
     description: 'Grievance has been filed and is awaiting initial review',
@@ -250,11 +250,11 @@ function createWorkflowVisualizerHTML() {
           </div>
           <div class="stage-desc">${state.description}</div>
           <div class="stage-actions">
-            ${state.actions.map(action => `<span class="action-tag">✓ ${action}</span>`).join('')}
+            ${state.actions.map(function(action) { return `<span class="action-tag">✓ ${action}</span>`; }).join('')}
           </div>
           ${state.allowedNextStates.length > 0
             ? `<div class="next-states">
-                <strong>Can transition to:</strong> ${state.allowedNextStates.map(s => WORKFLOW_STATES[s].name).join(', ')}
+                <strong>Can transition to:</strong> ${state.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name; }).join(', ')}
               </div>`
             : ''}
         </div>
@@ -303,7 +303,7 @@ function validateStateTransition(currentState, newState) {
   if (!current.allowedNextStates.includes(newState)) {
     return {
       valid: false,
-      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(s => WORKFLOW_STATES[s].name).join(', ')}`
+      error: `Cannot transition from ${current.name} to ${next.name}. Allowed transitions: ${current.allowedNextStates.map(function(s) { return WORKFLOW_STATES[s].name; }).join(', ')}`
     };
   }
 
@@ -373,7 +373,7 @@ function changeWorkflowState() {
   }
 
   const stateOptions = allowedStates
-    .map(s => WORKFLOW_STATES[s].name)
+    .map(function(s) { return WORKFLOW_STATES[s].name; })
     .join('\n');
 
   const response = ui.prompt(
@@ -390,7 +390,7 @@ function changeWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    key => WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName; }
   );
 
   if (!newStateKey) {
@@ -558,7 +558,7 @@ function showCurrentWorkflowState() {
 
   const state = WORKFLOW_STATES[currentState];
   const allowedTransitions = state.allowedNextStates
-    .map(s => WORKFLOW_STATES[s].name)
+    .map(function(s) { return WORKFLOW_STATES[s].name; })
     .join('\n• ');
 
   const message = `
@@ -601,7 +601,7 @@ function batchUpdateWorkflowState() {
     return;
   }
 
-  const rows = Array.from({ length: numRows }, (_, i) => startRow + i);
+  const rows = Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 
   const response = ui.prompt(
     '🔄 Batch Update Workflow State',
@@ -616,7 +616,7 @@ function batchUpdateWorkflowState() {
 
   const newStateName = response.getResponseText().trim();
   const newStateKey = Object.keys(WORKFLOW_STATES).find(
-    key => WORKFLOW_STATES[key].name === newStateName
+    function(key) { return WORKFLOW_STATES[key].name === newStateName; }
   );
 
   if (!newStateKey) {
@@ -638,7 +638,7 @@ function batchUpdateWorkflowState() {
   let updated = 0;
   let errors = 0;
 
-  rows.forEach(row => {
+  rows.forEach(function(row) {
     const grievanceId = activeSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
     const currentStatus = activeSheet.getRange(row, GRIEVANCE_COLS.STATUS).getValue();
     const currentState = mapStatusToState(currentStatus);

@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * UNIT TESTS FOR CODE.GS
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Tests for core functionality:
  * - Formula calculations (deadlines, days open, etc.)
@@ -9,10 +9,10 @@
  * - Seeding functions
  * - Helper functions
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
-/* ===================== FORMULA CALCULATION TESTS ===================== */
+/* --------------------= FORMULA CALCULATION TESTS --------------------= */
 
 /**
  * Test: Filing Deadline = Incident Date + 21 days
@@ -153,8 +153,8 @@ function testNextActionDueLogic() {
     }
   ];
 
-  testCases.forEach((testCase, index) => {
-    let nextAction;
+  testCases.forEach(function(testCase, index) {
+    var nextAction;
     if (testCase.status === 'Open') {
       if (testCase.step === 'Step I') {
         nextAction = testCase.stepIDeadline;
@@ -230,22 +230,22 @@ function testMemberDirectoryFormulas() {
 
     // Find the test member row
     const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
-    const testMemberRow = memberData.findIndex(row => row[0] === testMemberId);
+    const testMemberRow = memberData.findIndex(function(row) { return row[0] === testMemberId; });
 
     Assert.assertTrue(
       testMemberRow >= 0,
       'Test member should exist in Member Directory'
     );
 
-    // Check "Has Open Grievance?" (column 26, index 25)
-    const hasOpenGrievance = memberData[testMemberRow][25];
+    // Check "Has Open Grievance?" (column Y = 25, index 24)
+    const hasOpenGrievance = memberData[testMemberRow][MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1];
     Assert.assertTrue(
       hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
       'Member with open grievance should show "Yes" in Has Open Grievance column'
     );
 
-    // Check "Grievance Status Snapshot" (column 27, index 26)
-    const statusSnapshot = memberData[testMemberRow][26];
+    // Check "Grievance Status Snapshot" (column Z = 26, index 25)
+    const statusSnapshot = memberData[testMemberRow][MEMBER_COLS.GRIEVANCE_STATUS - 1];
     Assert.assertEquals(
       'Open',
       statusSnapshot,
@@ -259,7 +259,7 @@ function testMemberDirectoryFormulas() {
   }
 }
 
-/* ===================== DATA VALIDATION TESTS ===================== */
+/* --------------------= DATA VALIDATION TESTS --------------------= */
 
 /**
  * Test: Data validation setup creates proper rules
@@ -288,8 +288,9 @@ function testConfigDropdownValues() {
   const ss = SpreadsheetApp.getActive();
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  // Test Job Titles
-  const jobTitles = config.getRange('A2:A14').getValues().flat().filter(String);
+  // Test Job Titles using CONFIG_COLS constant (data starts at row 3)
+  const jobTitlesCol = getColumnLetter(CONFIG_COLS.JOB_TITLES);
+  const jobTitles = config.getRange(jobTitlesCol + '3:' + jobTitlesCol + '14').getValues().flat().filter(String);
   Assert.assertTrue(
     jobTitles.length > 0,
     'Config should have job titles defined'
@@ -300,8 +301,9 @@ function testConfigDropdownValues() {
     'Config should contain Coordinator job title'
   );
 
-  // Test Office Locations
-  const locations = config.getRange('B2:B14').getValues().flat().filter(String);
+  // Test Office Locations using CONFIG_COLS constant
+  const locationsCol = getColumnLetter(CONFIG_COLS.OFFICE_LOCATIONS);
+  const locations = config.getRange(locationsCol + '3:' + locationsCol + '14').getValues().flat().filter(String);
   Assert.assertTrue(
     locations.length > 0,
     'Config should have office locations defined'
@@ -312,8 +314,9 @@ function testConfigDropdownValues() {
     'Config should contain Boston HQ location'
   );
 
-  // Test Grievance Status
-  const statuses = config.getRange('I2:I8').getValues().flat().filter(String);
+  // Test Grievance Status using CONFIG_COLS constant (col J = 10)
+  const statusCol = getColumnLetter(CONFIG_COLS.GRIEVANCE_STATUS);
+  const statuses = config.getRange(statusCol + '3:' + statusCol + '10').getValues().flat().filter(String);
   Assert.assertTrue(
     statuses.length > 0,
     'Config should have grievance statuses defined'
@@ -342,7 +345,7 @@ function testMemberValidationRules() {
     { col: 10, name: 'Is Steward' }
   ];
 
-  columnsToCheck.forEach(item => {
+  columnsToCheck.forEach(function(item) {
     const cell = memberDir.getRange(2, item.col);
     const validation = cell.getDataValidation();
 
@@ -370,7 +373,7 @@ function testGrievanceValidationRules() {
     { col: 22, name: 'Articles Violated' }
   ];
 
-  columnsToCheck.forEach(item => {
+  columnsToCheck.forEach(function(item) {
     const cell = grievanceLog.getRange(2, item.col);
     const validation = cell.getDataValidation();
 
@@ -383,7 +386,7 @@ function testGrievanceValidationRules() {
   Logger.log('✅ Grievance validation rules test passed');
 }
 
-/* ===================== SEEDING FUNCTION TESTS ===================== */
+/* --------------------= SEEDING FUNCTION TESTS --------------------= */
 
 /**
  * Test: Member seeding generates valid data
@@ -476,7 +479,7 @@ function testMemberEmailFormat() {
 
   const emailRegex = /^[a-z]+\.[a-z]+\d+@union\.org$/;
 
-  testEmails.forEach(email => {
+  testEmails.forEach(function(email) {
     Assert.assertTrue(
       emailRegex.test(email),
       `Email ${email} should match format firstname.lastnameNNN@union.org`
@@ -558,7 +561,7 @@ function testGrievanceMemberLinking() {
 
     // Verify it was created
     const grievanceData = grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, 2).getValues();
-    const testGrievance = grievanceData.find(row => row[0] === 'TEST-G-LINK-001');
+    const testGrievance = grievanceData.find(function(row) { return row[0] === 'TEST-G-LINK-001'; });
 
     Assert.assertNotNull(
       testGrievance,
@@ -600,7 +603,7 @@ function testOpenRateRange() {
   Logger.log('✅ Open rate range test passed');
 }
 
-/* ===================== EDGE CASE TESTS ===================== */
+/* --------------------= EDGE CASE TESTS --------------------= */
 
 /**
  * Test: Empty sheets don't break formulas
@@ -668,4 +671,535 @@ function testPastDeadlineHandling() {
   );
 
   Logger.log('✅ Past deadline handling test passed');
+}
+
+/* --------------------= COLUMN CONSTANTS TESTS --------------------= */
+
+/**
+ * Test: MEMBER_COLS constants are properly defined
+ */
+function testMemberColsConstants() {
+  // Verify all required columns exist
+  const requiredCols = [
+    'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'JOB_TITLE', 'WORK_LOCATION',
+    'UNIT', 'OFFICE_DAYS', 'EMAIL', 'PHONE', 'IS_STEWARD', 'COMMITTEES',
+    'SUPERVISOR', 'MANAGER', 'ASSIGNED_STEWARD', 'HAS_OPEN_GRIEVANCE',
+    'GRIEVANCE_STATUS', 'NEXT_DEADLINE'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof MEMBER_COLS[col] === 'number',
+      `MEMBER_COLS.${col} should be defined as a number`
+    );
+    Assert.assertTrue(
+      MEMBER_COLS[col] >= 1,
+      `MEMBER_COLS.${col} should be >= 1 (1-indexed)`
+    );
+  });
+
+  // Verify column ordering (first columns should be in expected order)
+  Assert.assertEquals(1, MEMBER_COLS.MEMBER_ID, 'MEMBER_ID should be column 1');
+  Assert.assertEquals(2, MEMBER_COLS.FIRST_NAME, 'FIRST_NAME should be column 2');
+  Assert.assertEquals(3, MEMBER_COLS.LAST_NAME, 'LAST_NAME should be column 3');
+  Assert.assertEquals(8, MEMBER_COLS.EMAIL, 'EMAIL should be column 8');
+  Assert.assertEquals(9, MEMBER_COLS.PHONE, 'PHONE should be column 9');
+
+  Logger.log('✅ MEMBER_COLS constants test passed');
+}
+
+/**
+ * Test: GRIEVANCE_COLS constants are properly defined
+ */
+function testGrievanceColsConstants() {
+  // Verify all required columns exist
+  const requiredCols = [
+    'GRIEVANCE_ID', 'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'STATUS',
+    'CURRENT_STEP', 'INCIDENT_DATE', 'FILING_DEADLINE', 'DATE_FILED',
+    'DATE_CLOSED', 'DAYS_OPEN', 'NEXT_ACTION_DUE',
+    'ISSUE_CATEGORY', 'MEMBER_EMAIL', 'LOCATION', 'STEWARD', 'RESOLUTION'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof GRIEVANCE_COLS[col] === 'number',
+      `GRIEVANCE_COLS.${col} should be defined as a number`
+    );
+    Assert.assertTrue(
+      GRIEVANCE_COLS[col] >= 1,
+      `GRIEVANCE_COLS.${col} should be >= 1 (1-indexed)`
+    );
+  });
+
+  // Verify key column positions
+  Assert.assertEquals(1, GRIEVANCE_COLS.GRIEVANCE_ID, 'GRIEVANCE_ID should be column 1');
+  Assert.assertEquals(5, GRIEVANCE_COLS.STATUS, 'STATUS should be column 5');
+  Assert.assertEquals(9, GRIEVANCE_COLS.DATE_FILED, 'DATE_FILED should be column 9');
+  Assert.assertEquals(18, GRIEVANCE_COLS.DATE_CLOSED, 'DATE_CLOSED should be column 18');
+  Assert.assertEquals(27, GRIEVANCE_COLS.STEWARD, 'STEWARD should be column 27');
+
+  Logger.log('✅ GRIEVANCE_COLS constants test passed');
+}
+
+/**
+ * Test: CONFIG_COLS constants are properly defined
+ */
+function testConfigColsConstants() {
+  // Verify key config columns exist
+  const requiredCols = [
+    'JOB_TITLES', 'OFFICE_LOCATIONS', 'UNITS', 'STEWARDS',
+    'GRIEVANCE_STATUS', 'GRIEVANCE_STEP', 'ISSUE_CATEGORY'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof CONFIG_COLS[col] === 'number',
+      `CONFIG_COLS.${col} should be defined as a number`
+    );
+  });
+
+  Logger.log('✅ CONFIG_COLS constants test passed');
+}
+
+/**
+ * Test: Internal schema constants are properly defined
+ */
+function testInternalSchemaConstants() {
+  // Test AUDIT_LOG_COLS
+  Assert.assertTrue(typeof AUDIT_LOG_COLS === 'object', 'AUDIT_LOG_COLS should be defined');
+  Assert.assertEquals(1, AUDIT_LOG_COLS.TIMESTAMP, 'AUDIT_LOG_COLS.TIMESTAMP should be 1');
+  Assert.assertEquals(4, AUDIT_LOG_COLS.ACTION, 'AUDIT_LOG_COLS.ACTION should be 4');
+
+  // Test FAQ_COLS
+  Assert.assertTrue(typeof FAQ_COLS === 'object', 'FAQ_COLS should be defined');
+  Assert.assertEquals(1, FAQ_COLS.ID, 'FAQ_COLS.ID should be 1');
+  Assert.assertEquals(3, FAQ_COLS.QUESTION, 'FAQ_COLS.QUESTION should be 3');
+  Assert.assertEquals(4, FAQ_COLS.ANSWER, 'FAQ_COLS.ANSWER should be 4');
+
+  // Test ERROR_LOG_COLS
+  Assert.assertTrue(typeof ERROR_LOG_COLS === 'object', 'ERROR_LOG_COLS should be defined');
+  Assert.assertEquals(1, ERROR_LOG_COLS.TIMESTAMP, 'ERROR_LOG_COLS.TIMESTAMP should be 1');
+  Assert.assertEquals(2, ERROR_LOG_COLS.LEVEL, 'ERROR_LOG_COLS.LEVEL should be 2');
+
+  Logger.log('✅ Internal schema constants test passed');
+}
+
+/**
+ * Test: SHEETS constants match expected sheet names
+ */
+function testSheetsConstants() {
+  // Verify core sheets are defined
+  Assert.assertEquals('Config', SHEETS.CONFIG, 'SHEETS.CONFIG should be "Config"');
+  Assert.assertEquals('Member Directory', SHEETS.MEMBER_DIR, 'SHEETS.MEMBER_DIR should be "Member Directory"');
+  Assert.assertEquals('Grievance Log', SHEETS.GRIEVANCE_LOG, 'SHEETS.GRIEVANCE_LOG should be "Grievance Log"');
+  Assert.assertEquals('Dashboard', SHEETS.DASHBOARD, 'SHEETS.DASHBOARD should be "Dashboard"');
+
+  // Verify internal system sheets are defined
+  Assert.assertTrue(typeof SHEETS.AUDIT_LOG === 'string', 'SHEETS.AUDIT_LOG should be defined');
+  Assert.assertTrue(typeof SHEETS.FAQ_DATABASE === 'string', 'SHEETS.FAQ_DATABASE should be defined');
+  Assert.assertTrue(typeof SHEETS.ERROR_LOG === 'string', 'SHEETS.ERROR_LOG should be defined');
+
+  Logger.log('✅ SHEETS constants test passed');
+}
+
+/**
+ * Test: Column letter conversion utility
+ */
+function testColumnLetterConversion() {
+  // Test getColumnLetter
+  Assert.assertEquals('A', getColumnLetter(1), 'Column 1 should be A');
+  Assert.assertEquals('B', getColumnLetter(2), 'Column 2 should be B');
+  Assert.assertEquals('Z', getColumnLetter(26), 'Column 26 should be Z');
+  Assert.assertEquals('AA', getColumnLetter(27), 'Column 27 should be AA');
+  Assert.assertEquals('AB', getColumnLetter(28), 'Column 28 should be AB');
+
+  // Test getColumnNumber
+  Assert.assertEquals(1, getColumnNumber('A'), 'A should be column 1');
+  Assert.assertEquals(26, getColumnNumber('Z'), 'Z should be column 26');
+  Assert.assertEquals(27, getColumnNumber('AA'), 'AA should be column 27');
+
+  Logger.log('✅ Column letter conversion test passed');
+}
+
+/**
+ * Test: Column constants are used correctly (no off-by-one errors)
+ */
+function testColumnIndexing() {
+  // Verify that constants are 1-indexed (for spreadsheet columns)
+  // and that array access uses [CONSTANT - 1]
+
+  // Simulate a row of data
+  const mockRow = ['ID', 'First', 'Last', 'Title', 'Location'];
+
+  // Access using constant pattern (constant - 1 for 0-indexed array)
+  const firstElement = mockRow[1 - 1]; // Should be 'ID'
+  const secondElement = mockRow[2 - 1]; // Should be 'First'
+
+  Assert.assertEquals('ID', firstElement, 'First element accessed with [1-1] should be ID');
+  Assert.assertEquals('First', secondElement, 'Second element accessed with [2-1] should be First');
+
+  // Verify MEMBER_COLS pattern works
+  const mockMemberRow = new Array(31).fill('').map((_, i) => `col${i}`);
+  mockMemberRow[MEMBER_COLS.MEMBER_ID - 1] = 'M000001';
+  mockMemberRow[MEMBER_COLS.EMAIL - 1] = 'test@union.org';
+
+  Assert.assertEquals('M000001', mockMemberRow[MEMBER_COLS.MEMBER_ID - 1], 'MEMBER_ID access should work');
+  Assert.assertEquals('test@union.org', mockMemberRow[MEMBER_COLS.EMAIL - 1], 'EMAIL access should work');
+
+  Logger.log('✅ Column indexing test passed');
+}
+
+/**
+ * Run all column constant tests
+ */
+function runColumnConstantTests() {
+  Logger.log('=== Running Column Constant Tests ===');
+
+  testMemberColsConstants();
+  testGrievanceColsConstants();
+  testConfigColsConstants();
+  testInternalSchemaConstants();
+  testSheetsConstants();
+  testColumnLetterConversion();
+  testColumnIndexing();
+
+  Logger.log('=== All Column Constant Tests Passed ===');
+}
+
+/* --------------------= INPUT VALIDATION TESTS --------------------= */
+
+/**
+ * Test: validateRequired throws on null/undefined/empty
+ */
+function testValidateRequired() {
+  // Should throw on null
+  Assert.assertThrows(
+    function() { validateRequired(null, 'testParam'); },
+    'validateRequired should throw on null'
+  );
+
+  // Should throw on undefined
+  Assert.assertThrows(
+    function() { validateRequired(undefined, 'testParam'); },
+    'validateRequired should throw on undefined'
+  );
+
+  // Should throw on empty string
+  Assert.assertThrows(
+    function() { validateRequired('', 'testParam'); },
+    'validateRequired should throw on empty string'
+  );
+
+  // Should NOT throw on valid values
+  Assert.assertNotThrows(
+    function() { validateRequired('value', 'testParam'); },
+    'validateRequired should not throw on valid string'
+  );
+
+  Assert.assertNotThrows(
+    function() { validateRequired(0, 'testParam'); },
+    'validateRequired should not throw on zero'
+  );
+
+  Logger.log('✅ validateRequired test passed');
+}
+
+/**
+ * Test: validateString validates string type
+ */
+function testValidateString() {
+  // Should throw on number
+  Assert.assertThrows(
+    function() { validateString(123, 'testParam'); },
+    'validateString should throw on number'
+  );
+
+  // Should NOT throw on valid string
+  Assert.assertNotThrows(
+    function() { validateString('valid', 'testParam'); },
+    'validateString should not throw on valid string'
+  );
+
+  Logger.log('✅ validateString test passed');
+}
+
+/**
+ * Test: validatePositiveInt validates positive integers
+ */
+function testValidatePositiveInt() {
+  // Should throw on negative
+  Assert.assertThrows(
+    function() { validatePositiveInt(-1, 'testParam'); },
+    'validatePositiveInt should throw on negative'
+  );
+
+  // Should throw on zero
+  Assert.assertThrows(
+    function() { validatePositiveInt(0, 'testParam'); },
+    'validatePositiveInt should throw on zero'
+  );
+
+  // Should NOT throw on positive integer
+  Assert.assertNotThrows(
+    function() { validatePositiveInt(1, 'testParam'); },
+    'validatePositiveInt should not throw on 1'
+  );
+
+  Logger.log('✅ validatePositiveInt test passed');
+}
+
+/**
+ * Test: validateGrievanceId validates G-XXXXXX format
+ */
+function testValidateGrievanceId() {
+  // Should throw on invalid format
+  Assert.assertThrows(
+    function() { validateGrievanceId('12345', 'testValidateGrievanceId'); },
+    'validateGrievanceId should throw on missing prefix'
+  );
+
+  Assert.assertThrows(
+    function() { validateGrievanceId('G-123', 'testValidateGrievanceId'); },
+    'validateGrievanceId should throw on short ID'
+  );
+
+  // Should NOT throw on valid format
+  Assert.assertNotThrows(
+    function() { validateGrievanceId('G-000001', 'testValidateGrievanceId'); },
+    'validateGrievanceId should not throw on valid ID'
+  );
+
+  Logger.log('✅ validateGrievanceId test passed');
+}
+
+/**
+ * Test: validateMemberId validates MXXXXXX format
+ */
+function testValidateMemberId() {
+  // Should throw on invalid format
+  Assert.assertThrows(
+    function() { validateMemberId('12345', 'testValidateMemberId'); },
+    'validateMemberId should throw on missing prefix'
+  );
+
+  // Should NOT throw on valid format
+  Assert.assertNotThrows(
+    function() { validateMemberId('M000001', 'testValidateMemberId'); },
+    'validateMemberId should not throw on valid ID'
+  );
+
+  Logger.log('✅ validateMemberId test passed');
+}
+
+/**
+ * Test: validateEmail validates email format
+ */
+function testValidateEmail() {
+  // Should throw on invalid emails
+  Assert.assertThrows(
+    function() { validateEmail('notanemail', 'testValidateEmail'); },
+    'validateEmail should throw on missing @'
+  );
+
+  // Should NOT throw on valid emails
+  Assert.assertNotThrows(
+    function() { validateEmail('user@example.com', 'testValidateEmail'); },
+    'validateEmail should not throw on valid email'
+  );
+
+  Logger.log('✅ validateEmail test passed');
+}
+
+/**
+ * Test: validateEnum validates against allowed values
+ */
+function testValidateEnum() {
+  const allowedStatuses = ['Open', 'Closed', 'Pending'];
+
+  // Should throw on invalid value
+  Assert.assertThrows(
+    function() { validateEnum('Invalid', allowedStatuses, 'status'); },
+    'validateEnum should throw on invalid value'
+  );
+
+  // Should NOT throw on valid values
+  Assert.assertNotThrows(
+    function() { validateEnum('Open', allowedStatuses, 'status'); },
+    'validateEnum should not throw on valid value'
+  );
+
+  Logger.log('✅ validateEnum test passed');
+}
+
+/**
+ * Test: safeExecute handles errors properly
+ */
+function testSafeExecute() {
+  // Test successful execution
+  const successResult = safeExecute(function() { return 42; }, { context: 'testSuccess' });
+  Assert.assertTrue(successResult.success, 'safeExecute should return success=true');
+  Assert.assertEquals(42, successResult.data, 'safeExecute should return correct data');
+
+  // Test error with silent mode
+  const errorResult = safeExecute(
+    function() { throw new Error('Test error'); },
+    { silent: true, defaultValue: 'default', context: 'testError' }
+  );
+  Assert.assertFalse(errorResult.success, 'safeExecute should return success=false on error');
+  Assert.assertEquals('default', errorResult.data, 'safeExecute should return defaultValue');
+
+  Logger.log('✅ safeExecute test passed');
+}
+
+/* --------------------= ERROR SCENARIO TESTS --------------------= */
+
+/**
+ * Test: Grievance status values are all valid
+ */
+function testGrievanceStatusValidation() {
+  GRIEVANCE_STATUSES.forEach(function(status) {
+    Assert.assertNotThrows(
+      function() { validateEnum(status, GRIEVANCE_STATUSES, 'status'); },
+      'Status "' + status + '" should be valid'
+    );
+  });
+
+  Assert.assertThrows(
+    function() { validateEnum('InvalidStatus', GRIEVANCE_STATUSES, 'status'); },
+    'Invalid status should throw'
+  );
+
+  Logger.log('✅ Grievance status validation test passed');
+}
+
+/**
+ * Test: Grievance step values are all valid
+ */
+function testGrievanceStepValidation() {
+  GRIEVANCE_STEPS.forEach(function(step) {
+    Assert.assertNotThrows(
+      function() { validateEnum(step, GRIEVANCE_STEPS, 'step'); },
+      'Step "' + step + '" should be valid'
+    );
+  });
+
+  Logger.log('✅ Grievance step validation test passed');
+}
+
+/**
+ * Test: Issue categories are all valid
+ */
+function testIssueCategoryValidation() {
+  ISSUE_CATEGORIES.forEach(function(category) {
+    Assert.assertNotThrows(
+      function() { validateEnum(category, ISSUE_CATEGORIES, 'category'); },
+      'Category "' + category + '" should be valid'
+    );
+  });
+
+  Logger.log('✅ Issue category validation test passed');
+}
+
+/**
+ * Test: Error messages include context when provided
+ */
+function testErrorMessageContext() {
+  try {
+    validateRequired(null, 'testParam', 'testFunction');
+    Assert.fail('Should have thrown');
+  } catch (e) {
+    Assert.assertTrue(
+      e.message.indexOf('testParam') >= 0,
+      'Error should include parameter name'
+    );
+    Assert.assertTrue(
+      e.message.indexOf('testFunction') >= 0,
+      'Error should include function name when provided'
+    );
+  }
+
+  Logger.log('✅ Error message context test passed');
+}
+
+/**
+ * Test: Date validation handles edge cases
+ */
+function testDateValidationEdgeCases() {
+  // Invalid date (NaN time)
+  Assert.assertThrows(
+    function() { validateDate(new Date('invalid'), 'testDate'); },
+    'validateDate should throw on invalid date string'
+  );
+
+  // Valid dates
+  Assert.assertNotThrows(
+    function() { validateDate(new Date(), 'testDate'); },
+    'validateDate should accept current date'
+  );
+
+  Logger.log('✅ Date validation edge cases test passed');
+}
+
+/**
+ * Test: Array validation
+ */
+function testArrayValidation() {
+  // Should throw on non-array
+  Assert.assertThrows(
+    function() { validateArray('string', 'testArray'); },
+    'validateArray should throw on string'
+  );
+
+  // Should NOT throw on arrays
+  Assert.assertNotThrows(
+    function() { validateArray([], 'testArray'); },
+    'validateArray should accept empty array'
+  );
+
+  Assert.assertNotThrows(
+    function() { validateArray([1, 2, 3], 'testArray'); },
+    'validateArray should accept populated array'
+  );
+
+  Logger.log('✅ Array validation test passed');
+}
+
+/**
+ * Run all validation tests
+ */
+function runValidationTests() {
+  Logger.log('=== Running Validation Tests ===');
+
+  testValidateRequired();
+  testValidateString();
+  testValidatePositiveInt();
+  testValidateGrievanceId();
+  testValidateMemberId();
+  testValidateEmail();
+  testValidateEnum();
+  testSafeExecute();
+  testGrievanceStatusValidation();
+  testGrievanceStepValidation();
+  testIssueCategoryValidation();
+  testErrorMessageContext();
+  testDateValidationEdgeCases();
+  testArrayValidation();
+
+  Logger.log('=== All Validation Tests Passed ===');
+}
+
+/**
+ * Run all tests
+ */
+function runAllTests() {
+  Logger.log('========================================');
+  Logger.log('  RUNNING ALL TESTS');
+  Logger.log('========================================');
+
+  runColumnConstantTests();
+  runValidationTests();
+
+  Logger.log('========================================');
+  Logger.log('  ALL TESTS COMPLETE');
+  Logger.log('========================================');
 }

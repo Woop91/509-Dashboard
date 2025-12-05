@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * ADD RECOMMENDATIONS TO FEEDBACK & DEVELOPMENT SHEET
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * This script adds 47 code review recommendations to the Feedback & Development sheet
  * Run this function once to populate the recommendations

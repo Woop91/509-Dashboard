@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GRIEVANCE FLOAT/SORT TOGGLE
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Float Feature:
  * - When enabled, sends closed/settled/inactive grievances to bottom
@@ -169,7 +169,7 @@ function applyGrievanceFloat() {
  * @returns {Array} Sorted array of data rows
  */
 function sortGrievancesByPriority(dataRows) {
-  return dataRows.sort((a, b) => {
+  return dataRows.sort(function(a, b) {
     const statusA = String(a[GRIEVANCE_COLS.STATUS - 1] || '').toLowerCase();
     const statusB = String(b[GRIEVANCE_COLS.STATUS - 1] || '').toLowerCase();
     const stepA = String(a[GRIEVANCE_COLS.CURRENT_STEP - 1] || '');
@@ -179,8 +179,8 @@ function sortGrievancesByPriority(dataRows) {
 
     // Inactive statuses go to bottom
     const inactiveStatuses = ['closed', 'settled', 'inactive', 'withdrawn', 'denied'];
-    const aIsInactive = inactiveStatuses.some(status => statusA.includes(status));
-    const bIsInactive = inactiveStatuses.some(status => statusB.includes(status));
+    const aIsInactive = inactiveStatuses.some(function(status) { return statusA.includes(status); });
+    const bIsInactive = inactiveStatuses.some(function(status) { return statusB.includes(status); });
 
     if (aIsInactive && !bIsInactive) return 1;
     if (!aIsInactive && bIsInactive) return -1;

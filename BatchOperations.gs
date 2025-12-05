@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * BATCH OPERATIONS
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Bulk operations for efficient mass updates
  * Features:
@@ -113,31 +113,31 @@ function showBatchOperationsMenu() {
 
   <script>
     function runBatchAssignSteward() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandler(function() {
         google.script.host.close();
       }).batchAssignSteward();
     }
 
     function runBatchUpdateStatus() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandler(function() {
         google.script.host.close();
       }).batchUpdateStatus();
     }
 
     function runBatchExportPDF() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandler(function() {
         google.script.host.close();
       }).batchExportPDF();
     }
 
     function runBatchEmail() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandler(function() {
         google.script.host.close();
       }).batchEmailNotifications();
     }
 
     function runBatchAddNotes() {
-      google.script.run.withSuccessHandler(() => {
+      google.script.run.withSuccessHandler(function() {
         google.script.host.close();
       }).batchAddNotes();
     }
@@ -184,10 +184,10 @@ function getSelectedGrievanceRows() {
       );
       return [];
     }
-    return Array.from({ length: numRows - 1 }, (_, i) => startRow + i + 1);
+    return Array.from({ length: numRows - 1 }, function(_, i) { return startRow + i + 1; });
   }
 
-  return Array.from({ length: numRows }, (_, i) => startRow + i);
+  return Array.from({ length: numRows }, function(_, i) { return startRow + i; });
 }
 
 /**
@@ -207,9 +207,9 @@ function batchAssignSteward() {
   const stewardData = memberSheet.getRange(2, 1, memberSheet.getLastRow() - 1, 10).getValues();
 
   const stewards = stewardData
-    .filter(row => row[9] === 'Yes') // Column J: Is Steward?
-    .map(row => `${row[1]} ${row[2]}`) // First + Last Name
-    .filter(name => name.trim() !== '');
+    .filter(function(row) { return row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'; }) // Column J: Is Steward?
+    .map(function(row) { return `${row[MEMBER_COLS.FIRST_NAME - 1]} ${row[MEMBER_COLS.LAST_NAME - 1]}`; }) // First + Last Name
+    .filter(function(name) { return name.trim() !== ''; });
 
   if (stewards.length === 0) {
     ui.alert('❌ No stewards found in the Member Directory.');
@@ -255,7 +255,7 @@ function batchAssignSteward() {
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   let updated = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     grievanceSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).setValue(stewardName);
     updated++;
   });
@@ -320,7 +320,7 @@ function batchUpdateStatus() {
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   let updated = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     grievanceSheet.getRange(row, GRIEVANCE_COLS.STATUS).setValue(newStatus);
 
     // Update closed date if status is Closed or Resolved
@@ -374,7 +374,7 @@ function batchExportPDF() {
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const pdfs = [];
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     try {
       const grievanceId = grievanceSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
       const pdf = exportGrievanceToPDF(grievanceId);
@@ -409,7 +409,7 @@ function exportGrievanceToPDF(grievanceId) {
   const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === grievanceId) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       const row = data[i];
 
       // Create a Google Doc
@@ -420,12 +420,12 @@ function exportGrievanceToPDF(grievanceId) {
       body.appendParagraph('SEIU Local 509 - Grievance Report').setHeading(DocumentApp.ParagraphHeading.HEADING1);
       body.appendParagraph(''); // Spacing
 
-      body.appendParagraph(`Grievance ID: ${row[0]}`);
-      body.appendParagraph(`Member: ${row[2]} ${row[3]}`);
-      body.appendParagraph(`Status: ${row[4]}`);
-      body.appendParagraph(`Issue Type: ${row[5]}`);
-      body.appendParagraph(`Filed Date: ${row[6]}`);
-      body.appendParagraph(`Assigned Steward: ${row[13]}`);
+      body.appendParagraph(`Grievance ID: ${row[GRIEVANCE_COLS.GRIEVANCE_ID - 1]}`);
+      body.appendParagraph(`Member: ${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`);
+      body.appendParagraph(`Status: ${row[GRIEVANCE_COLS.STATUS - 1]}`);
+      body.appendParagraph(`Issue Type: ${row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1]}`);
+      body.appendParagraph(`Filed Date: ${row[GRIEVANCE_COLS.DATE_FILED - 1]}`);
+      body.appendParagraph(`Assigned Steward: ${row[GRIEVANCE_COLS.STEWARD - 1]}`);
 
       doc.saveAndClose();
 
@@ -519,7 +519,7 @@ function batchEmailNotifications() {
   const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   let sent = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     try {
       const grievanceId = grievanceSheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
       const steward = grievanceSheet.getRange(row, GRIEVANCE_COLS.ASSIGNED_STEWARD).getValue();
@@ -599,7 +599,7 @@ function batchAddNotes() {
 
   let updated = 0;
 
-  selectedRows.forEach(row => {
+  selectedRows.forEach(function(row) {
     const existingNotes = grievanceSheet.getRange(row, GRIEVANCE_COLS.NOTES).getValue() || '';
     const newNotes = existingNotes ? `${existingNotes}\n${formattedNote}` : formattedNote;
     grievanceSheet.getRange(row, GRIEVANCE_COLS.NOTES).setValue(newNotes);

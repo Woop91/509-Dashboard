@@ -1,6 +1,6 @@
-// ============================================================================
+// ------------------------------------------------------------------------====
 // INTERACTIVE DASHBOARD - USER-SELECTABLE METRICS & CHARTS
-// ============================================================================
+// ------------------------------------------------------------------------====
 //
 // Features:
 // - User-selectable metrics with dropdown controls
@@ -11,7 +11,7 @@
 // - Warehouse-style location charts
 // - Real-time chart updates based on user selection
 //
-// ============================================================================
+// ------------------------------------------------------------------------====
 
 /**
  * Creates the Interactive Dashboard sheet with user-selectable controls
@@ -22,9 +22,9 @@ function createInteractiveDashboardSheet(ss) {
 
   sheet.clear();
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // HEADER SECTION
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A1:T1").merge()
     .setValue("✨ YOUR UNION DASHBOARD - Where Data Comes Alive!")
     .setFontSize(22).setFontFamily("Roboto")
@@ -52,9 +52,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setFontColor(COLORS.ACCENT_TEAL);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CONTROL PANEL - Row 4
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A4:T4").merge()
     .setValue("🎛️ YOUR COMMAND CENTER - Make This Dashboard Your Own!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -104,9 +104,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.LIGHT_GRAY)
     .setHorizontalAlignment("left");
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // METRIC CARDS SECTION - Row 10-18 (4 cards)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A10:T10").merge()
     .setValue("📈 YOUR VICTORIES AT A GLANCE - Watch These Numbers Grow!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -123,7 +123,7 @@ function createInteractiveDashboardSheet(ss) {
     {col: "P", endCol: "T", title: "⏰ Needs Attention", color: COLORS.SOLIDARITY_RED}
   ];
 
-  cardPositions.forEach((card, idx) => {
+  cardPositions.forEach(function(card, idx) {
     const startRow = 12;
     const endRow = 18;
 
@@ -163,9 +163,9 @@ function createInteractiveDashboardSheet(ss) {
       .setValue("📈 Growing Together");
   });
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CHART AREA 1 - Row 21-42 (Selected Metric 1)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A21:J21").merge()
     .setValue("📊 YOUR STORY IN CHARTS - Watch Your Data Come to Life!")
     .setFontSize(13).setFontFamily("Roboto")
@@ -186,9 +186,9 @@ function createInteractiveDashboardSheet(ss) {
     .setVerticalAlignment("middle")
     .setFontColor(COLORS.TEXT_GRAY);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CHART AREA 2 - Row 21-42 (Comparison or Selected Metric 2)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("L21:T21").merge()
     .setValue("📊 DOUBLE THE INSIGHTS - See Two Stories Side by Side!")
     .setFontSize(13).setFontFamily("Roboto")
@@ -209,9 +209,9 @@ function createInteractiveDashboardSheet(ss) {
     .setVerticalAlignment("middle")
     .setFontColor(COLORS.TEXT_GRAY);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // PIE CHARTS SECTION - Row 45-65
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A45:T45").merge()
     .setValue("🥧 COLORFUL INSIGHTS - Your Work in Living Color!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -246,9 +246,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // WAREHOUSE-STYLE LOCATION CHART - Row 68-88
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A68:T68").merge()
     .setValue("🏢 UNITED ACROSS LOCATIONS - Our Collective Strength!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -269,9 +269,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // DATA TABLE - Top Performers/Issues - Row 91-110
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A91:T91").merge()
     .setValue("📋 THE DETAILS THAT MATTER - Celebrating Excellence!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -440,12 +440,12 @@ function rebuildInteractiveDashboard() {
     // Update metric cards
     updateMetricCards(sheet, metrics);
 
-    // Create primary chart
-    createDynamicChart(sheet, metric1, chartType1, metrics, "A22", 10, 20);
+    // Create primary chart - pass data to avoid refetch
+    createDynamicChart(sheet, metric1, chartType1, metrics, "A22", 10, 20, grievanceData, memberData);
 
     // Create comparison chart if enabled
     if (enableComparison === "Yes") {
-      createDynamicChart(sheet, metric2, chartType2, metrics, "L22", 9, 20);
+      createDynamicChart(sheet, metric2, chartType2, metrics, "L22", 9, 20, grievanceData, memberData);
     }
 
     // Create pie/donut charts
@@ -477,33 +477,54 @@ function rebuildInteractiveDashboard() {
 function calculateAllMetrics(memberData, grievanceData) {
   const metrics = {};
 
-  // Member metrics
+  // Member metrics - using MEMBER_COLS constants
   metrics.totalMembers = memberData.length - 1;
-  metrics.activeMembers = memberData.slice(1).filter(row => row[10] === 'Active').length;
-  metrics.totalStewards = memberData.slice(1).filter(row => row[9] === 'Yes').length;
-  metrics.unit8Members = memberData.slice(1).filter(row => row[5] === 'Unit 8').length;
-  metrics.unit10Members = memberData.slice(1).filter(row => row[5] === 'Unit 10').length;
+  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.MEMBER_ID - 1]; }).length; // Count members with IDs
+  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.IS_STEWARD - 1] === 'Yes'; }).length;
+  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 8'; }).length;
+  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 10'; }).length;
 
-  // Grievance metrics
+  // Grievance metrics - using GRIEVANCE_COLS constants
   metrics.totalGrievances = grievanceData.length - 1;
-  metrics.activeGrievances = grievanceData.slice(1).filter(row =>
-    row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision')).length;
-  metrics.resolvedGrievances = grievanceData.slice(1).filter(row =>
-    row[4] && row[4].startsWith('Resolved')).length;
+  metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    return status && (status === 'Open' || status === 'Pending Info');
+  }).length;
+  metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    return status && (status === 'Settled' || status === 'Closed');
+  }).length;
 
-  const resolvedData = grievanceData.slice(1).filter(row => row[4] && row[4].startsWith('Resolved'));
-  metrics.grievancesWon = resolvedData.filter(row => row[24] && row[24].includes('Won')).length;
-  metrics.grievancesLost = resolvedData.filter(row => row[24] && row[24].includes('Lost')).length;
+  const resolvedData = grievanceData.slice(1).filter(function(row) {
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    return status && (status === 'Settled' || status === 'Closed');
+  });
+  metrics.grievancesWon = resolvedData.filter(function(row) {
+    const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
+    return resolution && resolution.includes('Won');
+  }).length;
+  metrics.grievancesLost = resolvedData.filter(function(row) {
+    const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
+    return resolution && resolution.includes('Lost');
+  }).length;
 
   metrics.winRate = metrics.resolvedGrievances > 0
     ? ((metrics.grievancesWon / metrics.resolvedGrievances) * 100).toFixed(1)
     : 0;
 
-  metrics.overdueGrievances = grievanceData.slice(1).filter(row => row[28] === 'YES').length;
+  // Overdue = Next Action Due is in the past
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) {
+    const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+    if (!nextActionDue) return false;
+    const daysToDeadline = Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24));
+    return daysToDeadline < 0;
+  }).length;
 
   // Additional metrics
-  metrics.inMediation = grievanceData.slice(1).filter(row => row[4] === 'In Mediation').length;
-  metrics.inArbitration = grievanceData.slice(1).filter(row => row[4] === 'In Arbitration').length;
+  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row[GRIEVANCE_COLS.CURRENT_STEP - 1] === 'Mediation'; }).length;
+  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row[GRIEVANCE_COLS.CURRENT_STEP - 1] === 'Arbitration'; }).length;
 
   return metrics;
 }
@@ -653,20 +674,30 @@ function getVictoryMessage(metrics) {
 
 /**
  * Create dynamic chart based on user selection
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - Target sheet
+ * @param {string} metricName - Metric to display
+ * @param {string} chartType - Type of chart (Donut, Pie, Bar, etc)
+ * @param {Object} metrics - Pre-calculated metrics
+ * @param {string} startCell - Starting cell for chart
+ * @param {number} width - Chart width multiplier
+ * @param {number} height - Chart height multiplier
+ * @param {Array<Array>} grievanceData - Grievance data (to avoid refetch)
+ * @param {Array<Array>} memberData - Member data (to avoid refetch)
  */
-function createDynamicChart(sheet, metricName, chartType, metrics, startCell, width, height) {
-  // Remove existing charts in this area first
-  const charts = sheet.getCharts();
-  charts.forEach(chart => {
-    const anchor = chart.getContainerInfo().getAnchorRow();
-    // Extract row number correctly (handles cells like "AA22" not just "A22")
-    if (anchor >= parseInt(startCell.match(/\d+/)[0])) {
-      sheet.removeChart(chart);
-    }
-  });
+function createDynamicChart(sheet, metricName, chartType, metrics, startCell, width, height, grievanceData, memberData) {
+  try {
+    // Remove existing charts in this area first
+    const charts = sheet.getCharts();
+    charts.forEach(function(chart) {
+      const anchor = chart.getContainerInfo().getAnchorRow();
+      // Extract row number correctly (handles cells like "AA22" not just "A22")
+      if (anchor >= parseInt(startCell.match(/\d+/)[0])) {
+        sheet.removeChart(chart);
+      }
+    });
 
-  // Get data based on metric selection
-  const chartData = getChartDataForMetric(metricName, metrics);
+    // Get data based on metric selection - pass data to avoid refetch
+    const chartData = getChartDataForMetric(metricName, metrics, grievanceData, memberData);
 
   if (!chartData || chartData.length === 0) return;
 
@@ -734,42 +765,55 @@ function createDynamicChart(sheet, metricName, chartType, metrics, startCell, wi
       .setOption('colors', [COLORS.PRIMARY_BLUE]);
   }
 
-  if (chartBuilder) {
-    sheet.insertChart(chartBuilder.build());
-  }
+    if (chartBuilder) {
+      sheet.insertChart(chartBuilder.build());
+    }
 
-  // Write data to hidden area for chart
-  writeChartData(sheet, startCell, chartData);
+    // Write data to hidden area for chart
+    writeChartData(sheet, startCell, chartData);
+  } catch (error) {
+    handleError(error, `createDynamicChart(${metricName})`, false);
+  }
 }
 
 /**
  * Write chart data to sheet (hidden area)
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet - Target sheet
+ * @param {string} startCell - Starting cell reference
+ * @param {Array<Array>} data - Data to write
  */
 function writeChartData(sheet, startCell, data) {
-  const range = sheet.getRange(startCell).offset(1, 0, data.length, 2);
-  range.setValues(data);
+  if (!data || data.length === 0) return;
 
-  // Hide this data area
-  const startRow = range.getRow();
-  for (let i = 0; i < data.length; i++) {
-    sheet.hideRows(startRow + i, 1);
+  try {
+    const range = sheet.getRange(startCell).offset(1, 0, data.length, 2);
+    range.setValues(data);
+
+    // Hide this data area - OPTIMIZED: batch hide instead of one-by-one
+    const startRow = range.getRow();
+    sheet.hideRows(startRow, data.length);
+  } catch (error) {
+    handleError(error, 'writeChartData', false);
   }
 }
 
 /**
  * Get chart data for specific metric
  */
-function getChartDataForMetric(metricName, metrics) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-
-  if (!grievanceSheet || !memberSheet) {
+/**
+ * Gets chart data based on selected metric
+ * @param {string} metricName - Name of the metric to chart
+ * @param {Object} metrics - Pre-calculated metrics object
+ * @param {Array<Array>} grievanceData - Grievance data (passed to avoid refetch)
+ * @param {Array<Array>} memberData - Member data (passed to avoid refetch)
+ * @returns {Array<Array>} Chart data as [label, value] pairs
+ */
+function getChartDataForMetric(metricName, metrics, grievanceData, memberData) {
+  // Data validation
+  if (!grievanceData || !memberData) {
+    logWarning('getChartDataForMetric', 'Missing data parameters');
     return [["No Data", 0]];
   }
-
-  const grievanceData = grievanceSheet.getDataRange().getValues();
-  const memberData = memberSheet.getDataRange().getValues();
 
   switch (metricName) {
     case "Total Members":
@@ -781,17 +825,17 @@ function getChartDataForMetric(metricName, metrics) {
     case "Active Grievances":
       // Count actual grievances by step from Grievance Log
       const stepCounts = {};
-      grievanceData.slice(1).forEach(row => {
-        const status = row[4]; // Status column (E)
-        const step = row[5];    // Current Step column (F)
-        if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+      grievanceData.slice(1).forEach(function(row) {
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const step = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
+        if (status && (status === 'Open' || status === 'Pending Info')) {
           stepCounts[step] = (stepCounts[step] || 0) + 1;
         }
       });
 
       const stepData = Object.entries(stepCounts)
-        .filter(([step]) => step && step !== 'Current Step')
-        .map(([step, count]) => [step, count]);
+        .filter(function([step]) { return step && step !== 'Current Step'; })
+        .map(function([step, count]) { return [step, count]; });
 
       return stepData.length > 0 ? stepData : [["No Active Grievances", 0]];
 
@@ -804,58 +848,58 @@ function getChartDataForMetric(metricName, metrics) {
     case "Grievances by Type":
       // Count grievances by type/category
       const typeCounts = {};
-      grievanceData.slice(1).forEach(row => {
-        const type = row[22]; // Issue Category column (W)
+      grievanceData.slice(1).forEach(function(row) {
+        const type = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
         if (type && type !== 'Issue Category') {
           typeCounts[type] = (typeCounts[type] || 0) + 1;
         }
       });
 
       const typeData = Object.entries(typeCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(([type, count]) => [type, count]);
+        .map(function([type, count]) { return [type, count]; });
 
       return typeData.length > 0 ? typeData : [["No Data", 0]];
 
     case "Grievances by Location":
       // Count grievances by location
       const locationCounts = {};
-      grievanceData.slice(1).forEach(row => {
-        const location = row[25]; // Work Location column (Z)
+      grievanceData.slice(1).forEach(function(row) {
+        const location = row[GRIEVANCE_COLS.LOCATION - 1];
         if (location && location !== 'Work Location (Site)') {
           locationCounts[location] = (locationCounts[location] || 0) + 1;
         }
       });
 
       const locationData = Object.entries(locationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(([location, count]) => [location, count]);
+        .map(function([location, count]) { return [location, count]; });
 
       return locationData.length > 0 ? locationData : [["No Data", 0]];
 
     case "Grievances by Step":
       // Count all grievances by step
       const allStepCounts = {};
-      grievanceData.slice(1).forEach(row => {
-        const step = row[5]; // Current Step column (F)
+      grievanceData.slice(1).forEach(function(row) {
+        const step = row[GRIEVANCE_COLS.CURRENT_STEP - 1];
         if (step && step !== 'Current Step') {
           allStepCounts[step] = (allStepCounts[step] || 0) + 1;
         }
       });
 
       const allStepData = Object.entries(allStepCounts)
-        .map(([step, count]) => [step, count]);
+        .map(function([step, count]) { return [step, count]; });
 
       return allStepData.length > 0 ? allStepData : [["No Data", 0]];
 
     case "Unit 8 Members":
-      const unit8Count = memberData.slice(1).filter(row => row[5] === 'Unit 8').length;
+      const unit8Count = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 8'; }).length;
       return [["Unit 8", unit8Count]];
 
     case "Unit 10 Members":
-      const unit10Count = memberData.slice(1).filter(row => row[5] === 'Unit 10').length;
+      const unit10Count = memberData.slice(1).filter(function(row) { return row[MEMBER_COLS.UNIT - 1] === 'Unit 10'; }).length;
       return [["Unit 10", unit10Count]];
 
     case "Total Stewards":
@@ -875,12 +919,12 @@ function getChartDataForMetric(metricName, metrics) {
 function createGrievanceStatusDonut(sheet, grievanceData) {
   // Count by status
   const statusCounts = {};
-  grievanceData.slice(1).forEach(row => {
-    const status = row[4] || 'Unknown';
+  grievanceData.slice(1).forEach(function(row) {
+    const status = row[GRIEVANCE_COLS.STATUS - 1] || 'Unknown';
     statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
 
-  const data = Object.entries(statusCounts).map(([status, count]) => [status, count]);
+  const data = Object.entries(statusCounts).map(function([status, count]) { return [status, count]; });
 
   const chart = sheet.newChart()
     .setChartType(Charts.ChartType.PIE)
@@ -904,16 +948,16 @@ function createGrievanceStatusDonut(sheet, grievanceData) {
  * Create Location Pie Chart
  */
 function createLocationPieChart(sheet, grievanceData) {
-  // Count by location (from member data)
+  // Count by location
   const locationCounts = {};
-  grievanceData.slice(1).forEach(row => {
-    const location = row[4] || 'Unknown';  // Adjust column as needed
+  grievanceData.slice(1).forEach(function(row) {
+    const location = row[GRIEVANCE_COLS.LOCATION - 1] || 'Unknown';
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
   // Get top 10
   const topLocations = Object.entries(locationCounts)
-    .sort((a, b) => b[1] - a[1])
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const chart = sheet.newChart()
@@ -939,13 +983,13 @@ function createLocationPieChart(sheet, grievanceData) {
 function createWarehouseLocationChart(sheet, grievanceData) {
   // This would create a horizontal bar chart similar to warehouse dashboard
   const locationCounts = {};
-  grievanceData.slice(1).forEach(row => {
-    const location = row[4] || 'Unknown';
+  grievanceData.slice(1).forEach(function(row) {
+    const location = row[GRIEVANCE_COLS.LOCATION - 1] || 'Unknown';
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
   const topLocations = Object.entries(locationCounts)
-    .sort((a, b) => b[1] - a[1])
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 15);
 
   const chart = sheet.newChart()
@@ -982,18 +1026,19 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const typeResolved = {};
       const typeWon = {};
 
-      grievanceData.slice(1).forEach(row => {
-        const type = row[22]; // Issue Category column (W)
-        const status = row[4]; // Status column (E)
+      grievanceData.slice(1).forEach(function(row) {
+        const type = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
 
         if (type && type !== 'Issue Category') {
           typeCounts[type] = (typeCounts[type] || 0) + 1;
 
-          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+          if (status && (status === 'Open' || status === 'Pending Info')) {
             typeActive[type] = (typeActive[type] || 0) + 1;
-          } else if (status && status.includes('Resolved')) {
+          } else if (status && (status === 'Settled' || status === 'Closed')) {
             typeResolved[type] = (typeResolved[type] || 0) + 1;
-            if (row[22] && row[22].includes('Won')) {
+            if (resolution && resolution.includes('Won')) {
               typeWon[type] = (typeWon[type] || 0) + 1;
             }
           }
@@ -1001,9 +1046,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(typeCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([type, total], index) => {
+        .map(function([type, total], index) {
           const active = typeActive[type] || 0;
           const resolved = typeResolved[type] || 0;
           const won = typeWon[type] || 0;
@@ -1021,18 +1066,19 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const locationResolved = {};
       const locationWon = {};
 
-      grievanceData.slice(1).forEach(row => {
-        const location = row[25]; // Work Location column (Z)
-        const status = row[4]; // Status column (E)
+      grievanceData.slice(1).forEach(function(row) {
+        const location = row[GRIEVANCE_COLS.LOCATION - 1];
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
 
         if (location && location !== 'Work Location (Site)') {
           locationCounts[location] = (locationCounts[location] || 0) + 1;
 
-          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+          if (status && (status === 'Open' || status === 'Pending Info')) {
             locationActive[location] = (locationActive[location] || 0) + 1;
-          } else if (status && status.includes('Resolved')) {
+          } else if (status && (status === 'Settled' || status === 'Closed')) {
             locationResolved[location] = (locationResolved[location] || 0) + 1;
-            if (row[22] && row[22].includes('Won')) {
+            if (resolution && resolution.includes('Won')) {
               locationWon[location] = (locationWon[location] || 0) + 1;
             }
           }
@@ -1040,9 +1086,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(locationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([location, total], index) => {
+        .map(function([location, total], index) {
           const active = locationActive[location] || 0;
           const resolved = locationResolved[location] || 0;
           const won = locationWon[location] || 0;
@@ -1060,18 +1106,19 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const stewardResolved = {};
       const stewardWon = {};
 
-      grievanceData.slice(1).forEach(row => {
-        const steward = row[26]; // Assigned Steward column (AA)
-        const status = row[4]; // Status column (E)
+      grievanceData.slice(1).forEach(function(row) {
+        const steward = row[GRIEVANCE_COLS.STEWARD - 1];
+        const status = row[GRIEVANCE_COLS.STATUS - 1];
+        const resolution = row[GRIEVANCE_COLS.RESOLUTION - 1];
 
         if (steward && steward !== 'Assigned Steward (Name)') {
           stewardCounts[steward] = (stewardCounts[steward] || 0) + 1;
 
-          if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
+          if (status && (status === 'Open' || status === 'Pending Info')) {
             stewardActive[steward] = (stewardActive[steward] || 0) + 1;
-          } else if (status && status.includes('Resolved')) {
+          } else if (status && (status === 'Settled' || status === 'Closed')) {
             stewardResolved[steward] = (stewardResolved[steward] || 0) + 1;
-            if (row[22] && row[22].includes('Won')) {
+            if (resolution && resolution.includes('Won')) {
               stewardWon[steward] = (stewardWon[steward] || 0) + 1;
             }
           }
@@ -1079,9 +1126,9 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(stewardCounts)
-        .sort((a, b) => (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0))
+        .sort(function(a, b) { return (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0); })
         .slice(0, 15)
-        .map(([steward, total], index) => {
+        .map(function([steward, total], index) {
           const active = stewardActive[steward] || 0;
           const resolved = stewardResolved[steward] || 0;
           const won = stewardWon[steward] || 0;
@@ -1095,17 +1142,17 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
     default:
       // For other metrics, show top locations by default
       const defaultLocationCounts = {};
-      grievanceData.slice(1).forEach(row => {
-        const location = row[25];
+      grievanceData.slice(1).forEach(function(row) {
+        const location = row[GRIEVANCE_COLS.LOCATION - 1];
         if (location && location !== 'Work Location (Site)') {
           defaultLocationCounts[location] = (defaultLocationCounts[location] || 0) + 1;
         }
       });
 
       tableData = Object.entries(defaultLocationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([location, count], index) => {
+        .map(function([location, count], index) {
           return [index + 1, location, count, "-", "-", "-", "📊 Data"];
         });
       break;

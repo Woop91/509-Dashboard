@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GOOGLE CALENDAR INTEGRATION
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Sync grievance deadlines to Google Calendar
  * Features:
@@ -50,19 +50,22 @@ function syncDeadlinesToCalendar() {
       return;
     }
 
-    // Get all grievance data
-    const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+    // Get all grievance data (up to NEXT_ACTION_DUE column)
+    const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
 
     const calendar = CalendarApp.getDefaultCalendar();
     let eventsCreated = 0;
     let eventsSkipped = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    data.forEach((row, index) => {
-      const grievanceId = row[0]; // Column A
-      const memberName = `${row[2]} ${row[3]}`; // Columns C, D
-      const status = row[4]; // Column E
-      const nextActionDue = row[19]; // Column T (Next Action Due)
-      const daysToDeadline = row[20]; // Column U (Days to Deadline)
+    data.forEach(function(row, index) {
+      const grievanceId = row[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+      const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
+      const status = row[GRIEVANCE_COLS.STATUS - 1];
+      const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+      // Calculate days to deadline from NEXT_ACTION_DUE
+      const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
 
       // Only create events for open grievances with deadlines
       if (status !== 'Open' || !nextActionDue) {
@@ -180,15 +183,18 @@ function syncSingleDeadlineToCalendar(grievanceId) {
 
   // Find the grievance
   const lastRow = grievanceSheet.getLastRow();
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.NEXT_ACTION_DUE).getValues();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   for (let i = 0; i < data.length; i++) {
-    if (data[i][0] === grievanceId) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
       const row = data[i];
-      const memberName = `${row[2]} ${row[3]}`;
-      const status = row[4];
-      const nextActionDue = row[19];
-      const daysToDeadline = row[20];
+      const memberName = `${row[GRIEVANCE_COLS.FIRST_NAME - 1]} ${row[GRIEVANCE_COLS.LAST_NAME - 1]}`;
+      const status = row[GRIEVANCE_COLS.STATUS - 1];
+      const nextActionDue = row[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+      // Calculate days to deadline from NEXT_ACTION_DUE
+      const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - today) / (1000 * 60 * 60 * 24)) : null;
 
       if (status !== 'Open' || !nextActionDue) {
         return; // Skip if not open or no deadline
@@ -291,7 +297,7 @@ function clearAllCalendarEvents() {
     const events = calendar.getEvents(now, futureDate);
     let removedCount = 0;
 
-    events.forEach(event => {
+    events.forEach(function(event) {
       const tag = event.getTag('509Dashboard');
       if (tag) {
         event.deleteEvent();
@@ -320,7 +326,7 @@ function showUpcomingDeadlinesFromCalendar() {
     const nextWeek = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
 
     const events = calendar.getEvents(now, nextWeek);
-    const dashboardEvents = events.filter(e => e.getTag('509Dashboard'));
+    const dashboardEvents = events.filter(function(e) { return e.getTag('509Dashboard'); });
 
     if (dashboardEvents.length === 0) {
       SpreadsheetApp.getUi().alert(
@@ -334,7 +340,7 @@ function showUpcomingDeadlinesFromCalendar() {
 
     const eventList = dashboardEvents
       .slice(0, 10)
-      .map(e => `  • ${e.getTitle()} - ${e.getAllDayStartDate().toLocaleDateString()}`)
+      .map(function(e) { return `  • ${e.getTitle()} - ${e.getAllDayStartDate().toLocaleDateString()}`; })
       .join('\n');
 
     SpreadsheetApp.getUi().alert(
