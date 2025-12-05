@@ -4065,29 +4065,20 @@ function getConfigColumnValues(columnIndex, maxRows) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  // Debug logging
-  Logger.log('getConfigColumnValues called with columnIndex=' + columnIndex);
-
   if (!config) {
-    Logger.log('Config sheet not found');
+    Logger.log('getConfigColumnValues: Config sheet not found');
     return [];
   }
 
   // Row 1 is category headers, Row 2 is column headers, Row 3+ is data
   const colLetter = getColumnLetter(columnIndex);
-  Logger.log('Column letter for index ' + columnIndex + ' = "' + colLetter + '"');
-
   const rangeStr = colLetter + "3:" + colLetter + (maxRows + 2);
-  Logger.log('Reading range: ' + rangeStr);
 
   const rawValues = config.getRange(rangeStr).getValues().flat();
-  Logger.log('Raw values count: ' + rawValues.length + ', first 5: ' + JSON.stringify(rawValues.slice(0, 5)));
-
   const values = rawValues
     .filter(function(val) { return val !== '' && val !== null; })
     .map(function(val) { return String(val).trim(); });
 
-  Logger.log('Filtered values count: ' + values.length);
   return values;
 }
 
