@@ -192,49 +192,45 @@ const MEMBER_COLS = {
  * @const {Object}
  */
 const GRIEVANCE_COLS = {
+  // Matches the 28-column layout in createGrievanceLog()
   // Section 1: Identity (A-D)
-  GRIEVANCE_ID: 1,        // A
-  MEMBER_ID: 2,           // B
-  FIRST_NAME: 3,          // C
-  LAST_NAME: 4,           // D
-  // Section 2: Case Details (E-H)
-  ISSUE_CATEGORY: 5,      // E
-  ARTICLES: 6,            // F
-  RESOLUTION: 7,          // G
-  COMMENTS: 8,            // H
-  // Section 3: Status & Assignment (I-K)
-  STATUS: 9,              // I
-  CURRENT_STEP: 10,       // J
-  STEWARD: 11,            // K
-  // Section 4: Timeline - Filing (L-N)
-  INCIDENT_DATE: 12,      // L
-  FILING_DEADLINE: 13,    // M (auto-calc: INCIDENT_DATE + 21)
-  DATE_FILED: 14,         // N
-  // Section 5: Timeline - Step I (O-P)
-  STEP1_DUE: 15,          // O (auto-calc: DATE_FILED + 30)
-  STEP1_RCVD: 16,         // P
-  // Section 6: Timeline - Step II (Q-T)
-  STEP2_APPEAL_DUE: 17,   // Q (auto-calc: STEP1_RCVD + 10)
-  STEP2_APPEAL_FILED: 18, // R
-  STEP2_DUE: 19,          // S (auto-calc: STEP2_APPEAL_FILED + 30)
-  STEP2_RCVD: 20,         // T
-  // Section 7: Timeline - Step III (U-W)
-  STEP3_APPEAL_DUE: 21,   // U (auto-calc: STEP2_RCVD + 30)
-  STEP3_APPEAL_FILED: 22, // V
-  DATE_CLOSED: 23,        // W
-  // Section 8: Calculated Metrics (X-Y)
-  DAYS_OPEN: 24,          // X (auto-calc: DATE_FILED to DATE_CLOSED or TODAY)
-  NEXT_ACTION_DUE: 25,    // Y (auto-calc: based on CURRENT_STEP)
-  // Section 9: Contact & Location (Z-AB)
-  MEMBER_EMAIL: 26,       // Z
-  UNIT: 27,               // AA
-  LOCATION: 28,           // AB
-  // Section 10: Integration (AC)
-  DRIVE_FOLDER_LINK: 29,  // AC
-  // Section 11: Admin Messages (AD-AF) - Hidden by default
-  ADMIN_FLAG: 30,         // AD (checkbox: triggers highlight, move to top, send message)
-  ADMIN_MESSAGE: 31,      // AE (text: message from grievance coordinator)
-  MESSAGE_ACKNOWLEDGED: 32 // AF (checkbox: steward confirms message read, clears highlight)
+  GRIEVANCE_ID: 1,        // A - Grievance ID
+  MEMBER_ID: 2,           // B - Member ID
+  FIRST_NAME: 3,          // C - First Name
+  LAST_NAME: 4,           // D - Last Name
+  // Section 2: Status & Assignment (E-F)
+  STATUS: 5,              // E - Status
+  CURRENT_STEP: 6,        // F - Current Step
+  // Section 3: Timeline - Filing (G-I)
+  INCIDENT_DATE: 7,       // G - Incident Date
+  FILING_DEADLINE: 8,     // H - Filing Deadline (21d) (auto-calc)
+  DATE_FILED: 9,          // I - Date Filed (Step I)
+  // Section 4: Timeline - Step I (J-K)
+  STEP1_DUE: 10,          // J - Step I Decision Due (30d) (auto-calc)
+  STEP1_RCVD: 11,         // K - Step I Decision Rcvd
+  // Section 5: Timeline - Step II (L-O)
+  STEP2_APPEAL_DUE: 12,   // L - Step II Appeal Due (10d) (auto-calc)
+  STEP2_APPEAL_FILED: 13, // M - Step II Appeal Filed
+  STEP2_DUE: 14,          // N - Step II Decision Due (30d) (auto-calc)
+  STEP2_RCVD: 15,         // O - Step II Decision Rcvd
+  // Section 6: Timeline - Step III (P-R)
+  STEP3_APPEAL_DUE: 16,   // P - Step III Appeal Due (30d) (auto-calc)
+  STEP3_APPEAL_FILED: 17, // Q - Step III Appeal Filed
+  DATE_CLOSED: 18,        // R - Date Closed
+  // Section 7: Calculated Metrics (S-U)
+  DAYS_OPEN: 19,          // S - Days Open (auto-calc)
+  NEXT_ACTION_DUE: 20,    // T - Next Action Due (auto-calc)
+  DAYS_TO_DEADLINE: 21,   // U - Days to Deadline (auto-calc)
+  // Section 8: Case Details (V-W)
+  ARTICLES: 22,           // V - Articles Violated
+  ISSUE_CATEGORY: 23,     // W - Issue Category
+  // Section 9: Contact & Location (X-AA)
+  MEMBER_EMAIL: 24,       // X - Member Email
+  UNIT: 25,               // Y - Unit
+  LOCATION: 26,           // Z - Work Location (Site)
+  STEWARD: 27,            // AA - Assigned Steward (Name)
+  // Section 10: Resolution (AB)
+  RESOLUTION: 28          // AB - Resolution Summary
 };
 
 /* --------------------= INTERNAL SYSTEM COLUMN MAPPINGS --------------------= */
