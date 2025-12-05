@@ -1863,35 +1863,77 @@ function CREATE_509_DASHBOARD() {
     SpreadsheetApp.getActive().toast("✅ Interactive Dashboard created", "60%", 2);
 
     // Create Getting Started and FAQ sheets
+    Logger.log("Starting createGettingStartedSheet...");
     createGettingStartedSheet(ss);
+    Logger.log("Completed createGettingStartedSheet");
+
+    Logger.log("Starting createFAQSheet...");
     createFAQSheet(ss);
+    Logger.log("Completed createFAQSheet");
     SpreadsheetApp.getActive().toast("✅ Help sheets created", "70%", 2);
 
     // Create User Settings sheet
+    Logger.log("Starting createUserSettingsSheet...");
     createUserSettingsSheet();
+    Logger.log("Completed createUserSettingsSheet");
     SpreadsheetApp.getActive().toast("✅ Settings sheet created", "70%", 2);
 
     // Create all analytics and test sheets
+    Logger.log("Starting createStewardWorkloadSheet...");
     createStewardWorkloadSheet();
+    Logger.log("Completed createStewardWorkloadSheet");
+
+    Logger.log("Starting createTrendsSheet...");
     createTrendsSheet();
+    Logger.log("Completed createTrendsSheet");
+
+    Logger.log("Starting createLocationSheet...");
     createLocationSheet();
+    Logger.log("Completed createLocationSheet");
+
+    Logger.log("Starting createTypeAnalysisSheet...");
     createTypeAnalysisSheet();
+    Logger.log("Completed createTypeAnalysisSheet");
     SpreadsheetApp.getActive().toast("✅ Analytics sheets created", "75%", 2);
 
+    Logger.log("Starting createExecutiveDashboard...");
     createExecutiveDashboard();
+    Logger.log("Completed createExecutiveDashboard");
+
+    Logger.log("Starting createKPIPerformanceDashboard...");
     createKPIPerformanceDashboard();
+    Logger.log("Completed createKPIPerformanceDashboard");
+
+    Logger.log("Starting createMemberEngagementSheet...");
     createMemberEngagementSheet();
+    Logger.log("Completed createMemberEngagementSheet");
+
+    Logger.log("Starting createCostImpactSheet...");
     createCostImpactSheet();
+    Logger.log("Completed createCostImpactSheet");
     SpreadsheetApp.getActive().toast("✅ Executive sheets created", "80%", 2);
 
     // Create utility sheets
+    Logger.log("Starting createArchiveSheet...");
     createArchiveSheet();
+    Logger.log("Completed createArchiveSheet");
+
+    Logger.log("Starting createDiagnosticsSheet...");
     createDiagnosticsSheet();
+    Logger.log("Completed createDiagnosticsSheet");
     SpreadsheetApp.getActive().toast("✅ Utility sheets created", "85%", 2);
 
+    Logger.log("Starting setupDataValidations...");
     setupDataValidations();
+    Logger.log("Completed setupDataValidations");
+
+    Logger.log("Starting setupFormulasAndCalculations...");
     setupFormulasAndCalculations();
+    Logger.log("Completed setupFormulasAndCalculations");
+
+    Logger.log("Starting setupInteractiveDashboardControls...");
     setupInteractiveDashboardControls();
+    Logger.log("Completed setupInteractiveDashboardControls");
     SpreadsheetApp.getActive().toast("✅ Validations & formulas ready", "95%", 2);
 
     onOpen();
