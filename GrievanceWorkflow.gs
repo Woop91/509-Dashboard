@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GRIEVANCE WORKFLOW - Start Grievance from Member Directory
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Allows stewards to click a member in the directory and start a grievance
  * with pre-filled member and steward information via Google Form.
@@ -12,13 +12,21 @@
  * - PDF generation with fillable grievance form
  * - Email to multiple addresses or download option
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
-// Configuration - Update this with your Google Form URL
-const GRIEVANCE_FORM_CONFIG = {
+/**
+ * Configuration for grievance workflow and Google Form integration
+ * @type {Object}
+ */
+GRIEVANCE_FORM_CONFIG = {
   // Replace with your actual Google Form URL
+  // To find: Create a Google Form, then copy the URL from the browser
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform",
+
+  // Email address for grievance notifications
+  // Configure this with your union's actual grievance email
+  GRIEVANCE_EMAIL: "grievances@seiu509.org",
 
   // Form field entry IDs (found by inspecting your form)
   // To find these: Open your form, right-click a field, inspect element, find "entry.XXXXXXX"
@@ -67,42 +75,67 @@ function showStartGrievanceDialog() {
 
 /**
  * Gets list of all members from Member Directory
+ * @returns {Array<Object>} Array of member objects with properties
  */
 function getMemberList() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
-  if (!memberSheet) return [];
+    if (!memberSheet) {
+      logWarning('getMemberList', 'Member Directory sheet not found');
+      return [];
+    }
 
-  const lastRow = memberSheet.getLastRow();
-  if (lastRow < 2) return [];
+    const lastRow = memberSheet.getLastRow();
+    if (lastRow < 2) return [];
 
-  // Get all member data (columns A-K: ID, First, Last, Job, Location, Unit, Office Days, Email, Phone, Is Steward, Status)
-  const data = memberSheet.getRange(2, 1, lastRow - 1, 11).getValues();
+    // Get all member data - using MEMBER_COLS constants
+    const numCols = Math.max(
+      MEMBER_COLS.MEMBER_ID,
+      MEMBER_COLS.FIRST_NAME,
+      MEMBER_COLS.LAST_NAME,
+      MEMBER_COLS.JOB_TITLE,
+      MEMBER_COLS.WORK_LOCATION,
+      MEMBER_COLS.UNIT,
+      MEMBER_COLS.OFFICE_DAYS,
+      MEMBER_COLS.EMAIL,
+      MEMBER_COLS.PHONE,
+      MEMBER_COLS.IS_STEWARD,
+      MEMBER_COLS.SUPERVISOR
+    );
 
-  return data.map((row, index) => ({
-    rowIndex: index + 2,
-    memberId: row[0],
-    firstName: row[1],
-    lastName: row[2],
-    jobTitle: row[3],
-    location: row[4],
-    unit: row[5],
-    officeDays: row[6],
-    email: row[7],
-    phone: row[8],
-    isSteward: row[9],
-    status: row[10]
-  })).filter(member => member.memberId); // Filter out empty rows
+    const data = memberSheet.getRange(2, 1, lastRow - 1, numCols).getValues();
+
+    return data.map(function(row, index) { return {
+      rowIndex: index + 2,
+      memberId: safeArrayGet(row, MEMBER_COLS.MEMBER_ID - 1, ''),
+      firstName: safeArrayGet(row, MEMBER_COLS.FIRST_NAME - 1, ''),
+      lastName: safeArrayGet(row, MEMBER_COLS.LAST_NAME - 1, ''),
+      jobTitle: safeArrayGet(row, MEMBER_COLS.JOB_TITLE - 1, ''),
+      location: safeArrayGet(row, MEMBER_COLS.WORK_LOCATION - 1, ''),
+      unit: safeArrayGet(row, MEMBER_COLS.UNIT - 1, ''),
+      officeDays: safeArrayGet(row, MEMBER_COLS.OFFICE_DAYS - 1, ''),
+      email: safeArrayGet(row, MEMBER_COLS.EMAIL - 1, ''),
+      phone: safeArrayGet(row, MEMBER_COLS.PHONE - 1, ''),
+      isSteward: safeArrayGet(row, MEMBER_COLS.IS_STEWARD - 1, ''),
+      supervisor: safeArrayGet(row, MEMBER_COLS.SUPERVISOR - 1, '')
+    };}).filter(function(member) { return member.memberId; }); // Filter out empty rows
+  } catch (error) {
+    return handleError(error, 'getMemberList', true, true) || [];
+  }
 }
 
 /**
  * Creates HTML dialog for member selection
+ * @param {Array<Object>} members - Array of member objects
+ * @returns {string} HTML content for dialog
  */
 function createMemberSelectionDialog(members) {
-  const memberOptions = members.map(m =>
-    `<option value="${m.rowIndex}">${m.lastName}, ${m.firstName} (${m.memberId}) - ${m.location}</option>`
-  ).join('');
+  // Use HTML escaping to prevent XSS
+  const memberOptions = members.map(function(m) {
+    return `<option value="${escapeHtmlAttribute(m.rowIndex)}">${escapeHtml(m.lastName)}, ${escapeHtml(m.firstName)} (${escapeHtml(m.memberId)}) - ${escapeHtml(m.location)}</option>`;
+  }).join('');
 
   return `
 <!DOCTYPE html>
@@ -237,7 +270,7 @@ function createMemberSelectionDialog(members) {
   </div>
 
   <script>
-    let members = ${JSON.stringify(members)};
+    var members = ${JSON.stringify(members)};
 
     function showMemberDetails() {
       const select = document.getElementById('memberSelect');
@@ -245,7 +278,7 @@ function createMemberSelectionDialog(members) {
       const startBtn = document.getElementById('startBtn');
 
       if (select.value) {
-        const member = members.find(m => m.rowIndex == select.value);
+        const member = members.find(function(m) { return m.rowIndex == select.value; });
         if (member) {
           detailsDiv.innerHTML = \`
             <div class="detail-item"><strong>Name:</strong> \${member.firstName} \${member.lastName}</div>
@@ -306,6 +339,14 @@ function createMemberSelectionDialog(members) {
  * Generates a pre-filled Google Form URL for the selected member
  */
 function generatePreFilledGrievanceForm(memberRowIndex) {
+  // Validate configuration before proceeding
+  if (GRIEVANCE_FORM_CONFIG.FORM_URL.includes('YOUR_FORM_ID')) {
+    throw new Error(
+      'Grievance form is not configured yet. Please update GRIEVANCE_FORM_CONFIG.FORM_URL in GrievanceWorkflow.gs with your actual Google Form URL. ' +
+      'Instructions: 1) Create a Google Form, 2) Get the form URL, 3) Replace the placeholder in the code.'
+    );
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
@@ -382,11 +423,42 @@ function getStewardContactInfo() {
 }
 
 /**
+ * Gets grievance coordinator emails from Config sheet
+ */
+function getGrievanceCoordinators() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const configSheet = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!configSheet) {
+    return { coordinator1: '', coordinator2: '', coordinator3: '' };
+  }
+
+  try {
+    // Grievance Coordinators are in columns P (16), Q (17), R (18)
+    const coordinatorData = configSheet.getRange(2, 16, 10, 3).getValues();
+
+    // Get unique coordinator names
+    const coordinator1List = coordinatorData.map(function(row) { return row[0]; }).filter(String);
+    const coordinator2List = coordinatorData.map(function(row) { return row[1]; }).filter(String);
+    const coordinator3List = coordinatorData.map(function(row) { return row[2]; }).filter(String);
+
+    return {
+      coordinator1: coordinator1List.length > 0 ? coordinator1List[0] : '',
+      coordinator2: coordinator2List.length > 0 ? coordinator2List[0] : '',
+      coordinator3: coordinator3List.length > 0 ? coordinator3List[0] : ''
+    };
+  } catch (e) {
+    Logger.log('Error getting grievance coordinators: ' + e.message);
+    return { coordinator1: '', coordinator2: '', coordinator3: '' };
+  }
+}
+
+/**
  * Updates Config sheet to include Steward Contact Info section
  */
 function addStewardContactInfoToConfig() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let configSheet = ss.getSheetByName(SHEETS.CONFIG);
+  var configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
     SpreadsheetApp.getUi().alert('❌ Config sheet not found!');
@@ -442,9 +514,9 @@ function addStewardContactInfoToConfig() {
 }
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GOOGLE FORM SUBMISSION HANDLING
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -463,15 +535,352 @@ function onGrievanceFormSubmit(e) {
     // Add to Grievance Log
     const grievanceId = addGrievanceToLog(formData);
 
+    // Create Google Drive folder for the grievance
+    const folder = createGrievanceFolder(grievanceId, formData);
+
     // Generate PDF
     const pdfBlob = generateGrievancePDF(grievanceId);
 
-    // Show email/download dialog
-    showPDFOptionsDialog(grievanceId, pdfBlob);
+    // Save PDF to folder
+    if (folder) {
+      folder.createFile(pdfBlob);
+    }
+
+    // Show sharing options dialog with folder link
+    showSharingOptionsDialog(grievanceId, pdfBlob, folder);
 
   } catch (error) {
     Logger.log('Error in onGrievanceFormSubmit: ' + error.message);
     SpreadsheetApp.getUi().alert('❌ Error processing form submission: ' + error.message);
+  }
+}
+
+/**
+ * Creates a Google Drive folder for a grievance
+ */
+function createGrievanceFolder(grievanceId, formData) {
+  try {
+    // Get or create main Grievances folder
+    const mainFolderName = 'SEIU 509 - Grievances';
+    var mainFolder;
+
+    const folders = DriveApp.getFoldersByName(mainFolderName);
+    if (folders.hasNext()) {
+      mainFolder = folders.next();
+    } else {
+      mainFolder = DriveApp.createFolder(mainFolderName);
+    }
+
+    // Create grievance-specific folder
+    const folderName = `${grievanceId} - ${formData.lastName}, ${formData.firstName}`;
+    const grievanceFolder = mainFolder.createFolder(folderName);
+
+    // Store folder URL in Grievance Log (if there's a column for it)
+    // This would need a column added to the Grievance Log sheet
+
+    Logger.log(`Created folder: ${folderName}`);
+    return grievanceFolder;
+
+  } catch (error) {
+    Logger.log('Error creating grievance folder: ' + error.message);
+    return null;
+  }
+}
+
+/**
+ * Shows dialog with sharing options for grievance form and folder
+ */
+function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  // Get grievance data
+  const grievanceData = grievanceLog.getDataRange().getValues();
+  var grievanceRow = grievanceData.find(function(row) { return row[0] === grievanceId; });
+
+  if (!grievanceRow) {
+    SpreadsheetApp.getUi().alert('❌ Grievance not found');
+    return;
+  }
+
+  const memberId = grievanceRow[1];
+  const memberEmail = grievanceRow[23];
+  const stewardEmail = getStewardContactInfo().email;
+  const coordinators = getGrievanceCoordinators();
+  const folderUrl = folder ? folder.getUrl() : '';
+
+  // TODO: Configure actual grievance email address in settings
+  // This email address needs to be set up by the organization
+  const grievanceEmail = GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL || 'grievances@seiu509.org';
+
+  const html = HtmlService.createHtmlOutput(`
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #1a73e8;
+      margin-top: 0;
+      border-bottom: 3px solid #1a73e8;
+      padding-bottom: 10px;
+    }
+    .info-box {
+      background: #e8f0fe;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 15px 0;
+      border-left: 4px solid #1a73e8;
+    }
+    .folder-link {
+      background: #fef7e0;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 15px 0;
+      border-left: 4px solid #f9ab00;
+    }
+    .folder-link a {
+      color: #1a73e8;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .folder-link a:hover {
+      text-decoration: underline;
+    }
+    .checkbox-group {
+      margin: 20px 0;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      margin: 8px 0;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .checkbox-item:hover {
+      background: #f0f0f0;
+      border-color: #1a73e8;
+    }
+    .checkbox-item input[type="checkbox"] {
+      margin-right: 10px;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    .checkbox-item label {
+      cursor: pointer;
+      flex: 1;
+      font-size: 14px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 25px;
+    }
+    button {
+      flex: 1;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #1a73e8;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #1557b0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(26,115,232,0.4);
+    }
+    .btn-secondary {
+      background: #f1f3f4;
+      color: #333;
+    }
+    .btn-secondary:hover {
+      background: #e8eaed;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>✅ Grievance ${grievanceId} Created</h2>
+
+    <div class="info-box">
+      <strong>ℹ️ Grievance folder created successfully!</strong><br>
+      Select the recipients you want to share the grievance form and/or folder with.
+    </div>
+
+    ${folderUrl ? `
+    <div class="folder-link">
+      📁 <strong>Folder Link:</strong><br>
+      <a href="${folderUrl}" target="_blank">${folderUrl}</a>
+    </div>
+    ` : ''}
+
+    <h3>Select Recipients:</h3>
+    <div class="checkbox-group">
+      ${memberEmail ? `
+      <div class="checkbox-item">
+        <input type="checkbox" id="member" value="${memberEmail}">
+        <label for="member">Member (${memberEmail})</label>
+      </div>
+      ` : ''}
+
+      ${stewardEmail ? `
+      <div class="checkbox-item">
+        <input type="checkbox" id="steward" value="${stewardEmail}">
+        <label for="steward">Steward (${stewardEmail})</label>
+      </div>
+      ` : ''}
+
+      ${coordinators.coordinator1 ? `
+      <div class="checkbox-item">
+        <input type="checkbox" id="coordinator1" value="${coordinators.coordinator1}">
+        <label for="coordinator1">Grievance Coordinator 1 (${coordinators.coordinator1})</label>
+      </div>
+      ` : ''}
+
+      ${coordinators.coordinator2 ? `
+      <div class="checkbox-item">
+        <input type="checkbox" id="coordinator2" value="${coordinators.coordinator2}">
+        <label for="coordinator2">Grievance Coordinator 2 (${coordinators.coordinator2})</label>
+      </div>
+      ` : ''}
+
+      ${coordinators.coordinator3 ? `
+      <div class="checkbox-item">
+        <input type="checkbox" id="coordinator3" value="${coordinators.coordinator3}">
+        <label for="coordinator3">Grievance Coordinator 3 (${coordinators.coordinator3})</label>
+      </div>
+      ` : ''}
+
+      ${grievanceEmail ? `
+      <div class="checkbox-item">
+        <input type="checkbox" id="grievanceEmail" value="${grievanceEmail}">
+        <label for="grievanceEmail">Grievance Email (${grievanceEmail})</label>
+      </div>
+      ` : ''}
+    </div>
+
+    <div class="button-group">
+      <button class="btn-secondary" onclick="google.script.host.close()">Close</button>
+      <button class="btn-primary" onclick="shareWithSelected()">Share with Selected</button>
+    </div>
+  </div>
+
+  <script>
+    function shareWithSelected() {
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+      const recipients = Array.from(checkboxes).map(function(cb) { return cb.value; });
+
+      if (recipients.length === 0) {
+        alert('Please select at least one recipient.');
+        return;
+      }
+
+      const folderUrl = '${folderUrl}';
+
+      google.script.run
+        .withSuccessHandler(function() {
+          alert('✅ Sharing invitations sent successfully!');
+          google.script.host.close();
+        })
+        .withFailureHandler(function(error) {
+          alert('❌ Error: ' + error.message);
+        })
+        .shareGrievanceWithRecipients('${grievanceId}', recipients, folderUrl);
+    }
+  </script>
+</body>
+</html>
+  `).setWidth(600).setHeight(600);
+
+  SpreadsheetApp.getUi().showModalDialog(html, 'Share Grievance');
+}
+
+/**
+ * Shares grievance folder and sends notification to selected recipients
+ */
+function shareGrievanceWithRecipients(grievanceId, recipients, folderUrl) {
+  try {
+    const pdfBlob = generateGrievancePDF(grievanceId);
+
+    // Get folder by URL
+    var folder = null;
+    if (folderUrl) {
+      const folderId = folderUrl.match(/[-\w]{25,}/);
+      if (folderId) {
+        folder = DriveApp.getFolderById(folderId[0]);
+      }
+    }
+
+    // Share folder with each recipient
+    // Note: Requires valid email addresses. Configure coordinator emails in Config sheet.
+    if (folder && recipients && recipients.length > 0) {
+      recipients.forEach(function(email) {
+        try {
+          // Validate email before sharing
+          const validEmail = sanitizeEmail(email);
+          if (validEmail) {
+            folder.addEditor(validEmail);
+            logInfo('shareGrievanceWithRecipients', `Shared folder with: ${validEmail}`);
+          } else {
+            logWarning('shareGrievanceWithRecipients', `Invalid email address: ${email}`);
+          }
+        } catch (e) {
+          handleError(e, `shareGrievanceWithRecipients - sharing with ${email}`, false);
+        }
+      });
+    }
+
+    // Send email notification
+    const subject = `SEIU Local 509 - Grievance ${grievanceId}`;
+    const body = `A new grievance has been filed and requires your attention.\n\n` +
+                 `Grievance ID: ${grievanceId}\n` +
+                 `Folder Link: ${folderUrl}\n\n` +
+                 `Please review the attached grievance form and folder for details.\n\n` +
+                 `This is an automated message from the SEIU Local 509 Dashboard.`;
+
+    // Send email notification with grievance PDF
+    // Note: Requires valid email addresses and Gmail permissions
+    recipients.forEach(function(email) {
+      try {
+        const validEmail = sanitizeEmail(email);
+        if (validEmail) {
+          GmailApp.sendEmail(validEmail, subject, body, {
+            attachments: [pdfBlob],
+            name: 'SEIU Local 509 Dashboard'
+          });
+          logInfo('shareGrievanceWithRecipients', `Sent email to: ${validEmail}`);
+        } else {
+          logWarning('shareGrievanceWithRecipients', `Skipped invalid email: ${email}`);
+        }
+      } catch (e) {
+        handleError(e, `shareGrievanceWithRecipients - emailing ${email}`, false);
+      }
+    });
+
+  } catch (error) {
+    Logger.log('Error sharing grievance: ' + error.message);
+    throw error;
   }
 }
 
@@ -566,6 +975,17 @@ function addGrievanceToLog(formData) {
     recalcMemberRow(memberRow);
   }
 
+  // Automatically create Google Drive folder for the grievance
+  try {
+    const grievantName = `${formData.firstName}_${formData.lastName}`;
+    const folder = createGrievanceFolder(grievanceId, grievantName);
+    linkFolderToGrievance(grievanceId, folder.getId());
+    Logger.log(`Auto-created Drive folder for grievance ${grievanceId}`);
+  } catch (error) {
+    Logger.log(`Error auto-creating Drive folder for ${grievanceId}: ${error.message}`);
+    // Continue even if folder creation fails
+  }
+
   return grievanceId;
 }
 
@@ -655,9 +1075,9 @@ function generateUniqueGrievanceId() {
   const existingIds = grievanceSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
 
   // Generate new ID
-  let counter = 1;
-  let letter = 'A';
-  let newId;
+  var counter = 1;
+  var letter = 'A';
+  var newId;
 
   do {
     newId = `GRV-${String(counter).padStart(3, '0')}-${letter}`;
@@ -694,9 +1114,9 @@ function findMemberRow(memberId) {
 }
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * PDF GENERATION AND DISTRIBUTION
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -712,7 +1132,7 @@ function generateGrievancePDF(grievanceId) {
 
   // Find grievance row
   const data = grievanceSheet.getDataRange().getValues();
-  let grievanceRow = -1;
+  var grievanceRow = -1;
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === grievanceId) {
@@ -779,7 +1199,7 @@ function formatGrievancePDFSheet(sheet, data) {
     .setBackground('#7EC8E3')
     .setFontColor('white');
 
-  let row = 3;
+  var row = 3;
 
   // Member Information
   sheet.getRange(row, 1, 1, 4).merge()
@@ -918,22 +1338,22 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
       }
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function() {
           alert('✅ Email sent successfully!');
           google.script.host.close();
         })
-        .withFailureHandler(e => alert('❌ Error: ' + e.message))
+        .withFailureHandler(function(e) { return alert('❌ Error: ' + e.message); })
         .emailGrievancePDF('${grievanceId}', emails);
     }
 
     function downloadPDF() {
       alert('PDF download will start automatically.\\n\\nPlease check your Downloads folder.');
       google.script.run
-        .withSuccessHandler(url => {
+        .withSuccessHandler(function(url) {
           window.open(url, '_blank');
           google.script.host.close();
         })
-        .withFailureHandler(e => alert('❌ Error: ' + e.message))
+        .withFailureHandler(function(e) { return alert('❌ Error: ' + e.message); })
         .getGrievancePDFUrl('${grievanceId}');
     }
   </script>
@@ -949,14 +1369,14 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
  */
 function emailGrievancePDF(grievanceId, emailAddresses) {
   const pdfBlob = generateGrievancePDF(grievanceId);
-  const emails = emailAddresses.split(',').map(e => e.trim());
+  const emails = emailAddresses.split(',').map(function(e) { return e.trim(); });
 
   const subject = 'SEIU Local 509 - Grievance ' + grievanceId;
   const body = 'Please find attached the grievance form for ' + grievanceId + '.\n\n' +
                'This grievance was automatically generated from the SEIU Local 509 Dashboard.\n\n' +
                'For questions, please contact your steward.';
 
-  emails.forEach(email => {
+  emails.forEach(function(email) {
     if (email) {
       GmailApp.sendEmail(email, subject, body, {
         attachments: [pdfBlob]

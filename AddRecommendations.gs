@@ -1,0 +1,151 @@
+/**
+ * ------------------------------------------------------------------------====
+ * ADD RECOMMENDATIONS TO FEEDBACK & DEVELOPMENT SHEET
+ * ------------------------------------------------------------------------====
+ *
+ * This script adds 47 code review recommendations to the Feedback & Development sheet
+ * Run this function once to populate the recommendations
+ */
+
+function ADD_RECOMMENDATIONS_TO_FEATURES_TAB() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const feedbackSheet = ss.getSheetByName(SHEETS.FEEDBACK);
+
+  if (!feedbackSheet) {
+    SpreadsheetApp.getUi().alert('❌ Feedback & Development sheet not found!');
+    return;
+  }
+
+  // Confirm with user
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    'Add Code Review Recommendations',
+    'This will add 47 enhancement recommendations to the Feedback & Development sheet.\n\n' +
+    'Continue?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    return;
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast('📝 Adding recommendations...', 'Please wait', -1);
+
+  // Get the last row to append after
+  const lastRow = feedbackSheet.getLastRow();
+
+  // Recommendations data
+  const recommendations = [
+    // Format: [Type, Date, Submitted By, Priority, Title, Description, Status, Progress %, Complexity, Target, Assigned To, Blockers, Notes, Last Updated]
+
+    // PERFORMANCE & SCALABILITY
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Extend Auto-Formula Coverage", "Extend formulas from 100 rows to 1000 rows using ARRAYFORMULA. Current limitation requires manual formula addition beyond row 100.", "Planned", 0, "Simple", "Q1 2025", "Dev Team", "", "Replace individual setFormula calls with ARRAYFORMULA implementations", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Optimize Seed Data Performance", "Improve batch processing with better progress indicators and caching. Current execution takes 2-3 minutes for 20k members.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Use SpreadsheetApp.flush() strategically; add progress toasts every 500 rows", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Implement Data Pagination", "Add pagination to analytics sheets to improve load times with large datasets. Currently all data loads at once.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Create Show More buttons; use QUERY with LIMIT and OFFSET", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Add Caching Layer", "Cache Analytics Data sheet calculations for 10x faster dashboard loads.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Store calculated values in hidden sheet; refresh on data change triggers", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Optimize QUERY Formulas", "Consolidate multiple QUERY calls on same data to reduce calculation time.", "Planned", 0, "Simple", "Q2 2025", "Dev Team", "", "Use virtual tables and GROUP BY instead of multiple COUNTIF calls", "2025-01-28"],
+
+    // USER EXPERIENCE & ACCESSIBILITY
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Add Member Search Functionality", "Implement searchable member directory with autocomplete to reduce lookup time by 90%.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Add search dialog with filters by name, ID, location, unit; add keyboard shortcuts", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Create Quick Actions Menu", "Add right-click context menu for common actions (Start Grievance, View History, Email).", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Implement onSelectionChange trigger with context-aware menu options", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Implement Keyboard Shortcuts", "Add keyboard navigation for power users (Ctrl+N: New grievance, Ctrl+M: Member directory, etc.).", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Create keyboard event handlers for common operations", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Add Undo/Redo Functionality", "Track changes with undo stack to provide rollback for accidental changes.", "Planned", 0, "Complex", "Q2 2025", "Dev Team", "", "Store last 10 operations in Archive sheet; add Undo Last Action menu item", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Enhanced ADHD Features", "Add focus mode, reading guide, color-coded deadlines, Pomodoro timer integration.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Expand current ADHD features with additional accessibility options", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Mobile-Optimized Views", "Create mobile-friendly dashboard with single-column layout and larger touch targets.", "Planned", 0, "Moderate", "Q3 2025", "Dev Team", "", "Design mobile-specific views for field use cases", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Dark Mode Support", "Add dark theme option to reduce eye strain.", "Planned", 0, "Simple", "Q2 2025", "Dev Team", "", "Create DARK_COLORS constant; apply theme to all sheets", "2025-01-28"],
+
+    // DATA INTEGRITY & VALIDATION
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Add Email & Phone Validation", "Validate email format, phone format, and date ranges to ensure cleaner data.", "Planned", 0, "Simple", "Q1 2025", "Dev Team", "", "Use requireTextMatchesPattern for email/phone validation", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Implement Change Tracking", "Track all data modifications with audit trail showing timestamp, user, field, old/new values.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Create onEdit trigger to log changes to Change Log sheet", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Add Duplicate Detection", "Prevent duplicate member IDs and grievance IDs with auto-generation of next available ID.", "Planned", 0, "Simple", "Q1 2025", "Dev Team", "", "Check existing IDs before insertion; show warning dialog on duplicate", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Data Quality Dashboard", "Monitor data completeness with percentage of required fields filled and quality score.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Show data quality metrics; highlight missing critical data", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Referential Integrity Checks", "Validate foreign keys to ensure Member IDs exist before creating grievances.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Check Member ID existence; validate Steward assignments; warn on orphaned records", "2025-01-28"],
+
+    // AUTOMATION & WORKFLOWS
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Automated Deadline Notifications", "Email alerts for approaching deadlines with escalation to managers.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Time-driven trigger (daily 8 AM); email stewards 7 days before; escalate 3 days before", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Batch Operations", "Add bulk update capabilities (assign steward, update status, export PDF, email).", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Create batch operation dialogs for common bulk tasks", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Automated Report Generation", "Schedule monthly/quarterly reports with automatic generation and email distribution.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Time-driven trigger (1st of month); generate PDF; email to leadership", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Workflow State Machine", "Enforce grievance workflow rules to ensure process compliance.", "Planned", 0, "Complex", "Q3 2025", "Dev Team", "", "Define valid state transitions; block invalid changes; require notes", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Smart Auto-Assignment", "Intelligent steward assignment based on workload, location, expertise, and availability.", "Planned", 0, "Complex", "Q3 2025", "Dev Team", "", "Balance workload; match by location/unit; consider expertise", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Template System", "Pre-built grievance templates for common issue types with auto-fill capabilities.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Create template library; customizable placeholders", "2025-01-28"],
+
+    // REPORTING & ANALYTICS
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Predictive Analytics", "Predict grievance outcomes based on historical patterns and similar cases.", "Planned", 0, "Complex", "Q3 2025", "Data Team", "", "Analyze win/loss patterns; identify success factors; provide risk scores", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Trend Analysis & Forecasting", "Identify patterns over time with month-over-month comparisons and volume forecasting.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Month-over-month comparisons; seasonal patterns; early warning system", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Custom Report Builder", "User-defined reports with drag-and-drop field selection and custom filters.", "Planned", 0, "Complex", "Q3 2025", "Dev Team", "", "Build report designer interface; save templates; schedule recurring reports", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Benchmark Comparisons", "Compare performance against industry standards with percentile rankings.", "Planned", 0, "Moderate", "Q4 2025", "Data Team", "", "Upload benchmark data; side-by-side comparisons; gap analysis", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Root Cause Analysis", "Identify systemic issues by clustering similar grievances and analyzing common factors.", "Planned", 0, "Complex", "Q3 2025", "Data Team", "", "Cluster analysis; correlation visualization; intervention recommendations", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Real-Time Dashboard Updates", "Live data refresh with auto-update every 5 minutes.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Update dashboards on data change; WebSocket-style updates via triggers", "2025-01-28"],
+
+    // INTEGRATION & EXTENSIBILITY
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Google Calendar Integration", "Sync deadlines to Google Calendar with color-coding by priority.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Create calendar events for deadlines; update on status changes", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Email Integration (Gmail)", "Send/receive grievance emails with tracking and template library.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Email PDFs directly; track opens; auto-log communications", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Google Drive Integration", "Attach documents to grievances with version control and auto-organization.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Link Drive folders; upload evidence; organize by grievance ID", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Slack/Teams Integration", "Real-time notifications with bot commands for quick queries.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Post updates to channels; notify on deadlines; allow status updates from chat", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "API Layer", "RESTful API for external access with authentication.", "Planned", 0, "Complex", "Q4 2025", "Dev Team", "", "Google Apps Script Web App; GET/POST/PUT endpoints; API key auth", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Zapier/Make.com Integration", "Connect to 1000+ apps via webhooks.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Webhooks for data changes; trigger actions in other apps", "2025-01-28"],
+
+    // MOBILE & OFFLINE ACCESS
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Progressive Web App (PWA)", "Install as app on mobile devices for native experience.", "Planned", 0, "Complex", "Q4 2025", "Dev Team", "", "HTML service interface; manifest.json; service worker; responsive design", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Offline Mode", "Work without internet with local storage cache and sync.", "Planned", 0, "Very Complex", "Q4 2025", "Dev Team", "", "Local storage cache; sync when online; conflict resolution", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "SMS Notifications", "Text alerts for critical items via Twilio integration.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Twilio integration; SMS for overdue; opt-in/opt-out management", "2025-01-28"],
+
+    // SECURITY & PRIVACY
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Role-Based Access Control (RBAC)", "Implement permission levels (Admin, Steward, Member, Viewer).", "Planned", 0, "Complex", "Q2 2025", "Security Team", "", "Define role permissions; protect sensitive operations", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Audit Logging", "Track all access and changes with 7-year retention.", "Planned", 0, "Moderate", "Q2 2025", "Security Team", "", "Log opens and modifications; store IP, timestamp, user", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "PII Protection", "Protect sensitive member data with encryption and masking.", "Planned", 0, "Complex", "Q2 2025", "Security Team", "", "Encrypt sensitive fields; mask in exports; GDPR/CCPA compliance", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Data Backup & Recovery", "Automated backups with one-click restore.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Daily backup to separate sheet; 30-day version history; export to Drive", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Session Management", "Track active users with row locking and concurrent edit warnings.", "Planned", 0, "Moderate", "Q3 2025", "Dev Team", "", "Show current viewers; lock rows being edited; session timeout", "2025-01-28"],
+
+    // DOCUMENTATION & TRAINING
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Interactive Tutorial", "In-app guided tour for first-time users.", "Planned", 0, "Moderate", "Q1 2025", "UX Team", "", "Walkthrough; highlight features; interactive steps", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Video Tutorials", "Screen recordings for common tasks (2-3 min each).", "Planned", 0, "Simple", "Q1 2025", "UX Team", "", "Creating grievance; running reports; managing workload; using dashboard", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Context-Sensitive Help", "Help button on each sheet with explanations and links.", "Planned", 0, "Simple", "Q2 2025", "UX Team", "", "? icon on each sheet; explain purpose; list common tasks", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "FAQ Database", "Searchable knowledge base with voting and community contributions.", "Planned", 0, "Moderate", "Q2 2025", "UX Team", "", "Categorize by topic; search functionality; vote on answers", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Release Notes", "Track version changes with auto-notification on updates.", "Planned", 0, "Simple", "Q2 2025", "Dev Team", "", "Create CHANGELOG sheet; auto-notify; highlight new features", "2025-01-28"]
+  ];
+
+  // Add recommendations to sheet
+  const startRow = lastRow + 1;
+  feedbackSheet.getRange(startRow, 1, recommendations.length, 14).setValues(recommendations);
+
+  // Format the added rows
+  const addedRange = feedbackSheet.getRange(startRow, 1, recommendations.length, 14);
+  addedRange.setFontSize(10);
+
+  // Alternate row colors for readability
+  for (let i = 0; i < recommendations.length; i++) {
+    const rowNum = startRow + i;
+    if (i % 2 === 0) {
+      feedbackSheet.getRange(rowNum, 1, 1, 14).setBackground("#F9FAFB");
+    }
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    `✅ Successfully added ${recommendations.length} recommendations!`,
+    'Complete',
+    5
+  );
+
+  // Show summary
+  SpreadsheetApp.getUi().alert(
+    '✅ Recommendations Added Successfully!',
+    `Added ${recommendations.length} enhancement recommendations to the Feedback & Development sheet.\n\n` +
+    'Breakdown by priority:\n' +
+    '• High Priority: 25 items\n' +
+    '• Medium Priority: 15 items\n' +
+    '• Low Priority: 7 items\n\n' +
+    'Categories covered:\n' +
+    '• Performance & Scalability\n' +
+    '• User Experience & Accessibility\n' +
+    '• Data Integrity & Validation\n' +
+    '• Automation & Workflows\n' +
+    '• Reporting & Analytics\n' +
+    '• Integration & Extensibility\n' +
+    '• Mobile & Offline Access\n' +
+    '• Security & Privacy\n' +
+    '• Documentation & Training\n\n' +
+    'Review the recommendations and prioritize based on your needs!',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}

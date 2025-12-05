@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * TEST FRAMEWORK - Simple Testing Library for Google Apps Script
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * A lightweight testing framework that runs within the Apps Script environment.
  * Provides assertion methods, test runners, and reporting.
@@ -11,11 +11,11 @@
  *   2. Run via menu: 🧪 Tests > Run All Tests
  *   3. View results in test report sheet
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 // Test results storage
-const TEST_RESULTS = {
+TEST_RESULTS = {
   passed: [],
   failed: [],
   skipped: []
@@ -24,7 +24,7 @@ const TEST_RESULTS = {
 /**
  * Assertion library
  */
-const Assert = {
+var Assert = {
   /**
    * Assert that two values are equal
    */
@@ -119,7 +119,7 @@ const Assert = {
    * Assert that function throws an error
    */
   assertThrows: function(fn, message) {
-    let threw = false;
+    var threw = false;
     try {
       fn();
     } catch (e) {
@@ -224,7 +224,7 @@ function runAllTests() {
   ];
 
   // Run each test
-  testFunctions.forEach(testName => {
+  testFunctions.forEach(function(testName) {
     try {
       const testFn = this[testName];
       if (typeof testFn === 'function') {
@@ -286,7 +286,7 @@ function generateTestReport(duration) {
   const ss = SpreadsheetApp.getActive();
 
   // Create or clear Test Results sheet
-  let reportSheet = ss.getSheetByName('Test Results');
+  var reportSheet = ss.getSheetByName('Test Results');
   if (!reportSheet) {
     reportSheet = ss.insertSheet('Test Results');
   }
@@ -318,7 +318,7 @@ function generateTestReport(duration) {
   reportSheet.getRange(3, 1, summary.length, 2).setValues(summary);
   reportSheet.getRange(3, 1, summary.length, 1).setFontWeight('bold');
 
-  let currentRow = 3 + summary.length + 2;
+  var currentRow = 3 + summary.length + 2;
 
   // Passed tests
   if (TEST_RESULTS.passed.length > 0) {
@@ -334,7 +334,7 @@ function generateTestReport(duration) {
       .setBackground('#F3F4F6');
 
     currentRow++;
-    TEST_RESULTS.passed.forEach(test => {
+    TEST_RESULTS.passed.forEach(function(test) {
       reportSheet.getRange(currentRow, 1, 1, 3).setValues([[test.name, '✅ PASS', test.time]]);
       currentRow++;
     });
@@ -355,7 +355,7 @@ function generateTestReport(duration) {
       .setBackground('#F3F4F6');
 
     currentRow++;
-    TEST_RESULTS.failed.forEach(test => {
+    TEST_RESULTS.failed.forEach(function(test) {
       reportSheet.getRange(currentRow, 1, 1, 4).setValues([[
         test.name,
         '❌ FAIL',
@@ -382,7 +382,7 @@ function generateTestReport(duration) {
       .setBackground('#F3F4F6');
 
     currentRow++;
-    TEST_RESULTS.skipped.forEach(test => {
+    TEST_RESULTS.skipped.forEach(function(test) {
       reportSheet.getRange(currentRow, 1, 1, 3).setValues([[test.name, '⏭️ SKIP', test.reason]]);
       currentRow++;
     });
@@ -484,4 +484,152 @@ function cleanupTestData() {
       grievanceLog.deleteRow(i + 2);
     }
   }
+}
+
+/* --------------------= TEST CATEGORY RUNNERS --------------------= */
+
+/**
+ * Shows test results in a dialog
+ */
+function showTestResults() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const reportSheet = ss.getSheetByName('Test Results');
+
+  if (!reportSheet) {
+    SpreadsheetApp.getUi().alert(
+      'No Test Results',
+      'No test results found. Run some tests first using the Testing menu.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  reportSheet.activate();
+  SpreadsheetApp.getActiveSpreadsheet().toast('Showing test results', 'Test Results', 3);
+}
+
+/**
+ * Run all unit tests
+ */
+function runUnitTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running unit tests...', 'Tests', -1);
+
+  const unitTests = [
+    'testFilingDeadlineCalculation',
+    'testStepIDeadlineCalculation',
+    'testStepIIAppealDeadlineCalculation',
+    'testDaysOpenCalculation',
+    'testDaysOpenForClosedGrievance',
+    'testNextActionDueLogic',
+    'testMemberDirectoryFormulas',
+    'testOpenRateRange',
+    'testEmptySheetsHandling',
+    'testFutureDateHandling',
+    'testPastDeadlineHandling'
+  ];
+
+  runTestCategory('Unit Tests', unitTests);
+}
+
+/**
+ * Run all validation tests
+ */
+function runValidationTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running validation tests...', 'Tests', -1);
+
+  const validationTests = [
+    'testDataValidationSetup',
+    'testConfigDropdownValues',
+    'testMemberValidationRules',
+    'testGrievanceValidationRules',
+    'testMemberSeedingValidation',
+    'testGrievanceSeedingValidation',
+    'testMemberEmailFormat',
+    'testMemberIDUniqueness',
+    'testGrievanceMemberLinking'
+  ];
+
+  runTestCategory('Validation Tests', validationTests);
+}
+
+/**
+ * Run all integration tests
+ */
+function runIntegrationTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running integration tests...', 'Tests', -1);
+
+  const integrationTests = [
+    'testCompleteGrievanceWorkflow',
+    'testDashboardMetricsUpdate',
+    'testMemberGrievanceSnapshot',
+    'testConfigChangesPropagateToDropdowns',
+    'testMultipleGrievancesSameMember',
+    'testDashboardHandlesEmptyData',
+    'testGrievanceUpdatesTriggersRecalculation'
+  ];
+
+  runTestCategory('Integration Tests', integrationTests);
+}
+
+/**
+ * Run all performance tests
+ */
+function runPerformanceTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running performance tests...', 'Tests', -1);
+
+  const performanceTests = [
+    'testDashboardRefreshPerformance',
+    'testFormulaPerformanceWithData'
+  ];
+
+  runTestCategory('Performance Tests', performanceTests);
+}
+
+/**
+ * Run a category of tests
+ * @param {string} categoryName - Name of the test category
+ * @param {string[]} testNames - Array of test function names
+ */
+function runTestCategory(categoryName, testNames) {
+  // Reset results
+  TEST_RESULTS.passed = [];
+  TEST_RESULTS.failed = [];
+  TEST_RESULTS.skipped = [];
+
+  var passed = 0;
+  var failed = 0;
+  var skipped = 0;
+
+  testNames.forEach(function(testName) {
+    try {
+      const testFn = this[testName];
+      if (typeof testFn !== 'function') {
+        TEST_RESULTS.skipped.push({ name: testName, reason: 'Function not found' });
+        skipped++;
+        return;
+      }
+
+      testFn();
+      TEST_RESULTS.passed.push({ name: testName });
+      passed++;
+    } catch (error) {
+      TEST_RESULTS.failed.push({
+        name: testName,
+        error: error.message,
+        stack: error.stack
+      });
+      failed++;
+    }
+  });
+
+  // Generate report
+  generateTestReport();
+
+  // Show summary
+  const total = passed + failed + skipped;
+  SpreadsheetApp.getUi().alert(
+    categoryName + ' Complete',
+    `Results:\n✅ Passed: ${passed}/${total}\n❌ Failed: ${failed}/${total}\n⏭️ Skipped: ${skipped}/${total}\n\nView the Test Results sheet for details.`,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
 }

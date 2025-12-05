@@ -49,8 +49,8 @@
  * All issues addressed, real data only, 20k members + 5k grievances
  ****************************************************/
 
-/* ===================== CONFIGURATION ===================== */
-const SHEETS = {
+/* --------------------= CONFIGURATION --------------------= */
+SHEETS = {
   CONFIG: "Config",
   MEMBER_DIR: "Member Directory",
   GRIEVANCE_LOG: "Grievance Log",
@@ -61,17 +61,21 @@ const SHEETS = {
   INTERACTIVE_DASHBOARD: "🎯 Interactive (Your Custom View)",
   STEWARD_WORKLOAD: "👨‍⚖️ Steward Workload",
   TRENDS: "📈 Trends & Timeline",
+  PERFORMANCE: "🎯 Test 2: Performance",
   LOCATION: "🗺️ Location Analytics",
   TYPE_ANALYSIS: "📊 Type Analysis",
   EXECUTIVE_DASHBOARD: "💼 Executive Dashboard",
+  EXECUTIVE: "💼 Executive Dashboard",  // Alias for backward compatibility
   KPI_PERFORMANCE: "📊 KPI Performance Dashboard",
+  KPI_BOARD: "📊 KPI Performance Dashboard",  // Alias for backward compatibility
   MEMBER_ENGAGEMENT: "👥 Member Engagement",
   COST_IMPACT: "💰 Cost Impact",
+  QUICK_STATS: "⚡ Quick Stats",
   ARCHIVE: "📦 Archive",
   DIAGNOSTICS: "🔧 Diagnostics"
 };
 
-const COLORS = {
+COLORS = {
   // Primary brand colors
   PRIMARY_BLUE: "#7EC8E3",
   PRIMARY_PURPLE: "#7C3AED",
@@ -100,7 +104,7 @@ const COLORS = {
 };
 
 // Column positions for Member Directory (1-indexed)
-const MEMBER_COLS = {
+MEMBER_COLS = {
   MEMBER_ID: 1,                    // A
   FIRST_NAME: 2,                   // B
   LAST_NAME: 3,                    // C
@@ -135,7 +139,7 @@ const MEMBER_COLS = {
 };
 
 // Column positions for Grievance Log (1-indexed)
-const GRIEVANCE_COLS = {
+GRIEVANCE_COLS = {
   GRIEVANCE_ID: 1,      // A
   MEMBER_ID: 2,         // B
   FIRST_NAME: 3,        // C
@@ -170,7 +174,7 @@ const GRIEVANCE_COLS = {
  * Converts a column number to letter notation (1=A, 27=AA, etc.)
  */
 function getColumnLetter(columnNumber) {
-  let letter = '';
+  var letter = '';
   while (columnNumber > 0) {
     const remainder = (columnNumber - 1) % 26;
     letter = String.fromCharCode(65 + remainder) + letter;
@@ -179,7 +183,7 @@ function getColumnLetter(columnNumber) {
   return letter;
 }
 
-/* ===================== DIAGNOSTIC TOOL ===================== */
+/* --------------------= DIAGNOSTIC TOOL --------------------= */
 /**
  * RUN THIS FIRST TO DIAGNOSE SETUP ISSUES
  * Shows what sheets exist and what's missing
@@ -188,7 +192,7 @@ function DIAGNOSE_SETUP() {
   const ss = SpreadsheetApp.getActive();
   const ui = SpreadsheetApp.getUi();
 
-  let report = "=== 509 DASHBOARD DIAGNOSTIC REPORT ===\n\n";
+  var report = "=== 509 DASHBOARD DIAGNOSTIC REPORT ===\n\n";
 
   // Check sheets
   report += "📋 SHEET STATUS:\n";
@@ -216,8 +220,8 @@ function DIAGNOSE_SETUP() {
     "🔧 Diagnostics"
   ];
 
-  let missingSheets = [];
-  requiredSheets.forEach(sheetName => {
+  var missingSheets = [];
+  requiredSheets.forEach(function(sheetName) {
     const exists = ss.getSheetByName(sheetName) !== null;
     report += exists ? "✅ " : "❌ ";
     report += sheetName + "\n";
@@ -248,7 +252,7 @@ function DIAGNOSE_SETUP() {
   // Check current sheets
   const allSheets = ss.getSheets();
   report += "📊 CURRENT SHEETS (" + allSheets.length + "):\n";
-  allSheets.forEach(sheet => {
+  allSheets.forEach(function(sheet) {
     report += "  • " + sheet.getName() + "\n";
   });
 
@@ -256,7 +260,7 @@ function DIAGNOSE_SETUP() {
   Logger.log(report);
 }
 
-/* ===================== ONE-CLICK SETUP ===================== */
+/* --------------------= ONE-CLICK SETUP --------------------= */
 function CREATE_509_DASHBOARD() {
   const ss = SpreadsheetApp.getActive();
 
@@ -296,6 +300,7 @@ function CREATE_509_DASHBOARD() {
     // Create all analytics and test sheets
     createStewardWorkloadSheet();
     createTrendsSheet();
+    createPerformanceSheet();
     createLocationSheet();
     createTypeAnalysisSheet();
     SpreadsheetApp.getActive().toast("✅ Analytics sheets created", "75%", 2);
@@ -304,6 +309,7 @@ function CREATE_509_DASHBOARD() {
     createKPIPerformanceDashboard();
     createMemberEngagementSheet();
     createCostImpactSheet();
+    createQuickStatsSheet();
     SpreadsheetApp.getActive().toast("✅ Executive sheets created", "80%", 2);
 
     // Create utility sheets
@@ -332,10 +338,10 @@ function CREATE_509_DASHBOARD() {
   }
 }
 
-/* ===================== CONFIG TAB ===================== */
+/* --------------------= CONFIG TAB --------------------= */
 function createConfigTab() {
   const ss = SpreadsheetApp.getActive();
-  let config = ss.getSheetByName(SHEETS.CONFIG);
+  var config = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!config) {
     config = ss.insertSheet(SHEETS.CONFIG);
@@ -415,10 +421,10 @@ function createConfigTab() {
   config.setTabColor("#2563EB");
 }
 
-/* ===================== MEMBER DIRECTORY - ALL CORRECT COLUMNS ===================== */
+/* --------------------= MEMBER DIRECTORY - ALL CORRECT COLUMNS --------------------= */
 function createMemberDirectory() {
   const ss = SpreadsheetApp.getActive();
-  let memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  var memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
 
   // Delete existing sheet to remove any column groups or formatting issues
   if (memberDir) {
@@ -478,10 +484,10 @@ function createMemberDirectory() {
   memberDir.setTabColor("#059669");
 }
 
-/* ===================== GRIEVANCE LOG - ALL CORRECT COLUMNS ===================== */
+/* --------------------= GRIEVANCE LOG - ALL CORRECT COLUMNS --------------------= */
 function createGrievanceLog() {
   const ss = SpreadsheetApp.getActive();
-  let grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  var grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
   if (!grievanceLog) {
     grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
@@ -537,10 +543,10 @@ function createGrievanceLog() {
   grievanceLog.setTabColor("#DC2626");
 }
 
-/* ===================== DASHBOARD - ONLY REAL DATA ===================== */
+/* --------------------= DASHBOARD - ONLY REAL DATA --------------------= */
 function createMainDashboard() {
   const ss = SpreadsheetApp.getActive();
-  let dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+  var dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
 
   if (!dashboard) {
     dashboard = ss.insertSheet(SHEETS.DASHBOARD);
@@ -582,8 +588,8 @@ function createMainDashboard() {
     ["YTD Vol. Hours", `=SUM('Member Directory'!${volunteerHoursCol}:${volunteerHoursCol})`, "🙋"]
   ];
 
-  let col = 1;
-  memberMetrics.forEach(m => {
+  var col = 1;
+  memberMetrics.forEach(function(m) {
     dashboard.getRange(6, col, 1, 3).merge()
       .setValue(m[2] + " " + m[0])
       .setFontWeight("bold")
@@ -619,7 +625,7 @@ function createMainDashboard() {
   ];
 
   col = 1;
-  grievanceMetrics.forEach(m => {
+  grievanceMetrics.forEach(function(m) {
     dashboard.getRange(11, col, 1, 3).merge()
       .setValue(m[2] + " " + m[0])
       .setFontWeight("bold")
@@ -655,7 +661,7 @@ function createMainDashboard() {
   ];
 
   col = 1;
-  engagementMetrics.forEach(m => {
+  engagementMetrics.forEach(function(m) {
     dashboard.getRange(16, col, 1, 3).merge()
       .setValue(m[0])
       .setFontWeight("bold")
@@ -702,10 +708,10 @@ function createMainDashboard() {
   dashboard.setTabColor("#7C3AED");
 }
 
-/* ===================== ANALYTICS DATA SHEET ===================== */
+/* --------------------= ANALYTICS DATA SHEET --------------------= */
 function createAnalyticsDataSheet() {
   const ss = SpreadsheetApp.getActive();
-  let analytics = ss.getSheetByName(SHEETS.ANALYTICS);
+  var analytics = ss.getSheetByName(SHEETS.ANALYTICS);
 
   if (!analytics) {
     analytics = ss.insertSheet(SHEETS.ANALYTICS);
@@ -739,7 +745,6 @@ function createAnalyticsDataSheet() {
 
   // Steward Workload (dynamic column references)
   const stewardCol = getColumnLetter(GRIEVANCE_COLS.STEWARD);
-  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
   analytics.getRange("J3").setValue("Steward Workload");
   analytics.getRange("J4:K4").setValues([["Steward", "Open Cases"]]).setFontWeight("bold");
   analytics.getRange("J5").setFormula(`=UNIQUE(FILTER('Grievance Log'!${stewardCol}:${stewardCol}, 'Grievance Log'!${stewardCol}:${stewardCol}<>"", 'Grievance Log'!${stewardCol}:${stewardCol}<>"Assigned Steward (Name)"))`);
@@ -748,10 +753,10 @@ function createAnalyticsDataSheet() {
   analytics.hideSheet();
 }
 
-/* ===================== MEMBER SATISFACTION ===================== */
+/* --------------------= MEMBER SATISFACTION --------------------= */
 function createMemberSatisfactionSheet() {
   const ss = SpreadsheetApp.getActive();
-  let satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
+  var satisfaction = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
 
   if (!satisfaction) {
     satisfaction = ss.insertSheet(SHEETS.MEMBER_SATISFACTION);
@@ -801,10 +806,10 @@ function createMemberSatisfactionSheet() {
   satisfaction.setTabColor("#10B981");
 }
 
-/* ===================== FEEDBACK & DEVELOPMENT ===================== */
+/* --------------------= FEEDBACK & DEVELOPMENT --------------------= */
 function createFeedbackSheet() {
   const ss = SpreadsheetApp.getActive();
-  let feedback = ss.getSheetByName(SHEETS.FEEDBACK);
+  var feedback = ss.getSheetByName(SHEETS.FEEDBACK);
 
   if (!feedback) {
     feedback = ss.insertSheet(SHEETS.FEEDBACK);
@@ -897,10 +902,10 @@ function createFeedbackSheet() {
   feedback.setColumnWidth(14, 110); // Last Updated
 }
 
-/* ===================== STEWARD WORKLOAD ===================== */
+/* --------------------= STEWARD WORKLOAD --------------------= */
 function createStewardWorkloadSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
+  var sheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
 
   if (!sheet) {
     sheet = ss.insertSheet(SHEETS.STEWARD_WORKLOAD);
@@ -927,10 +932,10 @@ function createStewardWorkloadSheet() {
   sheet.setTabColor(COLORS.PRIMARY_PURPLE);
 }
 
-/* ===================== TEST 1: TRENDS & TIMELINE ===================== */
+/* --------------------= TEST 1: TRENDS & TIMELINE --------------------= */
 function createTrendsSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.TRENDS);
+  var sheet = ss.getSheetByName(SHEETS.TRENDS);
 
   if (!sheet) {
     sheet = ss.insertSheet(SHEETS.TRENDS);
@@ -958,10 +963,10 @@ function createTrendsSheet() {
   sheet.setTabColor(COLORS.UNION_GREEN);
 }
 
-/* ===================== EXECUTIVE DASHBOARD ===================== */
+/* --------------------= EXECUTIVE DASHBOARD --------------------= */
 function createExecutiveDashboard() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName("💼 Executive Dashboard");
+  var sheet = ss.getSheetByName("💼 Executive Dashboard");
 
   if (!sheet) {
     sheet = ss.insertSheet("💼 Executive Dashboard");
@@ -1057,10 +1062,10 @@ function createExecutiveDashboard() {
   sheet.setColumnWidth(4, 100);
 }
 
-/* ===================== KPI PERFORMANCE DASHBOARD ===================== */
+/* --------------------= KPI PERFORMANCE DASHBOARD --------------------= */
 function createKPIPerformanceDashboard() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
+  var sheet = ss.getSheetByName("📊 KPI Performance Dashboard");
 
   if (!sheet) {
     sheet = ss.insertSheet("📊 KPI Performance Dashboard");
@@ -1129,10 +1134,10 @@ function createKPIPerformanceDashboard() {
   sheet.setColumnWidth(12, 110); // Last Updated
 }
 
-/* ===================== TEST 3: LOCATION ANALYTICS ===================== */
+/* --------------------= TEST 3: LOCATION ANALYTICS --------------------= */
 function createLocationSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.LOCATION);
+  var sheet = ss.getSheetByName(SHEETS.LOCATION);
 
   if (!sheet) {
     sheet = ss.insertSheet(SHEETS.LOCATION);
@@ -1159,10 +1164,10 @@ function createLocationSheet() {
   sheet.setTabColor(COLORS.ACCENT_TEAL);
 }
 
-/* ===================== TEST 4: TYPE ANALYSIS ===================== */
+/* --------------------= TEST 4: TYPE ANALYSIS --------------------= */
 function createTypeAnalysisSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
+  var sheet = ss.getSheetByName(SHEETS.TYPE_ANALYSIS);
 
   if (!sheet) {
     sheet = ss.insertSheet(SHEETS.TYPE_ANALYSIS);
@@ -1189,10 +1194,10 @@ function createTypeAnalysisSheet() {
   sheet.setTabColor(COLORS.PRIMARY_BLUE);
 }
 
-/* ===================== TEST 7: MEMBER ENGAGEMENT ===================== */
+/* --------------------= TEST 7: MEMBER ENGAGEMENT --------------------= */
 function createMemberEngagementSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
+  var sheet = ss.getSheetByName(SHEETS.MEMBER_ENGAGEMENT);
 
   if (!sheet) {
     sheet = ss.insertSheet(SHEETS.MEMBER_ENGAGEMENT);
@@ -1220,10 +1225,10 @@ function createMemberEngagementSheet() {
   sheet.setTabColor(COLORS.ACCENT_PURPLE);
 }
 
-/* ===================== TEST 8: COST IMPACT ===================== */
+/* --------------------= TEST 8: COST IMPACT --------------------= */
 function createCostImpactSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
+  var sheet = ss.getSheetByName(SHEETS.COST_IMPACT);
 
   if (!sheet) {
     sheet = ss.insertSheet(SHEETS.COST_IMPACT);
@@ -1250,10 +1255,130 @@ function createCostImpactSheet() {
   sheet.setTabColor(COLORS.SOLIDARITY_RED);
 }
 
-/* ===================== ARCHIVE ===================== */
+/* --------------------= TEST 2: PERFORMANCE --------------------= */
+function createPerformanceSheet() {
+  const ss = SpreadsheetApp.getActive();
+  var sheet = ss.getSheetByName(SHEETS.PERFORMANCE);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEETS.PERFORMANCE);
+  }
+  sheet.clear();
+
+  sheet.getRange("A1:K1").merge()
+    .setValue("🎯 PERFORMANCE METRICS & TRENDS")
+    .setFontSize(16)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.PRIMARY_BLUE)
+    .setFontColor("white");
+
+  // Column definitions for formulas
+  const statusCol = 'E';
+  const dateOpenedCol = 'D';
+  const dateClosedCol = 'R';
+  const resolutionCol = 'Q';
+  const daysOpenCol = 'S';
+
+  // Key Performance Indicators
+  sheet.getRange("A3").setValue("KEY PERFORMANCE INDICATORS").setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+
+  const kpis = [
+    ["Metric", "Current Value", "Target", "Variance", "Status"],
+    ["Total Grievances", `=COUNTA('Grievance Log'!A:A)-1`, 5000, `=B5-C5`, `=IF(D5>=0,"✅","⚠️")`],
+    ["Open Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, 50, `=B6-C6`, `=IF(B6<=C6,"✅","⚠️")`],
+    ["Win Rate %", `=IFERROR(TEXT(COUNTIFS('Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),"0.0%"),"-")`, "75%", `=VALUE(LEFT(B7,LEN(B7)-1))-VALUE(LEFT(C7,LEN(C7)-1))`, `=IF(D7>=0,"✅","⚠️")`],
+    ["Avg Resolution Days", `=IFERROR(ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),0),"-")`, 30, `=B8-C8`, `=IF(B8<=C8,"✅","⚠️")`],
+    ["Active Stewards", `=COUNTIF('Member Directory'!J:J,"Yes")`, 20, `=B9-C9`, `=IF(B9>=C9,"✅","⚠️")`]
+  ];
+
+  sheet.getRange(4, 1, kpis.length, 5).setValues(kpis);
+  sheet.getRange(4, 1, 1, 5).setFontWeight("bold").setBackground(COLORS.INFO_LIGHT);
+
+  // Monthly Performance Trend
+  sheet.getRange("A12").setValue("MONTHLY PERFORMANCE TREND").setFontWeight("bold").setBackground(COLORS.LIGHT_GRAY);
+
+  const trendHeaders = ["Month", "New Cases", "Resolved", "Win Rate %", "Avg Days", "Open EOMonth"];
+  sheet.getRange(13, 1, 1, trendHeaders.length).setValues([trendHeaders])
+    .setFontWeight("bold")
+    .setBackground(COLORS.INFO_LIGHT);
+
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.PRIMARY_BLUE);
+}
+
+/* --------------------= TEST 9: QUICK STATS --------------------= */
+function createQuickStatsSheet() {
+  const ss = SpreadsheetApp.getActive();
+  var sheet = ss.getSheetByName(SHEETS.QUICK_STATS);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEETS.QUICK_STATS);
+  }
+  sheet.clear();
+
+  sheet.getRange("A1:G1").merge()
+    .setValue("⚡ QUICK STATS - AT-A-GLANCE DASHBOARD")
+    .setFontSize(16)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.ACCENT_ORANGE)
+    .setFontColor("white");
+
+  sheet.getRange("A2:G2").merge()
+    .setValue("Real-time snapshot of critical metrics - refresh any time")
+    .setFontSize(10)
+    .setFontStyle("italic")
+    .setHorizontalAlignment("center")
+    .setBackground(COLORS.LIGHT_GRAY)
+    .setFontColor(COLORS.TEXT_GRAY);
+
+  // Column definitions
+  const statusCol = 'E';
+  const resolutionCol = 'Q';
+  const isStewardCol = 'J';
+  const daysOpenCol = 'S';
+
+  // Quick stats grid
+  const quickStats = [
+    ["📊 MEMBERS & STEWARDS", ""],
+    ["Total Members", `=COUNTA('Member Directory'!A:A)-1`],
+    ["Active Stewards", `=COUNTIF('Member Directory'!${isStewardCol}:${isStewardCol},"Yes")`],
+    ["Avg Cases/Steward", `=IFERROR(ROUND(COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")/COUNTIF('Member Directory'!${isStewardCol}:${isStewardCol},"Yes"),1),"-")`],
+    ["", ""],
+    ["📋 GRIEVANCES", ""],
+    ["Total Grievances", `=COUNTA('Grievance Log'!A:A)-1`],
+    ["Open", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`],
+    ["Pending Info", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Pending Info")`],
+    ["Resolved/Settled", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Settled")+COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved")`],
+    ["", ""],
+    ["🎯 PERFORMANCE", ""],
+    ["Win Rate", `=IFERROR(TEXT(COUNTIFS('Grievance Log'!${resolutionCol}:${resolutionCol},"*Won*")/COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Resolved*"),"0.0%"),"-")`],
+    ["Avg Days to Resolve", `=IFERROR(ROUND(AVERAGE('Grievance Log'!${daysOpenCol}:${daysOpenCol}),0),"-")`],
+    ["Cases This Month", `=COUNTIFS('Grievance Log'!D:D,">="&DATE(YEAR(TODAY()),MONTH(TODAY()),1))`]
+  ];
+
+  sheet.getRange(4, 1, quickStats.length, 2).setValues(quickStats);
+
+  // Format section headers
+  sheet.getRange("A4").setFontWeight("bold").setBackground(COLORS.ACCENT_TEAL).setFontColor("white");
+  sheet.getRange("A9").setFontWeight("bold").setBackground(COLORS.UNION_GREEN).setFontColor("white");
+  sheet.getRange("A15").setFontWeight("bold").setBackground(COLORS.PRIMARY_PURPLE).setFontColor("white");
+
+  // Last updated timestamp
+  sheet.getRange("A" + (quickStats.length + 6)).setValue("Last Updated:");
+  sheet.getRange("B" + (quickStats.length + 6)).setFormula("=NOW()").setNumberFormat("MM/dd/yyyy hh:mm:ss");
+
+  sheet.setFrozenRows(3);
+  sheet.setTabColor(COLORS.ACCENT_ORANGE);
+  sheet.setColumnWidth(1, 200);
+  sheet.setColumnWidth(2, 150);
+}
+
+/* --------------------= ARCHIVE --------------------= */
 function createArchiveSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.ARCHIVE);
+  var sheet = ss.getSheetByName(SHEETS.ARCHIVE);
 
   if (!sheet) {
     sheet = ss.insertSheet(SHEETS.ARCHIVE);
@@ -1279,10 +1404,10 @@ function createArchiveSheet() {
   sheet.setTabColor(COLORS.TEXT_GRAY);
 }
 
-/* ===================== DIAGNOSTICS ===================== */
+/* --------------------= DIAGNOSTICS --------------------= */
 function createDiagnosticsSheet() {
   const ss = SpreadsheetApp.getActive();
-  let sheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+  var sheet = ss.getSheetByName(SHEETS.DIAGNOSTICS);
 
   if (!sheet) {
     sheet = ss.insertSheet(SHEETS.DIAGNOSTICS);
@@ -1308,7 +1433,7 @@ function createDiagnosticsSheet() {
   sheet.setTabColor(COLORS.SOLIDARITY_RED);
 }
 
-/* ===================== DATA VALIDATIONS ===================== */
+/* --------------------= DATA VALIDATIONS --------------------= */
 function setupDataValidations() {
   const ss = SpreadsheetApp.getActive();
   const config = ss.getSheetByName(SHEETS.CONFIG);
@@ -1330,7 +1455,7 @@ function setupDataValidations() {
     { col: 24, configCol: 13 }  // Comm Methods
   ];
 
-  memberValidations.forEach(v => {
+  memberValidations.forEach(function(v) {
     const configRange = config.getRange(2, v.configCol, 50, 1);
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(configRange, true)
@@ -1350,7 +1475,7 @@ function setupDataValidations() {
     { col: 27, configCol: 8 }   // Assigned Steward
   ];
 
-  grievanceValidations.forEach(v => {
+  grievanceValidations.forEach(function(v) {
     const configRange = config.getRange(2, v.configCol, 50, 1);
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(configRange, true)
@@ -1360,7 +1485,7 @@ function setupDataValidations() {
   });
 }
 
-/* ===================== FORMULAS ===================== */
+/* --------------------= FORMULAS --------------------= */
 function setupFormulasAndCalculations() {
   const ss = SpreadsheetApp.getActive();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -1433,7 +1558,7 @@ function setupFormulasAndCalculations() {
   }
 }
 
-/* ===================== MENU ===================== */
+/* --------------------= MENU --------------------= */
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
 
@@ -1454,7 +1579,13 @@ function onOpen() {
       .addItem("Seed 5k Grievances", "SEED_5K_GRIEVANCES")
       .addSeparator()
       .addItem("Clear All Data", "clearAllData")
-      .addItem("🗑️ Nuke All Seed Data", "nukeSeedData"))
+      .addItem("🗑️ Nuke All Seed Data", "nukeSeedData")
+      .addSeparator()
+      .addItem("📝 Add Sample Feedback Entries", "addSampleFeedbackEntries")
+      .addItem("📊 Populate Analytics Sheets", "populateAllAnalyticsSheets")
+      .addItem("👁️ Hide Diagnostics Tab", "hideDiagnosticsTab")
+      .addSeparator()
+      .addItem("🎨 Setup Dashboard Enhancements", "SETUP_DASHBOARD_ENHANCEMENTS"))
     .addSeparator()
     .addSubMenu(ui.createMenu("♿ ADHD Features")
       .addItem("Hide Gridlines (Focus Mode)", "hideAllGridlines")
@@ -1529,7 +1660,7 @@ No fake CPU/memory metrics - everything tracks actual union activity.
   SpreadsheetApp.getUi().alert("Help", helpText, SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
-/* ===================== SEED 20,000 MEMBERS ===================== */
+/* --------------------= SEED 20,000 MEMBERS --------------------= */
 function SEED_20K_MEMBERS() {
   const ss = SpreadsheetApp.getActive();
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
@@ -1566,7 +1697,7 @@ function SEED_20K_MEMBERS() {
   }
 
   const BATCH_SIZE = 1000;
-  let data = [];
+  var data = [];
 
   for (let i = 1; i <= 20000; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
@@ -1643,7 +1774,7 @@ function SEED_20K_MEMBERS() {
   SpreadsheetApp.getActive().toast("✅ 20,000 members added!", "Complete", 5);
 }
 
-/* ===================== SEED 5,000 GRIEVANCES ===================== */
+/* --------------------= SEED 5,000 GRIEVANCES --------------------= */
 function SEED_5K_GRIEVANCES() {
   const ss = SpreadsheetApp.getActive();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
@@ -1664,12 +1795,12 @@ function SEED_5K_GRIEVANCES() {
   // Get member data ONCE before the loop (CRITICAL FIX)
   const memberLastRow = memberDir.getLastRow();
   if (memberLastRow < 2) {
-    ui.alert('Error', 'No members found. Please seed members first.', ui.ButtonSet.OK);
+    ui.alert('Error', 'No members found in Member Directory. Please seed members first.', ui.ButtonSet.OK);
     return;
   }
 
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
-  const memberIDs = allMemberData.map(row => row[0]).filter(String);
+  const memberIDs = allMemberData.map(function(row) { return row[0]; }).filter(String);
 
   const statuses = config.getRange("I2:I8").getValues().flat().filter(String);
   const steps = config.getRange("J2:J7").getValues().flat().filter(String);
@@ -1685,8 +1816,8 @@ function SEED_5K_GRIEVANCES() {
   }
 
   const BATCH_SIZE = 500;
-  let data = [];
-  let successCount = 0;
+  var data = [];
+  var successCount = 0;
 
   for (let i = 1; i <= 5000; i++) {
     // Get random member
@@ -1747,7 +1878,7 @@ function SEED_5K_GRIEVANCES() {
       Math.floor((Date.now() - dateFiled.getTime()) / (1000 * 60 * 60 * 1000));
 
     // Next Action Due - determine based on current step
-    let nextActionDue = "";
+    var nextActionDue = "";
     if (!isClosed) {
       if (step === "Informal" || step === "Step I") {
         nextActionDue = step1DecisionDue;
@@ -1864,7 +1995,7 @@ function updateMemberDirectorySnapshots() {
   // Build member snapshot data
   const memberSnapshots = {};
 
-  grievanceData.forEach(row => {
+  grievanceData.forEach(function(row) {
     const memberID = row[1]; // Column B: Member ID
     const status = row[4]; // Column E: Status
     const nextActionDue = row[19]; // Column T: Next Action Due
@@ -1960,15 +2091,15 @@ function clearAllData() {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * UNIFIED OPERATIONS MONITOR
  * Terminal-themed comprehensive dashboard with 26+ analytics sections
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * SEIU 509 COMPREHENSIVE ACTION DASHBOARD
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Terminal-themed comprehensive operations monitor with 26+ sections covering:
  * - Executive status and deadlines
@@ -1982,7 +2113,7 @@ function clearAllData() {
  *
  * Designed for union stewards and administrators to monitor all operational
  * aspects in a single, information-dense terminal interface.
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -2038,7 +2169,7 @@ function getUnifiedDashboardData() {
     steps: calculateStepEfficiency(grievances),
 
     // Section 3: Network Health
-    totalMembers: members.filter(m => m[0]).length,
+    totalMembers: members.filter(function(m) { return m[0]; }).length,
     engagementRate: calculateEngagementRate(grievances, members),
     noContactCount: calculateNoContact(members, today),
     stewardCount: calculateActiveStewards(grievances),
@@ -2118,19 +2249,19 @@ function getUnifiedDashboardData() {
   };
 }
 
-// ============================================================================
+// ------------------------------------------------------------------------====
 // CALCULATION FUNCTIONS
-// ============================================================================
+// ------------------------------------------------------------------------====
 
 function calculateActiveCases(grievances) {
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const status = g[4];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   }).length;
 }
 
 function calculateOverdue(grievances, today) {
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const status = g[4];
     const nextDeadline = g[19];
     if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
@@ -2148,7 +2279,7 @@ function calculateDueThisWeek(grievances, today) {
   const oneWeekFromNow = new Date(today);
   oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
 
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const status = g[4];
     const nextDeadline = g[19];
     if (status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
@@ -2163,14 +2294,14 @@ function calculateDueThisWeek(grievances, today) {
 }
 
 function calculateWinRate(grievances) {
-  const closed = grievances.filter(g => g[4] === 'Settled' || g[4] === 'Closed' || g[4] === 'Withdrawn');
+  const closed = grievances.filter(function(g) { return g[4] === 'Settled' || g[4] === 'Closed' || g[4] === 'Withdrawn'; });
   if (closed.length === 0) return 0;
-  const won = closed.filter(g => g[4] === 'Settled').length;
+  const won = closed.filter(function(g) { return g[4] === 'Settled'; }).length;
   return (won / closed.length) * 100;
 }
 
 function calculateAvgDays(grievances) {
-  const closed = grievances.filter(g => {
+  const closed = grievances.filter(function(g) {
     const status = g[4];
     const filedDate = g[8];
     const closedDate = g[17];
@@ -2180,7 +2311,7 @@ function calculateAvgDays(grievances) {
 
   if (closed.length === 0) return 0;
 
-  const totalDays = closed.reduce((sum, g) => {
+  const totalDays = closed.reduce(function(sum, g) {
     const days = Math.floor((g[17] - g[8]) / (1000 * 60 * 60 * 24));
     return sum + days;
   }, 0);
@@ -2189,21 +2320,21 @@ function calculateAvgDays(grievances) {
 }
 
 function calculateEscalations(grievances) {
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const step = g[5]; // Current Step column
     return step && (step.includes('III') || step.includes('3'));
   }).length;
 }
 
 function calculateArbitrations(grievances) {
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const step = g[5];
     return step && (step.includes('Arbitration') || step.includes('Mediation'));
   }).length;
 }
 
 function calculateHighRisk(grievances) {
-  return grievances.filter(g => {
+  return grievances.filter(function(g) {
     const issueCategory = g[22];
     return issueCategory && (issueCategory.includes('Discipline') || issueCategory.includes('Discrimination'));
   }).length;
@@ -2211,12 +2342,12 @@ function calculateHighRisk(grievances) {
 
 function calculateStepEfficiency(grievances) {
   const stepData = {};
-  const active = grievances.filter(g => {
+  const active = grievances.filter(function(g) {
     const status = g[4];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
-  active.forEach(g => {
+  active.forEach(function(g) {
     const step = g[5] || 'Unassigned';
     stepData[step] = (stepData[step] || 0) + 1;
   });
@@ -2229,7 +2360,7 @@ function calculateStepEfficiency(grievances) {
     { name: 'Step III', team: 'ESCALATION', status: 'red' }
   ];
 
-  return steps.map(s => ({
+  return steps.map(function(s) { return ({
     ...s,
     cases: stepData[s.name] || 0,
     caseload: Math.round(((stepData[s.name] || 0) / total) * 100)
@@ -2238,15 +2369,15 @@ function calculateStepEfficiency(grievances) {
 
 function calculateEngagementRate(grievances, members) {
   const membersWithGrievances = new Set();
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     if (g[1]) membersWithGrievances.add(g[1]);
   });
-  const totalMembers = members.filter(m => m[0]).length;
+  const totalMembers = members.filter(function(m) { return m[0]; }).length;
   return totalMembers > 0 ? (membersWithGrievances.size / totalMembers) * 100 : 0;
 }
 
 function calculateNoContact(members, today) {
-  return members.filter(m => {
+  return members.filter(function(m) {
     const lastContact = m[20]; // Last Contact Date column
     if (lastContact instanceof Date) {
       const daysSince = Math.floor((today - lastContact) / (1000 * 60 * 60 * 24));
@@ -2258,7 +2389,7 @@ function calculateNoContact(members, today) {
 
 function calculateActiveStewards(grievances) {
   const stewards = new Set();
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     const steward = g[26];
     if (steward) stewards.add(steward);
   });
@@ -2267,7 +2398,7 @@ function calculateActiveStewards(grievances) {
 
 function calculateAvgLoad(grievances) {
   const stewardLoad = {};
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     const status = g[4];
     const steward = g[26];
     if (steward && status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
@@ -2278,13 +2409,13 @@ function calculateAvgLoad(grievances) {
   const stewardCount = Object.keys(stewardLoad).length;
   if (stewardCount === 0) return 0;
 
-  const totalLoad = Object.values(stewardLoad).reduce((sum, load) => sum + load, 0);
+  const totalLoad = Object.values(stewardLoad).reduce(function(sum, load) { return sum + load; }, 0);
   return totalLoad / stewardCount;
 }
 
 function calculateOverloadedStewards(grievances) {
   const stewardLoad = {};
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     const status = g[4];
     const steward = g[26];
     if (steward && status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info')) {
@@ -2292,31 +2423,31 @@ function calculateOverloadedStewards(grievances) {
     }
   });
 
-  return Object.values(stewardLoad).filter(load => load > 7).length;
+  return Object.values(stewardLoad).filter(function(load) { return load > 7; }).length;
 }
 
 function calculateIssueDistribution(grievances) {
-  const active = grievances.filter(g => {
+  const active = grievances.filter(function(g) {
     const status = g[4];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
   return {
-    disciplinary: active.filter(g => (g[22] || '').includes('Discipline')).length,
-    contract: active.filter(g => (g[22] || '').includes('Pay') || (g[22] || '').includes('Workload')).length,
-    work: active.filter(g => (g[22] || '').includes('Safety') || (g[22] || '').includes('Scheduling')).length
+    disciplinary: active.filter(function(g) { return (g[22] || '').includes('Discipline'); }).length,
+    contract: active.filter(function(g) { return (g[22] || '').includes('Pay') || (g[22] || '').includes('Workload'); }).length,
+    work: active.filter(function(g) { return (g[22] || '').includes('Safety') || (g[22] || '').includes('Scheduling'); }).length
   };
 }
 
 function getTopProcesses(grievances, today, limit) {
   return grievances
-    .filter(g => {
+    .filter(function(g) {
       const status = g[4];
       return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
     })
-    .map(g => {
+    .map(function(g) {
       const nextDeadline = g[19];
-      let daysUntilDue = null;
+      var daysUntilDue = null;
 
       if (nextDeadline instanceof Date) {
         const deadline = new Date(nextDeadline);
@@ -2335,7 +2466,7 @@ function getTopProcesses(grievances, today, limit) {
                 daysUntilDue !== null && daysUntilDue <= 3 ? 'ALERT' : 'NORMAL'
       };
     })
-    .sort((a, b) => a.due - b.due)
+    .sort(function(a, b) { return a.due - b.due; })
     .slice(0, limit);
 }
 
@@ -2344,7 +2475,7 @@ function getFollowUpTasks(grievances, today) {
   const oneWeekFromNow = new Date(today);
   oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
 
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     const status = g[4];
     const nextDeadline = g[19];
 
@@ -2371,7 +2502,7 @@ function getFollowUpTasks(grievances, today) {
 function getPredictiveAlerts(members, grievances, today) {
   const alerts = [];
 
-  members.forEach(m => {
+  members.forEach(function(m) {
     const memberID = m[0];
     const lastContact = m[20];
 
@@ -2401,12 +2532,12 @@ function getPredictiveAlerts(members, grievances, today) {
 
 function getSystemicRisks(grievances) {
   const locationRisks = {};
-  const active = grievances.filter(g => {
+  const active = grievances.filter(function(g) {
     const status = g[4];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
-  active.forEach(g => {
+  active.forEach(function(g) {
     const location = g[25] || 'Unknown';
     if (!locationRisks[location]) {
       locationRisks[location] = { total: 0, lost: 0 };
@@ -2415,14 +2546,14 @@ function getSystemicRisks(grievances) {
   });
 
   return Object.entries(locationRisks)
-    .map(([location, data]) => ({
+    .map(function(item) { var location = item[0]; var data = item[1]; return ({
       entity: location,
       type: 'LOCATION',
       cases: data.total,
       lossRate: 0, // Would need historical data
       severity: data.total > 10 ? 'CRITICAL' : data.total > 5 ? 'WARNING' : 'NORMAL'
-    }))
-    .sort((a, b) => b.cases - a.cases)
+    }); })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
 
@@ -2440,7 +2571,7 @@ function getOutreachScorecard(members) {
 }
 
 function getArbitrationTracker(grievances) {
-  const arbs = grievances.filter(g => {
+  const arbs = grievances.filter(function(g) {
     const step = g[5];
     return step && (step.includes('Arbitration') || step.includes('Mediation'));
   });
@@ -2452,7 +2583,7 @@ function getArbitrationTracker(grievances) {
     maxFinancialImpact: 125000,
     docCompliance: 78.5,
     pendingWitness: 3,
-    step3Cases: grievances.filter(g => (g[5] || '').includes('III')).length,
+    step3Cases: grievances.filter(function(g) { return (g[5] || '').includes('III'); }).length,
     highRiskCases: 2
   };
 }
@@ -2460,7 +2591,7 @@ function getArbitrationTracker(grievances) {
 function getContractTrends(grievances) {
   const articleCounts = {};
 
-  grievances.forEach(g => {
+  grievances.forEach(function(g) {
     const article = g[21]; // Articles Violated column
     if (article) {
       articleCounts[article] = (articleCounts[article] || 0) + 1;
@@ -2468,19 +2599,19 @@ function getContractTrends(grievances) {
   });
 
   return Object.entries(articleCounts)
-    .map(([article, count]) => ({
+    .map(function(item) { var article = item[0]; var count = item[1]; return ({
       article: article,
       cases: count,
       lossRate: 25, // Mock data
       winRate: 75,  // Mock data
       severity: count > 10 ? 'HIGH' : 'NORMAL'
-    }))
-    .sort((a, b) => b.cases - a.cases)
+    }); })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 5);
 }
 
 function getTrainingMatrix(members) {
-  const stewards = members.filter(m => m[9] === 'Yes'); // Is Steward column
+  const stewards = members.filter(function(m) { return m[9] === 'Yes'; }); // Is Steward column
   return {
     complianceRate: 82.3,
     missingGrievance: 5,
@@ -2493,23 +2624,23 @@ function getTrainingMatrix(members) {
 
 function getLocationCaseload(grievances) {
   const locationData = {};
-  const active = grievances.filter(g => {
+  const active = grievances.filter(function(g) {
     const status = g[4];
     return status && (status.includes('Filed') || status === 'Open' || status === 'Pending Info');
   });
 
-  active.forEach(g => {
+  active.forEach(function(g) {
     const location = g[25] || 'Unknown';
     locationData[location] = (locationData[location] || 0) + 1;
   });
 
   return Object.entries(locationData)
-    .map(([site, cases]) => ({
+    .map(function(item) { var site = item[0]; var cases = item[1]; return ({
       site: site,
       cases: cases,
       status: cases > 15 ? 'red' : cases > 10 ? 'yellow' : 'green'
-    }))
-    .sort((a, b) => b.cases - a.cases)
+    }); })
+    .sort(function(a, b) { return b.cases - a.cases; })
     .slice(0, 10);
 }
 
@@ -2611,7 +2742,7 @@ function getRecruitmentTracker(members, today) {
   const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const newMembers = members.filter(m => {
+  const newMembers = members.filter(function(m) {
     const hireDate = m[7]; // Hire Date column
     return hireDate instanceof Date && hireDate >= thirtyDaysAgo;
   }).length;
@@ -2994,7 +3125,7 @@ function getUnifiedOperationsMonitorHTML() {
 
             // 4. Action Log
             const logContainer = document.getElementById('process-list');
-            logContainer.innerHTML = data.processes.map(proc => {
+            logContainer.innerHTML = data.processes.map(function(proc) {
                 const statusColor = getStatusColorClass(proc.status);
                 const dueText = proc.due < 0 ? \`<span class="text-red-term">\${Math.abs(proc.due)} OVERDUE</span>\` : \`\${proc.due}d\`;
                 return \`
@@ -3010,7 +3141,7 @@ function getUnifiedOperationsMonitorHTML() {
             }).join('');
 
             // 5. Follow-Up Radar
-            document.getElementById('follow-up-radar').innerHTML = data.followUpTasks.map(task => {
+            document.getElementById('follow-up-radar').innerHTML = data.followUpTasks.map(function(task) {
                 const priorityColor = getStatusColorClass(task.priority);
                 return \`
                     <div class="p-3 border border-gray-700">
@@ -3023,7 +3154,7 @@ function getUnifiedOperationsMonitorHTML() {
             }).join('');
 
             // 6. Predictive Alerts
-            document.getElementById('predictive-alerts').innerHTML = data.predictiveAlerts.map(alert => {
+            document.getElementById('predictive-alerts').innerHTML = data.predictiveAlerts.map(function(alert) {
                 const strengthColor = getStatusColorClass(alert.strength);
                 return \`
                     <div class="process-row grid grid-cols-12 py-1 text-xs">
@@ -3036,7 +3167,7 @@ function getUnifiedOperationsMonitorHTML() {
             }).join('');
 
             // 7. Systemic Risk
-            document.getElementById('systemic-risk').innerHTML = data.systemicRisk.map(risk => {
+            document.getElementById('systemic-risk').innerHTML = data.systemicRisk.map(function(risk) {
                 const severityColor = getStatusColorClass(risk.severity);
                 return \`
                     <div class="process-row grid grid-cols-12 py-1 text-xs">
@@ -3058,7 +3189,7 @@ function getUnifiedOperationsMonitorHTML() {
             if (typeof google === 'object' && google.script && google.script.run) {
                 google.script.run
                     .withSuccessHandler(renderDashboard)
-                    .withFailureHandler(error => {
+                    .withFailureHandler(function(error) {
                         document.getElementById('loading-overlay').innerHTML = \`<div class="text-red-term">CONNECTION ERROR: \${error.message}<br>ENSURE WEB APP IS DEPLOYED.</div>\`;
                     })
                     .getUnifiedDashboardData();
@@ -3075,14 +3206,14 @@ function getUnifiedOperationsMonitorHTML() {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * INTERACTIVE DASHBOARD
  * Member-customizable dashboard with dynamic charts and tables
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
-// ============================================================================
+// ------------------------------------------------------------------------====
 // INTERACTIVE DASHBOARD - USER-SELECTABLE METRICS & CHARTS
-// ============================================================================
+// ------------------------------------------------------------------------====
 //
 // Features:
 // - User-selectable metrics with dropdown controls
@@ -3093,20 +3224,20 @@ function getUnifiedOperationsMonitorHTML() {
 // - Warehouse-style location charts
 // - Real-time chart updates based on user selection
 //
-// ============================================================================
+// ------------------------------------------------------------------------====
 
 /**
  * Creates the Interactive Dashboard sheet with user-selectable controls
  */
 function createInteractiveDashboardSheet(ss) {
-  let sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
+  var sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
   if (!sheet) sheet = ss.insertSheet(SHEETS.INTERACTIVE_DASHBOARD);
 
   sheet.clear();
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // HEADER SECTION
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A1:T1").merge()
     .setValue("✨ YOUR UNION DASHBOARD - Where Data Comes Alive!")
     .setFontSize(22).setFontFamily("Roboto")
@@ -3134,9 +3265,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setFontColor(COLORS.ACCENT_TEAL);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CONTROL PANEL - Row 4
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A4:T4").merge()
     .setValue("🎛️ YOUR COMMAND CENTER - Make This Dashboard Your Own!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -3186,9 +3317,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.LIGHT_GRAY)
     .setHorizontalAlignment("left");
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // METRIC CARDS SECTION - Row 10-18 (4 cards)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A10:T10").merge()
     .setValue("📈 YOUR VICTORIES AT A GLANCE - Watch These Numbers Grow!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -3205,7 +3336,7 @@ function createInteractiveDashboardSheet(ss) {
     {col: "P", endCol: "T", title: "⏰ Needs Attention", color: COLORS.SOLIDARITY_RED}
   ];
 
-  cardPositions.forEach((card, idx) => {
+  cardPositions.forEach(function(card, idx) {
     const startRow = 12;
     const endRow = 18;
 
@@ -3245,9 +3376,9 @@ function createInteractiveDashboardSheet(ss) {
       .setValue("📈 Growing Together");
   });
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CHART AREA 1 - Row 21-42 (Selected Metric 1)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A21:J21").merge()
     .setValue("📊 YOUR STORY IN CHARTS - Watch Your Data Come to Life!")
     .setFontSize(13).setFontFamily("Roboto")
@@ -3268,9 +3399,9 @@ function createInteractiveDashboardSheet(ss) {
     .setVerticalAlignment("middle")
     .setFontColor(COLORS.TEXT_GRAY);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // CHART AREA 2 - Row 21-42 (Comparison or Selected Metric 2)
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("L21:T21").merge()
     .setValue("📊 DOUBLE THE INSIGHTS - See Two Stories Side by Side!")
     .setFontSize(13).setFontFamily("Roboto")
@@ -3291,9 +3422,9 @@ function createInteractiveDashboardSheet(ss) {
     .setVerticalAlignment("middle")
     .setFontColor(COLORS.TEXT_GRAY);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // PIE CHARTS SECTION - Row 45-65
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A45:T45").merge()
     .setValue("🥧 COLORFUL INSIGHTS - Your Work in Living Color!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -3328,9 +3459,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // WAREHOUSE-STYLE LOCATION CHART - Row 68-88
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A68:T68").merge()
     .setValue("🏢 UNITED ACROSS LOCATIONS - Our Collective Strength!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -3351,9 +3482,9 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // =====================================================================
+  // ------------------------------------------------------------=========
   // DATA TABLE - Top Performers/Issues - Row 91-110
-  // =====================================================================
+  // ------------------------------------------------------------=========
   sheet.getRange("A91:T91").merge()
     .setValue("📋 THE DETAILS THAT MATTER - Celebrating Excellence!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -3561,31 +3692,33 @@ function calculateAllMetrics(memberData, grievanceData) {
 
   // Member metrics
   metrics.totalMembers = memberData.length - 1;
-  metrics.activeMembers = memberData.slice(1).filter(row => row[10] === 'Active').length;
-  metrics.totalStewards = memberData.slice(1).filter(row => row[9] === 'Yes').length;
-  metrics.unit8Members = memberData.slice(1).filter(row => row[5] === 'Unit 8').length;
-  metrics.unit10Members = memberData.slice(1).filter(row => row[5] === 'Unit 10').length;
+  metrics.activeMembers = memberData.slice(1).filter(function(row) { return row && row.length > 10 && row[10] === 'Active'; }).length;
+  metrics.totalStewards = memberData.slice(1).filter(function(row) { return row && row.length > 9 && row[9] === 'Yes'; }).length;
+  metrics.unit8Members = memberData.slice(1).filter(function(row) { return row && row.length > 5 && row[5] === 'Unit 8'; }).length;
+  metrics.unit10Members = memberData.slice(1).filter(function(row) { return row && row.length > 5 && row[5] === 'Unit 10'; }).length;
 
   // Grievance metrics
   metrics.totalGrievances = grievanceData.length - 1;
-  metrics.activeGrievances = grievanceData.slice(1).filter(row =>
-    row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision')).length;
-  metrics.resolvedGrievances = grievanceData.slice(1).filter(row =>
-    row[4] && row[4].startsWith('Resolved')).length;
+  metrics.activeGrievances = grievanceData.slice(1).filter(function(row) {
+    return row && row.length > 4 && row[4] && (row[4].startsWith('Filed') || row[4] === 'Pending Decision');
+  }).length;
+  metrics.resolvedGrievances = grievanceData.slice(1).filter(function(row) {
+    return row && row.length > 4 && row[4] && row[4].startsWith('Resolved');
+  }).length;
 
-  const resolvedData = grievanceData.slice(1).filter(row => row[4] && row[4].startsWith('Resolved'));
-  metrics.grievancesWon = resolvedData.filter(row => row[24] && row[24].includes('Won')).length;
-  metrics.grievancesLost = resolvedData.filter(row => row[24] && row[24].includes('Lost')).length;
+  const resolvedData = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] && row[4].startsWith('Resolved'); });
+  metrics.grievancesWon = resolvedData.filter(function(row) { return row && row.length > 24 && row[24] && row[24].includes('Won'); }).length;
+  metrics.grievancesLost = resolvedData.filter(function(row) { return row && row.length > 24 && row[24] && row[24].includes('Lost'); }).length;
 
   metrics.winRate = metrics.resolvedGrievances > 0
     ? ((metrics.grievancesWon / metrics.resolvedGrievances) * 100).toFixed(1)
     : 0;
 
-  metrics.overdueGrievances = grievanceData.slice(1).filter(row => row[28] === 'YES').length;
+  metrics.overdueGrievances = grievanceData.slice(1).filter(function(row) { return row && row.length > 28 && row[28] === 'YES'; }).length;
 
   // Additional metrics
-  metrics.inMediation = grievanceData.slice(1).filter(row => row[4] === 'In Mediation').length;
-  metrics.inArbitration = grievanceData.slice(1).filter(row => row[4] === 'In Arbitration').length;
+  metrics.inMediation = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] === 'In Mediation'; }).length;
+  metrics.inArbitration = grievanceData.slice(1).filter(function(row) { return row && row.length > 4 && row[4] === 'In Arbitration'; }).length;
 
   return metrics;
 }
@@ -3594,9 +3727,24 @@ function calculateAllMetrics(memberData, grievanceData) {
  * Update metric cards with current data and celebratory messages
  */
 function updateMetricCards(sheet, metrics) {
+  // Validate parameters
+  if (!sheet) {
+    throw new Error('updateMetricCards: sheet parameter is required');
+  }
+
+  if (!metrics || typeof metrics !== 'object') {
+    throw new Error('updateMetricCards: metrics parameter must be a valid object');
+  }
+
+  // Validate required metric fields with defaults
+  const totalMembers = metrics.totalMembers != null ? metrics.totalMembers : 0;
+  const activeGrievances = metrics.activeGrievances != null ? metrics.activeGrievances : 0;
+  const winRate = metrics.winRate != null ? metrics.winRate : 0;
+  const overdueGrievances = metrics.overdueGrievances != null ? metrics.overdueGrievances : 0;
+
   // Card 1: Total Members
   sheet.getRange("A15:E17").merge()
-    .setValue(formatNumber(metrics.totalMembers))
+    .setValue(formatNumber(totalMembers))
     .setNumberFormat("#,##0");
 
   // Add celebration message for members
@@ -3706,7 +3854,13 @@ function getOverdueCelebration(overdue, total) {
  * Get overall victory message based on all metrics
  */
 function getVictoryMessage(metrics) {
-  const winRate = parseFloat(metrics.winRate);
+  // Validate metrics parameter
+  if (!metrics || typeof metrics !== 'object') {
+    Logger.log('getVictoryMessage: metrics parameter is invalid');
+    return "📊 Keep up the good work!";
+  }
+
+  const winRate = parseFloat(metrics.winRate || 0);
   const messages = [];
 
   // Check for major victories
@@ -3739,9 +3893,10 @@ function getVictoryMessage(metrics) {
 function createDynamicChart(sheet, metricName, chartType, metrics, startCell, width, height) {
   // Remove existing charts in this area first
   const charts = sheet.getCharts();
-  charts.forEach(chart => {
+  charts.forEach(function(chart) {
     const anchor = chart.getContainerInfo().getAnchorRow();
-    if (anchor >= parseInt(startCell.substring(1))) {
+    // Extract row number correctly (handles cells like "AA22" not just "A22")
+    if (anchor >= parseInt(startCell.match(/\d+/)[0])) {
       sheet.removeChart(chart);
     }
   });
@@ -3752,7 +3907,7 @@ function createDynamicChart(sheet, metricName, chartType, metrics, startCell, wi
   if (!chartData || chartData.length === 0) return;
 
   // Create chart based on type
-  let chartBuilder;
+  var chartBuilder;
   const range = sheet.getRange(startCell);
 
   if (chartType === "Donut Chart") {
@@ -3862,7 +4017,8 @@ function getChartDataForMetric(metricName, metrics) {
     case "Active Grievances":
       // Count actual grievances by step from Grievance Log
       const stepCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
+        if (!row || row.length < 6) return;
         const status = row[4]; // Status column (E)
         const step = row[5];    // Current Step column (F)
         if (status && (status.includes('Filed') || status === 'Pending Decision' || status === 'Open')) {
@@ -3871,8 +4027,8 @@ function getChartDataForMetric(metricName, metrics) {
       });
 
       const stepData = Object.entries(stepCounts)
-        .filter(([step]) => step && step !== 'Current Step')
-        .map(([step, count]) => [step, count]);
+        .filter(function(item) { var step = item[0]; return step && step !== 'Current Step'; })
+        .map(function(item) { return [item[0], item[1]]; });
 
       return stepData.length > 0 ? stepData : [["No Active Grievances", 0]];
 
@@ -3885,7 +4041,7 @@ function getChartDataForMetric(metricName, metrics) {
     case "Grievances by Type":
       // Count grievances by type/category
       const typeCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const type = row[22]; // Issue Category column (W)
         if (type && type !== 'Issue Category') {
           typeCounts[type] = (typeCounts[type] || 0) + 1;
@@ -3893,16 +4049,16 @@ function getChartDataForMetric(metricName, metrics) {
       });
 
       const typeData = Object.entries(typeCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(([type, count]) => [type, count]);
+        .map(function(item) { return [item[0], item[1]]; });
 
       return typeData.length > 0 ? typeData : [["No Data", 0]];
 
     case "Grievances by Location":
       // Count grievances by location
       const locationCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const location = row[25]; // Work Location column (Z)
         if (location && location !== 'Work Location (Site)') {
           locationCounts[location] = (locationCounts[location] || 0) + 1;
@@ -3910,16 +4066,16 @@ function getChartDataForMetric(metricName, metrics) {
       });
 
       const locationData = Object.entries(locationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 10)
-        .map(([location, count]) => [location, count]);
+        .map(function(item) { return [item[0], item[1]]; });
 
       return locationData.length > 0 ? locationData : [["No Data", 0]];
 
     case "Grievances by Step":
       // Count all grievances by step
       const allStepCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const step = row[5]; // Current Step column (F)
         if (step && step !== 'Current Step') {
           allStepCounts[step] = (allStepCounts[step] || 0) + 1;
@@ -3927,16 +4083,16 @@ function getChartDataForMetric(metricName, metrics) {
       });
 
       const allStepData = Object.entries(allStepCounts)
-        .map(([step, count]) => [step, count]);
+        .map(function(item) { return [item[0], item[1]]; });
 
       return allStepData.length > 0 ? allStepData : [["No Data", 0]];
 
     case "Unit 8 Members":
-      const unit8Count = memberData.slice(1).filter(row => row[5] === 'Unit 8').length;
+      const unit8Count = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 8'; }).length;
       return [["Unit 8", unit8Count]];
 
     case "Unit 10 Members":
-      const unit10Count = memberData.slice(1).filter(row => row[5] === 'Unit 10').length;
+      const unit10Count = memberData.slice(1).filter(function(row) { return row[5] === 'Unit 10'; }).length;
       return [["Unit 10", unit10Count]];
 
     case "Total Stewards":
@@ -3956,12 +4112,12 @@ function getChartDataForMetric(metricName, metrics) {
 function createGrievanceStatusDonut(sheet, grievanceData) {
   // Count by status
   const statusCounts = {};
-  grievanceData.slice(1).forEach(row => {
+  grievanceData.slice(1).forEach(function(row) {
     const status = row[4] || 'Unknown';
     statusCounts[status] = (statusCounts[status] || 0) + 1;
   });
 
-  const data = Object.entries(statusCounts).map(([status, count]) => [status, count]);
+  const data = Object.entries(statusCounts).map(function(item) { return [item[0], item[1]]; });
 
   const chart = sheet.newChart()
     .setChartType(Charts.ChartType.PIE)
@@ -3987,14 +4143,14 @@ function createGrievanceStatusDonut(sheet, grievanceData) {
 function createLocationPieChart(sheet, grievanceData) {
   // Count by location (from member data)
   const locationCounts = {};
-  grievanceData.slice(1).forEach(row => {
+  grievanceData.slice(1).forEach(function(row) {
     const location = row[4] || 'Unknown';  // Adjust column as needed
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
   // Get top 10
   const topLocations = Object.entries(locationCounts)
-    .sort((a, b) => b[1] - a[1])
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 10);
 
   const chart = sheet.newChart()
@@ -4020,13 +4176,13 @@ function createLocationPieChart(sheet, grievanceData) {
 function createWarehouseLocationChart(sheet, grievanceData) {
   // This would create a horizontal bar chart similar to warehouse dashboard
   const locationCounts = {};
-  grievanceData.slice(1).forEach(row => {
+  grievanceData.slice(1).forEach(function(row) {
     const location = row[4] || 'Unknown';
     locationCounts[location] = (locationCounts[location] || 0) + 1;
   });
 
   const topLocations = Object.entries(locationCounts)
-    .sort((a, b) => b[1] - a[1])
+    .sort(function(a, b) { return b[1] - a[1]; })
     .slice(0, 15);
 
   const chart = sheet.newChart()
@@ -4051,7 +4207,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
   // Clear existing data
   sheet.getRange("A94:G110").clearContent();
 
-  let tableData = [];
+  var tableData = [];
 
   // Generate table based on selected metric
   switch (metricName) {
@@ -4063,7 +4219,8 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const typeResolved = {};
       const typeWon = {};
 
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
+        if (!row || row.length < 23) return;
         const type = row[22]; // Issue Category column (W)
         const status = row[4]; // Status column (E)
 
@@ -4082,9 +4239,10 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(typeCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([type, total], index) => {
+        .map(function(item, index) {
+          var type = item[0]; var total = item[1];
           const active = typeActive[type] || 0;
           const resolved = typeResolved[type] || 0;
           const won = typeWon[type] || 0;
@@ -4102,7 +4260,8 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const locationResolved = {};
       const locationWon = {};
 
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
+        if (!row || row.length < 26) return;
         const location = row[25]; // Work Location column (Z)
         const status = row[4]; // Status column (E)
 
@@ -4121,9 +4280,10 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(locationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([location, total], index) => {
+        .map(function(item, index) {
+          var location = item[0]; var total = item[1];
           const active = locationActive[location] || 0;
           const resolved = locationResolved[location] || 0;
           const won = locationWon[location] || 0;
@@ -4141,7 +4301,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       const stewardResolved = {};
       const stewardWon = {};
 
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const steward = row[26]; // Assigned Steward column (AA)
         const status = row[4]; // Status column (E)
 
@@ -4160,9 +4320,10 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(stewardCounts)
-        .sort((a, b) => (stewardActive[b.name] || 0) - (stewardActive[a.name] || 0))
+        .sort(function(a, b) { return (stewardActive[b[0]] || 0) - (stewardActive[a[0]] || 0); })
         .slice(0, 15)
-        .map(([steward, total], index) => {
+        .map(function(item, index) {
+          var steward = item[0]; var total = item[1];
           const active = stewardActive[steward] || 0;
           const resolved = stewardResolved[steward] || 0;
           const won = stewardWon[steward] || 0;
@@ -4176,7 +4337,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
     default:
       // For other metrics, show top locations by default
       const defaultLocationCounts = {};
-      grievanceData.slice(1).forEach(row => {
+      grievanceData.slice(1).forEach(function(row) {
         const location = row[25];
         if (location && location !== 'Work Location (Site)') {
           defaultLocationCounts[location] = (defaultLocationCounts[location] || 0) + 1;
@@ -4184,9 +4345,10 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
       });
 
       tableData = Object.entries(defaultLocationCounts)
-        .sort((a, b) => b[1] - a[1])
+        .sort(function(a, b) { return b[1] - a[1]; })
         .slice(0, 15)
-        .map(([location, count], index) => {
+        .map(function(item, index) {
+          var location = item[0]; var count = item[1];
           return [index + 1, location, count, "-", "-", "-", "📊 Data"];
         });
       break;
@@ -4217,7 +4379,7 @@ function updateTopItemsTable(sheet, metricName, grievanceData, memberData) {
  * Apply theme to dashboard
  */
 function applyDashboardTheme(sheet, themeName) {
-  let primaryColor, accentColor;
+  var primaryColor, accentColor;
 
   switch (themeName) {
     case "Union Blue":
@@ -4278,14 +4440,14 @@ function openInteractiveDashboard() {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * ADHD ENHANCEMENTS
  * Accessibility and ADHD-friendly UI improvements
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
-// ============================================================================
+// ------------------------------------------------------------------------====
 // ADHD-FRIENDLY ENHANCEMENTS
-// ============================================================================
+// ------------------------------------------------------------------------====
 //
 // Features optimized for ADHD users:
 // - No gridlines (cleaner visual)
@@ -4295,7 +4457,7 @@ function openInteractiveDashboard() {
 // - Quick-glance data display
 // - User customization options
 //
-// ============================================================================
+// ------------------------------------------------------------------------====
 
 /**
  * Hide gridlines on all dashboard sheets for cleaner, less distracting view
@@ -4304,14 +4466,14 @@ function hideAllGridlines() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     const sheetName = sheet.getName();
 
     // Hide gridlines on all sheets except Config (for editing)
     if (!sheetName.includes('Config') &&
         !sheetName.includes('Member Directory') &&
         !sheetName.includes('Grievance Log')) {
-      sheet.hideGridlines();
+      sheet.setHiddenGridlines(true);
     }
   });
 
@@ -4325,7 +4487,7 @@ function showAllGridlines() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheets = ss.getSheets();
 
-  sheets.forEach(sheet => {
+  sheets.forEach(function(sheet) {
     sheet.showGridlines();
   });
 
@@ -4372,7 +4534,7 @@ function reorderSheetsLogically() {
   ];
 
   // Move sheets to correct positions
-  sheetOrder.forEach((sheetName, index) => {
+  sheetOrder.forEach(function(sheetName, index) {
     const sheet = ss.getSheetByName(sheetName);
     if (sheet) {
       ss.setActiveSheet(sheet);
@@ -4431,7 +4593,7 @@ function addStewardWorkloadInstructions() {
   ];
 
   // Create colored instruction boxes
-  instructionData.forEach((instruction, index) => {
+  instructionData.forEach(function(instruction, index) {
     const row = index + 2;
 
     // Label column (A-B)
@@ -4473,7 +4635,7 @@ function addStewardWorkloadInstructions() {
   sheet.setRowHeight(8, 30);
 
   // Hide gridlines for cleaner look
-  sheet.hideGridlines();
+  sheet.setHiddenGridlines(true);
 
   SpreadsheetApp.getUi().alert('✅ Visual instructions added to Steward Workload!\n\n' +
     'The sheet now has a clear guide at the top showing:\n' +
@@ -4488,7 +4650,7 @@ function addStewardWorkloadInstructions() {
  */
 function createUserSettingsSheet() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName("⚙️ User Settings");
+  var sheet = ss.getSheetByName("⚙️ User Settings");
 
   if (!sheet) {
     sheet = ss.insertSheet("⚙️ User Settings");
@@ -4605,7 +4767,7 @@ function createUserSettingsSheet() {
     ["🔔", "Set up desktop notifications for overdue items (Future Feature)"]
   ];
 
-  tips.forEach((tip, index) => {
+  tips.forEach(function(tip, index) {
     const row = 15 + index;
     sheet.getRange(row, 1).setValue(tip[0])
       .setFontSize(18)
@@ -4628,7 +4790,7 @@ function createUserSettingsSheet() {
   sheet.setColumnWidth(6, 300);
 
   // Hide gridlines
-  sheet.hideGridlines();
+  sheet.setHiddenGridlines(true);
 
   SpreadsheetApp.getUi().alert('✅ User Settings sheet created!\n\n' +
     'You can now customize:\n' +
@@ -4676,7 +4838,7 @@ function applyUserSettings() {
 
   const targetSize = fontSizeMap[fontSize] || 11;
 
-  [SHEETS.INTERACTIVE_DASHBOARD, SHEETS.DASHBOARD].forEach(sheetName => {
+  [SHEETS.INTERACTIVE_DASHBOARD, SHEETS.DASHBOARD].forEach(function(sheetName) {
     const sheet = ss.getSheetByName(sheetName);
     if (sheet) {
       sheet.getDataRange().setFontSize(targetSize);
@@ -4730,15 +4892,15 @@ function setupADHDDefaults() {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * GRIEVANCE WORKFLOW
  * Workflow automation and process management
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GRIEVANCE WORKFLOW - Start Grievance from Member Directory
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Allows stewards to click a member in the directory and start a grievance
  * with pre-filled member and steward information via Google Form.
@@ -4749,11 +4911,11 @@ function setupADHDDefaults() {
  * - PDF generation with fillable grievance form
  * - Email to multiple addresses or download option
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 // Configuration - Update this with your Google Form URL
-const GRIEVANCE_FORM_CONFIG = {
+GRIEVANCE_FORM_CONFIG = {
   // Replace with your actual Google Form URL
   FORM_URL: "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform",
 
@@ -4817,27 +4979,32 @@ function getMemberList() {
   // Get all member data (columns A-K: ID, First, Last, Job, Location, Unit, Office Days, Email, Phone, Is Steward, Status)
   const data = memberSheet.getRange(2, 1, lastRow - 1, 11).getValues();
 
-  return data.map((row, index) => ({
-    rowIndex: index + 2,
-    memberId: row[0],
-    firstName: row[1],
-    lastName: row[2],
-    jobTitle: row[3],
-    location: row[4],
-    unit: row[5],
-    officeDays: row[6],
-    email: row[7],
-    phone: row[8],
-    isSteward: row[9],
-    status: row[10]
-  })).filter(member => member.memberId); // Filter out empty rows
+  return data.map(function(row, index) {
+    if (!row || row.length < 11) {
+      return null;
+    }
+    return {
+      rowIndex: index + 2,
+      memberId: row[0],
+      firstName: row[1],
+      lastName: row[2],
+      jobTitle: row[3],
+      location: row[4],
+      unit: row[5],
+      officeDays: row[6],
+      email: row[7],
+      phone: row[8],
+      isSteward: row[9],
+      status: row[10]
+    };
+  }).filter(function(member) { return member && member.memberId; }); // Filter out empty rows
 }
 
 /**
  * Creates HTML dialog for member selection
  */
 function createMemberSelectionDialog(members) {
-  const memberOptions = members.map(m =>
+  const memberOptions = members.map(function(m) {
     `<option value="${m.rowIndex}">${m.lastName}, ${m.firstName} (${m.memberId}) - ${m.location}</option>`
   ).join('');
 
@@ -4974,7 +5141,7 @@ function createMemberSelectionDialog(members) {
   </div>
 
   <script>
-    let members = ${JSON.stringify(members)};
+    var members = ${JSON.stringify(members)};
 
     function showMemberDetails() {
       const select = document.getElementById('memberSelect');
@@ -4982,7 +5149,7 @@ function createMemberSelectionDialog(members) {
       const startBtn = document.getElementById('startBtn');
 
       if (select.value) {
-        const member = members.find(m => m.rowIndex == select.value);
+        const member = members.find(function(m) { return m.rowIndex == select.value; });
         if (member) {
           detailsDiv.innerHTML = \`
             <div class="detail-item"><strong>Name:</strong> \${member.firstName} \${member.lastName}</div>
@@ -5051,7 +5218,16 @@ function generatePreFilledGrievanceForm(memberRowIndex) {
   }
 
   // Get member data
-  const memberData = memberSheet.getRange(memberRowIndex, 1, 1, 11).getValues()[0];
+  const memberDataArray = memberSheet.getRange(memberRowIndex, 1, 1, 11).getValues();
+  if (!memberDataArray || memberDataArray.length === 0 || !memberDataArray[0]) {
+    throw new Error('Member data not found at row ' + memberRowIndex);
+  }
+
+  const memberData = memberDataArray[0];
+  if (memberData.length < 11) {
+    throw new Error('Incomplete member data at row ' + memberRowIndex);
+  }
+
   const member = {
     id: memberData[0],
     firstName: memberData[1],
@@ -5120,7 +5296,7 @@ function getStewardContactInfo() {
  */
 function addStewardContactInfoToConfig() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let configSheet = ss.getSheetByName(SHEETS.CONFIG);
+  var configSheet = ss.getSheetByName(SHEETS.CONFIG);
 
   if (!configSheet) {
     SpreadsheetApp.getUi().alert('❌ Config sheet not found!');
@@ -5176,9 +5352,9 @@ function addStewardContactInfoToConfig() {
 }
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GOOGLE FORM SUBMISSION HANDLING
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -5190,6 +5366,12 @@ function addStewardContactInfoToConfig() {
  * 2. Add trigger: onGrievanceFormSubmit, From spreadsheet, On form submit
  */
 function onGrievanceFormSubmit(e) {
+  if (!e) {
+    Logger.log('Error: Form submission event is null or undefined');
+    SpreadsheetApp.getUi().alert('❌ Error: Invalid form submission event');
+    return;
+  }
+
   try {
     // Extract form responses
     const formData = extractFormData(e);
@@ -5213,6 +5395,10 @@ function onGrievanceFormSubmit(e) {
  * Extracts and structures data from form submission
  */
 function extractFormData(e) {
+  if (!e || !e.namedValues) {
+    throw new Error('Invalid form submission event: missing namedValues');
+  }
+
   const responses = e.namedValues;
 
   // Map form responses to grievance data structure
@@ -5319,9 +5505,9 @@ function generateUniqueGrievanceId() {
   const existingIds = grievanceSheet.getRange(2, 1, lastRow - 1, 1).getValues().flat();
 
   // Generate new ID
-  let counter = 1;
-  let letter = 'A';
-  let newId;
+  var counter = 1;
+  var letter = 'A';
+  var newId;
 
   do {
     newId = `GRV-${String(counter).padStart(3, '0')}-${letter}`;
@@ -5358,9 +5544,125 @@ function findMemberRow(memberId) {
 }
 
 /**
- * ============================================================================
+ * Recalculates all formula columns for a specific grievance row
+ */
+function recalcGrievanceRow(rowNumber) {
+  if (!rowNumber || rowNumber < 2) return;
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceSheet) return;
+
+  const row = rowNumber;
+
+  // Filing Deadline (Column H = 8): Incident Date + 21 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.FILING_DEADLINE).setFormula(
+    `=IF(G${row}<>"",G${row}+21,"")`
+  );
+
+  // Step I Decision Due (Column J = 10): Date Filed + 30 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP1_DUE).setFormula(
+    `=IF(I${row}<>"",I${row}+30,"")`
+  );
+
+  // Step II Appeal Due (Column L = 12): Step I Decision Rcvd + 10 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP2_APPEAL_DUE).setFormula(
+    `=IF(K${row}<>"",K${row}+10,"")`
+  );
+
+  // Step II Decision Due (Column N = 14): Step II Appeal Filed + 30 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP2_DUE).setFormula(
+    `=IF(M${row}<>"",M${row}+30,"")`
+  );
+
+  // Step III Appeal Due (Column P = 16): Step II Decision Rcvd + 30 days
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.STEP3_APPEAL_DUE).setFormula(
+    `=IF(O${row}<>"",O${row}+30,"")`
+  );
+
+  // Days Open (Column S = 19): Date Filed to Date Closed or TODAY
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.DAYS_OPEN).setFormula(
+    `=IF(I${row}<>"",IF(R${row}<>"",R${row}-I${row},TODAY()-I${row}),"")`
+  );
+
+  // Next Action Due (Column T = 20): Based on current step
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.NEXT_ACTION_DUE).setFormula(
+    `=IF(E${row}="Open",IF(F${row}="Step I",J${row},IF(F${row}="Step II",N${row},IF(F${row}="Step III",P${row},H${row}))),"")`
+  );
+
+  // Days to Deadline (Column U = 21): Next Action Due - TODAY
+  grievanceSheet.getRange(row, GRIEVANCE_COLS.DAYS_TO_DEADLINE).setFormula(
+    `=IF(T${row}<>"",T${row}-TODAY(),"")`
+  );
+}
+
+/**
+ * Recalculates member directory snapshot columns for a specific member row
+ */
+function recalcMemberRow(rowNumber) {
+  if (!rowNumber || rowNumber < 2) return;
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) return;
+
+  const row = rowNumber;
+
+  // Get column letters for Grievance Log references
+  const memberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
+  const statusCol = getColumnLetter(GRIEVANCE_COLS.STATUS);
+  const nextActionCol = getColumnLetter(GRIEVANCE_COLS.NEXT_ACTION_DUE);
+
+  // Has Open Grievance? (Column Z = 26)
+  memberSheet.getRange(row, MEMBER_COLS.HAS_OPEN_GRIEVANCE).setFormula(
+    `=IF(COUNTIFS('Grievance Log'!${memberIdCol}:${memberIdCol},A${row},'Grievance Log'!${statusCol}:${statusCol},"Open")>0,"Yes","No")`
+  );
+
+  // Grievance Status Snapshot (Column AA = 27)
+  memberSheet.getRange(row, MEMBER_COLS.GRIEVANCE_STATUS).setFormula(
+    `=IFERROR(INDEX('Grievance Log'!${statusCol}:${statusCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
+  );
+
+  // Next Grievance Deadline (Column AB = 28)
+  memberSheet.getRange(row, MEMBER_COLS.NEXT_DEADLINE).setFormula(
+    `=IFERROR(INDEX('Grievance Log'!${nextActionCol}:${nextActionCol},MATCH(A${row},'Grievance Log'!${memberIdCol}:${memberIdCol},0)),"")`
+  );
+}
+
+/**
+ * Rebuilds all dashboard calculations
+ */
+function rebuildDashboard() {
+  try {
+    Logger.log('Rebuilding dashboard calculations...');
+
+    // Rebuild the interactive dashboard if it exists
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const interactiveDashboard = ss.getSheetByName('Interactive Dashboard');
+
+    if (interactiveDashboard) {
+      // Use existing rebuildInteractiveDashboard function if available
+      if (typeof rebuildInteractiveDashboard === 'function') {
+        rebuildInteractiveDashboard();
+      }
+    }
+
+    // Recalculate all formulas by forcing a recalculation
+    SpreadsheetApp.flush();
+
+    Logger.log('Dashboard rebuild complete');
+  } catch (error) {
+    Logger.log('Error in rebuildDashboard: ' + error.message);
+    // Don't throw - this is a best-effort function
+  }
+}
+
+/**
+ * ------------------------------------------------------------------------====
  * PDF GENERATION AND DISTRIBUTION
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -5376,7 +5678,7 @@ function generateGrievancePDF(grievanceId) {
 
   // Find grievance row
   const data = grievanceSheet.getDataRange().getValues();
-  let grievanceRow = -1;
+  var grievanceRow = -1;
 
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === grievanceId) {
@@ -5443,7 +5745,7 @@ function formatGrievancePDFSheet(sheet, data) {
     .setBackground('#7EC8E3')
     .setFontColor('white');
 
-  let row = 3;
+  var row = 3;
 
   // Member Information
   sheet.getRange(row, 1, 1, 4).merge()
@@ -5582,22 +5884,22 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
       }
 
       google.script.run
-        .withSuccessHandler(() => {
+        .withSuccessHandler(function(() {
           alert('✅ Email sent successfully!');
           google.script.host.close();
         })
-        .withFailureHandler(e => alert('❌ Error: ' + e.message))
+        .withFailureHandler(function(e) { return alert('❌ Error: ' + e.message); })
         .emailGrievancePDF('${grievanceId}', emails);
     }
 
     function downloadPDF() {
       alert('PDF download will start automatically.\\n\\nPlease check your Downloads folder.');
       google.script.run
-        .withSuccessHandler(url => {
+        .withSuccessHandler(function(url) {
           window.open(url, '_blank');
           google.script.host.close();
         })
-        .withFailureHandler(e => alert('❌ Error: ' + e.message))
+        .withFailureHandler(function(e) { return alert('❌ Error: ' + e.message); })
         .getGrievancePDFUrl('${grievanceId}');
     }
   </script>
@@ -5613,14 +5915,14 @@ function showPDFOptionsDialog(grievanceId, pdfBlob) {
  */
 function emailGrievancePDF(grievanceId, emailAddresses) {
   const pdfBlob = generateGrievancePDF(grievanceId);
-  const emails = emailAddresses.split(',').map(e => e.trim());
+  const emails = emailAddresses.split(',').map(function(e) { return e.trim(); });
 
   const subject = 'SEIU Local 509 - Grievance ' + grievanceId;
   const body = 'Please find attached the grievance form for ' + grievanceId + '.\n\n' +
                'This grievance was automatically generated from the SEIU Local 509 Dashboard.\n\n' +
                'For questions, please contact your steward.';
 
-  emails.forEach(email => {
+  emails.forEach(function(email) {
     if (email) {
       GmailApp.sendEmail(email, subject, body, {
         attachments: [pdfBlob]
@@ -5650,27 +5952,27 @@ function getGrievancePDFUrl(grievanceId) {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * GETTING STARTED & FAQ
  * Help system and documentation
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GETTING STARTED AND FAQ SHEETS
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Creates informational sheets with getting started guide and FAQ
  * Includes GitHub repository information
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
  * Creates the Getting Started sheet
  */
 function createGettingStartedSheet(ss) {
-  let sheet = ss.getSheetByName("📚 Getting Started");
+  var sheet = ss.getSheetByName("📚 Getting Started");
   if (sheet) {
     ss.deleteSheet(sheet);
   }
@@ -5695,7 +5997,7 @@ function createGettingStartedSheet(ss) {
   sheet.setRowHeight(1, 60);
 
   // GitHub Repository Information Section
-  let row = 3;
+  var row = 3;
   sheet.getRange(row, 1, 1, 4).merge()
     .setValue("📦 GitHub Repository")
     .setFontSize(18)
@@ -5889,7 +6191,7 @@ function createGettingStartedSheet(ss) {
  * Creates the FAQ sheet
  */
 function createFAQSheet(ss) {
-  let sheet = ss.getSheetByName("❓ FAQ");
+  var sheet = ss.getSheetByName("❓ FAQ");
   if (sheet) {
     ss.deleteSheet(sheet);
   }
@@ -5915,7 +6217,7 @@ function createFAQSheet(ss) {
   sheet.setRowHeight(1, 60);
 
   // FAQ Categories and Questions
-  let row = 3;
+  var row = 3;
 
   // General Questions
   sheet.getRange(row, 1, 1, 3).merge()
@@ -6073,7 +6375,7 @@ function createFAQSheet(ss) {
  * Helper function to add FAQ section rows
  */
 function addFAQSection(sheet, startRow, faqs) {
-  let row = startRow;
+  var row = startRow;
 
   for (let i = 0; i < faqs.length; i++) {
     const faq = faqs[i];
@@ -6116,15 +6418,15 @@ function addFAQSection(sheet, startRow, faqs) {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * SEED & NUKE UTILITIES
  * Data generation and cleanup utilities
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * SEED NUKE - Remove All Seeded Data and Exit Demo Mode
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Allows stewards to remove all test/seeded data and exit demo mode.
  * After nuking, the dashboard will be ready for production use.
@@ -6136,7 +6438,7 @@ function addFAQSection(sheet, startRow, faqs) {
  * - Shows getting started reminder
  * - Hides seed menu options after nuke
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -6630,21 +6932,21 @@ function showGettingStartedGuide() {
 }
 
 
-/* ============================================================================
+/* ------------------------------------------------------------------------====
  * COLUMN TOGGLES
  * UI controls for column visibility
- * ============================================================================ */
+ * ------------------------------------------------------------------------==== */
 
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * COLUMN VISIBILITY TOGGLES
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Functions to show/hide column groups in Member Directory
  * - Grievance columns toggle
  * - Level 2 columns toggle
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -6753,4 +7055,592 @@ function showAllMemberColumns() {
   }
 
   SpreadsheetApp.getUi().alert('✅ All columns are now visible');
+}
+
+/**
+ * Add sample realistic feedback entries to Feedback & Development sheet
+ */
+function addSampleFeedbackEntries() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const feedback = ss.getSheetByName(SHEETS.FEEDBACK);
+
+  if (!feedback) {
+    SpreadsheetApp.getUi().alert('❌ Feedback & Development sheet not found!');
+    return;
+  }
+
+  const today = new Date();
+  const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const twoWeeksAgo = new Date(today.getTime() - 14 * 24 * 60 * 60 * 1000);
+  const nextMonth = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  const sampleEntries = [
+    [
+      'Feedback',
+      Utilities.formatDate(lastWeek, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'Maria Gonzalez',
+      'Medium',
+      'Dashboard load time could be improved',
+      'When opening the Interactive Dashboard with 20k+ members, it takes 5-8 seconds to load. Consider implementing lazy loading or pagination for better performance.',
+      'Under Review',
+      25,
+      'Moderate',
+      Utilities.formatDate(nextMonth, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'Tech Team',
+      'None',
+      'Investigating caching options and chart lazy loading',
+      Utilities.formatDate(today, Session.getScriptTimeZone(), 'MM/dd/yyyy')
+    ],
+    [
+      'Future Feature',
+      Utilities.formatDate(twoWeeksAgo, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'James Wilson',
+      'High',
+      'Automated weekly steward workload reports',
+      'Send automated email reports to stewards every Monday morning with their active cases, upcoming deadlines, and win rate statistics. Would save 2-3 hours per week of manual reporting.',
+      'Planned',
+      10,
+      'Complex',
+      Utilities.formatDate(nextMonth, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'Development Team',
+      'Need to set up Gmail API integration',
+      'Aligns with Phase 7 automation goals',
+      Utilities.formatDate(today, Session.getScriptTimeZone(), 'MM/dd/yyyy')
+    ],
+    [
+      'Bug Report',
+      Utilities.formatDate(today, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'Sarah Chen',
+      'High',
+      'Member search not finding partial matches',
+      'When searching for members, the search only works with exact matches. Searching for "John" doesn\'t find "John Smith" or "Johnson". This makes it difficult to quickly look up members.',
+      'New',
+      0,
+      'Simple',
+      Utilities.formatDate(new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000), Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      'Unassigned',
+      'None',
+      'Need to update search algorithm to support partial matching',
+      Utilities.formatDate(today, Session.getScriptTimeZone(), 'MM/dd/yyyy')
+    ]
+  ];
+
+  const lastRow = feedback.getLastRow();
+  feedback.getRange(lastRow + 1, 1, sampleEntries.length, sampleEntries[0].length).setValues(sampleEntries);
+
+  SpreadsheetApp.getUi().alert('✅ Added 3 sample feedback entries to Feedback & Development sheet');
+}
+
+/**
+ * Populate Steward Workload sheet with live data from Grievance Log
+ */
+function populateStewardWorkload() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const workloadSheet = ss.getSheetByName(SHEETS.STEWARD_WORKLOAD);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!workloadSheet || !grievanceSheet || !memberSheet) {
+    SpreadsheetApp.getUi().alert('❌ Required sheets not found!');
+    return;
+  }
+
+  // Get all grievance data
+  const grievanceData = grievanceSheet.getDataRange().getValues();
+  const memberData = memberSheet.getDataRange().getValues();
+
+  // Build steward lookup map (Member ID -> Steward info)
+  const stewards = {};
+  for (let i = 1; i < memberData.length; i++) {
+    const row = memberData[i];
+    if (!row || row.length < 10) continue;
+    const isSteward = row[9]; // Column J - Is Steward
+    if (isSteward === 'Yes') {
+      const memberId = row[0];
+      const name = `${row[1] || ''} ${row[2] || ''}`.trim(); // First + Last name
+      const email = row[7]; // Column H - Email
+      const phone = row[8]; // Column I - Phone
+      stewards[memberId] = {
+        name: name,
+        email: email,
+        phone: phone,
+        totalCases: 0,
+        activeCases: 0,
+        resolvedCases: 0,
+        wonCases: 0,
+        resolutionDays: []
+      };
+    }
+  }
+
+  // Process grievances
+  const today = new Date();
+  for (let i = 1; i < grievanceData.length; i++) {
+    const row = grievanceData[i];
+    const stewardId = row[6]; // Column G - Assigned Steward ID
+    const status = row[4]; // Column E - Status
+    const outcome = row[16]; // Column Q - Outcome
+    const daysOpen = row[18]; // Column S - Days Open
+
+    if (stewards[stewardId]) {
+      stewards[stewardId].totalCases++;
+
+      if (status === 'Open' || status === 'Pending Info') {
+        stewards[stewardId].activeCases++;
+      } else if (status === 'Settled' || status === 'Resolved' || status === 'Closed') {
+        stewards[stewardId].resolvedCases++;
+
+        if (outcome === 'Won' || outcome === 'Partially Won') {
+          stewards[stewardId].wonCases++;
+        }
+
+        if (daysOpen && !isNaN(daysOpen)) {
+          stewards[stewardId].resolutionDays.push(parseFloat(daysOpen));
+        }
+      }
+    }
+  }
+
+  // Build output data
+  const outputData = [];
+  for (const stewardId in stewards) {
+    const s = stewards[stewardId];
+    const winRate = s.resolvedCases > 0 ? (s.wonCases / s.resolvedCases * 100) : 0;
+    const avgDays = s.resolutionDays.length > 0
+      ? s.resolutionDays.reduce(function(a, b) { return a + b; }, 0) / s.resolutionDays.length
+      : 0;
+
+    // Capacity status based on active cases
+    var capacityStatus;
+    if (s.activeCases === 0) {
+      capacityStatus = 'Available';
+    } else if (s.activeCases <= 5) {
+      capacityStatus = 'Normal';
+    } else if (s.activeCases <= 10) {
+      capacityStatus = 'Busy';
+    } else {
+      capacityStatus = 'Overloaded';
+    }
+
+    outputData.push([
+      s.name,
+      s.totalCases,
+      s.activeCases,
+      s.resolvedCases,
+      Math.round(winRate),
+      Math.round(avgDays),
+      0, // Overdue cases - would need deadline calculation
+      0, // Due this week - would need deadline calculation
+      capacityStatus,
+      s.email || '',
+      s.phone || ''
+    ]);
+  }
+
+  // Sort by active cases (descending)
+  outputData.sort(function(a, b) { return b[2] - a[2]; });
+
+  // Clear existing data (keep headers)
+  const lastRow = workloadSheet.getLastRow();
+  if (lastRow > 3) {
+    workloadSheet.getRange(4, 1, lastRow - 3, 11).clear();
+  }
+
+  // Write new data
+  if (outputData.length > 0) {
+    workloadSheet.getRange(4, 1, outputData.length, 11).setValues(outputData);
+  }
+
+  Logger.log(`✅ Populated Steward Workload with ${outputData.length} stewards`);
+}
+
+/**
+ * Populate all analytics sheets with live data
+ */
+function populateAllAnalyticsSheets() {
+  const ui = SpreadsheetApp.getUi();
+
+  ui.alert('⏳ Populating analytics sheets...\n\nThis may take a moment.');
+
+  try {
+    // Populate Steward Workload
+    populateStewardWorkload();
+
+    // Populate Member Satisfaction
+    populateMemberSatisfaction();
+
+    // Note: Other analytics sheets (Trends, Location, etc.) use formulas and auto-populate
+    // Performance, Quick Stats, Executive Dashboard, KPI Performance, etc. all use formulas
+
+    ui.alert('✅ Analytics sheets populated successfully!');
+  } catch (error) {
+    ui.alert('❌ Error populating analytics: ' + error.message);
+    Logger.log('Error in populateAllAnalyticsSheets: ' + error.message);
+  }
+}
+
+/**
+ * Populate Member Satisfaction sheet with sample survey data
+ */
+function populateMemberSatisfaction() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const satisfactionSheet = ss.getSheetByName(SHEETS.MEMBER_SATISFACTION);
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!satisfactionSheet || !memberSheet) {
+    SpreadsheetApp.getUi().alert('❌ Required sheets not found!');
+    return;
+  }
+
+  // Get member data
+  const memberData = memberSheet.getDataRange().getValues();
+
+  // Generate 50 sample survey responses
+  const sampleSurveys = [];
+  const today = new Date();
+
+  for (let i = 0; i < 50; i++) {
+    // Pick a random member (skip header row)
+    const randomMemberIndex = Math.floor(Math.random() * (memberData.length - 1)) + 1;
+    const member = memberData[randomMemberIndex];
+    const memberId = member[0];
+    const memberName = `${member[1]} ${member[2]}`;
+
+    // Generate survey dates
+    const sentDaysAgo = Math.floor(Math.random() * 60) + 1; // 1-60 days ago
+    const completedDaysAgo = sentDaysAgo - Math.floor(Math.random() * 7); // Within a week of being sent
+
+    const dateSent = new Date(today.getTime() - sentDaysAgo * 24 * 60 * 60 * 1000);
+    const dateCompleted = completedDaysAgo > 0 ? new Date(today.getTime() - completedDaysAgo * 24 * 60 * 60 * 1000) : '';
+
+    // Generate ratings (weighted toward positive)
+    const overallSat = Math.random() < 0.7 ? (4 + Math.floor(Math.random() * 2)) : (3 + Math.floor(Math.random() * 2));
+    const stewardSupport = Math.random() < 0.75 ? (4 + Math.floor(Math.random() * 2)) : (3 + Math.floor(Math.random() * 2));
+    const communication = Math.random() < 0.65 ? (4 + Math.floor(Math.random() * 2)) : (3 + Math.floor(Math.random() * 2));
+    const wouldRecommend = overallSat >= 4 ? 'Y' : (Math.random() < 0.7 ? 'Y' : 'N');
+
+    // Generate realistic comments
+    const comments = [
+      'My steward was very helpful and responsive',
+      'Great communication throughout the process',
+      'Could use faster response times',
+      'Very satisfied with the support I received',
+      'Steward went above and beyond',
+      'Process was clear and well-explained',
+      'Would like more frequent updates',
+      'Excellent representation',
+      'Professional and knowledgeable',
+      'Satisfied overall',
+      ''
+    ];
+    const comment = comments[Math.floor(Math.random() * comments.length)];
+
+    sampleSurveys.push([
+      `SURVEY-${String(i + 1).padStart(4, '0')}`,
+      memberId,
+      memberName,
+      Utilities.formatDate(dateSent, Session.getScriptTimeZone(), 'MM/dd/yyyy'),
+      dateCompleted ? Utilities.formatDate(dateCompleted, Session.getScriptTimeZone(), 'MM/dd/yyyy') : '',
+      overallSat,
+      stewardSupport,
+      communication,
+      wouldRecommend,
+      comment
+    ]);
+  }
+
+  // Clear existing data (keep headers)
+  const lastRow = satisfactionSheet.getLastRow();
+  if (lastRow > 3) {
+    satisfactionSheet.getRange(4, 1, lastRow - 3, 10).clear();
+  }
+
+  // Write new data
+  if (sampleSurveys.length > 0) {
+    satisfactionSheet.getRange(4, 1, sampleSurveys.length, 10).setValues(sampleSurveys);
+  }
+
+  SpreadsheetApp.getUi().alert(`✅ Added ${sampleSurveys.length} sample surveys to Member Satisfaction sheet`);
+  Logger.log(`✅ Populated Member Satisfaction with ${sampleSurveys.length} surveys`);
+}
+
+/**
+ * Hide the Diagnostics tab
+ */
+function hideDiagnosticsTab() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const diagnostics = ss.getSheetByName(SHEETS.DIAGNOSTICS);
+
+  if (diagnostics) {
+    diagnostics.hideSheet();
+    SpreadsheetApp.getUi().alert('✅ Diagnostics tab is now hidden');
+  } else {
+    SpreadsheetApp.getUi().alert('❌ Diagnostics sheet not found');
+  }
+}
+
+/**
+ * Add all dropdown validations and conditional formatting to Member Directory
+ */
+function setupMemberDirectoryValidations() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const config = ss.getSheetByName(SHEETS.CONFIG);
+
+  if (!memberDir || !config) {
+    SpreadsheetApp.getUi().alert('❌ Required sheets not found!');
+    return;
+  }
+
+  // Get dropdown values from Config sheet
+  const jobTitles = config.getRange("A2:A100").getValues().flat().filter(String);
+  const locations = config.getRange("B2:B100").getValues().flat().filter(String);
+  const units = config.getRange("C2:C100").getValues().flat().filter(String);
+  const stewards = config.getRange("E2:E100").getValues().flat().filter(String);
+  const supervisors = config.getRange("F2:F100").getValues().flat().filter(String);
+  const managers = config.getRange("G2:G100").getValues().flat().filter(String);
+
+  // Define dropdown ranges (2 = first data row, 5000 = max rows)
+  const MAX_ROWS = 5000;
+
+  // Job Title (Column D = 4)
+  if (jobTitles.length > 0) {
+    const jobTitleRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(jobTitles, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 4, MAX_ROWS, 1).setDataValidation(jobTitleRule);
+  }
+
+  // Work Location (Column E = 5)
+  if (locations.length > 0) {
+    const locationRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(locations, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 5, MAX_ROWS, 1).setDataValidation(locationRule);
+  }
+
+  // Unit (Column F = 6)
+  if (units.length > 0) {
+    const unitRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(units, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 6, MAX_ROWS, 1).setDataValidation(unitRule);
+  }
+
+  // Office Days (Column G = 7) - Allow multiple selections as comma-separated
+  const officeDaysRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter multiple days comma-separated (e.g., "Monday, Wednesday, Friday")')
+    .build();
+  memberDir.getRange(2, 7, MAX_ROWS, 1).setDataValidation(officeDaysRule);
+
+  // Is Steward (Column J = 10)
+  const yesNoRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Yes', 'No'], true)
+    .setAllowInvalid(false)
+    .build();
+  memberDir.getRange(2, 10, MAX_ROWS, 1).setDataValidation(yesNoRule);
+
+  // Supervisor (Column K = 11)
+  if (supervisors.length > 0) {
+    const supervisorRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(supervisors, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 11, MAX_ROWS, 1).setDataValidation(supervisorRule);
+  }
+
+  // Manager (Column L = 12)
+  if (managers.length > 0) {
+    const managerRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(managers, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 12, MAX_ROWS, 1).setDataValidation(managerRule);
+  }
+
+  // Assigned Steward (Column M = 13) and Steward Who Contacted Member (Column AD = 30)
+  if (stewards.length > 0) {
+    const stewardRule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(stewards, true)
+      .setAllowInvalid(false)
+      .build();
+    memberDir.getRange(2, 13, MAX_ROWS, 1).setDataValidation(stewardRule);
+    memberDir.getRange(2, 30, MAX_ROWS, 1).setDataValidation(stewardRule);
+  }
+
+  // Interest: Local Actions (Column T = 20)
+  memberDir.getRange(2, 20, MAX_ROWS, 1).setDataValidation(yesNoRule);
+
+  // Interest: Chapter Actions (Column U = 21)
+  memberDir.getRange(2, 21, MAX_ROWS, 1).setDataValidation(yesNoRule);
+
+  // Interest: Allied Chapter Actions (Column V = 22)
+  memberDir.getRange(2, 22, MAX_ROWS, 1).setDataValidation(yesNoRule);
+
+  // Preferred Communication Methods (Column X = 24) - Multiple selections
+  const commMethodsRule = SpreadsheetApp.newDataValidation()
+    .requireTextContains("")
+    .setAllowInvalid(true)
+    .setHelpText('Enter multiple methods comma-separated (e.g., "Email, Phone, Text")')
+    .build();
+  memberDir.getRange(2, 24, MAX_ROWS, 1).setDataValidation(commMethodsRule);
+
+  // Best Time(s) to Reach Member (Column Y = 25) - Multiple selections
+  const bestTimeRule = SpreadsheetApp.newDataValidation()
+    .requireValueInList(['Morning (8am-12pm)', 'Afternoon (12pm-5pm)', 'Evening (5pm-8pm)', 'Anytime'], true)
+    .setAllowInvalid(true)
+    .setHelpText('Select one or enter multiple comma-separated')
+    .build();
+  memberDir.getRange(2, 25, MAX_ROWS, 1).setDataValidation(bestTimeRule);
+
+  // Add conditional formatting for empty email/phone
+  // Email (Column H = 8) - Red background if empty
+  const emailRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=AND(A2<>"", H2="")')
+    .setBackground('#DC2626')
+    .setFontColor('#FFFFFF')
+    .setRanges([memberDir.getRange(2, 8, MAX_ROWS, 1)])
+    .build();
+
+  // Phone (Column I = 9) - Red background if empty
+  const phoneRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenFormulaSatisfied('=AND(A2<>"", I2="")')
+    .setBackground('#DC2626')
+    .setFontColor('#FFFFFF')
+    .setRanges([memberDir.getRange(2, 9, MAX_ROWS, 1)])
+    .build();
+
+  const rules = memberDir.getConditionalFormatRules();
+  rules.push(emailRule);
+  rules.push(phoneRule);
+  memberDir.setConditionalFormatRules(rules);
+
+  SpreadsheetApp.getUi().alert('✅ Member Directory validations and formatting applied!');
+}
+
+/**
+ * Add Google Drive folder link column to Grievance Log
+ */
+function addGoogleDriveLinkToGrievanceLog() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceLog) {
+    SpreadsheetApp.getUi().alert('❌ Grievance Log not found!');
+    return;
+  }
+
+  // Insert column after Resolution Summary (last column)
+  const lastCol = grievanceLog.getLastColumn();
+  grievanceLog.insertColumnAfter(lastCol);
+
+  // Set header
+  grievanceLog.getRange(1, lastCol + 1)
+    .setValue('📁 Drive Folder Link')
+    .setFontWeight('bold')
+    .setBackground('#DC2626')
+    .setFontColor('#FFFFFF')
+    .setWrap(true);
+
+  // Add note to header
+  grievanceLog.getRange(1, lastCol + 1)
+    .setNote('Paste Google Drive folder link for this grievance. Create folder with grievant name.');
+
+  SpreadsheetApp.getUi().alert('✅ Google Drive folder link column added to Grievance Log!');
+}
+
+/**
+ * Add status bars for grievance dates (visual deadline tracking)
+ */
+function addGrievanceDateStatusBars() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceLog) {
+    SpreadsheetApp.getUi().alert('❌ Grievance Log not found!');
+    return;
+  }
+
+  const MAX_ROWS = 5000;
+
+  // Days to Deadline (Column U = 21) - Color-coded based on urgency
+  const urgentRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberLessThan(0)
+    .setBackground('#DC2626')  // Red - OVERDUE
+    .setFontColor('#FFFFFF')
+    .setRanges([grievanceLog.getRange(2, 21, MAX_ROWS, 1)])
+    .build();
+
+  const warningRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberBetween(0, 3)
+    .setBackground('#F97316')  // Orange - URGENT (0-3 days)
+    .setFontColor('#FFFFFF')
+    .setRanges([grievanceLog.getRange(2, 21, MAX_ROWS, 1)])
+    .build();
+
+  const cautionRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberBetween(4, 7)
+    .setBackground('#FCD34D')  // Yellow - CAUTION (4-7 days)
+    .setFontColor('#000000')
+    .setRanges([grievanceLog.getRange(2, 21, MAX_ROWS, 1)])
+    .build();
+
+  const okRule = SpreadsheetApp.newConditionalFormatRule()
+    .whenNumberGreaterThan(7)
+    .setBackground('#10B981')  // Green - OK (8+ days)
+    .setFontColor('#FFFFFF')
+    .setRanges([grievanceLog.getRange(2, 21, MAX_ROWS, 1)])
+    .build();
+
+  const rules = grievanceLog.getConditionalFormatRules();
+  rules.push(urgentRule, warningRule, cautionRule, okRule);
+  grievanceLog.setConditionalFormatRules(rules);
+
+  SpreadsheetApp.getUi().alert('✅ Date status bars added to Grievance Log!');
+}
+
+/**
+ * Setup all dashboard enhancements
+ */
+function SETUP_DASHBOARD_ENHANCEMENTS() {
+  const ui = SpreadsheetApp.getUi();
+
+  const response = ui.alert(
+    '🎨 Setup Dashboard Enhancements',
+    'This will add:\n\n' +
+    '✓ Dropdowns for all Member Directory fields\n' +
+    '✓ Red highlighting for missing email/phone\n' +
+    '✓ Google Drive folder link to Grievance Log\n' +
+    '✓ Color-coded status bars for deadlines\n\n' +
+    'Continue?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    return;
+  }
+
+  try {
+    ui.alert('⏳ Applying enhancements...');
+
+    setupMemberDirectoryValidations();
+    addGoogleDriveLinkToGrievanceLog();
+    addGrievanceDateStatusBars();
+
+    ui.alert(
+      '✅ Enhancements Complete!',
+      'All dropdown validations, conditional formatting, and visual enhancements have been applied.\n\n' +
+      'Member Directory: Dropdowns active + red highlighting for empty email/phone\n' +
+      'Grievance Log: Drive folder link column added + color-coded deadline tracking',
+      ui.ButtonSet.OK
+    );
+  } catch (error) {
+    ui.alert('❌ Error: ' + error.message);
+    Logger.log('Error in SETUP_DASHBOARD_ENHANCEMENTS: ' + error.message);
+  }
 }

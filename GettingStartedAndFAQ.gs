@@ -1,19 +1,19 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * GETTING STARTED AND FAQ SHEETS
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Creates informational sheets with getting started guide and FAQ
  * Includes GitHub repository information
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
  * Creates the Getting Started sheet
  */
 function createGettingStartedSheet(ss) {
-  let sheet = ss.getSheetByName("📚 Getting Started");
+  var sheet = ss.getSheetByName("📚 Getting Started");
   if (sheet) {
     ss.deleteSheet(sheet);
   }
@@ -38,7 +38,7 @@ function createGettingStartedSheet(ss) {
   sheet.setRowHeight(1, 60);
 
   // GitHub Repository Information Section
-  let row = 3;
+  var row = 3;
   sheet.getRange(row, 1, 1, 4).merge()
     .setValue("📦 GitHub Repository")
     .setFontSize(18)
@@ -232,7 +232,7 @@ function createGettingStartedSheet(ss) {
  * Creates the FAQ sheet
  */
 function createFAQSheet(ss) {
-  let sheet = ss.getSheetByName("❓ FAQ");
+  var sheet = ss.getSheetByName("❓ FAQ");
   if (sheet) {
     ss.deleteSheet(sheet);
   }
@@ -258,7 +258,7 @@ function createFAQSheet(ss) {
   sheet.setRowHeight(1, 60);
 
   // FAQ Categories and Questions
-  let row = 3;
+  var row = 3;
 
   // General Questions
   sheet.getRange(row, 1, 1, 3).merge()
@@ -416,7 +416,7 @@ function createFAQSheet(ss) {
  * Helper function to add FAQ section rows
  */
 function addFAQSection(sheet, startRow, faqs) {
-  let row = startRow;
+  var row = startRow;
 
   for (let i = 0; i < faqs.length; i++) {
     const faq = faqs[i];

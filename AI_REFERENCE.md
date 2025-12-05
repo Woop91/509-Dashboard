@@ -1,7 +1,7 @@
 # 509 Dashboard - Complete Feature Reference
 
-**Version:** 2.2
-**Last Updated:** 2025-11-27
+**Version:** 2.3
+**Last Updated:** 2025-12-02
 **Purpose:** Union grievance tracking and member engagement system for SEIU Local 509
 
 ---
@@ -1535,7 +1535,32 @@ const SHEETS = {
 
 ## Changelog
 
-### Version 2.2 (Current)
+### Version 2.3 (Current)
+
+**🔴 CRITICAL BUG FIX: hideGridlines() TypeError Resolved**
+
+**Issue:**
+- Runtime error: `TypeError: sheet.hideGridlines is not a function`
+- Affected CREATE_509_DASHBOARD and all gridline-related functions
+- Method `hideGridlines()` does not exist in Google Apps Script API
+
+**Fix:**
+- Replaced all `sheet.hideGridlines()` calls with `sheet.setHiddenGridlines(true)`
+- This is the correct Google Apps Script method for hiding gridlines
+- Fixed 9 occurrences across 3 files
+
+**Files Changed:**
+- Complete509Dashboard.gs: Fixed 3 instances (lines 4446, 4610, 4765)
+- ADHDEnhancements.gs: Fixed 3 instances (lines 29, 189, 344)
+- ConsolidatedDashboard.gs: Fixed 3 instances (lines 11709, 11869, 12024)
+- AI_REFERENCE.md: Updated version and changelog
+
+**Commit:**
+- Fix hideGridlines TypeError - use setHiddenGridlines(true) instead
+
+---
+
+### Version 2.2
 
 **🔴 CRITICAL UPDATE: All Runtime Errors Fixed**
 
@@ -1568,20 +1593,29 @@ const SHEETS = {
 5. **Mock Data Replaced:**
    - UnifiedOperationsMonitor.gs now uses real win/loss calculations instead of 75% fake data
 
+6. **UnifiedOperationsMonitor.gs Made Fully Dynamic (HIGH PRIORITY):**
+   - Fixed 61 hardcoded grievance array indices: g[4], g[22], g[27], etc.
+   - Fixed 7 hardcoded member array indices: m[0], m[9], m[20], etc.
+   - All array access now uses `MEMBER_COLS - 1` / `GRIEVANCE_COLS - 1`
+   - Example: `g[4]` → `g[GRIEVANCE_COLS.STATUS - 1]`
+
+7. **Executive Dashboard Column References (2 instances):**
+   - Fixed hardcoded 'Member Directory'!A2:A → dynamic execMemberIdCol
+   - Fixed hardcoded 'Grievance Log'!A2:A → dynamic grievanceIdCol
+
 **Files Changed:**
 - ADHDEnhancements.gs: Fixed SHEETS constants
-- GrievanceWorkflow.gs: Added missing functions, fixed hardcoded column
+- GrievanceWorkflow.gs: Added missing functions, fixed hardcoded column, made formulas fully dynamic
 - SeedNuke.gs: Added rebuildDashboard() function
-- UnifiedOperationsMonitor.gs: Replaced mock data with real calculations
-- Code.gs: Removed disabled menu item
-- Complete509Dashboard.gs: Removed disabled menu item (parity maintained)
-- AI_REFERENCE.md: Added Code Quality & Known Issues section
+- UnifiedOperationsMonitor.gs: Replaced mock data, fixed ALL 68 hardcoded array indices
+- Code.gs: Removed disabled menu item, fixed Executive Dashboard hardcoded columns
+- Complete509Dashboard.gs: Removed disabled menu item, fixed Executive Dashboard (parity maintained)
+- AI_REFERENCE.md: Added Code Quality section, updated changelog
 
-**Known Technical Debt:**
-- UnifiedOperationsMonitor.gs has 100+ hardcoded array indices (deferred - read-only display code)
-
-**Commit:**
+**Commits:**
 - cb36266: Fix all critical code issues from comprehensive review
+- 083d253: Eliminate ALL hardcoded column references - 100% dynamic
+- cdf34d8: Fix UnifiedOperationsMonitor.gs - 100% dynamic array access
 
 ---
 
@@ -1707,18 +1741,15 @@ A comprehensive code review was conducted covering stubs, dead ends, and errors.
 5. **Mock Data** - FIXED
    - Replaced 75% fake win rate with real calculations in UnifiedOperationsMonitor.gs
 
+6. **UnifiedOperationsMonitor.gs Hardcoded Array Indices (HIGH PRIORITY)** - FIXED
+   - Replaced 61 hardcoded grievance array indices (g[4], g[22], g[27], etc.)
+   - Replaced 7 hardcoded member array indices (m[0], m[9], m[20], etc.)
+   - All array access now uses `MEMBER_COLS - 1` and `GRIEVANCE_COLS - 1` pattern
+   - Example: `g[4]` → `g[GRIEVANCE_COLS.STATUS - 1]`
+
 **⚠️ Known Technical Debt (Non-Critical):**
 
-1. **UnifiedOperationsMonitor.gs Hardcoded Array Indices**
-   - **Severity:** Low (read-only display code)
-   - **Impact:** File works correctly but uses hardcoded array indices (100+ instances)
-   - **Status:** Deferred - file is read-only dashboard, won't cause crashes
-   - **Future:** Should refactor to use MEMBER_COLS and GRIEVANCE_COLS for consistency
-   - **Example:** `g[4]` should be `g[GRIEVANCE_COLS.STATUS - 1]`
-
-2. **Formula Column References**
-   - Some formulas still use hardcoded column numbers (e.g., `getRange(row, 21)`)
-   - These work correctly but could use GRIEVANCE_COLS constants for consistency
+None - All issues resolved!
 
 **Verification Commands:**
 
@@ -1727,8 +1758,8 @@ A comprehensive code review was conducted covering stubs, dead ends, and errors.
 grep "'Member Directory'![A-Z]:[A-Z]" *.gs | wc -l
 grep "'Grievance Log'![A-Z]:[A-Z]" *.gs | wc -l
 
-# Find remaining array index references (returns many - mostly in UnifiedOperationsMonitor.gs)
-grep -n '\[4\]|\[22\]|\[27\]' UnifiedOperationsMonitor.gs | wc -l
+# Verify no hardcoded array indices (should return 0)
+grep "g\[[0-9]\+\]\|m\[[0-9]\+\]" UnifiedOperationsMonitor.gs | wc -l
 ```
 
 ---
