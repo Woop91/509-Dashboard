@@ -156,7 +156,7 @@ function gatherMonthlyData() {
     };
   }
 
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.RESOLUTION).getValues();
 
   let totalGrievances = 0;
   let newGrievances = 0;
@@ -255,7 +255,7 @@ function gatherQuarterlyData() {
     };
   }
 
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.RESOLUTION).getValues();
 
   const monthlyTrends = [0, 0, 0]; // Three months in a quarter
   let totalGrievances = 0;

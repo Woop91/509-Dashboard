@@ -455,7 +455,8 @@ function showMessageTrail() {
 
   const data = logSheet.getRange(2, 1, lastRow - 1, 9).getValues();
   const messages = data.filter(function(row) {
-    return row[2] === grievanceId && row[1] === 'ADMIN_MESSAGE';
+    // Use COMM_LOG_COLS constants for array indices (subtract 1 for 0-based array)
+    return row[COMM_LOG_COLS.GRIEVANCE_ID - 1] === grievanceId && row[COMM_LOG_COLS.TYPE - 1] === 'ADMIN_MESSAGE';
   });
 
   if (messages.length === 0) {

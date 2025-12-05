@@ -78,8 +78,8 @@ function checkDeadlinesAndNotify() {
     return;
   }
 
-  // Get all grievance data
-  const data = grievanceSheet.getRange(2, 1, lastRow - 1, 28).getValues();
+  // Get all grievance data - read all columns up to RESOLUTION (last column)
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.RESOLUTION).getValues();
 
   const notifications = {
     overdue: [],
