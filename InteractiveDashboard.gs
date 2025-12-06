@@ -91,18 +91,32 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // Refresh button area
-  sheet.getRange("I6").setValue("Action:")
+  // Action dropdown area
+  sheet.getRange("I6").setValue("Quick Action:")
     .setFontWeight("bold")
     .setFontSize(10).setFontFamily("Roboto")
     .setBackground(COLORS.LIGHT_GRAY)
     .setHorizontalAlignment("right");
 
-  sheet.getRange("I7").setValue("✨ Ready to see the magic? Click '509 Tools > Interactive Dashboard > Refresh Charts'")
-    .setFontSize(9).setFontFamily("Roboto")
-    .setFontStyle("italic")
-    .setBackground(COLORS.LIGHT_GRAY)
-    .setHorizontalAlignment("left");
+  // Add dropdown for quick actions
+  const actionDropdown = SpreadsheetApp.newDataValidation()
+    .requireValueInList([
+      "Select Action...",
+      "Refresh Charts",
+      "Reset All Filters",
+      "Show All Data",
+      "Export Summary"
+    ], true)
+    .setAllowInvalid(false)
+    .build();
+
+  sheet.getRange("I7")
+    .setValue("Select Action...")
+    .setDataValidation(actionDropdown)
+    .setFontSize(10).setFontFamily("Roboto")
+    .setBackground(COLORS.WHITE)
+    .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID)
+    .setHorizontalAlignment("center");
 
   // ------------------------------------------------------------=========
   // METRIC CARDS SECTION - Row 10-18 (4 cards)
@@ -845,24 +859,32 @@ function writeChartData(sheet, startCell, data) {
   if (!data || data.length === 0) return;
 
   try {
-    const range = sheet.getRange(startCell).offset(1, 0, data.length, 2);
+    const startRange = sheet.getRange(startCell);
+    const startRow = startRange.getRow() + 1;
+    const startCol = startRange.getColumn();
+    const numRows = data.length;
+    const numCols = 2;
 
-    // IMPORTANT: Break any merged cells before writing data
-    // This prevents "You must select all cells in a merged range" error
-    try {
-      range.breakApart();
-    } catch (e) {
-      // Range wasn't merged, ignore
+    // Get ALL merged regions in the target range and break apart any that overlap
+    // This properly handles the "You must select all cells in a merged range" error
+    const targetRange = sheet.getRange(startRow, startCol, numRows, numCols);
+    const mergedRanges = targetRange.getMergedRanges();
+    for (let i = 0; i < mergedRanges.length; i++) {
+      try {
+        mergedRanges[i].breakApart();
+      } catch (e) {
+        Logger.log('Could not break apart merged range: ' + e.message);
+      }
     }
 
-    // Clear existing content and formatting
-    range.clearContent();
+    // Clear existing content
+    targetRange.clearContent();
 
-    range.setValues(data);
+    // Write the data
+    targetRange.setValues(data);
 
     // Hide this data area - OPTIMIZED: batch hide instead of one-by-one
-    const startRow = range.getRow();
-    sheet.hideRows(startRow, data.length);
+    sheet.hideRows(startRow, numRows);
   } catch (error) {
     handleError(error, 'writeChartData', false);
   }
