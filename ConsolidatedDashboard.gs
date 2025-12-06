@@ -547,11 +547,16 @@ function createMainDashboard() {
       .setHorizontalAlignment("center")
       .setBackground("#F3F4F6");
 
-    dashboard.getRange(7, col, 1, 3).merge()
+    const valueRange = dashboard.getRange(7, col, 1, 3).merge()
       .setFormula(m[1])
       .setFontSize(20)
       .setFontWeight("bold")
       .setHorizontalAlignment("center");
+
+    // Apply number formatting with decimal for YTD Vol. Hours
+    if (m[0] === "YTD Vol. Hours") {
+      valueRange.setNumberFormat("#,##0.0");
+    }
 
     col += 3;
   });
@@ -647,14 +652,17 @@ function createMainDashboard() {
   const daysToDeadlineCol = getColumnLetter(GRIEVANCE_COLS.DAYS_TO_DEADLINE);
   const lastCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION); // AB - last column
 
-  // Formula to populate upcoming deadlines (open grievances with deadlines in next 14 days)
+  // Formula to populate upcoming deadlines (open grievances with deadlines in next 14 days, excluding overdue)
   dashboard.getRange("A22").setFormula(
     `=IFERROR(QUERY('Grievance Log'!${grievanceIdCol}:${lastCol}, ` +
     `"SELECT ${grievanceIdCol}, ${firstNameCol}, ${nextActionCol}, ${daysToDeadlineCol}, ${statusCol} ` +
-    `WHERE ${statusCol} = 'Open' AND ${nextActionCol} IS NOT NULL AND ${nextActionCol} <= date '"&TEXT(TODAY()+14,"yyyy-mm-dd")&"' ` +
+    `WHERE ${statusCol} = 'Open' AND ${nextActionCol} IS NOT NULL AND ${nextActionCol} <= date '"&TEXT(TODAY()+14,"yyyy-mm-dd")&"' AND ${daysToDeadlineCol} >= 0 ` +
     `ORDER BY ${nextActionCol} ASC ` +
     `LIMIT 10", 0), "No upcoming deadlines")`
   );
+
+  // Apply date formatting to Next Action column (column C in results)
+  dashboard.getRange("C22:C31").setNumberFormat("MM/dd/yyyy");
 
   dashboard.setTabColor("#7C3AED");
 }
