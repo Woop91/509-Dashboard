@@ -1599,20 +1599,20 @@ function setupFormulasAndCalculations() {
   grievanceLog.setConditionalFormatRules([overdueRule, dueTodayRule, dueSoonRule, onTrackRule, ...existingRules]);
 
   // ----- MEMBER DIRECTORY FORMULAS -----
-  // Has Open Grievance? - Column Y (25)
+  // Has Open Grievance? - Column AB (28)
   // Counts grievances with ANY active status: Open, Pending Info, Appealed, In Arbitration
   const hasGrievanceCol = getColumnLetter(MEMBER_COLS.HAS_OPEN_GRIEVANCE);
   memberDir.getRange(hasGrievanceCol + "2").setFormula(
     `=ARRAYFORMULA(IF(A2:A1000<>"",IF(SUMPRODUCT((('Grievance Log'!${gMemberIdCol}:${gMemberIdCol}=A2:A1000)*(('Grievance Log'!${gStatusCol}:${gStatusCol}="Open")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Pending Info")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Appealed")+('Grievance Log'!${gStatusCol}:${gStatusCol}="In Arbitration"))))>0,"Yes","No"),""))`
   );
 
-  // Grievance Status Snapshot - Column Z (26)
+  // Grievance Status Snapshot - Column AC (29)
   const statusSnapshotCol = getColumnLetter(MEMBER_COLS.GRIEVANCE_STATUS);
   memberDir.getRange(statusSnapshotCol + "2").setFormula(
     `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gStatusCol}:${gStatusCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
   );
 
-  // Next Grievance Deadline - Column AA (27)
+  // Next Grievance Deadline - Column AD (30)
   const nextDeadlineCol = getColumnLetter(MEMBER_COLS.NEXT_DEADLINE);
   memberDir.getRange(nextDeadlineCol + "2").setFormula(
     `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gNextActionCol}:${gNextActionCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
@@ -2830,6 +2830,29 @@ function seedMembersWithCount(count, toggleName) {
   const startingRow = memberDir.getLastRow();
   Logger.log('Seed starting at row: ' + startingRow);
 
+  // Limit stewards to 25 total per seed operation
+  const MAX_STEWARDS = 25;
+  let stewardCount = 0;
+
+  // Sample contact notes for steward contact tracking
+  const contactNotes = [
+    "Discussed upcoming contract negotiations",
+    "Follow-up on workplace safety concerns",
+    "Scheduled one-on-one meeting for next week",
+    "Provided information about member benefits",
+    "Addressed scheduling conflict resolution",
+    "Checked in about workload issues",
+    "Discussed professional development opportunities",
+    "Followed up on grievance status",
+    "Welcomed new member to the union",
+    "Provided update on chapter meeting",
+    "Discussed concerns about overtime policies",
+    "Shared information about steward training",
+    "Follow-up on previous conversation about working conditions",
+    "Answered questions about union dues",
+    "Discussed upcoming union events"
+  ];
+
   for (let i = 1; i <= count; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
@@ -2852,7 +2875,9 @@ function seedMembersWithCount(count, toggleName) {
 
     const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${startingRow + i}@union.org`;
     const phone = `(555) ${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
-    const isSteward = Math.random() > 0.95 ? "Yes" : "No";
+    // Limit stewards to MAX_STEWARDS (25) per seed operation
+    const isSteward = (stewardCount < MAX_STEWARDS && Math.random() > 0.95) ? "Yes" : "No";
+    if (isSteward === "Yes") stewardCount++;
 
     // Select supervisor and manager names from Config (already combined full names)
     const supervisor = supervisors[Math.floor(Math.random() * supervisors.length)];
@@ -2905,9 +2930,14 @@ function seedMembersWithCount(count, toggleName) {
       // Section 6: Member Interests (cols 21-24)
       localInterest, chapterInterest, alliedInterest, homeTown,
       // Section 7: Steward Contact Tracking (cols 25-27)
-      contactDate, "", "",
-      // Section 8: Grievance Management (cols 28-31) - formulas/checkbox
-      "", "", "", false
+      // Add realistic steward contact data for some members
+      contactDate,
+      Math.random() > 0.6 ? stewards[Math.floor(Math.random() * stewards.length)] : "",
+      Math.random() > 0.6 ? contactNotes[Math.floor(Math.random() * contactNotes.length)] : ""
+      // NOTE: Section 8 (cols 28-31) - Has Open Grievance?, Grievance Status, Next Deadline, Start Grievance
+      // These columns are NOT included in seed data because:
+      // - Cols 28-30 (AB-AD) are formula columns populated by setupFormulasAndCalculations()
+      // - Col 31 (AE) is a checkbox column that will be set up separately
     ];
 
     data.push(row);
@@ -2961,6 +2991,24 @@ function seedMembersWithCount(count, toggleName) {
     Logger.log('Successfully re-applied dropdowns after seeding');
   } catch (e) {
     Logger.log('Warning: Could not re-apply dropdowns: ' + e.message);
+  }
+
+  // Ensure checkboxes are set up for Start Grievance column (AE - col 31)
+  try {
+    const startGrievanceCol = MEMBER_COLS.START_GRIEVANCE;
+    memberDir.getRange(startingRow + 1, startGrievanceCol, count, 1).insertCheckboxes();
+    Logger.log('Successfully added checkboxes for Start Grievance column');
+  } catch (e) {
+    Logger.log('Warning: Could not add checkboxes: ' + e.message);
+  }
+
+  // Re-apply formulas for grievance columns (AB, AC, AD) if needed
+  SpreadsheetApp.getActive().toast(`Refreshing formulas...`, "Processing", -1);
+  try {
+    setupFormulasAndCalculations();
+    Logger.log('Successfully refreshed formulas after seeding');
+  } catch (e) {
+    Logger.log('Warning: Could not refresh formulas: ' + e.message);
   }
 
   SpreadsheetApp.getActive().toast(`✅ ${count} members added (${toggleName})! Sheet now has ${finalRow - 1} members.`, "Complete", 5);
