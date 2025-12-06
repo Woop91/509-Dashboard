@@ -196,6 +196,39 @@ const EXCLUDED_FILES = [
   'fix_destructuring.js'       // Utility script
 ];
 
+/**
+ * Extracts VERSION_INFO from Constants.gs
+ * This ensures the build header stays in sync with the actual version constants
+ * @returns {Object} Version info object with MAJOR, MINOR, PATCH, BUILD, CODENAME
+ */
+function getVersionFromConstants() {
+  const constantsPath = path.join(__dirname, 'Constants.gs');
+
+  if (!fs.existsSync(constantsPath)) {
+    console.log('⚠️  Constants.gs not found, using default version');
+    return { MAJOR: 2, MINOR: 0, PATCH: 0, BUILD: 'unknown', CODENAME: 'Unknown' };
+  }
+
+  const content = fs.readFileSync(constantsPath, 'utf8');
+
+  // Extract VERSION_INFO values using regex
+  const versionInfo = {};
+
+  const majorMatch = content.match(/MAJOR:\s*(\d+)/);
+  const minorMatch = content.match(/MINOR:\s*(\d+)/);
+  const patchMatch = content.match(/PATCH:\s*(\d+)/);
+  const buildMatch = content.match(/BUILD:\s*['"]([^'"]+)['"]/);
+  const codenameMatch = content.match(/CODENAME:\s*['"]([^'"]+)['"]/);
+
+  versionInfo.MAJOR = majorMatch ? parseInt(majorMatch[1]) : 2;
+  versionInfo.MINOR = minorMatch ? parseInt(minorMatch[1]) : 0;
+  versionInfo.PATCH = patchMatch ? parseInt(patchMatch[1]) : 0;
+  versionInfo.BUILD = buildMatch ? buildMatch[1] : 'unknown';
+  versionInfo.CODENAME = codenameMatch ? codenameMatch[1] : 'Unknown';
+
+  return versionInfo;
+}
+
 // Critical constants that should only be declared once
 const CRITICAL_CONSTANTS = [
   'SHEETS',
@@ -352,7 +385,15 @@ function build(options = {}) {
 
   // Step 2: Build consolidated file
   const buildDate = new Date().toISOString();
-  const buildVersion = '2.0.0';
+
+  // Get version from Constants.gs to stay in sync
+  const versionInfo = getVersionFromConstants();
+  const buildVersion = `${versionInfo.MAJOR}.${versionInfo.MINOR}.${versionInfo.PATCH}`;
+
+  if (!quiet) {
+    console.log(`📦 Version: ${buildVersion} (${versionInfo.CODENAME})`);
+    console.log(`🏷️  Build: ${versionInfo.BUILD}\n`);
+  }
 
   let consolidated = `/**
  * ============================================================================
@@ -368,7 +409,8 @@ function build(options = {}) {
  * 3. This file will be regenerated automatically
  *
  * Build Info:
- * - Version: ${buildVersion}
+ * - Version: ${buildVersion} (${versionInfo.CODENAME})
+ * - Build ID: ${versionInfo.BUILD}
  * - Build Date: ${buildDate}
  * - Build Type: ${buildType}
  * - Modules: ${modules.length} files
