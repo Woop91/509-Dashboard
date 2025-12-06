@@ -1516,49 +1516,51 @@ function setupFormulasAndCalculations() {
   const gCurrentStepCol = getColumnLetter(GRIEVANCE_COLS.CURRENT_STEP);
   const gMemberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
 
+  // IMPORTANT: Using 10000 rows to support large datasets (5k grievances + buffer)
+
   // Filing Deadline (Incident Date + 21 days) - Column H
   grievanceLog.getRange(gFilingDeadlineCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gIncidentDateCol}2:${gIncidentDateCol}1000<>"",${gIncidentDateCol}2:${gIncidentDateCol}1000+21,""))`
+    `=ARRAYFORMULA(IF(${gIncidentDateCol}2:${gIncidentDateCol}10000<>"",${gIncidentDateCol}2:${gIncidentDateCol}10000+21,""))`
   );
 
   // Step I Decision Due (Date Filed + 30 days) - Column J
   grievanceLog.getRange(gStep1DueCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",${gDateFiledCol}2:${gDateFiledCol}1000+30,""))`
+    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}10000<>"",${gDateFiledCol}2:${gDateFiledCol}10000+30,""))`
   );
 
   // Step II Appeal Due (Step I Decision Rcvd + 10 days) - Column L
   grievanceLog.getRange(gStep2AppealDueCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gStep1RcvdCol}2:${gStep1RcvdCol}1000<>"",${gStep1RcvdCol}2:${gStep1RcvdCol}1000+10,""))`
+    `=ARRAYFORMULA(IF(${gStep1RcvdCol}2:${gStep1RcvdCol}10000<>"",${gStep1RcvdCol}2:${gStep1RcvdCol}10000+10,""))`
   );
 
   // Step II Decision Due (Step II Appeal Filed + 30 days) - Column N
   grievanceLog.getRange(gStep2DueCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}1000<>"",${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}1000+30,""))`
+    `=ARRAYFORMULA(IF(${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}10000<>"",${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}10000+30,""))`
   );
 
   // Step III Appeal Due (Step II Decision Rcvd + 30 days) - Column P
   grievanceLog.getRange(gStep3AppealDueCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gStep2RcvdCol}2:${gStep2RcvdCol}1000<>"",${gStep2RcvdCol}2:${gStep2RcvdCol}1000+30,""))`
+    `=ARRAYFORMULA(IF(${gStep2RcvdCol}2:${gStep2RcvdCol}10000<>"",${gStep2RcvdCol}2:${gStep2RcvdCol}10000+30,""))`
   );
 
   // Days Open - Column S (shows actual days - negative values indicate data entry errors)
   grievanceLog.getRange(gDaysOpenCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",IF(${gDateClosedCol}2:${gDateClosedCol}1000<>"",${gDateClosedCol}2:${gDateClosedCol}1000-${gDateFiledCol}2:${gDateFiledCol}1000,TODAY()-${gDateFiledCol}2:${gDateFiledCol}1000),""))`
+    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}10000<>"",IF(${gDateClosedCol}2:${gDateClosedCol}10000<>"",${gDateClosedCol}2:${gDateClosedCol}10000-${gDateFiledCol}2:${gDateFiledCol}10000,TODAY()-${gDateFiledCol}2:${gDateFiledCol}10000),""))`
   );
 
   // Next Action Due - Column T (determines based on current step)
   grievanceLog.getRange(gNextActionCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gStatusCol}2:${gStatusCol}1000="Open",IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step I",${gStep1DueCol}2:${gStep1DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step II",${gStep2DueCol}2:${gStep2DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step III",${gStep3AppealDueCol}2:${gStep3AppealDueCol}1000,${gFilingDeadlineCol}2:${gFilingDeadlineCol}1000))),""))`
+    `=ARRAYFORMULA(IF(${gStatusCol}2:${gStatusCol}10000="Open",IF(${gCurrentStepCol}2:${gCurrentStepCol}10000="Step I",${gStep1DueCol}2:${gStep1DueCol}10000,IF(${gCurrentStepCol}2:${gCurrentStepCol}10000="Step II",${gStep2DueCol}2:${gStep2DueCol}10000,IF(${gCurrentStepCol}2:${gCurrentStepCol}10000="Step III",${gStep3AppealDueCol}2:${gStep3AppealDueCol}10000,${gFilingDeadlineCol}2:${gFilingDeadlineCol}10000))),""))`
   );
 
   // Days to Deadline - Column U (shows descriptive text for overdue items)
   // Positive = days remaining, 0 = "DUE TODAY", Negative = "OVERDUE Xd"
   grievanceLog.getRange(gDaysToDeadlineCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}1000<>"",IF(${gNextActionCol}2:${gNextActionCol}1000-TODAY()<0,"OVERDUE "&ABS(${gNextActionCol}2:${gNextActionCol}1000-TODAY())&"d",IF(${gNextActionCol}2:${gNextActionCol}1000-TODAY()=0,"DUE TODAY",${gNextActionCol}2:${gNextActionCol}1000-TODAY())),""))`
+    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}10000<>"",IF(${gNextActionCol}2:${gNextActionCol}10000-TODAY()<0,"OVERDUE "&ABS(${gNextActionCol}2:${gNextActionCol}10000-TODAY())&"d",IF(${gNextActionCol}2:${gNextActionCol}10000-TODAY()=0,"DUE TODAY",${gNextActionCol}2:${gNextActionCol}10000-TODAY())),""))`
   );
 
   // Add conditional formatting for Days to Deadline column
-  const daysToDeadlineRange = grievanceLog.getRange(gDaysToDeadlineCol + "2:" + gDaysToDeadlineCol + "1000");
+  const daysToDeadlineRange = grievanceLog.getRange(gDaysToDeadlineCol + "2:" + gDaysToDeadlineCol + "10000");
 
   // Rule 1: OVERDUE - Red background
   const overdueRule = SpreadsheetApp.newConditionalFormatRule()
@@ -1599,23 +1601,25 @@ function setupFormulasAndCalculations() {
   grievanceLog.setConditionalFormatRules([overdueRule, dueTodayRule, dueSoonRule, onTrackRule, ...existingRules]);
 
   // ----- MEMBER DIRECTORY FORMULAS -----
+  // IMPORTANT: Using 25000 rows to support large datasets (20k members + buffer)
+
   // Has Open Grievance? - Column AB (28)
   // Counts grievances with ANY active status: Open, Pending Info, Appealed, In Arbitration
   const hasGrievanceCol = getColumnLetter(MEMBER_COLS.HAS_OPEN_GRIEVANCE);
   memberDir.getRange(hasGrievanceCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IF(SUMPRODUCT((('Grievance Log'!${gMemberIdCol}:${gMemberIdCol}=A2:A1000)*(('Grievance Log'!${gStatusCol}:${gStatusCol}="Open")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Pending Info")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Appealed")+('Grievance Log'!${gStatusCol}:${gStatusCol}="In Arbitration"))))>0,"Yes","No"),""))`
+    `=ARRAYFORMULA(IF(A2:A25000<>"",IF(SUMPRODUCT((('Grievance Log'!${gMemberIdCol}:${gMemberIdCol}=A2:A25000)*(('Grievance Log'!${gStatusCol}:${gStatusCol}="Open")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Pending Info")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Appealed")+('Grievance Log'!${gStatusCol}:${gStatusCol}="In Arbitration"))))>0,"Yes","No"),""))`
   );
 
   // Grievance Status Snapshot - Column AC (29)
   const statusSnapshotCol = getColumnLetter(MEMBER_COLS.GRIEVANCE_STATUS);
   memberDir.getRange(statusSnapshotCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gStatusCol}:${gStatusCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
+    `=ARRAYFORMULA(IF(A2:A25000<>"",IFERROR(INDEX('Grievance Log'!${gStatusCol}:${gStatusCol},MATCH(A2:A25000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
   );
 
   // Next Grievance Deadline - Column AD (30)
   const nextDeadlineCol = getColumnLetter(MEMBER_COLS.NEXT_DEADLINE);
   memberDir.getRange(nextDeadlineCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gNextActionCol}:${gNextActionCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
+    `=ARRAYFORMULA(IF(A2:A25000<>"",IFERROR(INDEX('Grievance Log'!${gNextActionCol}:${gNextActionCol},MATCH(A2:A25000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
   );
 
   // Apply progress bar formatting
