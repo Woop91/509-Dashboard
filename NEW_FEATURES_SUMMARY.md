@@ -149,6 +149,179 @@ Rename `onOpen_Reorganized()` to `onOpen()` in ReorganizedMenu.gs, and rename th
 
 Dropdowns have been added for these columns via `setupMemberDirectoryDropdowns()`.
 
+---
+
+## Version 2.6 Features (December 2025)
+
+### 7. Email Unsubscribe / Opt-Out System
+
+**File:** `EmailUnsubscribeSystem.gs`
+
+**Description:**
+Complete email opt-out management system for GDPR/CAN-SPAM compliance.
+
+**Features:**
+- Checkbox column for opt-out status in Member Directory
+- Automatic light red row highlighting (#FFCDD2) for opted-out members
+- Export prefix "(UNSUBSCRIBED)" to prevent accidental sends
+- Filter opted-out members from bulk emails
+- Bulk opt-out/opt-in operations
+- Opt-out statistics and management panel
+
+**Functions:**
+- `setupEmailOptOutColumn()` - Add opt-out column to Member Directory
+- `applyOptOutHighlighting()` - Apply red highlighting to opted-out rows
+- `isMemberOptedOut()` - Check if specific member is opted out
+- `showOptOutManagementPanel()` - Management interface
+- `showOptOutStatistics()` - View opt-out metrics
+- `exportMembersWithOptOutHandling()` - Safe export with warnings
+
+**Menu Location:**
+- Dashboard > Communications > Email Opt-Out Management
+- Dashboard > Communications > Opt-Out Statistics
+
+### 8. Interactive Tutorial System
+
+**File:** `InteractiveTutorial.gs`
+
+**Description:**
+Comprehensive onboarding system for new users with guided tours and video tutorials.
+
+**Features:**
+- Welcome wizard for first-time users
+- 9-step guided tour with progress tracking
+- Video tutorial library with 8 categorized videos
+- Quick Start Guide for rapid onboarding
+- Keyboard navigation support (arrow keys, Enter, Escape)
+- Progress persistence using PropertiesService
+
+**Functions:**
+- `showInteractiveTutorial()` - Launch guided tour
+- `showTutorialStep()` - Show specific tutorial step
+- `showVideoTutorials()` - Open video library
+- `showQuickStartGuide()` - Quick reference guide
+- `showWelcomeWizard()` - First-time user welcome
+
+**Menu Location:**
+- Dashboard > Help & Support > Interactive Tutorial
+- Dashboard > Help & Support > Video Tutorials
+- Dashboard > Help & Support > Quick Start Guide
+
+### 9. Quick Actions Menu
+
+**File:** `QuickActionsMenu.gs`
+
+**Description:**
+Right-click context menu for quick access to common operations.
+
+**Features:**
+- Context-sensitive actions for Member Directory and Grievance Log
+- Start Grievance from member row
+- Send Email directly to member
+- View grievance history
+- Quick status updates for grievances
+- Copy member/grievance ID to clipboard
+- View Drive folder and sync to calendar
+
+**Functions:**
+- `showQuickActionsMenu()` - Main quick actions launcher
+- `showMemberQuickActions()` - Member-specific actions
+- `showGrievanceQuickActions()` - Grievance-specific actions
+- `quickUpdateGrievanceStatus()` - Fast status change
+- `showMemberGrievanceHistory()` - View member's grievance history
+
+**Menu Location:**
+- Dashboard > Quick Actions
+
+### 10. PII Protection System
+
+**File:** `PIIProtection.gs`
+
+**Description:**
+Comprehensive PII protection for GDPR/CCPA compliance.
+
+**Features:**
+- Field-level data masking for emails, phones, SSNs, addresses
+- Data portability export (JSON format)
+- Right to erasure request processing
+- Anonymization for inactive members
+- PII audit reports
+- Data subject request form
+
+**Functions:**
+- `maskEmail()` - Mask email addresses (j***@example.com)
+- `maskPhone()` - Mask phone numbers (***-***-1234)
+- `showPIIProtectionDashboard()` - Main PII management interface
+- `exportMembersWithMaskedPII()` - Export with masked data
+- `processMemberErasure()` - Handle deletion requests
+- `generateMemberDataExport()` - GDPR data portability export
+- `anonymizeInactiveMembers()` - Anonymize old records
+- `showPIIAuditReport()` - View PII usage report
+- `showDataSubjectRequestForm()` - Handle GDPR requests
+
+**Menu Location:**
+- Sheet Manager > PII Protection > PII Protection Dashboard
+- Sheet Manager > PII Protection > Export with Masked PII
+- Sheet Manager > PII Protection > PII Audit Report
+- Sheet Manager > PII Protection > Data Subject Request
+- Sheet Manager > PII Protection > Anonymize Inactive Members
+
+### 11. Enhanced Validation System
+
+**File:** `EnhancedValidation.gs`
+
+**Description:**
+Real-time validation for email and phone fields with auto-formatting.
+
+**Features:**
+- Real-time email format validation with typo detection
+- Phone number validation and auto-formatting to (XXX) XXX-XXXX
+- Duplicate Member/Grievance ID detection with warnings
+- Bulk validation tool with detailed reports
+- Visual indicators (yellow/red backgrounds, cell notes)
+- Validation settings configuration
+
+**Functions:**
+- `validateEmailAddress()` - Validate and check for typos
+- `validatePhoneNumber()` - Validate phone format
+- `formatUSPhone()` - Auto-format to US phone standard
+- `runBulkValidation()` - Validate entire dataset
+- `showValidationReport()` - Display validation results
+- `showValidationSettings()` - Configure validation rules
+
+**Menu Location:**
+- Sheet Manager > Data Integrity > Run Bulk Validation
+- Sheet Manager > Data Integrity > Validation Settings
+
+### 12. Context-Sensitive Help
+
+**File:** `ContextSensitiveHelp.gs`
+
+**Description:**
+Sheet-specific help system with searchable content.
+
+**Features:**
+- Sheet-specific help content for all major sheets
+- Column documentation for major columns
+- Purpose descriptions and key tasks
+- Tips and best practices
+- Searchable help index
+- F1 keyboard shortcut support
+
+**Functions:**
+- `showContextHelp()` - Show help for current sheet (F1)
+- `showGeneralHelp()` - General dashboard help
+- `showColumnHelp()` - Help for specific column
+- `showTaskHelp()` - Task-specific guidance
+- `searchHelp()` - Search help content
+- `showHelpSearch()` - Help search interface
+
+**Menu Location:**
+- Dashboard > Help & Support > Context Help (F1)
+- Dashboard > Help & Support > Search Help
+
+---
+
 ## Building & Deploying
 
 ConsolidatedDashboard.gs is **auto-generated** by the build system. No manual sync required!
@@ -167,14 +340,20 @@ node build.js --check-duplicates
 ```
 
 ### Build Process Includes:
-- All 59 modules concatenated in dependency order
+- All 78 modules concatenated in dependency order
 - Duplicate declaration detection
 - All feature files automatically included:
   - GrievanceFloatToggle.gs
   - MemberDirectoryDropdowns.gs
   - MemberDirectoryGoogleFormLink.gs
   - ReorganizedMenu.gs
-  - And 55 other modules
+  - EmailUnsubscribeSystem.gs
+  - InteractiveTutorial.gs
+  - QuickActionsMenu.gs
+  - PIIProtection.gs
+  - EnhancedValidation.gs
+  - ContextSensitiveHelp.gs
+  - And 68 other modules
 
 ### Important Notes:
 - **Never edit ConsolidatedDashboard.gs directly** - it will be overwritten on rebuild

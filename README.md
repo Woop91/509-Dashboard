@@ -1,15 +1,44 @@
-# 509 Dashboard - Google Apps Script v2.4
+# 509 Dashboard - Google Apps Script v2.6
 
 Complete union member database and grievance tracking system for Local 509.
 
-## 🆕 What's New in v2.4
+## 🆕 What's New in v2.6
 
-### Latest Updates (v2.4 - December 2025)
+### Latest Updates (v2.6 - December 2025)
+
+**User Experience & Onboarding:**
+- **Interactive Tutorial System** - 9-step guided tour with progress tracking
+- **Video Tutorial Library** - 8 categorized instructional videos
+- **Quick Start Guide** - Rapid onboarding for new users
+- **Context-Sensitive Help** - F1 shortcut with sheet-specific help content
+- **Searchable Help Index** - Find help topics quickly
+
+**Data Protection & Compliance:**
+- **PII Protection System** - Field-level masking for emails, phones, SSNs
+- **GDPR/CCPA Compliance** - Data portability export, right to erasure
+- **Anonymization Tools** - Anonymize inactive member records
+- **PII Audit Reports** - Track and report on PII usage
+
+**Communication Management:**
+- **Email Opt-Out System** - Checkbox-based opt-out with red row highlighting
+- **Bulk Opt-Out Operations** - Manage opt-out status in bulk
+- **Export Protection** - Opted-out emails prefixed with "(UNSUBSCRIBED)"
+
+**Productivity Features:**
+- **Quick Actions Menu** - Right-click context menu for common actions
+- **Enhanced Validation** - Real-time email/phone validation with auto-formatting
+- **Bulk Validation Tool** - Validate entire datasets with detailed reports
+
+### Previous Updates (v2.5)
+- **Coordinator Notification System** - Checkbox-based notification system
+- **Documentation Overhaul** - Comprehensive feature status documentation
+
+### Previous Updates (v2.4)
 - **Audit Logging System** - Full audit trail for all data modifications
 - **Role-Based Access Control (RBAC)** - Admin, Steward, and Viewer roles
 - **DIAGNOSE_SETUP()** - Comprehensive system health check function
 - **Enhanced nukeSeedData()** - True nuclear option for clearing all test data
-- **Build System Fixes** - Proper module consolidation with 60 production modules
+- **Build System Fixes** - Proper module consolidation with 78 production modules
 
 ### Previous Updates (v2.0)
 
@@ -114,6 +143,15 @@ Dashboard (Real-time metrics and visualizations)
 ✅ **Knowledge Base** - FAQ system with search functionality
 ✅ **Mobile Optimization** - Mobile-friendly dashboards and views
 ✅ **Undo/Redo System** - Full history tracking with keyboard shortcuts
+
+### v2.6 Features (NEW)
+✅ **Interactive Tutorial** - 9-step guided tour with progress tracking
+✅ **Video Tutorials** - 8 categorized instructional videos
+✅ **Quick Actions Menu** - Right-click context menu for common tasks
+✅ **PII Protection** - Field-level masking, GDPR/CCPA compliance
+✅ **Email Opt-Out System** - Checkbox-based opt-out with visual highlighting
+✅ **Enhanced Validation** - Real-time email/phone validation with auto-formatting
+✅ **Context-Sensitive Help** - F1 shortcut, sheet-specific help content
 
 ## Setup Instructions
 
