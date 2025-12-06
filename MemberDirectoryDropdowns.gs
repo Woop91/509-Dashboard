@@ -433,63 +433,6 @@ function refreshStewardDropdowns() {
 }
 
 /**
- * Removes emergency contact columns from Member Directory
- */
-function removeEmergencyContactColumns() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-
-  if (!memberSheet) {
-    SpreadsheetApp.getUi().alert('Member Directory sheet not found!');
-    return;
-  }
-
-  const ui = SpreadsheetApp.getUi();
-  const response = ui.alert(
-    'Remove Emergency Contact Columns',
-    'This will remove any columns with "Emergency Contact" in the header.\n\n' +
-    'This action cannot be easily undone.\n\n' +
-    'Continue?',
-    ui.ButtonSet.YES_NO
-  );
-
-  if (response !== ui.Button.YES) {
-    return;
-  }
-
-  try {
-    const headers = memberSheet.getRange(1, 1, 1, memberSheet.getLastColumn()).getValues()[0];
-    const columnsToDelete = [];
-
-    headers.forEach(function(header, index) {
-      const headerStr = String(header).toLowerCase();
-      if (headerStr.includes('emergency contact') || headerStr.includes('emergency phone')) {
-        columnsToDelete.push(index + 1);
-      }
-    });
-
-    if (columnsToDelete.length === 0) {
-      ui.alert('No emergency contact columns found.');
-      return;
-    }
-
-    // Delete columns in reverse order
-    columnsToDelete.reverse().forEach(function(colIndex) {
-      memberSheet.deleteColumn(colIndex);
-    });
-
-    ui.alert(
-      'Columns Removed',
-      `Removed ${columnsToDelete.length} emergency contact column(s).`,
-      ui.ButtonSet.OK
-    );
-
-  } catch (error) {
-    ui.alert('Error: ' + error.message);
-  }
-}
-
-/**
  * Sets up all dropdowns for both Member Directory and Grievance Log
  */
 function setupAllDropdowns() {
