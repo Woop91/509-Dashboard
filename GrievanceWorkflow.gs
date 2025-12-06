@@ -613,11 +613,11 @@ function createGrievanceFolderFromFormData(grievanceId, formData) {
 }
 
 /**
- * Shows dialog with sharing options for grievance form and folder
+ * Shows sharing options dialog for a grievance
+ * Refactored to use helper functions for maintainability
  */
 function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
 
   // Get grievance data
@@ -629,200 +629,126 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
     return;
   }
 
-  const memberId = grievanceRow[GRIEVANCE_COLS.MEMBER_ID - 1];
-  const memberEmail = grievanceRow[GRIEVANCE_COLS.MEMBER_EMAIL - 1];
-  const stewardEmail = getStewardContactInfo().email;
-  const coordinators = getGrievanceCoordinators();
-  const folderUrl = folder ? folder.getUrl() : '';
+  // Gather sharing context
+  const sharingContext = {
+    grievanceId: grievanceId,
+    memberEmail: grievanceRow[GRIEVANCE_COLS.MEMBER_EMAIL - 1],
+    stewardEmail: getStewardContactInfo().email,
+    coordinators: getGrievanceCoordinators(),
+    folderUrl: folder ? folder.getUrl() : '',
+    grievanceEmail: GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL || 'grievances@seiu509.org'
+  };
 
-  // Grievance email is configured via EMAIL_CONFIG.GRIEVANCE_EMAIL in Constants.gs
-  // and can be overridden in GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL
-  const grievanceEmail = GRIEVANCE_FORM_CONFIG.GRIEVANCE_EMAIL || 'grievances@seiu509.org';
+  const html = HtmlService.createHtmlOutput(buildSharingDialogHTML(sharingContext))
+    .setWidth(600)
+    .setHeight(600);
 
-  const html = HtmlService.createHtmlOutput(`
+  SpreadsheetApp.getUi().showModalDialog(html, 'Share Grievance');
+}
+
+/**
+ * Builds the complete HTML for sharing dialog
+ */
+function buildSharingDialogHTML(ctx) {
+  return `
 <!DOCTYPE html>
 <html>
 <head>
   <base target="_top">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #f5f5f5;
-    }
-    .container {
-      background: white;
-      padding: 25px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    h2 {
-      color: #1a73e8;
-      margin-top: 0;
-      border-bottom: 3px solid #1a73e8;
-      padding-bottom: 10px;
-    }
-    .info-box {
-      background: #e8f0fe;
-      padding: 15px;
-      border-radius: 4px;
-      margin: 15px 0;
-      border-left: 4px solid #1a73e8;
-    }
-    .folder-link {
-      background: #fef7e0;
-      padding: 12px;
-      border-radius: 4px;
-      margin: 15px 0;
-      border-left: 4px solid #f9ab00;
-    }
-    .folder-link a {
-      color: #1a73e8;
-      font-weight: bold;
-      text-decoration: none;
-    }
-    .folder-link a:hover {
-      text-decoration: underline;
-    }
-    .checkbox-group {
-      margin: 20px 0;
-    }
-    .checkbox-item {
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      margin: 8px 0;
-      border: 2px solid #ddd;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .checkbox-item:hover {
-      background: #f0f0f0;
-      border-color: #1a73e8;
-    }
-    .checkbox-item input[type="checkbox"] {
-      margin-right: 10px;
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-    }
-    .checkbox-item label {
-      cursor: pointer;
-      flex: 1;
-      font-size: 14px;
-    }
-    .button-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 25px;
-    }
-    button {
-      flex: 1;
-      padding: 12px 24px;
-      border: none;
-      border-radius: 4px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .btn-primary {
-      background: #1a73e8;
-      color: white;
-    }
-    .btn-primary:hover {
-      background: #1557b0;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(26,115,232,0.4);
-    }
-    .btn-secondary {
-      background: #f1f3f4;
-      color: #333;
-    }
-    .btn-secondary:hover {
-      background: #e8eaed;
-    }
-  </style>
+  <style>${getSharingDialogStyles()}</style>
 </head>
 <body>
   <div class="container">
-    <h2>✅ Grievance ${grievanceId} Created</h2>
-
+    <h2>✅ Grievance ${ctx.grievanceId} Created</h2>
     <div class="info-box">
       <strong>ℹ️ Grievance folder created successfully!</strong><br>
       Select the recipients you want to share the grievance form and/or folder with.
     </div>
-
-    ${folderUrl ? `
+    ${ctx.folderUrl ? `
     <div class="folder-link">
       📁 <strong>Folder Link:</strong><br>
-      <a href="${folderUrl}" target="_blank">${folderUrl}</a>
-    </div>
-    ` : ''}
-
+      <a href="${ctx.folderUrl}" target="_blank">${ctx.folderUrl}</a>
+    </div>` : ''}
     <h3>Select Recipients:</h3>
     <div class="checkbox-group">
-      ${memberEmail ? `
-      <div class="checkbox-item">
-        <input type="checkbox" id="member" value="${memberEmail}">
-        <label for="member">Member (${memberEmail})</label>
-      </div>
-      ` : ''}
-
-      ${stewardEmail ? `
-      <div class="checkbox-item">
-        <input type="checkbox" id="steward" value="${stewardEmail}">
-        <label for="steward">Steward (${stewardEmail})</label>
-      </div>
-      ` : ''}
-
-      ${coordinators.coordinator1 ? `
-      <div class="checkbox-item">
-        <input type="checkbox" id="coordinator1" value="${coordinators.coordinator1}">
-        <label for="coordinator1">Grievance Coordinator 1 (${coordinators.coordinator1})</label>
-      </div>
-      ` : ''}
-
-      ${coordinators.coordinator2 ? `
-      <div class="checkbox-item">
-        <input type="checkbox" id="coordinator2" value="${coordinators.coordinator2}">
-        <label for="coordinator2">Grievance Coordinator 2 (${coordinators.coordinator2})</label>
-      </div>
-      ` : ''}
-
-      ${coordinators.coordinator3 ? `
-      <div class="checkbox-item">
-        <input type="checkbox" id="coordinator3" value="${coordinators.coordinator3}">
-        <label for="coordinator3">Grievance Coordinator 3 (${coordinators.coordinator3})</label>
-      </div>
-      ` : ''}
-
-      ${grievanceEmail ? `
-      <div class="checkbox-item">
-        <input type="checkbox" id="grievanceEmail" value="${grievanceEmail}">
-        <label for="grievanceEmail">Grievance Email (${grievanceEmail})</label>
-      </div>
-      ` : ''}
+      ${buildRecipientCheckboxes(ctx)}
     </div>
-
     <div class="button-group">
       <button class="btn-secondary" onclick="google.script.host.close()">Close</button>
       <button class="btn-primary" onclick="shareWithSelected()">Share with Selected</button>
     </div>
   </div>
+  <script>${getSharingDialogScripts(ctx.grievanceId, ctx.folderUrl)}</script>
+</body>
+</html>`;
+}
 
-  <script>
+/**
+ * Returns CSS styles for sharing dialog
+ */
+function getSharingDialogStyles() {
+  return `
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { color: #1a73e8; margin-top: 0; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; }
+    .info-box { background: #e8f0fe; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #1a73e8; }
+    .folder-link { background: #fef7e0; padding: 12px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #f9ab00; }
+    .folder-link a { color: #1a73e8; font-weight: bold; text-decoration: none; }
+    .folder-link a:hover { text-decoration: underline; }
+    .checkbox-group { margin: 20px 0; }
+    .checkbox-item { display: flex; align-items: center; padding: 10px; margin: 8px 0; border: 2px solid #ddd; border-radius: 4px; cursor: pointer; }
+    .checkbox-item:hover { background: #f0f0f0; border-color: #1a73e8; }
+    .checkbox-item input[type="checkbox"] { margin-right: 10px; width: 20px; height: 20px; cursor: pointer; }
+    .checkbox-item label { cursor: pointer; flex: 1; font-size: 14px; }
+    .button-group { display: flex; gap: 10px; margin-top: 25px; }
+    button { flex: 1; padding: 12px 24px; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s; }
+    .btn-primary { background: #1a73e8; color: white; }
+    .btn-primary:hover { background: #1557b0; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26,115,232,0.4); }
+    .btn-secondary { background: #f1f3f4; color: #333; }
+    .btn-secondary:hover { background: #e8eaed; }
+  `;
+}
+
+/**
+ * Builds recipient checkbox items
+ */
+function buildRecipientCheckboxes(ctx) {
+  let html = '';
+
+  if (ctx.memberEmail) {
+    html += `<div class="checkbox-item"><input type="checkbox" id="member" value="${ctx.memberEmail}"><label for="member">Member (${ctx.memberEmail})</label></div>`;
+  }
+  if (ctx.stewardEmail) {
+    html += `<div class="checkbox-item"><input type="checkbox" id="steward" value="${ctx.stewardEmail}"><label for="steward">Steward (${ctx.stewardEmail})</label></div>`;
+  }
+  if (ctx.coordinators.coordinator1) {
+    html += `<div class="checkbox-item"><input type="checkbox" id="coordinator1" value="${ctx.coordinators.coordinator1}"><label for="coordinator1">Grievance Coordinator 1 (${ctx.coordinators.coordinator1})</label></div>`;
+  }
+  if (ctx.coordinators.coordinator2) {
+    html += `<div class="checkbox-item"><input type="checkbox" id="coordinator2" value="${ctx.coordinators.coordinator2}"><label for="coordinator2">Grievance Coordinator 2 (${ctx.coordinators.coordinator2})</label></div>`;
+  }
+  if (ctx.coordinators.coordinator3) {
+    html += `<div class="checkbox-item"><input type="checkbox" id="coordinator3" value="${ctx.coordinators.coordinator3}"><label for="coordinator3">Grievance Coordinator 3 (${ctx.coordinators.coordinator3})</label></div>`;
+  }
+  if (ctx.grievanceEmail) {
+    html += `<div class="checkbox-item"><input type="checkbox" id="grievanceEmail" value="${ctx.grievanceEmail}"><label for="grievanceEmail">Grievance Email (${ctx.grievanceEmail})</label></div>`;
+  }
+
+  return html;
+}
+
+/**
+ * Returns JavaScript for sharing dialog
+ */
+function getSharingDialogScripts(grievanceId, folderUrl) {
+  return `
     function shareWithSelected() {
       const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
       const recipients = Array.from(checkboxes).map(function(cb) { return cb.value; });
-
       if (recipients.length === 0) {
         alert('Please select at least one recipient.');
         return;
       }
-
-      const folderUrl = '${folderUrl}';
-
       google.script.run
         .withSuccessHandler(function() {
           alert('✅ Sharing invitations sent successfully!');
@@ -831,14 +757,9 @@ function showSharingOptionsDialog(grievanceId, pdfBlob, folder) {
         .withFailureHandler(function(error) {
           alert('❌ Error: ' + error.message);
         })
-        .shareGrievanceWithRecipients('${grievanceId}', recipients, folderUrl);
+        .shareGrievanceWithRecipients('${grievanceId}', recipients, '${folderUrl}');
     }
-  </script>
-</body>
-</html>
-  `).setWidth(600).setHeight(600);
-
-  SpreadsheetApp.getUi().showModalDialog(html, 'Share Grievance');
+  `;
 }
 
 /**
