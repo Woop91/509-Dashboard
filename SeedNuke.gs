@@ -1,7 +1,7 @@
 /**
- * ============================================================================
+ * ------------------------------------------------------------------------====
  * SEED NUKE - Remove All Seeded Data and Exit Demo Mode
- * ============================================================================
+ * ------------------------------------------------------------------------====
  *
  * Allows stewards to remove all test/seeded data and exit demo mode.
  * After nuking, the dashboard will be ready for production use.
@@ -13,7 +13,7 @@
  * - Shows getting started reminder
  * - Hides seed menu options after nuke
  *
- * ============================================================================
+ * ------------------------------------------------------------------------====
  */
 
 /**
@@ -504,4 +504,27 @@ function showGettingStartedGuide() {
   `).setWidth(900).setHeight(700);
 
   ui.showModalDialog(html, 'Getting Started Guide');
+}
+
+/**
+ * Rebuilds all dashboard calculations and charts
+ * Called after data is cleared/nuked to refresh metrics
+ */
+function rebuildDashboard() {
+  try {
+    // Call the main refresh function from Code.gs
+    if (typeof refreshCalculations === 'function') {
+      refreshCalculations();
+    }
+
+    // Rebuild interactive dashboard if it exists
+    if (typeof rebuildInteractiveDashboard === 'function') {
+      rebuildInteractiveDashboard();
+    }
+
+    Logger.log('Dashboard rebuilt successfully');
+  } catch (error) {
+    Logger.log('Error rebuilding dashboard: ' + error.message);
+    // Non-critical error, continue execution
+  }
 }

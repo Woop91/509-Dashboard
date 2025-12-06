@@ -8,12 +8,13 @@ This guide shows you how to deploy the **entire 509 Dashboard** using a **single
 
 ## 📦 What You Get
 
-- ✅ **All 8 modules** in one file (5,863 lines)
+- ✅ **All 59 modules** in one auto-generated file
 - ✅ **Complete functionality** - nothing missing
 - ✅ **Copy/paste deployment** - no complex setup
 - ✅ **20k members + 5k grievances** capacity
 - ✅ **Terminal dashboard** with 26+ real-time metrics
 - ✅ **ADHD-friendly** design and features
+- ✅ **Audit logging and RBAC** (v2.4)
 
 ---
 
@@ -21,17 +22,16 @@ This guide shows you how to deploy the **entire 509 Dashboard** using a **single
 
 ### **Step 1: Get the File**
 
-Download `Complete509Dashboard.gs` from this repository:
-```
-https://github.com/Woop91/509-dashboard/blob/claude/final-pass-review-015wMPj45ZdPiVcrdm8Br4zq/Complete509Dashboard.gs
-```
-
-Or use git:
+**Option A: Build it yourself (recommended)**
 ```bash
 git clone https://github.com/Woop91/509-dashboard.git
 cd 509-dashboard
-git checkout claude/final-pass-review-015wMPj45ZdPiVcrdm8Br4zq
+node build.js --production
+# ConsolidatedDashboard.gs is now ready
 ```
+
+**Option B: Download directly**
+Download `ConsolidatedDashboard.gs` from this repository's main branch.
 
 ### **Step 2: Create a New Google Sheet**
 
@@ -45,9 +45,9 @@ git checkout claude/final-pass-review-015wMPj45ZdPiVcrdm8Br4zq
 2. You'll see a default `Code.gs` file with some starter code
 3. **Delete all the default code** (select all and delete)
 
-### **Step 4: Paste the Complete File**
+### **Step 4: Paste the Consolidated File**
 
-1. Open `Complete509Dashboard.gs` in your text editor
+1. Open `ConsolidatedDashboard.gs` in your text editor
 2. **Select ALL** (Ctrl+A / Cmd+A)
 3. **Copy** (Ctrl+C / Cmd+C)
 4. **Paste** into the Apps Script editor (Ctrl+V / Cmd+V)
@@ -72,19 +72,22 @@ git checkout claude/final-pass-review-015wMPj45ZdPiVcrdm8Br4zq
 1. Close the Apps Script editor tab
 2. Go back to your Google Sheet
 3. **Refresh the page** (F5 or Ctrl+R / Cmd+R)
-4. You should see a new menu: **📊 509 Dashboard**
+4. You should see three new menus: **👤 Dashboard**, **📊 Sheet Manager**, and **⚙️ Administrator**
 
 ### **Step 7: Seed Test Data**
 
-1. Click **📊 509 Dashboard → ⚙️ Admin**
-2. Click **"Seed 20k Members"** (takes ~2 minutes)
-3. Wait for completion toast message
-4. Click **"Seed 5k Grievances"** (takes ~1-2 minutes)
-5. Wait for completion toast message
+1. Click **⚙️ Administrator → Seed Functions → Seed Members**
+2. Click **"Seed Members - Toggle 1 (5,000)"** (takes ~1 minute)
+3. Repeat for Toggle 2, 3, 4 to generate up to 20k members total
+4. Click **⚙️ Administrator → Seed Functions → Seed Grievances**
+5. Click **"Seed Grievances - Toggle 1 (2,500)"** (takes ~1 minute)
+6. Repeat for Toggle 2 to generate up to 5k grievances total
+
+**Note:** Toggle-based approach prevents timeout issues with large datasets
 
 ### **Step 8: Open the Terminal Dashboard**
 
-1. Click **📊 509 Dashboard → 🎯 Unified Operations Monitor**
+1. Click **👤 Dashboard → Dashboards → 🎯 Unified Operations Monitor**
 2. The terminal-themed dashboard opens in a new dialog
 3. Explore the 7 sections:
    - Executive Status & Alerts
@@ -113,13 +116,18 @@ Your dashboard is fully operational with:
 
 ### **Explore the Features:**
 
-| Menu Item | What It Does |
-|-----------|-------------|
-| 🔄 Refresh All | Update all calculations |
-| 🎯 Unified Operations Monitor | Open terminal dashboard |
-| 📊 Dashboard | Go to main dashboard sheet |
-| ❓ Help | Show help dialog |
-| ⚙️ Admin → Clear All Data | Reset (for testing) |
+| Menu | What It Does |
+|------|-------------|
+| **👤 Dashboard** (Average User) | Daily operations, search, grievances, reports, accessibility |
+| **📊 Sheet Manager** | Data management, backups, automations, analytics |
+| **⚙️ Administrator** | System setup, seed functions, health monitoring |
+
+#### Quick Access:
+- **Refresh All**: Dashboard → 🔄 Refresh All
+- **Operations Monitor**: Dashboard → Dashboards → 🎯 Unified Operations Monitor
+- **Main Dashboard**: Dashboard → Dashboards → 📊 Main Dashboard
+- **Help**: Dashboard → Help & Support → ❓ Help
+- **Clear Data**: Administrator → Seed Functions → 🗑️ Nuke All Seed Data
 
 ### **Customize Your Data:**
 
@@ -140,8 +148,9 @@ Your dashboard is fully operational with:
 
 ## 🛠️ Troubleshooting
 
-### **Menu doesn't appear?**
+### **Menus don't appear?**
 - Refresh the page (F5)
+- Ensure you see **three menus**: 👤 Dashboard, 📊 Sheet Manager, ⚙️ Administrator
 - Or manually run `onOpen()` from Apps Script editor
 
 ### **Authorization error?**
@@ -166,51 +175,34 @@ Your dashboard is fully operational with:
 
 ---
 
-## 📁 What's Included in Complete509Dashboard.gs?
+## 📁 What's Included in ConsolidatedDashboard.gs?
 
-The single file contains these modules:
+The auto-generated file contains **59 modules** organized by dependency:
 
-1. **Core System** (Code.gs)
-   - Configuration constants
-   - Sheet creation functions
-   - Data seeding (20k members, 5k grievances)
-   - Menu system
+**Core Infrastructure:**
+- Constants.gs - Configuration (SHEETS, COLORS, MEMBER_COLS, GRIEVANCE_COLS)
+- SecurityUtils.gs - Security roles, RBAC, audit logging
+- Code.gs - Main setup, menu creation, sheet creation
 
-2. **Unified Operations Monitor**
-   - Terminal-themed dashboard
-   - 26+ backend calculation functions
-   - 7 analytics sections
-   - Real-time metrics
+**Feature Modules (50+):**
+- Unified Operations Monitor - Terminal-themed dashboard
+- Interactive Dashboard - Member-customizable views
+- ADHD Enhancements - Accessibility features
+- Grievance Workflow - Process automation
+- Google Drive Integration - Auto-folder creation
+- Gmail Integration - Email templates
+- Calendar Integration - Deadline syncing
+- Backup & Recovery - Automated backups
+- Predictive Analytics - Trend forecasting
+- Root Cause Analysis - Pattern identification
+- And 40+ more...
 
-3. **Interactive Dashboard**
-   - Member-customizable views
-   - Dynamic charts
-   - Filtering and sorting
+**Testing (dev builds only):**
+- TestFramework.gs - Test infrastructure
+- Code.test.gs - Unit tests
+- Integration.test.gs - Integration tests
 
-4. **ADHD Enhancements**
-   - Color coding
-   - Visual hierarchy
-   - Focus-friendly design
-
-5. **Grievance Workflow**
-   - Process automation
-   - Deadline tracking
-   - Status management
-
-6. **Getting Started & FAQ**
-   - Help system
-   - Documentation
-   - Tutorials
-
-7. **Seed & Nuke Utilities**
-   - Data generation
-   - Cleanup functions
-   - Testing tools
-
-8. **Column Toggles**
-   - UI controls
-   - Column visibility
-   - Layout management
+**Generated by:** `node build.js --production`
 
 ---
 
@@ -228,7 +220,20 @@ You now have a fully functional union management system with:
 
 ---
 
-**Version:** Final Pass Review
-**Last Updated:** 2025-11-26
-**Branch:** claude/final-pass-review-015wMPj45ZdPiVcrdm8Br4zq
+**Version:** 2.4
+**Last Updated:** 2025-12-06
 **GitHub:** https://github.com/Woop91/509-dashboard
+
+## 🆕 What's New in v2.4
+- **Audit logging system** - Full audit trail for all data modifications
+- **Role-based access control (RBAC)** - Admin, Steward, Viewer roles
+- **DIAGNOSE_SETUP()** - Comprehensive system health check
+- **Build system** - Auto-generate ConsolidatedDashboard.gs with 59 modules
+- Three-tier menu system for better organization
+- Toggle-based data seeding to prevent timeouts
+- Enhanced accessibility features (ADHD controls, dark mode, focus mode)
+- Advanced analytics and predictive insights
+- Performance optimizations and caching
+- Security enhancements
+- Mobile optimization
+- Backup and recovery system
