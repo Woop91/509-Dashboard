@@ -154,7 +154,7 @@ function testNextActionDueLogic() {
   ];
 
   testCases.forEach(function(testCase, index) {
-    var nextAction;
+    let nextAction;
     if (testCase.status === 'Open') {
       if (testCase.step === 'Step I') {
         nextAction = testCase.stepIDeadline;

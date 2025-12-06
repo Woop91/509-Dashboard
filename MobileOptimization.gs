@@ -558,8 +558,8 @@ function createMobileDashboardHTML() {
 }
 
 /**
- * Gets mobile dashboard statistics
- * @returns {Object} Statistics
+ * Gets mobile dashboard statistics with permission-based filtering
+ * @returns {Object} Statistics based on user's role and permissions
  */
 function getMobileDashboardStats() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -574,7 +574,14 @@ function getMobileDashboardStats() {
     };
   }
 
-  const data = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, 28).getValues();
+  // Get all data with header for filtering
+  const allData = grievanceSheet.getDataRange().getValues();
+
+  // Apply permission filtering (returns data with header)
+  const filteredData = filterGrievanceDataByPermission(allData);
+
+  // Remove header for stats calculation
+  const data = filteredData.slice(1);
 
   const stats = {
     totalGrievances: data.length,
@@ -610,9 +617,9 @@ function getMobileDashboardStats() {
 }
 
 /**
- * Gets recent grievances for mobile view
+ * Gets recent grievances for mobile view with permission-based filtering
  * @param {number} limit - Number of grievances to return
- * @returns {Array} Recent grievances
+ * @returns {Array} Recent grievances filtered by user permissions
  */
 function getRecentGrievancesForMobile(limit = 5) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -622,9 +629,16 @@ function getRecentGrievancesForMobile(limit = 5) {
     return [];
   }
 
-  const data = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, 28).getValues();
+  // Get all data with header for filtering
+  const allData = grievanceSheet.getDataRange().getValues();
 
-  // Get most recent grievances
+  // Apply permission filtering (returns data with header)
+  const filteredData = filterGrievanceDataByPermission(allData);
+
+  // Remove header for processing
+  const data = filteredData.slice(1);
+
+  // Get most recent grievances from filtered data
   const grievances = data
     .map(function(row, index) {
       const filedDate = row[GRIEVANCE_COLS.FILED_DATE - 1];

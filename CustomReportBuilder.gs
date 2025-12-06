@@ -639,10 +639,10 @@ function getMemberFields() {
 }
 
 /**
- * Generates report data based on configuration
+ * Generates report data based on configuration with permission-based filtering
  * @param {Object} config - Report configuration
  * @param {number} limit - Row limit for preview
- * @returns {Array} Report data
+ * @returns {Array} Report data filtered by user permissions
  */
 function generateReportData(config, limit = null) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -652,15 +652,25 @@ function generateReportData(config, limit = null) {
 
   if (config.dataSource === 'grievances') {
     const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
-    sourceData = sheet.getRange(2, 1, sheet.getLastRow() - 1, 28).getValues();
+    // Get all data with header for permission filtering
+    const rawData = sheet.getDataRange().getValues();
+    // Apply permission filtering (returns data with header)
+    const filteredByPermission = filterGrievanceDataByPermission(rawData);
+    // Remove header for report processing
+    sourceData = filteredByPermission.slice(1);
     fieldMapping = getGrievanceFieldMapping();
   } else {
     const sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-    sourceData = sheet.getRange(2, 1, sheet.getLastRow() - 1, 28).getValues();
+    // Get all data with header for permission filtering
+    const rawData = sheet.getDataRange().getValues();
+    // Apply permission filtering (returns data with header)
+    const filteredByPermission = filterMemberDataByPermission(rawData);
+    // Remove header for report processing
+    sourceData = filteredByPermission.slice(1);
     fieldMapping = getMemberFieldMapping();
   }
 
-  // Apply filters
+  // Apply content filters
   let filteredData = sourceData.filter(function(row) {
     return applyFilters(row, config.filters, fieldMapping);
   });
