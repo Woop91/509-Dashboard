@@ -14,9 +14,9 @@
  * Build Info:
  * - Version: 2.1.0 (Security Enhanced + Code Review Improvements)
  * - Build ID: 20251202-improvements
- * - Build Date: 2025-12-06T01:12:36.716Z
+ * - Build Date: 2025-12-06T04:04:41.557Z
  * - Build Type: PRODUCTION
- * - Modules: 59 files
+ * - Modules: 60 files
  * - Tests Included: No
  *
  * ============================================================================
@@ -232,9 +232,14 @@ const GRIEVANCE_COLS = {
   STEWARD: 27,            // AA - Assigned Steward (Name)
   // Section 10: Resolution (AB)
   RESOLUTION: 28,         // AB - Resolution Summary
-  // Section 11: Drive Integration (AC-AD)
-  DRIVE_FOLDER_ID: 29,    // AC - Google Drive folder ID
-  DRIVE_FOLDER_URL: 30    // AD - Google Drive folder URL
+  // Section 11: Coordinator Notifications (AC-AF) - Feature 95
+  COORDINATOR_NOTIFIED: 29,  // AC - Checkbox for coordinator message
+  COORDINATOR_MESSAGE: 30,   // AD - Coordinator's message text
+  ACKNOWLEDGED_BY: 31,       // AE - Steward who acknowledged
+  ACKNOWLEDGED_DATE: 32,     // AF - When steward acknowledged
+  // Section 12: Drive Integration (AG-AH)
+  DRIVE_FOLDER_ID: 33,    // AG - Google Drive folder ID
+  DRIVE_FOLDER_URL: 34    // AH - Google Drive folder URL
 };
 
 /* --------------------= INTERNAL SYSTEM COLUMN MAPPINGS --------------------= */
@@ -3711,7 +3716,7 @@ function createGrievanceLog() {
     grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
   }
 
-  // 30 columns - includes Drive folder integration columns
+  // 34 columns - includes Feature 95 (Coordinator Notifications) and Drive folder integration
   const headers = [
     "Grievance ID",                    // A - 1
     "Member ID",                       // B - 2
@@ -3741,8 +3746,12 @@ function createGrievanceLog() {
     "Work Location (Site)",            // Z - 26
     "Assigned Steward (Name)",         // AA - 27
     "Resolution Summary",              // AB - 28
-    "Drive Folder ID",                 // AC - 29 (Drive integration)
-    "Drive Folder Link"                // AD - 30 (Drive integration)
+    "Coordinator Notified",            // AC - 29 (Feature 95: Checkbox)
+    "Coordinator Message",             // AD - 30 (Feature 95: Message text)
+    "Acknowledged By",                 // AE - 31 (Feature 95: Steward email)
+    "Acknowledged Date",               // AF - 32 (Feature 95: Timestamp)
+    "Drive Folder ID",                 // AG - 33 (Drive integration)
+    "Drive Folder Link"                // AH - 34 (Drive integration)
   ];
 
   // Update headers (row 1 only - preserves data in rows 2+)
@@ -3760,6 +3769,16 @@ function createGrievanceLog() {
   grievanceLog.setColumnWidth(GRIEVANCE_COLS.GRIEVANCE_ID, 110);  // Grievance ID
   grievanceLog.setColumnWidth(GRIEVANCE_COLS.ARTICLES, 180);      // Articles Violated
   grievanceLog.setColumnWidth(GRIEVANCE_COLS.RESOLUTION, 250);    // Resolution Summary
+  grievanceLog.setColumnWidth(GRIEVANCE_COLS.COORDINATOR_MESSAGE, 250);  // Coordinator Message
+
+  // Add checkbox validation for Coordinator Notified column (AC) - Feature 95
+  const lastRow = 1000; // Reasonable max rows
+  const checkboxRange = grievanceLog.getRange(2, GRIEVANCE_COLS.COORDINATOR_NOTIFIED, lastRow - 1, 1);
+  const checkboxValidation = SpreadsheetApp.newDataValidation()
+    .requireCheckbox()
+    .setAllowInvalid(false)
+    .build();
+  checkboxRange.setDataValidation(checkboxValidation);
 
   grievanceLog.setTabColor("#DC2626");
 }
@@ -4792,20 +4811,20 @@ function setupFormulasAndCalculations() {
   grievanceLog.setConditionalFormatRules([overdueRule, dueTodayRule, dueSoonRule, onTrackRule, ...existingRules]);
 
   // ----- MEMBER DIRECTORY FORMULAS -----
-  // Has Open Grievance? - Column Y (25)
+  // Has Open Grievance? - Column AB (28)
   // Counts grievances with ANY active status: Open, Pending Info, Appealed, In Arbitration
   const hasGrievanceCol = getColumnLetter(MEMBER_COLS.HAS_OPEN_GRIEVANCE);
   memberDir.getRange(hasGrievanceCol + "2").setFormula(
     `=ARRAYFORMULA(IF(A2:A1000<>"",IF(SUMPRODUCT((('Grievance Log'!${gMemberIdCol}:${gMemberIdCol}=A2:A1000)*(('Grievance Log'!${gStatusCol}:${gStatusCol}="Open")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Pending Info")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Appealed")+('Grievance Log'!${gStatusCol}:${gStatusCol}="In Arbitration"))))>0,"Yes","No"),""))`
   );
 
-  // Grievance Status Snapshot - Column Z (26)
+  // Grievance Status Snapshot - Column AC (29)
   const statusSnapshotCol = getColumnLetter(MEMBER_COLS.GRIEVANCE_STATUS);
   memberDir.getRange(statusSnapshotCol + "2").setFormula(
     `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gStatusCol}:${gStatusCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
   );
 
-  // Next Grievance Deadline - Column AA (27)
+  // Next Grievance Deadline - Column AD (30)
   const nextDeadlineCol = getColumnLetter(MEMBER_COLS.NEXT_DEADLINE);
   memberDir.getRange(nextDeadlineCol + "2").setFormula(
     `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gNextActionCol}:${gNextActionCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
@@ -5150,6 +5169,11 @@ function onOpen() {
       .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
       .addItem("🔄 Grievance Float Toggle", "toggleGrievanceFloat")
       .addItem("🎛️ Float Control Panel", "showGrievanceFloatPanel")
+      .addSeparator()
+      .addItem("📧 Send Coordinator Message", "showCoordinatorMessageDialog")
+      .addItem("📧 Batch Coordinator Notification", "showBatchCoordinatorNotification")
+      .addItem("🔧 Setup Notification Trigger", "setupCoordinatorNotificationTrigger")
+      .addItem("🧹 Clear All Notifications", "clearAllCoordinatorNotifications")
       .addSeparator()
       .addItem("📊 Sort Grievances (Active First)", "sortGrievancesByStatus")
       .addItem("🔄 Refresh Progress Bar", "setupGrievanceProgressBar")
@@ -6046,6 +6070,29 @@ function seedMembersWithCount(count, toggleName) {
   const startingRow = memberDir.getLastRow();
   Logger.log('Seed starting at row: ' + startingRow);
 
+  // Limit stewards to 25 total per seed operation
+  const MAX_STEWARDS = 25;
+  let stewardCount = 0;
+
+  // Sample contact notes for steward contact tracking
+  const contactNotes = [
+    "Discussed upcoming contract negotiations",
+    "Follow-up on workplace safety concerns",
+    "Scheduled one-on-one meeting for next week",
+    "Provided information about member benefits",
+    "Addressed scheduling conflict resolution",
+    "Checked in about workload issues",
+    "Discussed professional development opportunities",
+    "Followed up on grievance status",
+    "Welcomed new member to the union",
+    "Provided update on chapter meeting",
+    "Discussed concerns about overtime policies",
+    "Shared information about steward training",
+    "Follow-up on previous conversation about working conditions",
+    "Answered questions about union dues",
+    "Discussed upcoming union events"
+  ];
+
   for (let i = 1; i <= count; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
@@ -6068,7 +6115,9 @@ function seedMembersWithCount(count, toggleName) {
 
     const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${startingRow + i}@union.org`;
     const phone = `(555) ${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
-    const isSteward = Math.random() > 0.95 ? "Yes" : "No";
+    // Limit stewards to MAX_STEWARDS (25) per seed operation
+    const isSteward = (stewardCount < MAX_STEWARDS && Math.random() > 0.95) ? "Yes" : "No";
+    if (isSteward === "Yes") stewardCount++;
 
     // Select supervisor and manager names from Config (already combined full names)
     const supervisor = supervisors[Math.floor(Math.random() * supervisors.length)];
@@ -6121,9 +6170,14 @@ function seedMembersWithCount(count, toggleName) {
       // Section 6: Member Interests (cols 21-24)
       localInterest, chapterInterest, alliedInterest, homeTown,
       // Section 7: Steward Contact Tracking (cols 25-27)
-      contactDate, "", "",
-      // Section 8: Grievance Management (cols 28-31) - formulas/checkbox
-      "", "", "", false
+      // Add realistic steward contact data for some members
+      contactDate,
+      Math.random() > 0.6 ? stewards[Math.floor(Math.random() * stewards.length)] : "",
+      Math.random() > 0.6 ? contactNotes[Math.floor(Math.random() * contactNotes.length)] : ""
+      // NOTE: Section 8 (cols 28-31) - Has Open Grievance?, Grievance Status, Next Deadline, Start Grievance
+      // These columns are NOT included in seed data because:
+      // - Cols 28-30 (AB-AD) are formula columns populated by setupFormulasAndCalculations()
+      // - Col 31 (AE) is a checkbox column that will be set up separately
     ];
 
     data.push(row);
@@ -6177,6 +6231,24 @@ function seedMembersWithCount(count, toggleName) {
     Logger.log('Successfully re-applied dropdowns after seeding');
   } catch (e) {
     Logger.log('Warning: Could not re-apply dropdowns: ' + e.message);
+  }
+
+  // Ensure checkboxes are set up for Start Grievance column (AE - col 31)
+  try {
+    const startGrievanceCol = MEMBER_COLS.START_GRIEVANCE;
+    memberDir.getRange(startingRow + 1, startGrievanceCol, count, 1).insertCheckboxes();
+    Logger.log('Successfully added checkboxes for Start Grievance column');
+  } catch (e) {
+    Logger.log('Warning: Could not add checkboxes: ' + e.message);
+  }
+
+  // Re-apply formulas for grievance columns (AB, AC, AD) if needed
+  SpreadsheetApp.getActive().toast(`Refreshing formulas...`, "Processing", -1);
+  try {
+    setupFormulasAndCalculations();
+    Logger.log('Successfully refreshed formulas after seeding');
+  } catch (e) {
+    Logger.log('Warning: Could not refresh formulas: ' + e.message);
   }
 
   SpreadsheetApp.getActive().toast(`✅ ${count} members added (${toggleName})! Sheet now has ${finalRow - 1} members.`, "Complete", 5);
@@ -9934,8 +10006,11 @@ function resetADHDSettings() {
  * ADD RECOMMENDATIONS TO FEEDBACK & DEVELOPMENT SHEET
  * ------------------------------------------------------------------------====
  *
- * This script adds 47 code review recommendations to the Feedback & Development sheet
+ * This script adds pending feature recommendations to the Feedback & Development sheet
  * Run this function once to populate the recommendations
+ *
+ * NOTE: Many original recommendations have been IMPLEMENTED and removed from this list.
+ * See the "Implemented Features" section at the bottom for reference.
  */
 
 function ADD_RECOMMENDATIONS_TO_FEATURES_TAB() {
@@ -9947,11 +10022,59 @@ function ADD_RECOMMENDATIONS_TO_FEATURES_TAB() {
     return;
   }
 
+  // Get the last row to append after
+  const lastRow = feedbackSheet.getLastRow();
+
+  // Recommendations data - ONLY PENDING ITEMS
+  const recommendations = [
+    // Format: [Type, Date, Submitted By, Priority, Title, Description, Status, Progress %, Complexity, Target, Assigned To, Blockers, Notes, Last Updated]
+
+    // PERFORMANCE & SCALABILITY (3 remaining)
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Extend Auto-Formula Coverage", "Extend formulas from 100 rows to 1000 rows using ARRAYFORMULA. Current limitation requires manual formula addition beyond row 100.", "Planned", 0, "Simple", "Q1 2025", "Dev Team", "", "Replace individual setFormula calls with ARRAYFORMULA implementations", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Optimize Seed Data Performance", "Improve batch processing with better progress indicators and caching. Current execution takes 2-3 minutes for 20k members.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Use SpreadsheetApp.flush() strategically; add progress toasts every 500 rows", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Optimize QUERY Formulas", "Consolidate multiple QUERY calls on same data to reduce calculation time.", "Planned", 0, "Simple", "Q2 2025", "Dev Team", "", "Use virtual tables and GROUP BY instead of multiple COUNTIF calls", "2025-01-28"],
+
+    // USER EXPERIENCE & ACCESSIBILITY (1 remaining)
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Create Quick Actions Menu", "Add right-click context menu for common actions (Start Grievance, View History, Email).", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Implement onSelectionChange trigger with context-aware menu options", "2025-01-28"],
+
+    // DATA INTEGRITY & VALIDATION (1 remaining)
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Implement Change Tracking", "Track all data modifications with audit trail showing timestamp, user, field, old/new values.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Create onEdit trigger to log changes to Change Log sheet", "2025-01-28"],
+
+    // AUTOMATION & WORKFLOWS (1 remaining)
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Template System", "Pre-built grievance templates for common issue types with auto-fill capabilities.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Create template library; customizable placeholders", "2025-01-28"],
+
+    // REPORTING & ANALYTICS (3 remaining)
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Trend Analysis & Forecasting", "Identify patterns over time with month-over-month comparisons and volume forecasting.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Month-over-month comparisons; seasonal patterns; early warning system", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Benchmark Comparisons", "Compare performance against industry standards with percentile rankings.", "Planned", 0, "Moderate", "Q4 2025", "Data Team", "", "Upload benchmark data; side-by-side comparisons; gap analysis", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Real-Time Dashboard Updates", "Live data refresh with auto-update every 5 minutes.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Update dashboards on data change; WebSocket-style updates via triggers", "2025-01-28"],
+
+    // INTEGRATION & EXTENSIBILITY (3 remaining)
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Slack/Teams Integration", "Real-time notifications with bot commands for quick queries.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Post updates to channels; notify on deadlines; allow status updates from chat", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "API Layer", "RESTful API for external access with authentication.", "Planned", 0, "Complex", "Q4 2025", "Dev Team", "", "Google Apps Script Web App; GET/POST/PUT endpoints; API key auth", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Zapier/Make.com Integration", "Connect to 1000+ apps via webhooks.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Webhooks for data changes; trigger actions in other apps", "2025-01-28"],
+
+    // MOBILE & OFFLINE ACCESS (3 remaining)
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Progressive Web App (PWA)", "Install as app on mobile devices for native experience.", "Planned", 0, "Complex", "Q4 2025", "Dev Team", "", "HTML service interface; manifest.json; service worker; responsive design", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Offline Mode", "Work without internet with local storage cache and sync.", "Planned", 0, "Very Complex", "Q4 2025", "Dev Team", "", "Local storage cache; sync when online; conflict resolution", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "SMS Notifications", "Text alerts for critical items via Twilio integration.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Twilio integration; SMS for overdue; opt-in/opt-out management", "2025-01-28"],
+
+    // SECURITY & PRIVACY (2 remaining)
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "PII Protection", "Protect sensitive member data with encryption and masking.", "Planned", 0, "Complex", "Q2 2025", "Security Team", "", "Encrypt sensitive fields; mask in exports; GDPR/CCPA compliance", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Session Management", "Track active users with row locking and concurrent edit warnings.", "Planned", 0, "Moderate", "Q3 2025", "Dev Team", "", "Show current viewers; lock rows being edited; session timeout", "2025-01-28"],
+
+    // DOCUMENTATION & TRAINING (4 remaining)
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Interactive Tutorial", "In-app guided tour for first-time users.", "Planned", 0, "Moderate", "Q1 2025", "UX Team", "", "Walkthrough; highlight features; interactive steps", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Video Tutorials", "Screen recordings for common tasks (2-3 min each).", "Planned", 0, "Simple", "Q1 2025", "UX Team", "", "Creating grievance; running reports; managing workload; using dashboard", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Context-Sensitive Help", "Help button on each sheet with explanations and links.", "Planned", 0, "Simple", "Q2 2025", "UX Team", "", "? icon on each sheet; explain purpose; list common tasks", "2025-01-28"],
+    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Release Notes", "Track version changes with auto-notification on updates.", "Planned", 0, "Simple", "Q2 2025", "Dev Team", "", "Create CHANGELOG sheet; auto-notify; highlight new features", "2025-01-28"]
+  ];
+
   // Confirm with user
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
-    'Add Code Review Recommendations',
-    'This will add 47 enhancement recommendations to the Feedback & Development sheet.\n\n' +
+    'Add Pending Feature Recommendations',
+    'This will add ' + recommendations.length + ' pending feature recommendations to the Feedback & Development sheet.\n\n' +
+    'Note: 27 features from the original list have already been implemented!\n\n' +
     'Continue?',
     ui.ButtonSet.YES_NO
   );
@@ -9961,80 +10084,6 @@ function ADD_RECOMMENDATIONS_TO_FEATURES_TAB() {
   }
 
   SpreadsheetApp.getActiveSpreadsheet().toast('📝 Adding recommendations...', 'Please wait', -1);
-
-  // Get the last row to append after
-  const lastRow = feedbackSheet.getLastRow();
-
-  // Recommendations data
-  const recommendations = [
-    // Format: [Type, Date, Submitted By, Priority, Title, Description, Status, Progress %, Complexity, Target, Assigned To, Blockers, Notes, Last Updated]
-
-    // PERFORMANCE & SCALABILITY
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Extend Auto-Formula Coverage", "Extend formulas from 100 rows to 1000 rows using ARRAYFORMULA. Current limitation requires manual formula addition beyond row 100.", "Planned", 0, "Simple", "Q1 2025", "Dev Team", "", "Replace individual setFormula calls with ARRAYFORMULA implementations", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Optimize Seed Data Performance", "Improve batch processing with better progress indicators and caching. Current execution takes 2-3 minutes for 20k members.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Use SpreadsheetApp.flush() strategically; add progress toasts every 500 rows", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Implement Data Pagination", "Add pagination to analytics sheets to improve load times with large datasets. Currently all data loads at once.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Create Show More buttons; use QUERY with LIMIT and OFFSET", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Add Caching Layer", "Cache Analytics Data sheet calculations for 10x faster dashboard loads.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Store calculated values in hidden sheet; refresh on data change triggers", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Optimize QUERY Formulas", "Consolidate multiple QUERY calls on same data to reduce calculation time.", "Planned", 0, "Simple", "Q2 2025", "Dev Team", "", "Use virtual tables and GROUP BY instead of multiple COUNTIF calls", "2025-01-28"],
-
-    // USER EXPERIENCE & ACCESSIBILITY
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Add Member Search Functionality", "Implement searchable member directory with autocomplete to reduce lookup time by 90%.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Add search dialog with filters by name, ID, location, unit; add keyboard shortcuts", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Create Quick Actions Menu", "Add right-click context menu for common actions (Start Grievance, View History, Email).", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Implement onSelectionChange trigger with context-aware menu options", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Implement Keyboard Shortcuts", "Add keyboard navigation for power users (Ctrl+N: New grievance, Ctrl+M: Member directory, etc.).", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Create keyboard event handlers for common operations", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Add Undo/Redo Functionality", "Track changes with undo stack to provide rollback for accidental changes.", "Planned", 0, "Complex", "Q2 2025", "Dev Team", "", "Store last 10 operations in Archive sheet; add Undo Last Action menu item", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Enhanced ADHD Features", "Add focus mode, reading guide, color-coded deadlines, Pomodoro timer integration.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Expand current ADHD features with additional accessibility options", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Mobile-Optimized Views", "Create mobile-friendly dashboard with single-column layout and larger touch targets.", "Planned", 0, "Moderate", "Q3 2025", "Dev Team", "", "Design mobile-specific views for field use cases", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Dark Mode Support", "Add dark theme option to reduce eye strain.", "Planned", 0, "Simple", "Q2 2025", "Dev Team", "", "Create DARK_COLORS constant; apply theme to all sheets", "2025-01-28"],
-
-    // DATA INTEGRITY & VALIDATION
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Add Email & Phone Validation", "Validate email format, phone format, and date ranges to ensure cleaner data.", "Planned", 0, "Simple", "Q1 2025", "Dev Team", "", "Use requireTextMatchesPattern for email/phone validation", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Implement Change Tracking", "Track all data modifications with audit trail showing timestamp, user, field, old/new values.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Create onEdit trigger to log changes to Change Log sheet", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Add Duplicate Detection", "Prevent duplicate member IDs and grievance IDs with auto-generation of next available ID.", "Planned", 0, "Simple", "Q1 2025", "Dev Team", "", "Check existing IDs before insertion; show warning dialog on duplicate", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Data Quality Dashboard", "Monitor data completeness with percentage of required fields filled and quality score.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Show data quality metrics; highlight missing critical data", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Referential Integrity Checks", "Validate foreign keys to ensure Member IDs exist before creating grievances.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Check Member ID existence; validate Steward assignments; warn on orphaned records", "2025-01-28"],
-
-    // AUTOMATION & WORKFLOWS
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Automated Deadline Notifications", "Email alerts for approaching deadlines with escalation to managers.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Time-driven trigger (daily 8 AM); email stewards 7 days before; escalate 3 days before", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Batch Operations", "Add bulk update capabilities (assign steward, update status, export PDF, email).", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Create batch operation dialogs for common bulk tasks", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Automated Report Generation", "Schedule monthly/quarterly reports with automatic generation and email distribution.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Time-driven trigger (1st of month); generate PDF; email to leadership", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Workflow State Machine", "Enforce grievance workflow rules to ensure process compliance.", "Planned", 0, "Complex", "Q3 2025", "Dev Team", "", "Define valid state transitions; block invalid changes; require notes", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Smart Auto-Assignment", "Intelligent steward assignment based on workload, location, expertise, and availability.", "Planned", 0, "Complex", "Q3 2025", "Dev Team", "", "Balance workload; match by location/unit; consider expertise", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Template System", "Pre-built grievance templates for common issue types with auto-fill capabilities.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Create template library; customizable placeholders", "2025-01-28"],
-
-    // REPORTING & ANALYTICS
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Predictive Analytics", "Predict grievance outcomes based on historical patterns and similar cases.", "Planned", 0, "Complex", "Q3 2025", "Data Team", "", "Analyze win/loss patterns; identify success factors; provide risk scores", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Trend Analysis & Forecasting", "Identify patterns over time with month-over-month comparisons and volume forecasting.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Month-over-month comparisons; seasonal patterns; early warning system", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Custom Report Builder", "User-defined reports with drag-and-drop field selection and custom filters.", "Planned", 0, "Complex", "Q3 2025", "Dev Team", "", "Build report designer interface; save templates; schedule recurring reports", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Benchmark Comparisons", "Compare performance against industry standards with percentile rankings.", "Planned", 0, "Moderate", "Q4 2025", "Data Team", "", "Upload benchmark data; side-by-side comparisons; gap analysis", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Root Cause Analysis", "Identify systemic issues by clustering similar grievances and analyzing common factors.", "Planned", 0, "Complex", "Q3 2025", "Data Team", "", "Cluster analysis; correlation visualization; intervention recommendations", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Real-Time Dashboard Updates", "Live data refresh with auto-update every 5 minutes.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Update dashboards on data change; WebSocket-style updates via triggers", "2025-01-28"],
-
-    // INTEGRATION & EXTENSIBILITY
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Google Calendar Integration", "Sync deadlines to Google Calendar with color-coding by priority.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Create calendar events for deadlines; update on status changes", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Email Integration (Gmail)", "Send/receive grievance emails with tracking and template library.", "Planned", 0, "Moderate", "Q1 2025", "Dev Team", "", "Email PDFs directly; track opens; auto-log communications", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Google Drive Integration", "Attach documents to grievances with version control and auto-organization.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Link Drive folders; upload evidence; organize by grievance ID", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Slack/Teams Integration", "Real-time notifications with bot commands for quick queries.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Post updates to channels; notify on deadlines; allow status updates from chat", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "API Layer", "RESTful API for external access with authentication.", "Planned", 0, "Complex", "Q4 2025", "Dev Team", "", "Google Apps Script Web App; GET/POST/PUT endpoints; API key auth", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Zapier/Make.com Integration", "Connect to 1000+ apps via webhooks.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Webhooks for data changes; trigger actions in other apps", "2025-01-28"],
-
-    // MOBILE & OFFLINE ACCESS
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Progressive Web App (PWA)", "Install as app on mobile devices for native experience.", "Planned", 0, "Complex", "Q4 2025", "Dev Team", "", "HTML service interface; manifest.json; service worker; responsive design", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Offline Mode", "Work without internet with local storage cache and sync.", "Planned", 0, "Very Complex", "Q4 2025", "Dev Team", "", "Local storage cache; sync when online; conflict resolution", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "SMS Notifications", "Text alerts for critical items via Twilio integration.", "Planned", 0, "Moderate", "Q4 2025", "Dev Team", "", "Twilio integration; SMS for overdue; opt-in/opt-out management", "2025-01-28"],
-
-    // SECURITY & PRIVACY
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Role-Based Access Control (RBAC)", "Implement permission levels (Admin, Steward, Member, Viewer).", "Planned", 0, "Complex", "Q2 2025", "Security Team", "", "Define role permissions; protect sensitive operations", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Audit Logging", "Track all access and changes with 7-year retention.", "Planned", 0, "Moderate", "Q2 2025", "Security Team", "", "Log opens and modifications; store IP, timestamp, user", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "PII Protection", "Protect sensitive member data with encryption and masking.", "Planned", 0, "Complex", "Q2 2025", "Security Team", "", "Encrypt sensitive fields; mask in exports; GDPR/CCPA compliance", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Data Backup & Recovery", "Automated backups with one-click restore.", "Planned", 0, "Moderate", "Q2 2025", "Dev Team", "", "Daily backup to separate sheet; 30-day version history; export to Drive", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Session Management", "Track active users with row locking and concurrent edit warnings.", "Planned", 0, "Moderate", "Q3 2025", "Dev Team", "", "Show current viewers; lock rows being edited; session timeout", "2025-01-28"],
-
-    // DOCUMENTATION & TRAINING
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Interactive Tutorial", "In-app guided tour for first-time users.", "Planned", 0, "Moderate", "Q1 2025", "UX Team", "", "Walkthrough; highlight features; interactive steps", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "High", "Video Tutorials", "Screen recordings for common tasks (2-3 min each).", "Planned", 0, "Simple", "Q1 2025", "UX Team", "", "Creating grievance; running reports; managing workload; using dashboard", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "Context-Sensitive Help", "Help button on each sheet with explanations and links.", "Planned", 0, "Simple", "Q2 2025", "UX Team", "", "? icon on each sheet; explain purpose; list common tasks", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Medium", "FAQ Database", "Searchable knowledge base with voting and community contributions.", "Planned", 0, "Moderate", "Q2 2025", "UX Team", "", "Categorize by topic; search functionality; vote on answers", "2025-01-28"],
-    ["Future Feature", "2025-01-28", "AI Code Review", "Low", "Release Notes", "Track version changes with auto-notification on updates.", "Planned", 0, "Simple", "Q2 2025", "Dev Team", "", "Create CHANGELOG sheet; auto-notify; highlight new features", "2025-01-28"]
-  ];
 
   // Add recommendations to sheet
   const startRow = lastRow + 1;
@@ -10053,7 +10102,7 @@ function ADD_RECOMMENDATIONS_TO_FEATURES_TAB() {
   }
 
   SpreadsheetApp.getActiveSpreadsheet().toast(
-    `✅ Successfully added ${recommendations.length} recommendations!`,
+    `✅ Successfully added ${recommendations.length} pending recommendations!`,
     'Complete',
     5
   );
@@ -10061,25 +10110,76 @@ function ADD_RECOMMENDATIONS_TO_FEATURES_TAB() {
   // Show summary
   SpreadsheetApp.getUi().alert(
     '✅ Recommendations Added Successfully!',
-    `Added ${recommendations.length} enhancement recommendations to the Feedback & Development sheet.\n\n` +
+    `Added ${recommendations.length} PENDING feature recommendations.\n\n` +
+    '27 features from the original list have already been implemented!\n\n' +
     'Breakdown by priority:\n' +
-    '• High Priority: 25 items\n' +
-    '• Medium Priority: 15 items\n' +
-    '• Low Priority: 7 items\n\n' +
-    'Categories covered:\n' +
-    '• Performance & Scalability\n' +
-    '• User Experience & Accessibility\n' +
-    '• Data Integrity & Validation\n' +
-    '• Automation & Workflows\n' +
-    '• Reporting & Analytics\n' +
-    '• Integration & Extensibility\n' +
-    '• Mobile & Offline Access\n' +
-    '• Security & Privacy\n' +
-    '• Documentation & Training\n\n' +
-    'Review the recommendations and prioritize based on your needs!',
+    '• High Priority: 8 items\n' +
+    '• Medium Priority: 3 items\n' +
+    '• Low Priority: 10 items\n\n' +
+    'Categories with pending items:\n' +
+    '• Performance & Scalability (3)\n' +
+    '• User Experience (1)\n' +
+    '• Data Integrity (1)\n' +
+    '• Automation (1)\n' +
+    '• Reporting & Analytics (3)\n' +
+    '• Integration (3)\n' +
+    '• Mobile & Offline (3)\n' +
+    '• Security & Privacy (2)\n' +
+    '• Documentation & Training (4)\n\n' +
+    'Review and prioritize based on your needs!',
     SpreadsheetApp.getUi().ButtonSet.OK
   );
 }
+
+/**
+ * ============================================================================
+ * IMPLEMENTED FEATURES (Removed from pending list)
+ * ============================================================================
+ * The following 27 features have been implemented:
+ *
+ * PERFORMANCE & SCALABILITY:
+ * ✅ Data Pagination - DataPagination.gs
+ * ✅ Add Caching Layer - DataCachingLayer.gs
+ *
+ * USER EXPERIENCE & ACCESSIBILITY:
+ * ✅ Member Search Functionality - MemberSearch.gs
+ * ✅ Keyboard Shortcuts - KeyboardShortcuts.gs
+ * ✅ Undo/Redo Functionality - UndoRedoSystem.gs
+ * ✅ Enhanced ADHD Features - EnhancedADHDFeatures.gs, ADHDEnhancements.gs
+ * ✅ Mobile-Optimized Views - MobileOptimization.gs
+ * ✅ Dark Mode Support - DarkModeThemes.gs
+ *
+ * DATA INTEGRITY & VALIDATION:
+ * ✅ Email & Phone Validation - DataIntegrityEnhancements.gs
+ * ✅ Duplicate Detection - DataIntegrityEnhancements.gs
+ * ✅ Data Quality Dashboard - DataIntegrityEnhancements.gs
+ * ✅ Referential Integrity Checks - DataIntegrityEnhancements.gs
+ *
+ * AUTOMATION & WORKFLOWS:
+ * ✅ Automated Deadline Notifications - AutomatedNotifications.gs
+ * ✅ Batch Operations - BatchOperations.gs
+ * ✅ Automated Report Generation - AutomatedReports.gs
+ * ✅ Workflow State Machine - WorkflowStateMachine.gs
+ * ✅ Smart Auto-Assignment - SmartAutoAssignment.gs
+ *
+ * REPORTING & ANALYTICS:
+ * ✅ Predictive Analytics - PredictiveAnalytics.gs
+ * ✅ Custom Report Builder - CustomReportBuilder.gs
+ * ✅ Root Cause Analysis - RootCauseAnalysis.gs
+ *
+ * INTEGRATION & EXTENSIBILITY:
+ * ✅ Google Calendar Integration - CalendarIntegration.gs
+ * ✅ Email Integration (Gmail) - GmailIntegration.gs
+ * ✅ Google Drive Integration - GoogleDriveIntegration.gs
+ *
+ * SECURITY & PRIVACY:
+ * ✅ Role-Based Access Control (RBAC) - SecurityService.gs, AuditLoggingRBAC.gs
+ * ✅ Audit Logging - AuditLoggingRBAC.gs
+ * ✅ Data Backup & Recovery - DataBackupRecovery.gs, IncrementalBackupSystem.gs
+ *
+ * DOCUMENTATION & TRAINING:
+ * ✅ FAQ Database - FAQKnowledgeBase.gs
+ */
 
 
 
@@ -12704,6 +12804,547 @@ function showAllGrievanceColumns() {
   }
 
   SpreadsheetApp.getUi().alert('All Grievance Log columns are now visible');
+}
+
+
+
+// ================================================================================
+// MODULE: CoordinatorNotification.gs
+// Source: CoordinatorNotification.gs
+// ================================================================================
+
+/**
+ * COORDINATOR NOTIFICATION SYSTEM
+ * Feature: Checkbox-based row highlighting and email notifications
+ *
+ * When a coordinator checks the "Coordinator Notified" checkbox (column AC):
+ * 1. Highlights the entire grievance row
+ * 2. Sends email to member and assigned steward with coordinator's message
+ * 3. Row remains highlighted until checkbox is manually unchecked
+ */
+
+// ===========================
+// INSTALLATION TRIGGER
+// ===========================
+
+/**
+ * Sets up the onChange trigger for coordinator notifications
+ * Run this once to install the trigger
+ */
+function setupCoordinatorNotificationTrigger() {
+  // Remove existing triggers to avoid duplicates
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'onGrievanceEdit') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  // Create new onChange trigger
+  ScriptApp.newTrigger('onGrievanceEdit')
+    .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
+    .onEdit()
+    .create();
+
+  SpreadsheetApp.getUi().alert('Success',
+    'Coordinator notification trigger installed!\n\n' +
+    'The system will now:\n' +
+    '• Monitor checkbox changes in Grievance Log\n' +
+    '• Highlight rows when coordinator notified\n' +
+    '• Send emails to member and steward\n' +
+    '• Remove highlighting when unchecked',
+    SpreadsheetApp.getUi().ButtonSet.OK);
+
+  Logger.log('Coordinator notification trigger installed successfully');
+}
+
+// ===========================
+// TRIGGER FUNCTION
+// ===========================
+
+/**
+ * Triggered on any edit to the spreadsheet
+ * Monitors the Coordinator Notified checkbox column
+ */
+function onGrievanceEdit(e) {
+  try {
+    // Only process if we have event data
+    if (!e) return;
+
+    const sheet = e.range.getSheet();
+    const sheetName = sheet.getName();
+
+    // Only process Grievance Log edits
+    if (sheetName !== 'Grievance Log') return;
+
+    const row = e.range.getRow();
+    const col = e.range.getColumn();
+
+    // Only process if editing the Coordinator Notified column (AC = column 29)
+    if (col !== GRIEVANCE_COLS.COORDINATOR_NOTIFIED) return;
+
+    // Skip header row
+    if (row === 1) return;
+
+    const isChecked = e.value === 'TRUE' || e.value === true || e.value === 'Yes' || e.value === '✓';
+
+    if (isChecked) {
+      // Checkbox was checked - highlight and send notifications
+      handleCoordinatorNotification(sheet, row);
+    } else {
+      // Checkbox was unchecked - remove highlighting
+      removeRowHighlight(sheet, row);
+    }
+
+  } catch (error) {
+    Logger.log(`Error in onGrievanceEdit: ${error.message}`);
+    // Don't show alert to user - silent failure to avoid interrupting workflow
+  }
+}
+
+// ===========================
+// NOTIFICATION HANDLER
+// ===========================
+
+/**
+ * Handles coordinator notification: highlights row and sends emails
+ */
+function handleCoordinatorNotification(sheet, row) {
+  try {
+    // Get grievance data (now 32 columns with Acknowledged By and Date)
+    const data = sheet.getRange(row, 1, 1, 32).getValues()[0];
+
+    const grievanceId = data[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+    const memberId = data[GRIEVANCE_COLS.MEMBER_ID - 1];
+    const firstName = data[GRIEVANCE_COLS.FIRST_NAME - 1];
+    const lastName = data[GRIEVANCE_COLS.LAST_NAME - 1];
+    const memberEmail = data[GRIEVANCE_COLS.MEMBER_EMAIL - 1];
+    const issueCategory = data[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
+    const stewardName = data[GRIEVANCE_COLS.STEWARD - 1];
+    const coordinatorMessage = data[GRIEVANCE_COLS.COORDINATOR_MESSAGE - 1];
+    const status = data[GRIEVANCE_COLS.STATUS - 1];
+
+    // Get steward email from Member Directory
+    const stewardEmail = getStewardEmail(stewardName);
+
+    // Highlight the row
+    highlightRow(sheet, row);
+
+    // Send email notifications if message exists
+    if (coordinatorMessage && coordinatorMessage.trim() !== '') {
+      sendCoordinatorEmails(
+        grievanceId,
+        firstName,
+        lastName,
+        memberEmail,
+        stewardName,
+        stewardEmail,
+        issueCategory,
+        coordinatorMessage,
+        status
+      );
+    }
+
+    // Log the notification
+    if (typeof logDataModification === 'function') {
+      logDataModification(
+        'COORDINATOR_NOTIFICATION',
+        'Grievance Log',
+        grievanceId,
+        'Coordinator Notified',
+        'FALSE',
+        'TRUE'
+      );
+    }
+
+    Logger.log(`Coordinator notification sent for grievance ${grievanceId}`);
+
+  } catch (error) {
+    Logger.log(`Error in handleCoordinatorNotification: ${error.message}`);
+    SpreadsheetApp.getUi().alert('Error',
+      `Failed to send coordinator notification: ${error.message}`,
+      SpreadsheetApp.getUi().ButtonSet.OK);
+  }
+}
+
+// ===========================
+// ROW HIGHLIGHTING
+// ===========================
+
+/**
+ * Highlights a grievance row in yellow to indicate coordinator notification
+ */
+function highlightRow(sheet, row) {
+  const numColumns = sheet.getLastColumn();
+  const range = sheet.getRange(row, 1, 1, numColumns);
+
+  // Set background to light yellow
+  range.setBackground('#FEF3C7');
+
+  // Set left border to thick orange for visibility
+  range.setBorder(
+    true, true, true, true, false, false,
+    '#F97316', SpreadsheetApp.BorderStyle.SOLID_MEDIUM
+  );
+
+  Logger.log(`Row ${row} highlighted for coordinator notification`);
+}
+
+/**
+ * Removes highlighting and records steward acknowledgment
+ * When a steward unchecks the box, this logs their acknowledgment
+ */
+function removeRowHighlight(sheet, row) {
+  const numColumns = sheet.getLastColumn();
+  const range = sheet.getRange(row, 1, 1, numColumns);
+
+  // Reset to default white background
+  range.setBackground('#FFFFFF');
+
+  // Remove borders
+  range.setBorder(false, false, false, false, false, false);
+
+  // Get current user (the steward who is acknowledging)
+  const acknowledgedBy = Session.getActiveUser().getEmail();
+  const acknowledgedDate = new Date();
+
+  // Get grievance details for logging
+  const grievanceId = sheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
+  const coordinatorMessage = sheet.getRange(row, GRIEVANCE_COLS.COORDINATOR_MESSAGE).getValue();
+
+  // Record who acknowledged and when
+  sheet.getRange(row, GRIEVANCE_COLS.ACKNOWLEDGED_BY).setValue(acknowledgedBy);
+  sheet.getRange(row, GRIEVANCE_COLS.ACKNOWLEDGED_DATE).setValue(acknowledgedDate);
+
+  // NOTE: We DO NOT clear the Coordinator Message - it stays for record keeping
+
+  Logger.log(`Row ${row} acknowledged by ${acknowledgedBy} at ${acknowledgedDate}`);
+
+  // Log the acknowledgment to Audit_Log
+  if (typeof logDataModification === 'function') {
+    logDataModification(
+      'STEWARD_ACKNOWLEDGED',
+      'Grievance Log',
+      grievanceId,
+      'Coordinator Message Acknowledged',
+      coordinatorMessage || 'N/A',
+      `Acknowledged by ${acknowledgedBy} at ${acknowledgedDate.toLocaleString()}`
+    );
+  }
+}
+
+// ===========================
+// EMAIL NOTIFICATIONS
+// ===========================
+
+/**
+ * Sends email notifications to member and steward
+ */
+function sendCoordinatorEmails(grievanceId, firstName, lastName, memberEmail, stewardName, stewardEmail, issueCategory, message, status) {
+  const coordinatorName = Session.getActiveUser().getEmail().split('@')[0]; // Extract name from email
+  const subject = `Grievance Update: ${grievanceId}`;
+
+  // Email body for member
+  const memberBody = `
+Dear ${firstName} ${lastName},
+
+This is an update regarding your grievance ${grievanceId} (${issueCategory}).
+
+**Current Status:** ${status}
+
+**Message from Grievance Coordinator:**
+${message}
+
+Your assigned steward, ${stewardName}, has also been notified of this update.
+
+If you have any questions or concerns, please contact your steward or the grievance coordinator.
+
+Best regards,
+SEIU Local 509 Grievance Coordinator
+
+---
+This is an automated notification from the 509 Dashboard system.
+  `.trim();
+
+  // Email body for steward
+  const stewardBody = `
+Dear ${stewardName},
+
+This is an update regarding grievance ${grievanceId} for member ${firstName} ${lastName}.
+
+**Grievance Details:**
+- **ID:** ${grievanceId}
+- **Member:** ${firstName} ${lastName}
+- **Issue:** ${issueCategory}
+- **Status:** ${status}
+
+**Message from Grievance Coordinator:**
+${message}
+
+The member has also been notified of this update.
+
+Please follow up as needed.
+
+Best regards,
+SEIU Local 509 Grievance Coordinator
+
+---
+This is an automated notification from the 509 Dashboard system.
+  `.trim();
+
+  // Send email to member
+  if (memberEmail && isValidEmail(memberEmail)) {
+    try {
+      MailApp.sendEmail({
+        to: memberEmail,
+        subject: subject,
+        body: memberBody,
+        noReply: true
+      });
+      Logger.log(`Email sent to member: ${memberEmail}`);
+    } catch (error) {
+      Logger.log(`Failed to send email to member ${memberEmail}: ${error.message}`);
+    }
+  } else {
+    Logger.log(`Invalid or missing member email: ${memberEmail}`);
+  }
+
+  // Send email to steward
+  if (stewardEmail && isValidEmail(stewardEmail)) {
+    try {
+      MailApp.sendEmail({
+        to: stewardEmail,
+        subject: subject,
+        body: stewardBody,
+        noReply: true
+      });
+      Logger.log(`Email sent to steward: ${stewardEmail}`);
+    } catch (error) {
+      Logger.log(`Failed to send email to steward ${stewardEmail}: ${error.message}`);
+    }
+  } else {
+    Logger.log(`Invalid or missing steward email: ${stewardEmail}`);
+  }
+}
+
+// ===========================
+// HELPER FUNCTIONS
+// ===========================
+
+/**
+ * Gets steward email from Member Directory
+ */
+function getStewardEmail(stewardName) {
+  if (!stewardName || stewardName.trim() === '') {
+    return null;
+  }
+
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const memberDir = ss.getSheetByName('Member Directory');
+
+    if (!memberDir) {
+      Logger.log('Member Directory sheet not found');
+      return null;
+    }
+
+    const data = memberDir.getDataRange().getValues();
+    const headers = data[0];
+    const nameColIndex = headers.indexOf('First Name');
+    const lastNameColIndex = headers.indexOf('Last Name');
+    const emailColIndex = headers.indexOf('Email Address');
+    const isStewardColIndex = headers.indexOf('Is Steward (Y/N)');
+
+    // Search for steward by name
+    const nameParts = stewardName.trim().split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const rowFirstName = row[nameColIndex];
+      const rowLastName = row[lastNameColIndex];
+      const isSteward = row[isStewardColIndex];
+
+      if (isSteward === 'Yes' || isSteward === 'Y') {
+        if (rowFirstName === firstName && (lastName === '' || rowLastName === lastName)) {
+          return row[emailColIndex];
+        }
+      }
+    }
+
+    Logger.log(`Steward email not found for: ${stewardName}`);
+    return null;
+
+  } catch (error) {
+    Logger.log(`Error getting steward email: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Validates email address format
+ */
+function isValidEmail(email) {
+  if (!email || typeof email !== 'string') {
+    return false;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+}
+
+// ===========================
+// MANUAL NOTIFICATION DIALOG
+// ===========================
+
+/**
+ * Shows dialog for coordinator to add message and notify
+ * Can be called from menu or directly on a row
+ */
+function showCoordinatorMessageDialog() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+
+  // Check if we're on Grievance Log
+  if (sheet.getName() !== 'Grievance Log') {
+    ui.alert('Error', 'Please select a row in the Grievance Log sheet first.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const activeRow = sheet.getActiveRange().getRow();
+
+  // Skip header row
+  if (activeRow === 1) {
+    ui.alert('Error', 'Please select a grievance row (not the header).', ui.ButtonSet.OK);
+    return;
+  }
+
+  const grievanceId = sheet.getRange(activeRow, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
+  const memberName = sheet.getRange(activeRow, GRIEVANCE_COLS.FIRST_NAME).getValue() + ' ' +
+                     sheet.getRange(activeRow, GRIEVANCE_COLS.LAST_NAME).getValue();
+
+  const response = ui.prompt(
+    'Coordinator Message',
+    `Enter message for grievance ${grievanceId} (${memberName}):\n\n` +
+    'This will be sent to the member and assigned steward.',
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (response.getSelectedButton() === ui.Button.OK) {
+    const message = response.getResponseText().trim();
+
+    if (message === '') {
+      ui.alert('Error', 'Message cannot be empty.', ui.ButtonSet.OK);
+      return;
+    }
+
+    // Set the message
+    sheet.getRange(activeRow, GRIEVANCE_COLS.COORDINATOR_MESSAGE).setValue(message);
+
+    // Check the checkbox to trigger notification
+    sheet.getRange(activeRow, GRIEVANCE_COLS.COORDINATOR_NOTIFIED).setValue(true);
+
+    ui.alert('Success',
+      'Coordinator message saved and notifications sent!\n\n' +
+      'The row will remain highlighted until you uncheck the checkbox.',
+      ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Batch notification for multiple grievances
+ */
+function showBatchCoordinatorNotification() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Grievance Log');
+
+  if (!sheet) {
+    ui.alert('Error', 'Grievance Log sheet not found.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const response = ui.prompt(
+    'Batch Coordinator Notification',
+    'Enter message to send for ALL checked grievances:\n\n' +
+    '(Only grievances with the checkbox already checked will receive this message)',
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (response.getSelectedButton() !== ui.Button.OK) {
+    return;
+  }
+
+  const message = response.getResponseText().trim();
+
+  if (message === '') {
+    ui.alert('Error', 'Message cannot be empty.', ui.ButtonSet.OK);
+    return;
+  }
+
+  // Find all checked rows
+  const data = sheet.getDataRange().getValues();
+  let count = 0;
+
+  for (let i = 1; i < data.length; i++) { // Skip header
+    const row = i + 1;
+    const isChecked = data[i][GRIEVANCE_COLS.COORDINATOR_NOTIFIED - 1];
+
+    if (isChecked === true || isChecked === 'TRUE' || isChecked === 'Yes' || isChecked === '✓') {
+      // Update message
+      sheet.getRange(row, GRIEVANCE_COLS.COORDINATOR_MESSAGE).setValue(message);
+
+      // Trigger notification by re-checking
+      handleCoordinatorNotification(sheet, row);
+      count++;
+    }
+  }
+
+  ui.alert('Batch Notification Complete',
+    `Sent coordinator message to ${count} grievance(s).`,
+    ui.ButtonSet.OK);
+}
+
+/**
+ * Clear all coordinator notifications (admin only)
+ */
+function clearAllCoordinatorNotifications() {
+  const ui = SpreadsheetApp.getUi();
+
+  // Confirm action
+  const response = ui.alert(
+    'Clear All Notifications',
+    'This will:\n' +
+    '• Uncheck all coordinator notification checkboxes\n' +
+    '• Remove all row highlighting\n' +
+    '• Keep coordinator messages intact\n\n' +
+    'Continue?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    return;
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Grievance Log');
+
+  if (!sheet) {
+    ui.alert('Error', 'Grievance Log sheet not found.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const lastRow = sheet.getLastRow();
+
+  // Clear all checkboxes and highlighting (skip header)
+  for (let row = 2; row <= lastRow; row++) {
+    sheet.getRange(row, GRIEVANCE_COLS.COORDINATOR_NOTIFIED).setValue(false);
+    removeRowHighlight(sheet, row);
+  }
+
+  ui.alert('Success', `Cleared all coordinator notifications (${lastRow - 1} rows processed).`, ui.ButtonSet.OK);
 }
 
 
@@ -23973,18 +24614,32 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // Refresh button area
-  sheet.getRange("I6").setValue("Action:")
+  // Action dropdown area
+  sheet.getRange("I6").setValue("Quick Action:")
     .setFontWeight("bold")
     .setFontSize(10).setFontFamily("Roboto")
     .setBackground(COLORS.LIGHT_GRAY)
     .setHorizontalAlignment("right");
 
-  sheet.getRange("I7").setValue("✨ Ready to see the magic? Click '509 Tools > Interactive Dashboard > Refresh Charts'")
-    .setFontSize(9).setFontFamily("Roboto")
-    .setFontStyle("italic")
-    .setBackground(COLORS.LIGHT_GRAY)
-    .setHorizontalAlignment("left");
+  // Add dropdown for quick actions
+  const actionDropdown = SpreadsheetApp.newDataValidation()
+    .requireValueInList([
+      "Select Action...",
+      "Refresh Charts",
+      "Reset All Filters",
+      "Show All Data",
+      "Export Summary"
+    ], true)
+    .setAllowInvalid(false)
+    .build();
+
+  sheet.getRange("I7")
+    .setValue("Select Action...")
+    .setDataValidation(actionDropdown)
+    .setFontSize(10).setFontFamily("Roboto")
+    .setBackground(COLORS.WHITE)
+    .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID)
+    .setHorizontalAlignment("center");
 
   // ------------------------------------------------------------=========
   // METRIC CARDS SECTION - Row 10-18 (4 cards)
@@ -24727,24 +25382,32 @@ function writeChartData(sheet, startCell, data) {
   if (!data || data.length === 0) return;
 
   try {
-    const range = sheet.getRange(startCell).offset(1, 0, data.length, 2);
+    const startRange = sheet.getRange(startCell);
+    const startRow = startRange.getRow() + 1;
+    const startCol = startRange.getColumn();
+    const numRows = data.length;
+    const numCols = 2;
 
-    // IMPORTANT: Break any merged cells before writing data
-    // This prevents "You must select all cells in a merged range" error
-    try {
-      range.breakApart();
-    } catch (e) {
-      // Range wasn't merged, ignore
+    // Get ALL merged regions in the target range and break apart any that overlap
+    // This properly handles the "You must select all cells in a merged range" error
+    const targetRange = sheet.getRange(startRow, startCol, numRows, numCols);
+    const mergedRanges = targetRange.getMergedRanges();
+    for (let i = 0; i < mergedRanges.length; i++) {
+      try {
+        mergedRanges[i].breakApart();
+      } catch (e) {
+        Logger.log('Could not break apart merged range: ' + e.message);
+      }
     }
 
-    // Clear existing content and formatting
-    range.clearContent();
+    // Clear existing content
+    targetRange.clearContent();
 
-    range.setValues(data);
+    // Write the data
+    targetRange.setValues(data);
 
     // Hide this data area - OPTIMIZED: batch hide instead of one-by-one
-    const startRow = range.getRow();
-    sheet.hideRows(startRow, data.length);
+    sheet.hideRows(startRow, numRows);
   } catch (error) {
     handleError(error, 'writeChartData', false);
   }
@@ -26859,63 +27522,6 @@ function refreshStewardDropdowns() {
     'Steward Dropdowns Updated',
     3
   );
-}
-
-/**
- * Removes emergency contact columns from Member Directory
- */
-function removeEmergencyContactColumns() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-
-  if (!memberSheet) {
-    SpreadsheetApp.getUi().alert('Member Directory sheet not found!');
-    return;
-  }
-
-  const ui = SpreadsheetApp.getUi();
-  const response = ui.alert(
-    'Remove Emergency Contact Columns',
-    'This will remove any columns with "Emergency Contact" in the header.\n\n' +
-    'This action cannot be easily undone.\n\n' +
-    'Continue?',
-    ui.ButtonSet.YES_NO
-  );
-
-  if (response !== ui.Button.YES) {
-    return;
-  }
-
-  try {
-    const headers = memberSheet.getRange(1, 1, 1, memberSheet.getLastColumn()).getValues()[0];
-    const columnsToDelete = [];
-
-    headers.forEach(function(header, index) {
-      const headerStr = String(header).toLowerCase();
-      if (headerStr.includes('emergency contact') || headerStr.includes('emergency phone')) {
-        columnsToDelete.push(index + 1);
-      }
-    });
-
-    if (columnsToDelete.length === 0) {
-      ui.alert('No emergency contact columns found.');
-      return;
-    }
-
-    // Delete columns in reverse order
-    columnsToDelete.reverse().forEach(function(colIndex) {
-      memberSheet.deleteColumn(colIndex);
-    });
-
-    ui.alert(
-      'Columns Removed',
-      `Removed ${columnsToDelete.length} emergency contact column(s).`,
-      ui.ButtonSet.OK
-    );
-
-  } catch (error) {
-    ui.alert('Error: ' + error.message);
-  }
 }
 
 /**
@@ -31971,7 +32577,6 @@ function onOpen_Reorganized() {
       .addItem("🎨 Setup Dashboard Enhancements", "SETUP_DASHBOARD_ENHANCEMENTS")
       .addItem("📊 Populate Analytics Sheets", "populateAllAnalyticsSheets"))
     .addSeparator()
-    .addItem("🗑️ Remove Emergency Contact Columns", "removeEmergencyContactColumns")
     .addItem("📝 Open Member Google Form", "openMemberGoogleForm")
     .addToUi();
 
@@ -32029,13 +32634,31 @@ function onOpen_Reorganized() {
       .addItem("📄 Paginated Data Viewer", "showPaginatedViewer"))
     .addSeparator()
     .addSubMenu(ui.createMenu("🧪 Testing")
+      .addItem("🧪 Run All Tests", "runAllTests")
+      .addItem("🧪 Run Unit Tests", "runUnitTests")
+      .addItem("🧪 Run Validation Tests", "runValidationTests")
+      .addItem("🧪 Run Integration Tests", "runIntegrationTests")
+      .addSeparator()
       .addItem("🧪 Test Deadline Notifications", "testDeadlineNotifications")
       .addItem("🧪 Test Monthly Report", "generateMonthlyReport")
       .addItem("🧪 Test Quarterly Report", "generateQuarterlyReport")
       .addSeparator()
+      .addItem("📊 View Test Results", "showTestResults")
       .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP")
       .addItem("⚙️ Shortcuts Configuration", "showKeyboardShortcutsConfig")
       .addItem("F1 Context Help", "showContextHelp"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("👥 User Roles (RBAC)")
+      .addItem("Initialize RBAC", "initializeRBAC")
+      .addItem("Configure Roles", "configureUserRoles")
+      .addSeparator()
+      .addItem("Add Admin", "addAdmin")
+      .addItem("Add Steward", "addSteward")
+      .addItem("Add Viewer", "addViewer")
+      .addSeparator()
+      .addItem("My Permissions", "showMyPermissions"))
+    .addSeparator()
+    .addItem("👁️ Toggle Setup Menu Visibility", "toggleSetupMenuVisibility")
     .addToUi();
 }
 
