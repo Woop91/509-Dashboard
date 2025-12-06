@@ -6,17 +6,16 @@ This document explains the development workflow for the 509 Dashboard Google App
 
 ```
 509-dashboard/
-├── Constants.gs           # All configuration constants (SHEETS, COLORS, etc.)
-├── SecurityUtils.gs       # Security roles, admin emails, RBAC functions
-├── SecurityService.gs     # Advanced RBAC with detailed permissions
-├── Code.gs               # Main entry point, setup functions
-├── [Feature].gs          # Feature modules (46+ files)
-├── TestFramework.gs      # Testing infrastructure
-├── Code.test.gs          # Unit tests
-├── Integration.test.gs   # Integration tests
-├── build.js              # Build script (generates consolidated file)
-├── ConsolidatedDashboard.gs  # AUTO-GENERATED - DO NOT EDIT
-└── Complete509Dashboard.gs   # Legacy version (deprecated)
+├── Constants.gs              # All configuration constants (SHEETS, COLORS, etc.)
+├── SecurityUtils.gs          # Security roles, admin emails, RBAC functions
+├── SecurityService.gs        # Advanced RBAC with detailed permissions
+├── Code.gs                   # Main entry point, setup functions
+├── [Feature].gs              # Feature modules (59 files total)
+├── TestFramework.gs          # Testing infrastructure
+├── Code.test.gs              # Unit tests
+├── Integration.test.gs       # Integration tests
+├── build.js                  # Build script (generates consolidated file)
+└── ConsolidatedDashboard.gs  # AUTO-GENERATED - DO NOT EDIT
 ```
 
 ## Golden Rule: Single Source of Truth

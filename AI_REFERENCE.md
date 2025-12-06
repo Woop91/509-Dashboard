@@ -32,22 +32,34 @@
 - Reference MEMBER_COLS and GRIEVANCE_COLS constants
 - Update changelog when making significant changes
 - Run verification commands after modifications
-- Maintain parity between Code.gs and Complete509Dashboard.gs
+- Edit individual modules, then run `node build.js` to regenerate ConsolidatedDashboard.gs
 
 ---
 
-## 🆕 Changelog - Version 2.4 (2025-12-05)
+## 🆕 Changelog - Version 2.4 (2025-12-06)
 
 **Major Features Added:**
 - ✅ **Audit Logging System** - Full audit trail for all data modifications
 - ✅ **Role-Based Access Control (RBAC)** - Admin, Steward, and Viewer roles
 - ✅ **DIAGNOSE_SETUP()** - Comprehensive system health check function
 - ✅ **Enhanced nukeSeedData()** - True nuclear option for clearing all test data
+- ✅ **Build System** - Auto-generate ConsolidatedDashboard.gs with 59 modules
 
 **Critical Bug Fixes:**
+- 🐛 **Fixed build.js syntax error** - MODULES array was improperly terminated
+- 🐛 **Fixed missing modules in build** - Added 5 modules that were not in build configuration
 - 🐛 **Fixed updateMemberDirectorySnapshots() column bug** - Was overwriting formula columns (Z, AA, AB), now correctly writes to AC, AD, AE
 - 🐛 **Fixed ADHDEnhancements.gs sheet references** - Removed invalid sheet name constants
 - 🐛 **Added null checks to clearAllData()** - Prevents errors if sheets don't exist
+
+**Files Removed (Deprecated):**
+- `Complete509Dashboard.gs` - Replaced by auto-generated ConsolidatedDashboard.gs
+- `fix_destructuring.js` - One-time utility script, no longer needed
+- `convert_classes.py` - One-time conversion script, no longer needed
+
+**Documentation Cleanup:**
+- Removed 7 redundant documentation files (old code reviews, duplicate recommendations)
+- Updated all docs to reference ConsolidatedDashboard.gs instead of deprecated file
 
 **New File:**
 - `AuditLoggingRBAC.gs` - Complete implementation of audit logging and role-based access control
@@ -1526,43 +1538,41 @@ const resolutionCol = getColumnLetter(GRIEVANCE_COLS.RESOLUTION);
 
 ```
 509-dashboard/
-├── Code.gs                      # Modular version (primary)
-├── Complete509Dashboard.gs      # Single-file version (backup/deployment)
-├── ColumnToggles.gs            # Column visibility functions
-├── InteractiveDashboard.gs     # Interactive dashboard logic
-├── ADHDEnhancements.gs         # ADHD-friendly features
-├── AuditLoggingRBAC.gs         # Audit logging & role-based access control (NEW v2.4)
-├── GrievanceWorkflow.gs        # Grievance creation workflow
-├── GettingStartedAndFAQ.gs     # Help sheets creation
-├── SeedNuke.gs                 # Seed and nuke data functions
-├── UnifiedOperationsMonitor.gs # Comprehensive operations dashboard
-├── MenuItems.gs                # Menu creation (if separate)
-├── SeedData.gs                 # Seed functions (if separate)
-└── AI_REFERENCE.md             # This document (formerly FEATURES.md)
+├── Constants.gs                 # Configuration constants (SHEETS, COLORS, MEMBER_COLS, GRIEVANCE_COLS)
+├── SecurityUtils.gs             # Security roles, admin emails, RBAC functions
+├── SecurityService.gs           # Advanced RBAC with detailed permissions
+├── Code.gs                      # Main entry point, setup functions
+├── [Feature].gs                 # 59 feature modules (alphabetical)
+├── TestFramework.gs             # Testing infrastructure
+├── Code.test.gs                 # Unit tests
+├── Integration.test.gs          # Integration tests
+├── build.js                     # Build script (generates consolidated file)
+├── ConsolidatedDashboard.gs     # AUTO-GENERATED - DO NOT EDIT
+└── AI_REFERENCE.md              # This document
 ```
 
-### Code.gs vs Complete509Dashboard.gs
+### Build System
 
-**Code.gs:**
-- Modular architecture (functions may be split across files)
-- Primary development version
-- Easier to navigate and maintain
-- Recommended for development
+**Development workflow:**
+1. Edit individual module files (Code.gs, Constants.gs, etc.)
+2. Run `node build.js --production` to generate ConsolidatedDashboard.gs
+3. Deploy ConsolidatedDashboard.gs to Google Apps Script
 
-**Complete509Dashboard.gs:**
-- Single-file version containing all code
-- Used for deployment to Google Sheets
-- Backup/reference version
-- Should be kept in sync with Code.gs
+**Build commands:**
+```bash
+node build.js                    # Development build (with tests)
+node build.js --production       # Production build (no tests)
+node build.js --check-duplicates # Verify no duplicate constants
+```
 
-**Sync Strategy:**
-- Develop in Code.gs + separate module files
-- Before deployment, sync changes to Complete509Dashboard.gs
-- Both files should have identical functionality
+**Important:**
+- ConsolidatedDashboard.gs is auto-generated - never edit directly
+- All 59 modules are concatenated in dependency order
+- Duplicate constant declarations will fail the build
 
 ### Key Functions by File
 
-**Code.gs / Complete509Dashboard.gs:**
+**Code.gs:**
 - `CREATE_509_DASHBOARD()` - Main setup function
 - `DIAGNOSE_SETUP()` - Comprehensive health check function (v2.4)
 - All sheet creation functions (createMemberDirectory, createGrievanceLog, etc.)

@@ -1,8 +1,17 @@
-# 509 Dashboard - Google Apps Script v2.0
+# 509 Dashboard - Google Apps Script v2.4
 
 Complete union member database and grievance tracking system for Local 509.
 
-## 🆕 What's New in v2.0
+## 🆕 What's New in v2.4
+
+### Latest Updates (v2.4 - December 2025)
+- **Audit Logging System** - Full audit trail for all data modifications
+- **Role-Based Access Control (RBAC)** - Admin, Steward, and Viewer roles
+- **DIAGNOSE_SETUP()** - Comprehensive system health check function
+- **Enhanced nukeSeedData()** - True nuclear option for clearing all test data
+- **Build System Fixes** - Proper module consolidation with 59 modules
+
+### Previous Updates (v2.0)
 
 ### Major Updates
 - **Three-Tier Menu System**: Reorganized menus by role (User, Manager, Administrator)
