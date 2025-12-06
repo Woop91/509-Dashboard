@@ -2497,13 +2497,16 @@ function getAllDeadlineConfig() {
 /**
  * Gets organization info from Config
  * @returns {Object} Organization configuration
+ * @deprecated Use getAllOrgConfig() from UtilityService.gs for full config
+ *             or getOrgConfig(key) for individual values
  */
-function getOrgConfig() {
+function getOrgConfigBasic() {
+  // Legacy wrapper - uses new centralized config
   return {
-    name: getConfigValue(CONFIG_COLS.ORG_NAME) || 'SEIU Local 509',
-    localNumber: getConfigValue(CONFIG_COLS.LOCAL_NUMBER) || '509',
-    address: getConfigValue(CONFIG_COLS.MAIN_ADDRESS) || '',
-    phone: getConfigValue(CONFIG_COLS.MAIN_PHONE) || ''
+    name: getOrgConfig('ORG_NAME'),
+    localNumber: getOrgConfig('LOCAL_NUMBER'),
+    address: getOrgConfig('MAIN_ADDRESS'),
+    phone: getOrgConfig('MAIN_PHONE')
   };
 }
 
