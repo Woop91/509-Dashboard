@@ -2,26 +2,94 @@
 
 Future feature ideas and enhancements for the 509 Dashboard.
 
-**Status Summary:** 27 of 48 original features have been implemented. 21 remain pending.
+**Status Summary:** 33 of 48 original features have been implemented. 15 remain pending.
+
+**Last Updated:** 2025-12-06 (Version 2.6)
 
 ---
 
-## Pending Features (21 items)
+## Recently Implemented Features (Version 2.6)
 
-### HIGH PRIORITY (8 items)
+### HIGH PRIORITY (6 items - All Completed!)
 
-#### 1. Email Unsubscribe / Opt-Out System
-**Complexity:** Medium | **Status:** Planned
+#### 1. Email Unsubscribe / Opt-Out System ✅
+**Complexity:** Medium | **Status:** COMPLETED
 
-Add the ability to mark members as having opted out of email communications:
-- Checkbox column in Member Directory
+Implemented in `EmailUnsubscribeSystem.gs`:
+- Checkbox column in Member Directory for opt-out status
 - Light red row highlighting when opted out (`#FFCDD2`)
 - Export prefixes email with `(UNSUBSCRIBED)` to prevent accidental sends
 - Filter opted-out members from bulk emails
-
-**Files:** Constants.gs, MemberDirectory.gs, ReportGeneration.gs, EmailIntegration.gs
+- Bulk opt-out/opt-in operations
+- Opt-out statistics and management panel
 
 ---
+
+#### 4. Create Quick Actions Menu ✅
+**Complexity:** Moderate | **Status:** COMPLETED
+
+Implemented in `QuickActionsMenu.gs`:
+- Right-click context menu for Member Directory and Grievance Log
+- Start Grievance, View History, Email member
+- Quick status updates for grievances
+- Copy ID to clipboard functionality
+- View Drive folder and sync to calendar
+
+---
+
+#### 7. PII Protection ✅
+**Complexity:** Complex | **Status:** COMPLETED
+
+Implemented in `PIIProtection.gs`:
+- Field-level data masking (emails, phones, SSNs)
+- GDPR/CCPA compliance helpers
+- Data portability export (JSON format)
+- Right to erasure request processing
+- Anonymization for inactive members
+- PII audit reports and data subject request form
+
+---
+
+#### 8. Interactive Tutorial ✅
+**Complexity:** Moderate | **Status:** COMPLETED
+
+Implemented in `InteractiveTutorial.gs`:
+- Welcome wizard for first-time users
+- 9-step guided tour with progress tracking
+- Video tutorial library with 8 categorized videos
+- Quick Start Guide for rapid onboarding
+- Keyboard navigation support
+
+---
+
+#### 11. Context-Sensitive Help ✅
+**Complexity:** Simple | **Status:** COMPLETED
+
+Implemented in `ContextSensitiveHelp.gs`:
+- Sheet-specific help with ? icons
+- Purpose description and key tasks
+- Column documentation
+- Tips and best practices
+- Searchable help index
+- F1 shortcut for context help
+
+---
+
+#### Email & Phone Validation Enhancements ✅
+**Complexity:** Simple | **Status:** COMPLETED
+
+Implemented in `EnhancedValidation.gs`:
+- Real-time email format validation with typo detection
+- Phone number validation and auto-formatting
+- Duplicate ID detection with warnings
+- Bulk validation tool with detailed reports
+- Visual indicators (backgrounds, notes)
+
+---
+
+### REMAINING PENDING FEATURES (15 items)
+
+### HIGH PRIORITY (2 items)
 
 #### 2. Extend Auto-Formula Coverage
 **Complexity:** Simple | **Status:** Planned
@@ -37,53 +105,6 @@ Extend formulas from 100 rows to 1000+ using ARRAYFORMULA.
 Improve batch processing for 20k member seeding (currently 2-3 minutes).
 - Use `SpreadsheetApp.flush()` strategically
 - Add progress toasts every 500 rows
-
----
-
-#### 4. Create Quick Actions Menu
-**Complexity:** Moderate | **Status:** Planned
-
-Add right-click context menu for common actions:
-- Start Grievance, View History, Email
-- Implement onSelectionChange trigger with context-aware options
-
----
-
-#### 5. Implement Change Tracking
-**Complexity:** Moderate | **Status:** Planned
-
-Track all data modifications with audit trail:
-- Timestamp, user, field, old/new values
-- Create onEdit trigger to log changes to Change Log sheet
-
----
-
-#### 6. Trend Analysis & Forecasting
-**Complexity:** Moderate | **Status:** Planned
-
-Identify patterns over time:
-- Month-over-month comparisons
-- Seasonal patterns
-- Volume forecasting and early warning system
-
----
-
-#### 7. PII Protection
-**Complexity:** Complex | **Status:** Planned
-
-Protect sensitive member data:
-- Encrypt sensitive fields
-- Mask data in exports
-- GDPR/CCPA compliance
-
----
-
-#### 8. Interactive Tutorial
-**Complexity:** Moderate | **Status:** Planned
-
-In-app guided tour for first-time users:
-- Walkthrough with highlighted features
-- Interactive steps
 
 ---
 
@@ -104,15 +125,6 @@ Real-time notifications with bot commands:
 - Post updates to channels
 - Notify on deadlines
 - Allow status updates from chat
-
----
-
-#### 11. Context-Sensitive Help
-**Complexity:** Simple | **Status:** Planned
-
-Help button on each sheet:
-- ? icon explaining purpose
-- List common tasks
 
 ---
 
@@ -190,17 +202,7 @@ Track active users:
 
 ---
 
-#### 21. Release Notes
-**Complexity:** Simple | **Status:** Planned
-
-Track version changes:
-- CHANGELOG sheet
-- Auto-notify on updates
-- Highlight new features
-
----
-
-## Implemented Features (27 items)
+## Implemented Features (33 items)
 
 The following features have been completed:
 
@@ -214,10 +216,14 @@ The following features have been completed:
 | | ADHD Features | EnhancedADHDFeatures.gs |
 | | Mobile Views | MobileOptimization.gs |
 | | Dark Mode | DarkModeThemes.gs |
-| **Data Integrity** | Email/Phone Validation | DataIntegrityEnhancements.gs |
+| | **Quick Actions Menu** | QuickActionsMenu.gs |
+| | **Interactive Tutorial** | InteractiveTutorial.gs |
+| | **Video Tutorials** | InteractiveTutorial.gs |
+| **Data Integrity** | Email/Phone Validation | EnhancedValidation.gs |
 | | Duplicate Detection | DataIntegrityEnhancements.gs |
 | | Data Quality Dashboard | DataIntegrityEnhancements.gs |
 | | Referential Integrity | DataIntegrityEnhancements.gs |
+| | **Bulk Validation** | EnhancedValidation.gs |
 | **Automation** | Deadline Notifications | AutomatedNotifications.gs |
 | | Batch Operations | BatchOperations.gs |
 | | Automated Reports | AutomatedReports.gs |
@@ -232,7 +238,11 @@ The following features have been completed:
 | **Security** | RBAC | SecurityService.gs |
 | | Audit Logging | AuditLoggingRBAC.gs |
 | | Data Backup | DataBackupRecovery.gs |
+| | **PII Protection** | PIIProtection.gs |
+| | **Email Opt-Out** | EmailUnsubscribeSystem.gs |
 | **Docs** | FAQ Database | FAQKnowledgeBase.gs |
+| | **Context-Sensitive Help** | ContextSensitiveHelp.gs |
+| | **Release Notes** | ReleaseNotes.gs |
 
 ---
 
@@ -241,4 +251,4 @@ The following features have been completed:
 - Feature requests can be added to this file
 - Prioritize based on user impact and implementation complexity
 - Update status as work progresses: Planned -> In Progress -> Completed
-- Video Tutorials (High priority) requires external recording - not a code task
+- Video Tutorials are now integrated into InteractiveTutorial.gs

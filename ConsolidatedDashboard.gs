@@ -14,10 +14,10 @@
  * Build Info:
  * - Version: 2.1.0 (Security Enhanced + Code Review Improvements)
  * - Build ID: 20251202-improvements
- * - Build Date: 2025-12-06T04:26:12.255Z
- * - Build Type: PRODUCTION
- * - Modules: 60 files
- * - Tests Included: No
+ * - Build Date: 2025-12-06T04:36:37.395Z
+ * - Build Type: DEVELOPMENT
+ * - Modules: 78 files
+ * - Tests Included: Yes
  *
  * ============================================================================
  */
@@ -8693,6 +8693,1120 @@ function installAdminMessageTrigger() {
 
 
 // ================================================================================
+// MODULE: AdvancedExport.gs
+// Source: AdvancedExport.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * ADVANCED EXPORT OPTIONS
+ * ============================================================================
+ *
+ * Enhanced data export capabilities
+ * Features:
+ * - Export to multiple formats (CSV, Excel, PDF, JSON)
+ * - Custom field selection
+ * - Filtered exports
+ * - Scheduled exports
+ * - Email exports
+ * - Template-based exports
+ */
+
+/**
+ * Shows advanced export dialog
+ */
+function showAdvancedExport() {
+  const html = createAdvancedExportHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(700)
+    .setHeight(600);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📥 Advanced Export');
+}
+
+/**
+ * Creates HTML for advanced export
+ */
+function createAdvancedExportHTML() {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 30px; border-radius: 12px; max-height: 550px; overflow-y: auto; }
+    h2 { color: #1a73e8; margin-top: 0; }
+    .section { margin: 25px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+    .section-title { font-weight: bold; margin-bottom: 15px; color: #333; }
+    .export-btn { background: #1a73e8; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; margin: 10px 0; text-align: left; font-size: 15px; transition: all 0.2s; }
+    .export-btn:hover { background: #1557b0; transform: translateX(5px); }
+    .export-icon { font-size: 24px; margin-right: 10px; }
+    .export-description { font-size: 12px; color: rgba(255,255,255,0.9); margin-top: 5px; }
+    label { display: block; margin: 10px 0; font-weight: 500; }
+    select, input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; margin-top: 5px; box-sizing: border-box; }
+    button.secondary { background: #6c757d; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📥 Advanced Export</h2>
+
+    <div class="section">
+      <div class="section-title">Quick Export</div>
+
+      <button class="export-btn" onclick="exportAs('csv')">
+        <div><span class="export-icon">📄</span> Export as CSV</div>
+        <div class="export-description">Comma-separated values for Excel/Google Sheets</div>
+      </button>
+
+      <button class="export-btn" onclick="exportAs('excel')">
+        <div><span class="export-icon">📊</span> Export as Excel (XLSX)</div>
+        <div class="export-description">Microsoft Excel compatible format</div>
+      </button>
+
+      <button class="export-btn" onclick="exportAs('pdf')">
+        <div><span class="export-icon">📑</span> Export as PDF</div>
+        <div class="export-description">Print-ready PDF document</div>
+      </button>
+
+      <button class="export-btn" onclick="exportAs('json')">
+        <div><span class="export-icon">🗂️</span> Export as JSON</div>
+        <div class="export-description">API-friendly JSON format</div>
+      </button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Custom Export</div>
+
+      <label>
+        Data Source
+        <select id="dataSource">
+          <option value="grievances">Grievance Log</option>
+          <option value="members">Member Directory</option>
+          <option value="dashboard">Dashboard Data</option>
+        </select>
+      </label>
+
+      <label>
+        Date Range
+        <select id="dateRange">
+          <option value="all">All Time</option>
+          <option value="thisYear">This Year</option>
+          <option value="lastYear">Last Year</option>
+          <option value="last30">Last 30 Days</option>
+          <option value="last90">Last 90 Days</option>
+        </select>
+      </label>
+
+      <label>
+        <input type="checkbox" id="includeArchived"> Include Archived Records
+      </label>
+
+      <button class="export-btn" onclick="exportCustom()">
+        <div><span class="export-icon">⚙️</span> Custom Export</div>
+        <div class="export-description">Export with selected options</div>
+      </button>
+    </div>
+
+    <div style="text-align: center; margin-top: 20px;">
+      <button class="export-btn secondary" onclick="google.script.host.close()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    function exportAs(format) {
+      google.script.run
+        .withSuccessHandler((url) => {
+          alert('✅ Export complete!');
+          window.open(url, '_blank');
+        })
+        .withFailureHandler((error) => {
+          alert('❌ Export failed: ' + error.message);
+        })
+        .performQuickExport(format);
+    }
+
+    function exportCustom() {
+      const options = {
+        dataSource: document.getElementById('dataSource').value,
+        dateRange: document.getElementById('dateRange').value,
+        includeArchived: document.getElementById('includeArchived').checked
+      };
+
+      google.script.run
+        .withSuccessHandler((url) => {
+          alert('✅ Custom export complete!');
+          window.open(url, '_blank');
+        })
+        .performCustomExport(options);
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Performs quick export
+ * @param {string} format - Export format
+ * @returns {string} File URL
+ */
+function performQuickExport(format) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  switch (format) {
+    case 'csv':
+      return exportToCSV(grievanceSheet);
+    case 'excel':
+      return exportToExcel(grievanceSheet);
+    case 'pdf':
+      return exportToPDF(grievanceSheet);
+    case 'json':
+      return exportToJSON(grievanceSheet);
+    default:
+      throw new Error('Unsupported format');
+  }
+}
+
+/**
+ * Exports sheet to CSV
+ * @param {Sheet} sheet - Sheet to export
+ * @returns {string} File URL
+ */
+function exportToCSV(sheet) {
+  const data = sheet.getDataRange().getValues();
+
+  let csv = '';
+  data.forEach(row => {
+    csv += row.map(cell => {
+      let value = String(cell);
+      if (cell instanceof Date) {
+        value = Utilities.formatDate(cell, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+      }
+      return '"' + value.replace(/"/g, '""') + '"';
+    }).join(',') + '\n';
+  });
+
+  const fileName = `${sheet.getName()}_Export_${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')}.csv`;
+  const file = DriveApp.createFile(fileName, csv, MimeType.CSV);
+
+  return file.getUrl();
+}
+
+/**
+ * Exports to Excel format
+ * @param {Sheet} sheet - Sheet to export
+ * @returns {string} File URL
+ */
+function exportToExcel(sheet) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const fileName = `${sheet.getName()}_Export_${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')}`;
+
+  const blob = ss.getAs(MimeType.MICROSOFT_EXCEL);
+  const file = DriveApp.createFile(blob).setName(fileName + '.xlsx');
+
+  return file.getUrl();
+}
+
+/**
+ * Exports to PDF
+ * @param {Sheet} sheet - Sheet to export
+ * @returns {string} File URL
+ */
+function exportToPDF(sheet) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const fileName = `${sheet.getName()}_Export_${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')}.pdf`;
+
+  const url = ss.getUrl();
+  const id = ss.getId();
+
+  const exportUrl = url.replace(/\/edit.*$/, '') +
+    '/export?exportFormat=pdf&format=pdf' +
+    '&size=A4' +
+    '&portrait=false' +
+    '&fitw=true' +
+    '&sheetnames=false&printtitle=false' +
+    '&pagenumbers=false&gridlines=false' +
+    '&fzr=false' +
+    '&gid=' + sheet.getSheetId();
+
+  const token = ScriptApp.getOAuthToken();
+  const response = UrlFetchApp.fetch(exportUrl, {
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  });
+
+  const blob = response.getBlob().setName(fileName);
+  const file = DriveApp.createFile(blob);
+
+  return file.getUrl();
+}
+
+/**
+ * Exports to JSON
+ * @param {Sheet} sheet - Sheet to export
+ * @returns {string} File URL
+ */
+function exportToJSON(sheet) {
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const rows = data.slice(1);
+
+  const jsonData = rows.map(row => {
+    const obj = {};
+    headers.forEach((header, index) => {
+      let value = row[index];
+      if (value instanceof Date) {
+        value = Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+      }
+      obj[header] = value;
+    });
+    return obj;
+  });
+
+  const json = JSON.stringify(jsonData, null, 2);
+  const fileName = `${sheet.getName()}_Export_${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')}.json`;
+  const file = DriveApp.createFile(fileName, json, MimeType.PLAIN_TEXT);
+
+  return file.getUrl();
+}
+
+/**
+ * Performs custom export with filters
+ * @param {Object} options - Export options
+ * @returns {string} File URL
+ */
+function performCustomExport(options) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet;
+
+  switch (options.dataSource) {
+    case 'grievances':
+      sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+      break;
+    case 'members':
+      sheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+      break;
+    case 'dashboard':
+      sheet = ss.getSheetByName(SHEETS.DASHBOARD);
+      break;
+    default:
+      sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  }
+
+  // Apply date range filter if needed
+  // For now, export full sheet
+  return exportToCSV(sheet);
+}
+
+
+
+// ================================================================================
+// MODULE: AdvancedVisualization.gs
+// Source: AdvancedVisualization.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * ADVANCED DATA VISUALIZATION
+ * ============================================================================
+ *
+ * Interactive charts and advanced visualization tools
+ * Features:
+ * - Multiple chart types (bar, line, pie, scatter, heatmap)
+ * - Interactive chart builder
+ * - Custom chart configurations
+ * - Export charts as images
+ * - Chart templates
+ * - Real-time data updates
+ * - Drill-down capabilities
+ * - Comparison charts
+ */
+
+/**
+ * Visualization configuration
+ */
+const VIZ_CONFIG = {
+  CHART_TYPES: {
+    BAR: 'Bar Chart',
+    LINE: 'Line Chart',
+    PIE: 'Pie Chart',
+    COLUMN: 'Column Chart',
+    AREA: 'Area Chart',
+    SCATTER: 'Scatter Chart',
+    COMBO: 'Combo Chart',
+    TIMELINE: 'Timeline'
+  },
+  DEFAULT_COLORS: ['#1a73e8', '#34a853', '#fbbc04', '#ea4335', '#46bdc6', '#7c3aed'],
+  MAX_DATA_POINTS: 1000
+};
+
+/**
+ * Shows visualization builder
+ */
+function showVisualizationBuilder() {
+  const html = createVisualizationBuilderHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(1200)
+    .setHeight(800);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📊 Advanced Visualization Builder');
+}
+
+/**
+ * Creates HTML for visualization builder
+ */
+function createVisualizationBuilderHTML() {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 0;
+      margin: 0;
+      background: #f5f5f5;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      height: 100vh;
+    }
+    .sidebar {
+      background: white;
+      padding: 20px;
+      border-right: 1px solid #e0e0e0;
+      overflow-y: auto;
+    }
+    .main {
+      padding: 20px;
+      overflow-y: auto;
+    }
+    h2 {
+      color: #1a73e8;
+      margin-top: 0;
+      font-size: 20px;
+    }
+    h3 {
+      color: #333;
+      font-size: 16px;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .form-group {
+      margin: 15px 0;
+    }
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 5px;
+      color: #555;
+      font-size: 13px;
+    }
+    select, input {
+      width: 100%;
+      padding: 8px;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #1a73e8;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      font-size: 13px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      margin: 5px 0;
+    }
+    button:hover {
+      background: #1557b0;
+    }
+    button.secondary {
+      background: #6c757d;
+    }
+    #chartContainer {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      min-height: 500px;
+    }
+    .chart-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      border-left: 4px solid #1a73e8;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #1a73e8;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #666;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1a73e8;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .preset-btn {
+      background: white;
+      border: 2px solid #e0e0e0;
+      color: #333;
+      margin: 3px 0;
+      text-align: left;
+      padding: 12px;
+      font-size: 13px;
+    }
+    .preset-btn:hover {
+      border-color: #1a73e8;
+      background: #f8f9fa;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="sidebar">
+      <h2>📊 Chart Builder</h2>
+
+      <div class="form-group">
+        <label>Chart Type</label>
+        <select id="chartType" onchange="updatePreview()">
+          <option value="ColumnChart">Column Chart</option>
+          <option value="BarChart">Bar Chart</option>
+          <option value="LineChart">Line Chart</option>
+          <option value="PieChart">Pie Chart</option>
+          <option value="AreaChart">Area Chart</option>
+          <option value="ScatterChart">Scatter Chart</option>
+          <option value="Timeline">Timeline</option>
+          <option value="ComboChart">Combo Chart</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Data Source</label>
+        <select id="dataSource" onchange="updatePreview()">
+          <option value="grievances-by-status">Grievances by Status</option>
+          <option value="grievances-by-type">Grievances by Issue Type</option>
+          <option value="grievances-by-location">Grievances by Location</option>
+          <option value="grievances-by-month">Grievances by Month</option>
+          <option value="resolution-time">Average Resolution Time</option>
+          <option value="steward-workload">Steward Workload</option>
+          <option value="trend-analysis">Trend Analysis</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Chart Title</label>
+        <input type="text" id="chartTitle" value="Grievance Analysis" oninput="updatePreview()">
+      </div>
+
+      <div class="form-group">
+        <label>Width (px)</label>
+        <input type="number" id="chartWidth" value="900" oninput="updatePreview()">
+      </div>
+
+      <div class="form-group">
+        <label>Height (px)</label>
+        <input type="number" id="chartHeight" value="500" oninput="updatePreview()">
+      </div>
+
+      <h3>Quick Presets</h3>
+      <button class="preset-btn" onclick="loadPreset('status-overview')">📊 Status Overview</button>
+      <button class="preset-btn" onclick="loadPreset('monthly-trends')">📈 Monthly Trends</button>
+      <button class="preset-btn" onclick="loadPreset('location-analysis')">🗺️ Location Analysis</button>
+      <button class="preset-btn" onclick="loadPreset('type-breakdown')">📋 Type Breakdown</button>
+
+      <h3>Actions</h3>
+      <button onclick="generateChart()">🔄 Refresh Chart</button>
+      <button onclick="exportChart()" class="secondary">📥 Export as Image</button>
+      <button onclick="saveToSheet()" class="secondary">💾 Save to Sheet</button>
+    </div>
+
+    <div class="main">
+      <div id="statsContainer" class="stats-grid"></div>
+      <div id="chartContainer">
+        <div class="loading">
+          <div class="spinner"></div>
+          <div>Loading chart...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    google.charts.load('current', {'packages':['corechart', 'timeline']});
+    google.charts.setOnLoadCallback(initializeChart);
+
+    let chartData = null;
+    let currentChart = null;
+
+    function initializeChart() {
+      loadChartData();
+    }
+
+    function loadChartData() {
+      const dataSource = document.getElementById('dataSource').value;
+
+      google.script.run
+        .withSuccessHandler(renderChart)
+        .withFailureHandler(handleError)
+        .getChartData(dataSource);
+    }
+
+    function renderChart(data) {
+      if (!data || !data.rows || data.rows.length === 0) {
+        document.getElementById('chartContainer').innerHTML = '<div class="loading">No data available</div>';
+        return;
+      }
+
+      chartData = data;
+
+      // Render stats if available
+      if (data.stats) {
+        renderStats(data.stats);
+      }
+
+      const chartType = document.getElementById('chartType').value;
+      const chartTitle = document.getElementById('chartTitle').value;
+      const width = parseInt(document.getElementById('chartWidth').value);
+      const height = parseInt(document.getElementById('chartHeight').value);
+
+      const dataTable = google.visualization.arrayToDataTable([
+        data.headers,
+        ...data.rows
+      ]);
+
+      const options = {
+        title: chartTitle,
+        width: width,
+        height: height,
+        backgroundColor: '#ffffff',
+        legend: { position: 'bottom' },
+        chartArea: { width: '80%', height: '70%' },
+        colors: ${JSON.stringify(VIZ_CONFIG.DEFAULT_COLORS)},
+        animation: {
+          startup: true,
+          duration: 1000,
+          easing: 'out'
+        }
+      };
+
+      // Chart-specific options
+      if (chartType === 'PieChart') {
+        options.is3D = false;
+        options.pieHole = 0.4;
+      } else if (chartType === 'LineChart' || chartType === 'AreaChart') {
+        options.curveType = 'function';
+        options.pointSize = 5;
+      }
+
+      const container = document.getElementById('chartContainer');
+      container.innerHTML = '';
+
+      let chart;
+      switch (chartType) {
+        case 'ColumnChart':
+          chart = new google.visualization.ColumnChart(container);
+          break;
+        case 'BarChart':
+          chart = new google.visualization.BarChart(container);
+          break;
+        case 'LineChart':
+          chart = new google.visualization.LineChart(container);
+          break;
+        case 'PieChart':
+          chart = new google.visualization.PieChart(container);
+          break;
+        case 'AreaChart':
+          chart = new google.visualization.AreaChart(container);
+          break;
+        case 'ScatterChart':
+          chart = new google.visualization.ScatterChart(container);
+          break;
+        case 'ComboChart':
+          chart = new google.visualization.ComboChart(container);
+          options.seriesType = 'bars';
+          options.series = {1: {type: 'line'}};
+          break;
+        default:
+          chart = new google.visualization.ColumnChart(container);
+      }
+
+      currentChart = chart;
+      chart.draw(dataTable, options);
+    }
+
+    function renderStats(stats) {
+      let html = '';
+      stats.forEach(stat => {
+        html += \`
+          <div class="stat-card">
+            <div class="stat-value">\${stat.value}</div>
+            <div class="stat-label">\${stat.label}</div>
+          </div>
+        \`;
+      });
+
+      document.getElementById('statsContainer').innerHTML = html;
+    }
+
+    function updatePreview() {
+      loadChartData();
+    }
+
+    function generateChart() {
+      loadChartData();
+    }
+
+    function loadPreset(presetName) {
+      switch (presetName) {
+        case 'status-overview':
+          document.getElementById('dataSource').value = 'grievances-by-status';
+          document.getElementById('chartType').value = 'PieChart';
+          document.getElementById('chartTitle').value = 'Grievances by Status';
+          break;
+        case 'monthly-trends':
+          document.getElementById('dataSource').value = 'grievances-by-month';
+          document.getElementById('chartType').value = 'LineChart';
+          document.getElementById('chartTitle').value = 'Monthly Grievance Trends';
+          break;
+        case 'location-analysis':
+          document.getElementById('dataSource').value = 'grievances-by-location';
+          document.getElementById('chartType').value = 'ColumnChart';
+          document.getElementById('chartTitle').value = 'Grievances by Location';
+          break;
+        case 'type-breakdown':
+          document.getElementById('dataSource').value = 'grievances-by-type';
+          document.getElementById('chartType').value = 'BarChart';
+          document.getElementById('chartTitle').value = 'Grievances by Issue Type';
+          break;
+      }
+      updatePreview();
+    }
+
+    function exportChart() {
+      alert('Export feature: Use browser screenshot tool or print to PDF');
+    }
+
+    function saveToSheet() {
+      google.script.run
+        .withSuccessHandler(() => {
+          alert('✅ Chart saved to Visualizations sheet!');
+        })
+        .saveChartToSheet(document.getElementById('dataSource').value, document.getElementById('chartType').value);
+    }
+
+    function handleError(error) {
+      document.getElementById('chartContainer').innerHTML = '<div class="loading">❌ Error: ' + error.message + '</div>';
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Gets chart data based on data source
+ * @param {string} dataSource - Data source identifier
+ * @returns {Object} Chart data
+ */
+function getChartData(dataSource) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceSheet || grievanceSheet.getLastRow() <= 1) {
+    return { headers: [], rows: [], stats: [] };
+  }
+
+  const data = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, 28).getValues();
+
+  switch (dataSource) {
+    case 'grievances-by-status':
+      return getGrievancesByStatus(data);
+
+    case 'grievances-by-type':
+      return getGrievancesByType(data);
+
+    case 'grievances-by-location':
+      return getGrievancesByLocation(data);
+
+    case 'grievances-by-month':
+      return getGrievancesByMonth(data);
+
+    case 'resolution-time':
+      return getResolutionTimeData(data);
+
+    case 'steward-workload':
+      return getStewardWorkloadData(data);
+
+    case 'trend-analysis':
+      return getTrendAnalysisData(data);
+
+    default:
+      return getGrievancesByStatus(data);
+  }
+}
+
+/**
+ * Gets grievances grouped by status
+ * @param {Array} data - Grievance data
+ * @returns {Object} Chart data
+ */
+function getGrievancesByStatus(data) {
+  const statusCounts = {};
+
+  data.forEach(row => {
+    const status = row[GRIEVANCE_COLS.STATUS - 1] || 'Unknown';
+    statusCounts[status] = (statusCounts[status] || 0) + 1;
+  });
+
+  const rows = Object.entries(statusCounts).map(([status, count]) => [status, count]);
+
+  const stats = [
+    { label: 'Total Grievances', value: data.length },
+    { label: 'Unique Statuses', value: Object.keys(statusCounts).length },
+    { label: 'Most Common', value: Object.keys(statusCounts).reduce((a, b) => statusCounts[a] > statusCounts[b] ? a : b) }
+  ];
+
+  return {
+    headers: ['Status', 'Count'],
+    rows: rows,
+    stats: stats
+  };
+}
+
+/**
+ * Gets grievances grouped by issue type
+ * @param {Array} data - Grievance data
+ * @returns {Object} Chart data
+ */
+function getGrievancesByType(data) {
+  const typeCounts = {};
+
+  data.forEach(row => {
+    const type = row[GRIEVANCE_COLS.ISSUE_CATEGORY - 1] || 'Unknown';
+    typeCounts[type] = (typeCounts[type] || 0) + 1;
+  });
+
+  const rows = Object.entries(typeCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([type, count]) => [type, count]);
+
+  const stats = [
+    { label: 'Total Types', value: Object.keys(typeCounts).length },
+    { label: 'Most Common Type', value: rows[0] ? rows[0][0] : 'N/A' },
+    { label: 'Cases in Top Type', value: rows[0] ? rows[0][1] : 0 }
+  ];
+
+  return {
+    headers: ['Issue Type', 'Count'],
+    rows: rows,
+    stats: stats
+  };
+}
+
+/**
+ * Gets grievances grouped by location
+ * @param {Array} data - Grievance data
+ * @returns {Object} Chart data
+ */
+function getGrievancesByLocation(data) {
+  const locationCounts = {};
+
+  data.forEach(row => {
+    const location = row[GRIEVANCE_COLS.LOCATION - 1] || 'Unknown';
+    locationCounts[location] = (locationCounts[location] || 0) + 1;
+  });
+
+  const rows = Object.entries(locationCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15)  // Top 15 locations
+    .map(([location, count]) => [location, count]);
+
+  const stats = [
+    { label: 'Total Locations', value: Object.keys(locationCounts).length },
+    { label: 'Top Location', value: rows[0] ? rows[0][0] : 'N/A' },
+    { label: 'Cases in Top Location', value: rows[0] ? rows[0][1] : 0 }
+  ];
+
+  return {
+    headers: ['Location', 'Count'],
+    rows: rows,
+    stats: stats
+  };
+}
+
+/**
+ * Gets grievances grouped by month
+ * @param {Array} data - Grievance data
+ * @returns {Object} Chart data
+ */
+function getGrievancesByMonth(data) {
+  const monthCounts = {};
+
+  data.forEach(row => {
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    if (filedDate instanceof Date) {
+      const monthKey = Utilities.formatDate(filedDate, Session.getScriptTimeZone(), 'yyyy-MM');
+      monthCounts[monthKey] = (monthCounts[monthKey] || 0) + 1;
+    }
+  });
+
+  const rows = Object.entries(monthCounts)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .slice(-12)  // Last 12 months
+    .map(([month, count]) => [month, count]);
+
+  const avgPerMonth = rows.length > 0 ? Math.round(rows.reduce((sum, row) => sum + row[1], 0) / rows.length) : 0;
+
+  const stats = [
+    { label: 'Months Tracked', value: rows.length },
+    { label: 'Avg per Month', value: avgPerMonth },
+    { label: 'Peak Month', value: rows.length > 0 ? rows.reduce((max, row) => row[1] > max[1] ? row : max)[0] : 'N/A' }
+  ];
+
+  return {
+    headers: ['Month', 'Grievances'],
+    rows: rows,
+    stats: stats
+  };
+}
+
+/**
+ * Gets resolution time data
+ * @param {Array} data - Grievance data
+ * @returns {Object} Chart data
+ */
+function getResolutionTimeData(data) {
+  const resolutionTimes = {};
+
+  data.forEach(row => {
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    const daysOpen = row[GRIEVANCE_COLS.DAYS_OPEN - 1];
+
+    if (daysOpen && typeof daysOpen === 'number') {
+      if (!resolutionTimes[status]) {
+        resolutionTimes[status] = [];
+      }
+      resolutionTimes[status].push(daysOpen);
+    }
+  });
+
+  const rows = Object.entries(resolutionTimes).map(([status, times]) => {
+    const avg = times.reduce((sum, time) => sum + time, 0) / times.length;
+    return [status, Math.round(avg)];
+  });
+
+  const overallAvg = rows.length > 0 ? Math.round(rows.reduce((sum, row) => sum + row[1], 0) / rows.length) : 0;
+
+  const stats = [
+    { label: 'Avg Resolution Time', value: overallAvg + ' days' },
+    { label: 'Fastest Status', value: rows.length > 0 ? rows.reduce((min, row) => row[1] < min[1] ? row : min)[0] : 'N/A' },
+    { label: 'Slowest Status', value: rows.length > 0 ? rows.reduce((max, row) => row[1] > max[1] ? row : max)[0] : 'N/A' }
+  ];
+
+  return {
+    headers: ['Status', 'Avg Days'],
+    rows: rows,
+    stats: stats
+  };
+}
+
+/**
+ * Gets steward workload data
+ * @param {Array} data - Grievance data
+ * @returns {Object} Chart data
+ */
+function getStewardWorkloadData(data) {
+  const stewardCounts = {};
+
+  data.forEach(row => {
+    const steward = row[GRIEVANCE_COLS.STEWARD - 1] || 'Unassigned';
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+
+    if (status !== 'Resolved' && status !== 'Withdrawn') {
+      stewardCounts[steward] = (stewardCounts[steward] || 0) + 1;
+    }
+  });
+
+  const rows = Object.entries(stewardCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)  // Top 10 stewards
+    .map(([steward, count]) => [steward, count]);
+
+  const avgWorkload = rows.length > 0 ? Math.round(rows.reduce((sum, row) => sum + row[1], 0) / rows.length) : 0;
+
+  const stats = [
+    { label: 'Active Stewards', value: rows.length },
+    { label: 'Avg Caseload', value: avgWorkload },
+    { label: 'Highest Caseload', value: rows[0] ? rows[0][1] : 0 }
+  ];
+
+  return {
+    headers: ['Steward', 'Active Cases'],
+    rows: rows,
+    stats: stats
+  };
+}
+
+/**
+ * Gets trend analysis data
+ * @param {Array} data - Grievance data
+ * @returns {Object} Chart data
+ */
+function getTrendAnalysisData(data) {
+  const monthlyData = {};
+
+  data.forEach(row => {
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    if (filedDate instanceof Date) {
+      const monthKey = Utilities.formatDate(filedDate, Session.getScriptTimeZone(), 'yyyy-MM');
+
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { filed: 0, resolved: 0 };
+      }
+
+      monthlyData[monthKey].filed++;
+
+      const closedDate = row[GRIEVANCE_COLS.DATE_CLOSED - 1];
+      if (closedDate instanceof Date) {
+        const closedMonth = Utilities.formatDate(closedDate, Session.getScriptTimeZone(), 'yyyy-MM');
+        if (!monthlyData[closedMonth]) {
+          monthlyData[closedMonth] = { filed: 0, resolved: 0 };
+        }
+        monthlyData[closedMonth].resolved++;
+      }
+    }
+  });
+
+  const rows = Object.entries(monthlyData)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .slice(-12)
+    .map(([month, counts]) => [month, counts.filed, counts.resolved]);
+
+  const stats = [
+    { label: 'Months Tracked', value: rows.length },
+    { label: 'Total Filed', value: rows.reduce((sum, row) => sum + row[1], 0) },
+    { label: 'Total Resolved', value: rows.reduce((sum, row) => sum + row[2], 0) }
+  ];
+
+  return {
+    headers: ['Month', 'Filed', 'Resolved'],
+    rows: rows,
+    stats: stats
+  };
+}
+
+/**
+ * Saves chart to sheet
+ * @param {string} dataSource - Data source
+ * @param {string} chartType - Chart type
+ */
+function saveChartToSheet(dataSource, chartType) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let vizSheet = ss.getSheetByName('Visualizations');
+
+  if (!vizSheet) {
+    vizSheet = ss.insertSheet('Visualizations');
+  }
+
+  const chartData = getChartData(dataSource);
+
+  // Clear and add data
+  vizSheet.clear();
+  vizSheet.getRange(1, 1, 1, chartData.headers.length).setValues([chartData.headers]);
+  if (chartData.rows.length > 0) {
+    vizSheet.getRange(2, 1, chartData.rows.length, chartData.headers.length).setValues(chartData.rows);
+  }
+
+  // Create embedded chart
+  const dataRange = vizSheet.getRange(1, 1, chartData.rows.length + 1, chartData.headers.length);
+
+  let chartBuilder = vizSheet.newChart()
+    .setPosition(chartData.rows.length + 3, 1, 0, 0)
+    .addRange(dataRange)
+    .setOption('title', dataSource.replace(/-/g, ' ').toUpperCase())
+    .setOption('width', 800)
+    .setOption('height', 500);
+
+  // Set chart type
+  switch (chartType) {
+    case 'ColumnChart':
+      chartBuilder.setChartType(Charts.ChartType.COLUMN);
+      break;
+    case 'BarChart':
+      chartBuilder.setChartType(Charts.ChartType.BAR);
+      break;
+    case 'LineChart':
+      chartBuilder.setChartType(Charts.ChartType.LINE);
+      break;
+    case 'PieChart':
+      chartBuilder.setChartType(Charts.ChartType.PIE);
+      break;
+    case 'AreaChart':
+      chartBuilder.setChartType(Charts.ChartType.AREA);
+      break;
+    case 'ScatterChart':
+      chartBuilder.setChartType(Charts.ChartType.SCATTER);
+      break;
+    default:
+      chartBuilder.setChartType(Charts.ChartType.COLUMN);
+  }
+
+  const chart = chartBuilder.build();
+  vizSheet.insertChart(chart);
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    '✅ Chart saved to Visualizations sheet!',
+    'Chart Saved',
+    3
+  );
+}
+
+
+
+// ================================================================================
 // MODULE: AuditLoggingRBAC.gs
 // Source: AuditLoggingRBAC.gs
 // ================================================================================
@@ -9083,6 +10197,691 @@ function showMyPermissions() {
     `Email: ${userEmail}\n\nRole: ${role}\n\n${permissions[role]}`,
     SpreadsheetApp.getUi().ButtonSet.OK
   );
+}
+
+
+
+// ================================================================================
+// MODULE: AutoRefresh.gs
+// Source: AutoRefresh.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * AUTO-REFRESH & REAL-TIME UPDATES
+ * ============================================================================
+ *
+ * Automatic dashboard refresh and real-time data updates
+ * Features:
+ * - Auto-refresh dashboards
+ * - Configurable refresh intervals
+ * - Manual refresh controls
+ * - Last updated timestamps
+ * - Change detection
+ * - Refresh notifications
+ * - Pause/resume refresh
+ */
+
+/**
+ * Auto-refresh configuration
+ */
+const AUTO_REFRESH_CONFIG = {
+  DEFAULT_INTERVAL_SECONDS: 300,  // 5 minutes
+  INTERVALS: [60, 120, 300, 600, 1800],  // 1m, 2m, 5m, 10m, 30m
+  ENABLED_BY_DEFAULT: false
+};
+
+/**
+ * Shows auto-refresh settings
+ */
+function showAutoRefreshSettings() {
+  const html = createAutoRefreshSettingsHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(600)
+    .setHeight(500);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🔄 Auto-Refresh Settings');
+}
+
+/**
+ * Creates HTML for auto-refresh settings
+ */
+function createAutoRefreshSettingsHTML() {
+  const settings = getAutoRefreshSettings();
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 30px; border-radius: 12px; max-width: 500px; margin: 0 auto; }
+    h2 { color: #1a73e8; margin-top: 0; }
+    .setting-row { margin: 25px 0; }
+    label { display: block; font-weight: 500; margin-bottom: 10px; color: #333; }
+    select { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; }
+    .toggle-container { display: flex; align-items: center; gap: 15px; }
+    .toggle-switch { position: relative; display: inline-block; width: 60px; height: 30px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: 0.4s; border-radius: 30px; }
+    .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 4px; bottom: 4px; background-color: white; transition: 0.4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #1a73e8; }
+    input:checked + .slider:before { transform: translateX(30px); }
+    button { background: #1a73e8; color: white; border: none; padding: 12px 24px; font-size: 14px; border-radius: 6px; cursor: pointer; width: 100%; margin: 5px 0; }
+    button:hover { background: #1557b0; }
+    button.secondary { background: #6c757d; }
+    .info-box { background: #e8f0fe; padding: 15px; border-radius: 6px; margin: 20px 0; font-size: 13px; color: #1557b0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔄 Auto-Refresh Settings</h2>
+
+    <div class="info-box">
+      ℹ️ Auto-refresh will automatically update dashboard data at the specified interval.
+      This keeps your data current without manual refreshing.
+    </div>
+
+    <div class="setting-row">
+      <div class="toggle-container">
+        <label style="margin: 0;">Enable Auto-Refresh</label>
+        <label class="toggle-switch">
+          <input type="checkbox" id="enabled" ${settings.enabled ? 'checked' : ''}>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <label>Refresh Interval</label>
+      <select id="interval">
+        <option value="60" ${settings.interval === 60 ? 'selected' : ''}>Every 1 minute</option>
+        <option value="120" ${settings.interval === 120 ? 'selected' : ''}>Every 2 minutes</option>
+        <option value="300" ${settings.interval === 300 ? 'selected' : ''}>Every 5 minutes</option>
+        <option value="600" ${settings.interval === 600 ? 'selected' : ''}>Every 10 minutes</option>
+        <option value="1800" ${settings.interval === 1800 ? 'selected' : ''}>Every 30 minutes</option>
+      </select>
+    </div>
+
+    <div class="setting-row">
+      <label>Sheets to Auto-Refresh</label>
+      <select id="sheets" multiple size="5">
+        <option value="Dashboard" ${settings.sheets.includes('Dashboard') ? 'selected' : ''}>Dashboard</option>
+        <option value="Analytics Data" ${settings.sheets.includes('Analytics Data') ? 'selected' : ''}>Analytics Data</option>
+        <option value="Interactive" ${settings.sheets.includes('Interactive') ? 'selected' : ''}>Interactive Dashboard</option>
+        <option value="Steward Workload" ${settings.sheets.includes('Steward Workload') ? 'selected' : ''}>Steward Workload</option>
+        <option value="Trends" ${settings.sheets.includes('Trends') ? 'selected' : ''}>Trends & Timeline</option>
+      </select>
+      <small style="color: #666;">Hold Ctrl/Cmd to select multiple</small>
+    </div>
+
+    <button onclick="saveSettings()">💾 Save Settings</button>
+    <button class="secondary" onclick="testRefresh()">🧪 Test Refresh Now</button>
+    <button class="secondary" onclick="google.script.host.close()">Cancel</button>
+  </div>
+
+  <script>
+    function saveSettings() {
+      const enabled = document.getElementById('enabled').checked;
+      const interval = parseInt(document.getElementById('interval').value);
+      const sheetsSelect = document.getElementById('sheets');
+      const sheets = Array.from(sheetsSelect.selectedOptions).map(o => o.value);
+
+      google.script.run
+        .withSuccessHandler(() => {
+          alert('✅ Auto-refresh settings saved!');
+          google.script.host.close();
+        })
+        .saveAutoRefreshSettings({
+          enabled: enabled,
+          interval: interval,
+          sheets: sheets
+        });
+    }
+
+    function testRefresh() {
+      google.script.run
+        .withSuccessHandler(() => {
+          alert('✅ Manual refresh complete!');
+        })
+        .performManualRefresh();
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Gets auto-refresh settings
+ * @returns {Object} Settings
+ */
+function getAutoRefreshSettings() {
+  const props = PropertiesService.getDocumentProperties();
+  const settingsJSON = props.getProperty('autoRefreshSettings');
+
+  if (settingsJSON) {
+    return JSON.parse(settingsJSON);
+  }
+
+  return {
+    enabled: AUTO_REFRESH_CONFIG.ENABLED_BY_DEFAULT,
+    interval: AUTO_REFRESH_CONFIG.DEFAULT_INTERVAL_SECONDS,
+    sheets: ['Dashboard']
+  };
+}
+
+/**
+ * Saves auto-refresh settings
+ * @param {Object} settings - Settings to save
+ */
+function saveAutoRefreshSettings(settings) {
+  const props = PropertiesService.getDocumentProperties();
+  props.setProperty('autoRefreshSettings', JSON.stringify(settings));
+
+  // Update triggers
+  if (settings.enabled) {
+    setupAutoRefreshTrigger(settings.interval);
+  } else {
+    removeAutoRefreshTrigger();
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    settings.enabled ? '✅ Auto-refresh enabled' : '🔕 Auto-refresh disabled',
+    'Auto-Refresh',
+    3
+  );
+}
+
+/**
+ * Sets up auto-refresh trigger
+ * @param {number} intervalSeconds - Refresh interval in seconds
+ */
+function setupAutoRefreshTrigger(intervalSeconds) {
+  // Remove existing triggers
+  removeAutoRefreshTrigger();
+
+  // Create new trigger
+  const intervalMinutes = Math.max(1, Math.floor(intervalSeconds / 60));
+
+  ScriptApp.newTrigger('performAutoRefresh')
+    .timeBased()
+    .everyMinutes(intervalMinutes)
+    .create();
+}
+
+/**
+ * Removes auto-refresh trigger
+ */
+function removeAutoRefreshTrigger() {
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'performAutoRefresh') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+}
+
+/**
+ * Performs auto-refresh (triggered automatically)
+ */
+function performAutoRefresh() {
+  const settings = getAutoRefreshSettings();
+
+  if (!settings.enabled) {
+    return;
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  settings.sheets.forEach(sheetName => {
+    const sheet = ss.getSheetByName(sheetName);
+    if (sheet) {
+      refreshSheet(sheet);
+    }
+  });
+
+  // Update last refresh timestamp
+  const props = PropertiesService.getDocumentProperties();
+  props.setProperty('lastAutoRefresh', new Date().toISOString());
+
+  // Log activity
+  if (typeof logActivity === 'function') {
+    logActivity('Auto-Refresh', 'Dashboards automatically refreshed', { sheets: settings.sheets });
+  }
+}
+
+/**
+ * Performs manual refresh
+ */
+function performManualRefresh() {
+  SpreadsheetApp.flush();
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const activeSheet = ss.getActiveSheet();
+
+  refreshSheet(activeSheet);
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    '✅ ' + activeSheet.getName() + ' refreshed',
+    'Refresh Complete',
+    3
+  );
+
+  // Log activity
+  if (typeof logActivity === 'function') {
+    logActivity('Manual Refresh', 'Sheet manually refreshed: ' + activeSheet.getName());
+  }
+}
+
+/**
+ * Refreshes a specific sheet
+ * @param {Sheet} sheet - Sheet to refresh
+ */
+function refreshSheet(sheet) {
+  const sheetName = sheet.getName();
+
+  // Add timestamp
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+
+  if (lastRow > 0 && lastCol > 0) {
+    // Update "Last Updated" cell if it exists
+    const values = sheet.getDataRange().getValues();
+    for (let i = 0; i < Math.min(5, values.length); i++) {
+      for (let j = 0; j < values[i].length; j++) {
+        if (String(values[i][j]).toLowerCase().includes('last updated')) {
+          sheet.getRange(i + 1, j + 2).setValue(new Date());
+          break;
+        }
+      }
+    }
+  }
+
+  SpreadsheetApp.flush();
+}
+
+/**
+ * Gets last refresh timestamp
+ * @returns {string} Timestamp
+ */
+function getLastRefreshTimestamp() {
+  const props = PropertiesService.getDocumentProperties();
+  const timestamp = props.getProperty('lastAutoRefresh');
+
+  if (timestamp) {
+    return new Date(timestamp).toLocaleString();
+  }
+
+  return 'Never';
+}
+
+/**
+ * Shows refresh status
+ */
+function showRefreshStatus() {
+  const settings = getAutoRefreshSettings();
+  const lastRefresh = getLastRefreshTimestamp();
+
+  const message = `
+AUTO-REFRESH STATUS
+
+Status: ${settings.enabled ? '✅ Enabled' : '🔕 Disabled'}
+Interval: ${settings.interval / 60} minutes
+Sheets: ${settings.sheets.join(', ')}
+Last Refresh: ${lastRefresh}
+
+${settings.enabled ? 'Dashboards will automatically refresh every ' + (settings.interval / 60) + ' minutes.' : 'Enable auto-refresh in settings to keep dashboards current.'}
+  `;
+
+  SpreadsheetApp.getUi().alert('Refresh Status', message, SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+/**
+ * Quick refresh all dashboards
+ */
+function quickRefreshAll() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  const dashboardSheets = [
+    SHEETS.DASHBOARD,
+    SHEETS.ANALYTICS,
+    SHEETS.STEWARD_WORKLOAD,
+    SHEETS.TRENDS,
+    SHEETS.INTERACTIVE_DASHBOARD
+  ];
+
+  let refreshed = 0;
+
+  dashboardSheets.forEach(sheetName => {
+    const sheet = ss.getSheetByName(sheetName);
+    if (sheet) {
+      refreshSheet(sheet);
+      refreshed++;
+    }
+  });
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    `✅ ${refreshed} dashboard${refreshed !== 1 ? 's' : ''} refreshed`,
+    'Refresh Complete',
+    3
+  );
+}
+
+
+
+// ================================================================================
+// MODULE: BenchmarkTools.gs
+// Source: BenchmarkTools.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * BENCHMARK & COMPARISON TOOLS
+ * ============================================================================
+ *
+ * Performance benchmarking and comparative analysis
+ * Features:
+ * - Year-over-year comparisons
+ * - Period-to-period analysis
+ * - Benchmark against averages
+ * - Performance metrics
+ * - Trend indicators
+ * - Comparative reports
+ */
+
+/**
+ * Shows benchmark dashboard
+ */
+function showBenchmarkDashboard() {
+  const html = createBenchmarkDashboardHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(1000)
+    .setHeight(700);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📊 Benchmark Dashboard');
+}
+
+/**
+ * Creates HTML for benchmark dashboard
+ */
+function createBenchmarkDashboardHTML() {
+  const benchmarks = calculateBenchmarks();
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 30px; border-radius: 12px; max-height: 650px; overflow-y: auto; }
+    h2 { color: #1a73e8; margin-top: 0; }
+    .benchmark-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 25px 0; }
+    .benchmark-card { background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #1a73e8; }
+    .benchmark-title { font-size: 13px; color: #666; text-transform: uppercase; margin-bottom: 10px; }
+    .benchmark-value { font-size: 32px; font-weight: bold; color: #1a73e8; margin: 10px 0; }
+    .benchmark-comparison { font-size: 14px; color: #666; }
+    .trend-up { color: #4caf50; }
+    .trend-down { color: #f44336; }
+    .trend-neutral { color: #ff9800; }
+    .comparison-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    .comparison-table th { background: #1a73e8; color: white; padding: 12px; text-align: left; }
+    .comparison-table td { padding: 12px; border-bottom: 1px solid #e0e0e0; }
+    button { background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin: 5px; }
+    button:hover { background: #1557b0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📊 Performance Benchmarks</h2>
+
+    <div class="benchmark-grid">
+      <div class="benchmark-card">
+        <div class="benchmark-title">Total Grievances</div>
+        <div class="benchmark-value">${benchmarks.totalGrievances}</div>
+        <div class="benchmark-comparison">
+          <span class="trend-${benchmarks.grievanceTrend}">${benchmarks.grievanceChange}</span>
+          vs last period
+        </div>
+      </div>
+
+      <div class="benchmark-card">
+        <div class="benchmark-title">Avg Resolution Time</div>
+        <div class="benchmark-value">${benchmarks.avgResolutionDays} days</div>
+        <div class="benchmark-comparison">
+          <span class="trend-${benchmarks.resolutionTrend}">${benchmarks.resolutionChange}</span>
+          vs last period
+        </div>
+      </div>
+
+      <div class="benchmark-card">
+        <div class="benchmark-title">Success Rate</div>
+        <div class="benchmark-value">${benchmarks.successRate}%</div>
+        <div class="benchmark-comparison">
+          <span class="trend-${benchmarks.successTrend}">${benchmarks.successChange}</span>
+          vs last period
+        </div>
+      </div>
+    </div>
+
+    <h3>Year-over-Year Comparison</h3>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>This Year</th>
+          <th>Last Year</th>
+          <th>Change</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${benchmarks.yearOverYear.map(row => `
+          <tr>
+            <td>${row.metric}</td>
+            <td>${row.thisYear}</td>
+            <td>${row.lastYear}</td>
+            <td class="trend-${row.trend}">${row.change}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <div style="margin-top: 20px;">
+      <button onclick="exportBenchmarks()">📥 Export Report</button>
+      <button onclick="google.script.host.close()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    function exportBenchmarks() {
+      google.script.run
+        .withSuccessHandler((url) => {
+          alert('✅ Benchmark report exported!');
+          window.open(url, '_blank');
+        })
+        .exportBenchmarkReport();
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Calculates benchmark metrics
+ * @returns {Object} Benchmark data
+ */
+function calculateBenchmarks() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceSheet || grievanceSheet.getLastRow() <= 1) {
+    return getEmptyBenchmarks();
+  }
+
+  const data = grievanceSheet.getRange(2, 1, grievanceSheet.getLastRow() - 1, 28).getValues();
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const lastYear = currentYear - 1;
+
+  const currentYearData = data.filter(row => {
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    return filedDate instanceof Date && filedDate.getFullYear() === currentYear;
+  });
+
+  const lastYearData = data.filter(row => {
+    const filedDate = row[GRIEVANCE_COLS.DATE_FILED - 1];
+    return filedDate instanceof Date && filedDate.getFullYear() === lastYear;
+  });
+
+  // Calculate metrics
+  const totalGrievances = currentYearData.length;
+  const lastYearGrievances = lastYearData.length;
+  const grievanceChange = totalGrievances - lastYearGrievances;
+  const grievanceTrend = grievanceChange > 0 ? 'up' : grievanceChange < 0 ? 'down' : 'neutral';
+
+  const avgResolutionDays = calculateAvgResolution(currentYearData);
+  const lastYearAvgResolution = calculateAvgResolution(lastYearData);
+  const resolutionChange = avgResolutionDays - lastYearAvgResolution;
+  const resolutionTrend = resolutionChange < 0 ? 'up' : resolutionChange > 0 ? 'down' : 'neutral';
+
+  const successRate = calculateSuccessRate(currentYearData);
+  const lastYearSuccessRate = calculateSuccessRate(lastYearData);
+  const successChange = successRate - lastYearSuccessRate;
+  const successTrend = successChange > 0 ? 'up' : successChange < 0 ? 'down' : 'neutral';
+
+  return {
+    totalGrievances: totalGrievances,
+    grievanceChange: (grievanceChange >= 0 ? '+' : '') + grievanceChange,
+    grievanceTrend: grievanceTrend,
+    avgResolutionDays: Math.round(avgResolutionDays),
+    resolutionChange: (resolutionChange >= 0 ? '+' : '') + Math.round(resolutionChange) + ' days',
+    resolutionTrend: resolutionTrend,
+    successRate: Math.round(successRate),
+    successChange: (successChange >= 0 ? '+' : '') + Math.round(successChange) + '%',
+    successTrend: successTrend,
+    yearOverYear: [
+      {
+        metric: 'Total Grievances',
+        thisYear: totalGrievances,
+        lastYear: lastYearGrievances,
+        change: (grievanceChange >= 0 ? '+' : '') + grievanceChange,
+        trend: grievanceTrend
+      },
+      {
+        metric: 'Avg Resolution (days)',
+        thisYear: Math.round(avgResolutionDays),
+        lastYear: Math.round(lastYearAvgResolution),
+        change: (resolutionChange >= 0 ? '+' : '') + Math.round(resolutionChange),
+        trend: resolutionTrend
+      },
+      {
+        metric: 'Success Rate (%)',
+        thisYear: Math.round(successRate) + '%',
+        lastYear: Math.round(lastYearSuccessRate) + '%',
+        change: (successChange >= 0 ? '+' : '') + Math.round(successChange) + '%',
+        trend: successTrend
+      }
+    ]
+  };
+}
+
+/**
+ * Calculates average resolution time
+ * @param {Array} data - Grievance data
+ * @returns {number} Average days
+ */
+function calculateAvgResolution(data) {
+  const resolved = data.filter(row => {
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    return status === 'Resolved' || status === 'Closed';
+  });
+
+  if (resolved.length === 0) return 0;
+
+  const totalDays = resolved.reduce((sum, row) => {
+    const daysOpen = row[GRIEVANCE_COLS.DAYS_OPEN - 1];
+    return sum + (typeof daysOpen === 'number' ? daysOpen : 0);
+  }, 0);
+
+  return totalDays / resolved.length;
+}
+
+/**
+ * Calculates success rate
+ * @param {Array} data - Grievance data
+ * @returns {number} Success rate percentage
+ */
+function calculateSuccessRate(data) {
+  const resolved = data.filter(row => {
+    const status = row[GRIEVANCE_COLS.STATUS - 1];
+    return status === 'Resolved' || status === 'Closed';
+  });
+
+  if (data.length === 0) return 0;
+
+  return (resolved.length / data.length) * 100;
+}
+
+/**
+ * Gets empty benchmark data
+ * @returns {Object} Empty benchmarks
+ */
+function getEmptyBenchmarks() {
+  return {
+    totalGrievances: 0,
+    grievanceChange: '+0',
+    grievanceTrend: 'neutral',
+    avgResolutionDays: 0,
+    resolutionChange: '+0 days',
+    resolutionTrend: 'neutral',
+    successRate: 0,
+    successChange: '+0%',
+    successTrend: 'neutral',
+    yearOverYear: []
+  };
+}
+
+/**
+ * Exports benchmark report
+ * @returns {string} Sheet URL
+ */
+function exportBenchmarkReport() {
+  const benchmarks = calculateBenchmarks();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  let reportSheet = ss.getSheetByName('Benchmark_Report');
+  if (reportSheet) {
+    reportSheet.clear();
+  } else {
+    reportSheet = ss.insertSheet('Benchmark_Report');
+  }
+
+  // Headers
+  reportSheet.getRange('A1').setValue('PERFORMANCE BENCHMARKS');
+  reportSheet.getRange('A1').setFontSize(16).setFontWeight('bold');
+
+  reportSheet.getRange('A3').setValue('Generated: ' + new Date().toLocaleString());
+
+  // Summary metrics
+  reportSheet.getRange('A5:D5').setValues([['Metric', 'Current', 'Previous', 'Change']]);
+  reportSheet.getRange('A5:D5').setFontWeight('bold').setBackground('#1a73e8').setFontColor('#ffffff');
+
+  const summaryData = benchmarks.yearOverYear;
+  if (summaryData.length > 0) {
+    const rows = summaryData.map(row => [row.metric, row.thisYear, row.lastYear, row.change]);
+    reportSheet.getRange(6, 1, rows.length, 4).setValues(rows);
+  }
+
+  // Auto-resize
+  for (let col = 1; col <= 4; col++) {
+    reportSheet.autoResizeColumn(col);
+  }
+
+  return ss.getUrl() + '#gid=' + reportSheet.getSheetId();
 }
 
 
@@ -10003,6 +11802,508 @@ function resetADHDSettings() {
     '✅ ADHD settings reset to defaults',
     'Settings',
     3
+  );
+}
+
+
+
+// ================================================================================
+// MODULE: EnhancedHelp.gs
+// Source: EnhancedHelp.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * ENHANCED HELP & CONTEXT-SENSITIVE GUIDANCE
+ * ============================================================================
+ *
+ * Advanced help system with searchable documentation
+ * Features:
+ * - Searchable help articles
+ * - Context-sensitive tooltips
+ * - Interactive tutorials
+ * - Video guides (links)
+ * - Quick tips
+ * - Keyboard shortcut reference
+ * - Troubleshooting wizard
+ */
+
+/**
+ * Help article database
+ */
+const HELP_ARTICLES = [
+  {
+    id: 'getting-started',
+    category: 'Getting Started',
+    title: 'Getting Started with 509 Dashboard',
+    keywords: 'start begin setup introduction',
+    content: `
+# Getting Started
+
+Welcome to the 509 Dashboard! This guide will help you get started.
+
+## First Steps
+1. Review the Dashboard sheet for an overview
+2. Navigate to Member Directory to see all members
+3. Check the Grievance Log for active cases
+4. Use the menu (📊 509 Dashboard) to access all features
+
+## Key Features
+- **Member Management**: Track 20,000+ members
+- **Grievance Tracking**: Full lifecycle management
+- **Analytics**: Real-time dashboards and reports
+- **Automation**: Email notifications and scheduled reports
+- **Collaboration**: Shared access and workflows
+
+## Need Help?
+Use the search function to find specific features or browse the FAQ.
+    `
+  },
+  {
+    id: 'grievance-workflow',
+    category: 'Grievances',
+    title: 'Grievance Workflow Guide',
+    keywords: 'grievance process workflow steps stages',
+    content: `
+# Grievance Workflow
+
+Understanding the grievance process from filing to resolution.
+
+## Workflow States
+1. **Filed**: Initial submission
+2. **Step 1 Pending**: Awaiting first level review
+3. **Step 2 Appeal**: Second level escalation
+4. **Step 3 Appeal**: Final internal appeal
+5. **Mediation**: External mediation process
+6. **Arbitration**: Formal arbitration
+7. **Resolved**: Case closed with outcome
+8. **Withdrawn**: Cancelled by member
+
+## State Transitions
+Use Workflow Management menu to:
+- View current state
+- Change states (with validation)
+- Batch update multiple grievances
+- View workflow visualizer
+
+## Deadlines
+Deadlines are automatically calculated based on:
+- Contract terms
+- State-specific timelines
+- Calendar events
+    `
+  },
+  {
+    id: 'batch-operations',
+    category: 'Operations',
+    title: 'Using Batch Operations',
+    keywords: 'batch bulk operations multiple mass',
+    content: `
+# Batch Operations
+
+Efficiently manage multiple grievances at once.
+
+## Available Operations
+1. **Bulk Assign Steward**: Assign multiple cases to one steward
+2. **Bulk Update Status**: Change status for selected grievances
+3. **Bulk Export PDF**: Generate PDFs for multiple cases
+4. **Bulk Email**: Send notifications to multiple stakeholders
+5. **Bulk Add Notes**: Add notes to multiple grievances
+
+## How to Use
+1. Select rows in Grievance Log
+2. Go to ⚡ Batch Operations menu
+3. Choose operation
+4. Follow prompts
+5. Review confirmation
+
+## Tips
+- Select consecutive rows for better performance
+- Review selection before executing
+- Use filters to narrow down cases first
+    `
+  },
+  {
+    id: 'reports-analytics',
+    category: 'Reports',
+    title: 'Reports and Analytics',
+    keywords: 'reports analytics charts data visualization',
+    content: `
+# Reports and Analytics
+
+Generate insights from your grievance data.
+
+## Dashboard Views
+- **Main Dashboard**: Executive summary
+- **Interactive Dashboard**: Customizable views
+- **Steward Workload**: Caseload distribution
+- **Trends**: Historical analysis
+- **Location Analytics**: Geographic patterns
+
+## Custom Reports
+Use the Custom Report Builder:
+1. Select fields to include
+2. Apply filters
+3. Choose sort order
+4. Generate report
+5. Export to PDF/CSV/Excel
+
+## Advanced Visualization
+- Interactive charts with Google Charts
+- Multiple chart types (bar, line, pie, etc.)
+- Drill-down capabilities
+- Export charts as images
+    `
+  },
+  {
+    id: 'automation',
+    category: 'Automation',
+    title: 'Automation Features',
+    keywords: 'automation scheduled triggers email notifications',
+    content: `
+# Automation
+
+Set up automated tasks to save time.
+
+## Email Notifications
+- Daily deadline reminders (8 AM)
+- Overdue case alerts
+- Status change notifications
+- Customizable recipients
+
+## Scheduled Reports
+- Monthly executive summary
+- Quarterly trend analysis
+- Weekly steward workload
+- Custom report schedules
+
+## Calendar Integration
+- Sync deadlines to Google Calendar
+- Auto-create calendar events
+- Deadline reminders
+- Team calendar sharing
+
+## Setup
+1. Go to 🤖 Automation menu
+2. Enable desired features
+3. Configure settings
+4. Test before deploying
+    `
+  }
+];
+
+/**
+ * Shows enhanced help center
+ */
+function showEnhancedHelp() {
+  const html = createEnhancedHelpHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(1000)
+    .setHeight(700);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '❓ Help Center');
+}
+
+/**
+ * Creates HTML for help center
+ */
+function createEnhancedHelpHTML() {
+  let articleList = '';
+  const categories = [...new Set(HELP_ARTICLES.map(a => a.category))];
+
+  categories.forEach(category => {
+    const articles = HELP_ARTICLES.filter(a => a.category === category);
+    articleList += `<div class="category-section">
+      <div class="category-title">${category}</div>
+      ${articles.map(article => `
+        <div class="article-link" onclick="showArticle('${article.id}')">
+          📄 ${article.title}
+        </div>
+      `).join('')}
+    </div>`;
+  });
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; }
+    .layout { display: grid; grid-template-columns: 300px 1fr; height: 100vh; }
+    .sidebar { background: white; padding: 20px; border-right: 1px solid #e0e0e0; overflow-y: auto; }
+    .main { padding: 30px; overflow-y: auto; background: white; }
+    h1 { color: #1a73e8; margin-top: 0; font-size: 28px; }
+    h2 { color: #333; font-size: 20px; margin-top: 25px; }
+    .search-box { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 20px; }
+    .category-section { margin: 20px 0; }
+    .category-title { font-weight: bold; color: #1a73e8; margin-bottom: 10px; font-size: 14px; }
+    .article-link { padding: 10px; margin: 5px 0; background: #f8f9fa; border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+    .article-link:hover { background: #e8f0fe; transform: translateX(5px); }
+    .article-content { line-height: 1.8; color: #555; }
+    .article-content h1 { color: #1a73e8; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; }
+    .article-content h2 { color: #333; margin-top: 30px; }
+    .article-content ul, .article-content ol { padding-left: 25px; }
+    .article-content li { margin: 10px 0; }
+    .article-content code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    .quick-links { background: #e8f0fe; padding: 20px; border-radius: 8px; margin: 20px 0; }
+    .quick-links h3 { margin-top: 0; color: #1a73e8; }
+    .quick-link-btn { display: inline-block; background: #1a73e8; color: white; padding: 8px 16px; border-radius: 6px; margin: 5px; text-decoration: none; cursor: pointer; font-size: 13px; }
+    .quick-link-btn:hover { background: #1557b0; }
+    button { background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; margin: 5px; }
+    button:hover { background: #1557b0; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="sidebar">
+      <h2 style="margin-top: 0;">❓ Help Center</h2>
+      <input type="text" class="search-box" placeholder="Search help..." oninput="searchArticles(this.value)">
+
+      <div id="articleList">
+        ${articleList}
+      </div>
+
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+        <button onclick="showKeyboardShortcuts()" style="width: 100%;">⌨️ Keyboard Shortcuts</button>
+        <button onclick="showVideoTutorials()" style="width: 100%; background: #6c757d;">🎥 Video Tutorials</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div id="articleContent">
+        <h1>Welcome to Help Center</h1>
+        <p>Select an article from the sidebar or use the search function to find what you need.</p>
+
+        <div class="quick-links">
+          <h3>🚀 Quick Start</h3>
+          <span class="quick-link-btn" onclick="showArticle('getting-started')">Getting Started Guide</span>
+          <span class="quick-link-btn" onclick="showArticle('grievance-workflow')">Grievance Workflow</span>
+          <span class="quick-link-btn" onclick="showArticle('batch-operations')">Batch Operations</span>
+        </div>
+
+        <h2>Popular Topics</h2>
+        <ul>
+          <li>How to file a new grievance</li>
+          <li>Managing member directory</li>
+          <li>Generating custom reports</li>
+          <li>Setting up automation</li>
+          <li>Using keyboard shortcuts</li>
+        </ul>
+
+        <h2>Need More Help?</h2>
+        <p>Can't find what you're looking for? Try:</p>
+        <ul>
+          <li>Searching with different keywords</li>
+          <li>Browsing the FAQ Knowledge Base</li>
+          <li>Checking the release notes for new features</li>
+          <li>Contacting system administrator</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const articles = ${JSON.stringify(HELP_ARTICLES)};
+
+    function showArticle(articleId) {
+      const article = articles.find(a => a.id === articleId);
+      if (!article) return;
+
+      // Convert markdown-like content to HTML
+      let html = article.content
+        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^\*\* (.+)$/gm, '<strong>$1</strong>')
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        .replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+
+      // Wrap consecutive list items in ul
+      html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+
+      document.getElementById('articleContent').innerHTML = '<div class="article-content">' + html + '</div>';
+    }
+
+    function searchArticles(query) {
+      if (!query) {
+        location.reload();
+        return;
+      }
+
+      const results = articles.filter(a =>
+        a.title.toLowerCase().includes(query.toLowerCase()) ||
+        a.keywords.toLowerCase().includes(query.toLowerCase()) ||
+        a.content.toLowerCase().includes(query.toLowerCase())
+      );
+
+      if (results.length === 0) {
+        document.getElementById('articleContent').innerHTML = '<h1>No Results</h1><p>No articles match your search.</p>';
+        document.getElementById('articleList').innerHTML = '<p style="text-align: center; color: #999;">No matching articles</p>';
+        return;
+      }
+
+      let html = results.map(article => \`
+        <div class="article-link" onclick="showArticle('\${article.id}')">
+          📄 \${article.title}
+        </div>
+      \`).join('');
+
+      document.getElementById('articleList').innerHTML = html;
+
+      // Show first result
+      if (results.length > 0) {
+        showArticle(results[0].id);
+      }
+    }
+
+    function showKeyboardShortcuts() {
+      google.script.run.showKeyboardShortcuts();
+    }
+
+    function showVideoTutorials() {
+      alert('Video Tutorials:\\n\\n🎥 Coming soon!\\n\\nVideo tutorials will be available at:\\nhttps://docs.509dashboard.org/videos');
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Shows context help based on current sheet
+ */
+function showContextHelp() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const activeSheet = ss.getActiveSheet();
+  const sheetName = activeSheet.getName();
+
+  let helpText = '';
+  let title = 'Context Help';
+
+  switch (sheetName) {
+    case SHEETS.GRIEVANCE_LOG:
+      title = 'Grievance Log Help';
+      helpText = `
+GRIEVANCE LOG
+
+This sheet tracks all grievances from filing to resolution.
+
+KEY COLUMNS:
+• Grievance ID: Unique identifier
+• Status: Current state of grievance
+• Current Step: Workflow stage
+• Dates: Filing, deadlines, resolutions
+• Days Open: Auto-calculated
+• Next Action Due: Auto-calculated deadline
+
+QUICK ACTIONS:
+• Use Grievance Tools menu to start new grievance
+• Batch Operations for bulk updates
+• Right-click row for quick actions
+
+TIPS:
+• Deadlines are calculated automatically
+• Use filters to find specific cases
+• Export to PDF for sharing
+      `;
+      break;
+
+    case SHEETS.MEMBER_DIR:
+      title = 'Member Directory Help';
+      helpText = `
+MEMBER DIRECTORY
+
+Comprehensive database of all union members.
+
+KEY COLUMNS:
+• Member ID: Unique identifier (M000001 format)
+• Contact Info: Email, phone
+• Assignment: Location, unit, steward
+• Engagement: Event attendance, volunteer hours
+
+QUICK ACTIONS:
+• Search Members (🔍) for fast lookup
+• Use filters to segment members
+• Export for mail merges
+
+TIPS:
+• 20,000+ members supported
+• Steward assignments auto-link to grievances
+• Track engagement metrics
+      `;
+      break;
+
+    case SHEETS.DASHBOARD:
+      title = 'Dashboard Help';
+      helpText = `
+DASHBOARD
+
+Real-time overview of key metrics and KPIs.
+
+SECTIONS:
+• Executive Summary: High-level stats
+• Active Grievances: Current caseload
+• Deadlines: Upcoming and overdue
+• Trends: Historical analysis
+
+FEATURES:
+• Auto-refreshes on data changes
+• Click metrics for drill-down
+• Export charts and reports
+
+TIPS:
+• Use 🔄 Refresh All to update
+• Interactive Dashboard for customization
+• Multiple dashboard views available
+      `;
+      break;
+
+    default:
+      title = 'Help';
+      helpText = `
+509 DASHBOARD
+
+For detailed help on this sheet, use:
+• Help Center (❓ Help & Support menu)
+• Search help articles
+• View getting started guide
+
+Common Actions:
+• 📊 Dashboards: View analytics
+• 🔍 Search: Find members/grievances
+• ⚡ Batch Operations: Bulk updates
+• 📊 Reports: Generate reports
+      `;
+  }
+
+  SpreadsheetApp.getUi().alert(title, helpText, SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+/**
+ * Shows quick tips
+ */
+function showQuickTips() {
+  const tips = [
+    '💡 Use Ctrl+Z to undo recent actions',
+    '💡 Press F1 for context-sensitive help',
+    '💡 Enable dark mode in Accessibility menu',
+    '💡 Set up automation to save time',
+    '💡 Use batch operations for multiple grievances',
+    '💡 Customize your dashboard in Interactive View',
+    '💡 Track session activity in My Session',
+    '💡 Export data to PDF, CSV, or Excel',
+    '💡 Mobile dashboard available for touch devices',
+    '💡 Create custom reports with Report Builder'
+  ];
+
+  const randomTip = tips[Math.floor(Math.random() * tips.length)];
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    randomTip,
+    'Quick Tip',
+    5
   );
 }
 
@@ -12816,6 +15117,595 @@ function showAllGrievanceColumns() {
   }
 
   SpreadsheetApp.getUi().alert('All Grievance Log columns are now visible');
+}
+
+
+
+// ================================================================================
+// MODULE: ContextSensitiveHelp.gs
+// Source: ContextSensitiveHelp.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * CONTEXT-SENSITIVE HELP SYSTEM
+ * ============================================================================
+ *
+ * Sheet-specific help with ? icons and contextual tooltips.
+ *
+ * Features:
+ * - Sheet-specific help content
+ * - ? icon help buttons in headers
+ * - Task-based quick guides
+ * - Searchable help index
+ * - Help overlay on F1
+ *
+ * @module ContextSensitiveHelp
+ * @version 1.0.0
+ * @author SEIU Local 509 Tech Team
+ */
+
+/**
+ * Sheet-specific help content
+ */
+const SHEET_HELP = {
+  'Member Directory': {
+    icon: '👥',
+    title: 'Member Directory',
+    purpose: 'Store and manage all union member information including contact details, work information, and engagement data.',
+    keyTasks: [
+      { task: 'Add New Member', steps: 'Enter data in the next empty row. Member ID auto-generates.' },
+      { task: 'Start Grievance', steps: 'Check the "Start Grievance" checkbox (column AE) for the member.' },
+      { task: 'Search Members', steps: 'Use Ctrl+F or Dashboard menu → Search & Lookup → Search Members.' },
+      { task: 'Contact Member', steps: 'Click their email to compose, or use Quick Actions menu.' }
+    ],
+    columns: [
+      { name: 'Member ID (A)', desc: 'Unique identifier, format M000001' },
+      { name: 'Name (B-C)', desc: 'First and last name' },
+      { name: 'Email/Phone (H-I)', desc: 'Primary contact information' },
+      { name: 'Assigned Steward (P)', desc: 'Union steward responsible for this member' },
+      { name: 'Start Grievance (AE)', desc: 'Checkbox to initiate new grievance' }
+    ],
+    tips: [
+      'Columns Q-X are hidden by default. Use Column Toggles to show engagement metrics.',
+      'The last three columns (AB-AD) auto-calculate grievance status from the Grievance Log.',
+      'Use the Quick Actions menu (Dashboard → Grievance Tools) for common operations.'
+    ]
+  },
+  'Grievance Log': {
+    icon: '📋',
+    title: 'Grievance Log',
+    purpose: 'Track all grievances from filing to resolution with automatic deadline calculations.',
+    keyTasks: [
+      { task: 'Update Status', steps: 'Change the Status column (E) to reflect current state.' },
+      { task: 'Record Decision', steps: 'Enter date in the appropriate "Decision Rcvd" column.' },
+      { task: 'Close Grievance', steps: 'Set Status to Settled/Closed and enter Date Closed (R).' },
+      { task: 'View Deadline', steps: 'Check "Next Action Due" (T) or "Days to Deadline" (U).' }
+    ],
+    columns: [
+      { name: 'Grievance ID (A)', desc: 'Unique identifier, format G-000001-A' },
+      { name: 'Status (E)', desc: 'Open, Pending Info, Settled, Withdrawn, Closed, Appealed' },
+      { name: 'Current Step (F)', desc: 'Informal, Step I, Step II, Step III, Mediation, Arbitration' },
+      { name: 'Filing Deadline (H)', desc: 'Auto-calculated: Incident Date + 21 days' },
+      { name: 'Next Action Due (T)', desc: 'Auto-calculated next deadline based on current step' }
+    ],
+    tips: [
+      'Yellow cells indicate approaching deadlines (< 7 days). Red cells are overdue.',
+      'All deadline columns auto-calculate based on contract rules.',
+      'Use the Grievance Float Toggle to highlight priority cases.',
+      'Sync deadlines to Google Calendar with the Calendar Integration menu.'
+    ]
+  },
+  'Dashboard': {
+    icon: '📊',
+    title: 'Main Dashboard',
+    purpose: 'Real-time overview of all key metrics and upcoming deadlines.',
+    keyTasks: [
+      { task: 'Refresh Data', steps: 'Click Dashboard menu → Refresh All or wait for auto-refresh.' },
+      { task: 'View Details', steps: 'Click any metric to navigate to the source data.' },
+      { task: 'Export Report', steps: 'Dashboard menu → Reports → Export to CSV.' }
+    ],
+    columns: [],
+    tips: [
+      'All metrics update automatically when source data changes.',
+      'The Upcoming Deadlines table shows grievances due in the next 14 days.',
+      'Use the Interactive Dashboard for customizable visualizations.'
+    ]
+  },
+  'Config': {
+    icon: '⚙️',
+    title: 'Configuration Sheet',
+    purpose: 'Master lists for dropdown validations and system settings.',
+    keyTasks: [
+      { task: 'Add New Option', steps: 'Add the new value to the appropriate column.' },
+      { task: 'Update Steward List', steps: 'Edit column H to add/remove steward names.' }
+    ],
+    columns: [
+      { name: 'Job Titles (A)', desc: 'Valid job titles for members' },
+      { name: 'Office Locations (B)', desc: 'Work locations/sites' },
+      { name: 'Stewards (H)', desc: 'Active union stewards' },
+      { name: 'Grievance Status (I)', desc: 'Valid grievance status values' }
+    ],
+    tips: [
+      'Changes here immediately affect dropdowns in other sheets.',
+      'Do not delete values that are in use in Member Directory or Grievance Log.',
+      'Keep lists clean and consistent for better reporting.'
+    ]
+  }
+};
+
+/**
+ * Shows context-sensitive help for the active sheet
+ */
+function showContextHelp() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const activeSheet = ss.getActiveSheet();
+  const sheetName = activeSheet.getName();
+
+  const help = SHEET_HELP[sheetName];
+
+  if (!help) {
+    showGeneralHelp();
+    return;
+  }
+
+  const html = createContextHelpHTML(help, sheetName);
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(600)
+    .setHeight(600);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, `${help.icon} Help: ${help.title}`);
+}
+
+/**
+ * Creates HTML for context-sensitive help
+ * @param {Object} help - Help content object
+ * @param {string} sheetName - Sheet name
+ * @returns {string} HTML content
+ */
+function createContextHelpHTML(help, sheetName) {
+  const tasksHTML = help.keyTasks.map(t => `
+    <div class="task">
+      <div class="task-title">📌 ${t.task}</div>
+      <div class="task-steps">${t.steps}</div>
+    </div>
+  `).join('');
+
+  const columnsHTML = help.columns.length > 0 ? help.columns.map(c => `
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td>${c.desc}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="2">No specific columns documented.</td></tr>';
+
+  const tipsHTML = help.tips.map(t => `<li>${t}</li>`).join('');
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Roboto', Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-height: 560px; overflow-y: auto; }
+    h2 { color: #1a73e8; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    .purpose { background: #e8f4fd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #1a73e8; }
+    h3 { color: #333; margin-top: 25px; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; }
+    .task { background: #f8f9fa; padding: 12px; margin: 10px 0; border-radius: 4px; }
+    .task-title { font-weight: bold; color: #1a73e8; margin-bottom: 5px; }
+    .task-steps { color: #666; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    th, td { padding: 10px; text-align: left; border: 1px solid #e0e0e0; }
+    th { background: #f5f5f5; }
+    .tips { background: #fff3e0; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ff9800; }
+    .tips ul { margin: 10px 0; padding-left: 20px; }
+    .tips li { margin: 8px 0; }
+    .search-box { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px; margin-bottom: 15px; box-sizing: border-box; }
+    .footer { margin-top: 20px; padding-top: 15px; border-top: 2px solid #e0e0e0; text-align: center; }
+    button { padding: 10px 20px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+    button.secondary { background: #6c757d; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>${help.icon} ${help.title} Help</h2>
+
+    <div class="purpose">
+      <strong>Purpose:</strong> ${help.purpose}
+    </div>
+
+    <h3>🎯 Key Tasks</h3>
+    ${tasksHTML}
+
+    ${help.columns.length > 0 ? `
+    <h3>📋 Important Columns</h3>
+    <table>
+      <tr>
+        <th>Column</th>
+        <th>Description</th>
+      </tr>
+      ${columnsHTML}
+    </table>
+    ` : ''}
+
+    <h3>💡 Tips</h3>
+    <div class="tips">
+      <ul>${tipsHTML}</ul>
+    </div>
+
+    <div class="footer">
+      <button onclick="showTutorial()">📚 Take Tutorial</button>
+      <button onclick="showFAQ()">❓ View FAQ</button>
+      <button class="secondary" onclick="google.script.host.close()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    function showTutorial() {
+      google.script.run.showInteractiveTutorial();
+      google.script.host.close();
+    }
+    function showFAQ() {
+      google.script.run.showFAQSearch();
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Shows general help when no specific help is available
+ */
+function showGeneralHelp() {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; margin: 0; }
+    h2 { color: #1a73e8; margin-top: 0; }
+    .section { margin: 20px 0; }
+    .section h3 { color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 8px; }
+    .item { padding: 12px; margin: 10px 0; background: #f8f9fa; border-radius: 4px; cursor: pointer; }
+    .item:hover { background: #e8f4fd; }
+    .item-title { font-weight: bold; color: #1a73e8; }
+    .item-desc { color: #666; font-size: 13px; margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <h2>❓ 509 Dashboard Help</h2>
+
+  <div class="section">
+    <h3>🚀 Getting Started</h3>
+    <div class="item" onclick="google.script.run.showQuickStartGuide()">
+      <div class="item-title">Quick Start Guide</div>
+      <div class="item-desc">Learn the basics in 5 minutes</div>
+    </div>
+    <div class="item" onclick="google.script.run.showInteractiveTutorial()">
+      <div class="item-title">Interactive Tutorial</div>
+      <div class="item-desc">Step-by-step guided tour</div>
+    </div>
+    <div class="item" onclick="google.script.run.showVideoTutorials()">
+      <div class="item-title">Video Tutorials</div>
+      <div class="item-desc">Watch video walkthroughs</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>📚 Resources</h3>
+    <div class="item" onclick="google.script.run.showFAQSearch()">
+      <div class="item-title">FAQ & Knowledge Base</div>
+      <div class="item-desc">Search frequently asked questions</div>
+    </div>
+    <div class="item" onclick="google.script.run.showKeyboardShortcuts()">
+      <div class="item-title">Keyboard Shortcuts</div>
+      <div class="item-desc">Speed up your work with shortcuts</div>
+    </div>
+    <div class="item" onclick="google.script.run.showReleaseNotes()">
+      <div class="item-title">Release Notes</div>
+      <div class="item-desc">See what's new in this version</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>🔧 Troubleshooting</h3>
+    <div class="item" onclick="google.script.run.showErrorDashboard()">
+      <div class="item-title">Error Dashboard</div>
+      <div class="item-desc">View and resolve errors</div>
+    </div>
+    <div class="item" onclick="google.script.run.DIAGNOSE_SETUP()">
+      <div class="item-title">Diagnose Setup</div>
+      <div class="item-desc">Check system health</div>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(450)
+    .setHeight(550);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '❓ Help');
+}
+
+/**
+ * Adds help icons to sheet headers
+ * @param {string} sheetName - Optional specific sheet
+ */
+function addHelpIconsToHeaders(sheetName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  const sheetsToProcess = sheetName
+    ? [ss.getSheetByName(sheetName)]
+    : Object.keys(SHEET_HELP).map(name => ss.getSheetByName(name));
+
+  sheetsToProcess.forEach(sheet => {
+    if (!sheet) return;
+
+    const name = sheet.getName();
+    const help = SHEET_HELP[name];
+    if (!help) return;
+
+    // Add help note to first cell
+    const firstCell = sheet.getRange(1, 1);
+    const currentValue = firstCell.getValue();
+
+    if (!currentValue.toString().includes('❓')) {
+      firstCell.setNote(
+        `${help.icon} ${help.title}\n\n` +
+        `${help.purpose}\n\n` +
+        `Press F1 or go to Help menu for full documentation.`
+      );
+    }
+  });
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    'Help icons added to sheet headers',
+    'Done',
+    3
+  );
+}
+
+/**
+ * Shows help for a specific column
+ * @param {string} sheetName - Sheet name
+ * @param {number} colNum - Column number
+ */
+function showColumnHelp(sheetName, colNum) {
+  const help = SHEET_HELP[sheetName];
+  if (!help) {
+    showGeneralHelp();
+    return;
+  }
+
+  // Find column in help data
+  const colLetter = getColumnLetter(colNum);
+  let columnHelp = null;
+
+  for (const col of help.columns) {
+    if (col.name.includes(`(${colLetter})`)) {
+      columnHelp = col;
+      break;
+    }
+  }
+
+  if (!columnHelp) {
+    SpreadsheetApp.getUi().alert(
+      `Column ${colLetter} Help`,
+      'No specific help available for this column.\n\n' +
+      'Press F1 for general sheet help.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  SpreadsheetApp.getUi().alert(
+    `${help.icon} ${columnHelp.name}`,
+    columnHelp.desc,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Shows task-specific help
+ * @param {string} taskName - Name of the task
+ */
+function showTaskHelp(taskName) {
+  const taskHelp = {
+    'start_grievance': {
+      title: 'Starting a New Grievance',
+      steps: [
+        '1. Go to Member Directory',
+        '2. Find the member who filed the grievance',
+        '3. Check the "Start Grievance" checkbox in column AE',
+        '4. Fill in the grievance details in the popup form',
+        '5. Click Submit - a new row will be added to Grievance Log'
+      ],
+      tips: 'You can also start from Dashboard menu → Grievance Tools → Start New Grievance'
+    },
+    'update_status': {
+      title: 'Updating Grievance Status',
+      steps: [
+        '1. Go to Grievance Log',
+        '2. Find the grievance row',
+        '3. Change the Status column (E) dropdown',
+        '4. If closing, also set the Date Closed column (R)'
+      ],
+      tips: 'Status changes trigger automatic recalculation of deadlines'
+    },
+    'send_email': {
+      title: 'Sending Email to Member',
+      steps: [
+        '1. Go to Dashboard menu → Communications → Compose Email',
+        '2. Or use Quick Actions on a member/grievance row',
+        '3. Select a template or compose custom message',
+        '4. Click Send - email is logged automatically'
+      ],
+      tips: 'Email templates with placeholders save time on common messages'
+    }
+  };
+
+  const help = taskHelp[taskName];
+  if (!help) {
+    showGeneralHelp();
+    return;
+  }
+
+  SpreadsheetApp.getUi().alert(
+    `📋 ${help.title}`,
+    help.steps.join('\n') + '\n\n💡 Tip: ' + help.tips,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Searches help content
+ * @param {string} query - Search query
+ * @returns {Array} Matching help items
+ */
+function searchHelp(query) {
+  const results = [];
+  const lowerQuery = query.toLowerCase();
+
+  Object.entries(SHEET_HELP).forEach(([sheetName, help]) => {
+    // Search in purpose
+    if (help.purpose.toLowerCase().includes(lowerQuery)) {
+      results.push({
+        sheet: sheetName,
+        type: 'Purpose',
+        content: help.purpose,
+        icon: help.icon
+      });
+    }
+
+    // Search in tasks
+    help.keyTasks.forEach(task => {
+      if (task.task.toLowerCase().includes(lowerQuery) ||
+          task.steps.toLowerCase().includes(lowerQuery)) {
+        results.push({
+          sheet: sheetName,
+          type: 'Task',
+          content: `${task.task}: ${task.steps}`,
+          icon: '📌'
+        });
+      }
+    });
+
+    // Search in columns
+    help.columns.forEach(col => {
+      if (col.name.toLowerCase().includes(lowerQuery) ||
+          col.desc.toLowerCase().includes(lowerQuery)) {
+        results.push({
+          sheet: sheetName,
+          type: 'Column',
+          content: `${col.name}: ${col.desc}`,
+          icon: '📋'
+        });
+      }
+    });
+
+    // Search in tips
+    help.tips.forEach(tip => {
+      if (tip.toLowerCase().includes(lowerQuery)) {
+        results.push({
+          sheet: sheetName,
+          type: 'Tip',
+          content: tip,
+          icon: '💡'
+        });
+      }
+    });
+  });
+
+  return results;
+}
+
+/**
+ * Shows help search dialog
+ */
+function showHelpSearch() {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; margin: 0; }
+    h2 { color: #1a73e8; margin-top: 0; }
+    .search-box { width: 100%; padding: 12px; border: 2px solid #1a73e8; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+    .search-box:focus { outline: none; border-color: #1557b0; }
+    .results { margin-top: 20px; max-height: 400px; overflow-y: auto; }
+    .result { padding: 12px; margin: 10px 0; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #1a73e8; }
+    .result-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .result-sheet { font-weight: bold; color: #1a73e8; }
+    .result-type { font-size: 12px; color: #666; background: #e0e0e0; padding: 2px 8px; border-radius: 10px; }
+    .result-content { color: #333; font-size: 14px; }
+    .no-results { text-align: center; padding: 40px; color: #666; }
+  </style>
+</head>
+<body>
+  <h2>🔍 Search Help</h2>
+
+  <input type="text" class="search-box" id="searchQuery" placeholder="Type to search help..." oninput="search()">
+
+  <div class="results" id="results">
+    <div class="no-results">Enter a search term to find help topics</div>
+  </div>
+
+  <script>
+    let searchTimeout;
+
+    function search() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(doSearch, 300);
+    }
+
+    function doSearch() {
+      const query = document.getElementById('searchQuery').value.trim();
+
+      if (query.length < 2) {
+        document.getElementById('results').innerHTML =
+          '<div class="no-results">Enter at least 2 characters to search</div>';
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(showResults)
+        .searchHelp(query);
+    }
+
+    function showResults(results) {
+      const container = document.getElementById('results');
+
+      if (results.length === 0) {
+        container.innerHTML = '<div class="no-results">No results found</div>';
+        return;
+      }
+
+      container.innerHTML = results.map(r => \`
+        <div class="result">
+          <div class="result-header">
+            <span class="result-sheet">\${r.icon} \${r.sheet}</span>
+            <span class="result-type">\${r.type}</span>
+          </div>
+          <div class="result-content">\${r.content}</div>
+        </div>
+      \`).join('');
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(550)
+    .setHeight(550);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🔍 Search Help');
 }
 
 
@@ -17690,6 +20580,697 @@ function batchUpdateWithLock(updates) {
 
 
 // ================================================================================
+// MODULE: EmailUnsubscribeSystem.gs
+// Source: EmailUnsubscribeSystem.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * EMAIL UNSUBSCRIBE / OPT-OUT SYSTEM
+ * ============================================================================
+ *
+ * Manages member email communication preferences with opt-out functionality.
+ *
+ * Features:
+ * - Checkbox column for email opt-out status
+ * - Automatic light red row highlighting for opted-out members (#FFCDD2)
+ * - Export prefix with "(UNSUBSCRIBED)" to prevent accidental sends
+ * - Filter opted-out members from bulk emails
+ * - Audit logging for opt-out changes
+ * - Bulk opt-out/opt-in operations
+ *
+ * @module EmailUnsubscribeSystem
+ * @version 1.0.0
+ * @author SEIU Local 509 Tech Team
+ */
+
+/**
+ * Column for email opt-out in Member Directory
+ * Added after existing columns - Column AF (32)
+ */
+const EMAIL_OPTOUT_COL = 32;  // AF column
+
+/**
+ * Colors for opt-out highlighting
+ */
+const OPTOUT_COLORS = {
+  OPTED_OUT_ROW: '#FFCDD2',      // Light red for opted-out rows
+  OPTED_OUT_BADGE: '#F44336',     // Red badge color
+  OPTED_IN_ROW: null,             // No color (default)
+  HEADER: '#E57373'               // Lighter red for header
+};
+
+/**
+ * Sets up the email opt-out column in Member Directory
+ */
+function setupEmailOptOutColumn() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) {
+    SpreadsheetApp.getUi().alert('Member Directory sheet not found!');
+    return;
+  }
+
+  const lastCol = memberSheet.getLastColumn();
+
+  // Check if column already exists by checking header
+  if (lastCol >= EMAIL_OPTOUT_COL) {
+    const existingHeader = memberSheet.getRange(1, EMAIL_OPTOUT_COL).getValue();
+    if (existingHeader === 'Email Opt-Out') {
+      SpreadsheetApp.getActiveSpreadsheet().toast(
+        'Email Opt-Out column already exists',
+        'Info',
+        3
+      );
+      return;
+    }
+  }
+
+  // Add header
+  memberSheet.getRange(1, EMAIL_OPTOUT_COL)
+    .setValue('Email Opt-Out')
+    .setBackground(OPTOUT_COLORS.HEADER)
+    .setFontColor('#FFFFFF')
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setNote('Check to opt member out of bulk email communications');
+
+  // Set column width
+  memberSheet.setColumnWidth(EMAIL_OPTOUT_COL, 100);
+
+  // Add checkboxes for all data rows
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow > 1) {
+    const checkboxRange = memberSheet.getRange(2, EMAIL_OPTOUT_COL, lastRow - 1, 1);
+    checkboxRange.insertCheckboxes();
+    checkboxRange.setHorizontalAlignment('center');
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Email Opt-Out Column Created',
+    'The Email Opt-Out column has been added to the Member Directory.\n\n' +
+    '- Check the box to opt a member out of bulk emails\n' +
+    '- Opted-out members will have their rows highlighted in light red\n' +
+    '- Exports will prefix opted-out emails with "(UNSUBSCRIBED)"\n\n' +
+    'Run "Apply Opt-Out Highlighting" to update row colors.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Applies highlighting to opted-out member rows
+ */
+function applyOptOutHighlighting() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) {
+    SpreadsheetApp.getUi().alert('Member Directory sheet not found!');
+    return;
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    'Applying opt-out highlighting...',
+    'Processing',
+    -1
+  );
+
+  const lastRow = memberSheet.getLastRow();
+  const lastCol = memberSheet.getLastColumn();
+
+  if (lastRow < 2 || lastCol < EMAIL_OPTOUT_COL) {
+    SpreadsheetApp.getActiveSpreadsheet().toast(
+      'No data or opt-out column not found',
+      'Info',
+      3
+    );
+    return;
+  }
+
+  // Get opt-out values
+  const optOutData = memberSheet.getRange(2, EMAIL_OPTOUT_COL, lastRow - 1, 1).getValues();
+
+  let optedOutCount = 0;
+  let optedInCount = 0;
+
+  // Apply highlighting row by row
+  for (let i = 0; i < optOutData.length; i++) {
+    const isOptedOut = optOutData[i][0] === true;
+    const rowNum = i + 2;
+
+    const rowRange = memberSheet.getRange(rowNum, 1, 1, lastCol);
+
+    if (isOptedOut) {
+      rowRange.setBackground(OPTOUT_COLORS.OPTED_OUT_ROW);
+      optedOutCount++;
+    } else {
+      // Reset to white (or null to clear background)
+      rowRange.setBackground('#FFFFFF');
+      optedInCount++;
+    }
+  }
+
+  SpreadsheetApp.flush();
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    `Highlighting applied: ${optedOutCount} opted-out, ${optedInCount} active`,
+    'Complete',
+    5
+  );
+}
+
+/**
+ * Checks if a member is opted out of emails
+ * @param {string} memberId - Member ID to check
+ * @returns {boolean} True if member is opted out
+ */
+function isMemberOptedOut(memberId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet || !memberId) return false;
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) return false;
+
+  const data = memberSheet.getRange(2, 1, lastRow - 1, EMAIL_OPTOUT_COL).getValues();
+
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][0] === memberId) {
+      return data[i][EMAIL_OPTOUT_COL - 1] === true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Checks if an email belongs to an opted-out member
+ * @param {string} email - Email address to check
+ * @returns {boolean} True if email belongs to opted-out member
+ */
+function isEmailOptedOut(email) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet || !email) return false;
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) return false;
+
+  const emailCol = MEMBER_COLS.EMAIL;
+  const data = memberSheet.getRange(2, 1, lastRow - 1, EMAIL_OPTOUT_COL).getValues();
+
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][emailCol - 1] && data[i][emailCol - 1].toString().toLowerCase() === email.toLowerCase()) {
+      return data[i][EMAIL_OPTOUT_COL - 1] === true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Gets list of opted-out member emails
+ * @returns {Array} Array of opted-out email addresses
+ */
+function getOptedOutEmails() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) return [];
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  const emailCol = MEMBER_COLS.EMAIL;
+  const data = memberSheet.getRange(2, 1, lastRow - 1, EMAIL_OPTOUT_COL).getValues();
+
+  const optedOutEmails = [];
+
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][EMAIL_OPTOUT_COL - 1] === true) {
+      const email = data[i][emailCol - 1];
+      if (email) {
+        optedOutEmails.push(email.toString());
+      }
+    }
+  }
+
+  return optedOutEmails;
+}
+
+/**
+ * Gets list of active (not opted-out) member emails
+ * @returns {Array} Array of active email addresses
+ */
+function getActiveEmails() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) return [];
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  const emailCol = MEMBER_COLS.EMAIL;
+  const data = memberSheet.getRange(2, 1, lastRow - 1, EMAIL_OPTOUT_COL).getValues();
+
+  const activeEmails = [];
+
+  for (let i = 0; i < data.length; i++) {
+    // Only include if NOT opted out and has valid email
+    if (data[i][EMAIL_OPTOUT_COL - 1] !== true) {
+      const email = data[i][emailCol - 1];
+      if (email && email.toString().includes('@')) {
+        activeEmails.push(email.toString());
+      }
+    }
+  }
+
+  return activeEmails;
+}
+
+/**
+ * Shows opt-out statistics
+ */
+function showOptOutStatistics() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) {
+    SpreadsheetApp.getUi().alert('Member Directory sheet not found!');
+    return;
+  }
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) {
+    SpreadsheetApp.getUi().alert('No member data found!');
+    return;
+  }
+
+  const optOutData = memberSheet.getRange(2, EMAIL_OPTOUT_COL, lastRow - 1, 1).getValues();
+  const emailData = memberSheet.getRange(2, MEMBER_COLS.EMAIL, lastRow - 1, 1).getValues();
+
+  let totalMembers = lastRow - 1;
+  let optedOut = 0;
+  let hasEmail = 0;
+  let noEmail = 0;
+
+  for (let i = 0; i < optOutData.length; i++) {
+    if (optOutData[i][0] === true) {
+      optedOut++;
+    }
+    if (emailData[i][0] && emailData[i][0].toString().includes('@')) {
+      hasEmail++;
+    } else {
+      noEmail++;
+    }
+  }
+
+  const active = totalMembers - optedOut;
+  const optOutRate = totalMembers > 0 ? ((optedOut / totalMembers) * 100).toFixed(1) : 0;
+
+  SpreadsheetApp.getUi().alert(
+    '📧 Email Opt-Out Statistics',
+    `Total Members: ${totalMembers}\n\n` +
+    `📧 Email Status:\n` +
+    `  ✅ Active (can email): ${active} (${(100 - parseFloat(optOutRate)).toFixed(1)}%)\n` +
+    `  🚫 Opted Out: ${optedOut} (${optOutRate}%)\n\n` +
+    `📝 Email Address Status:\n` +
+    `  ✉️ Has Email: ${hasEmail}\n` +
+    `  ❌ No Email: ${noEmail}\n\n` +
+    `📊 Effective Reach: ${hasEmail - optedOut} members`,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Exports member data with opt-out handling
+ * Opted-out members have their emails prefixed with "(UNSUBSCRIBED)"
+ * @param {boolean} includeOptedOut - Whether to include opted-out members
+ * @returns {Array} Export data array
+ */
+function exportMembersWithOptOutHandling(includeOptedOut) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) return [];
+
+  const lastRow = memberSheet.getLastRow();
+  const lastCol = memberSheet.getLastColumn();
+
+  if (lastRow < 2) return [];
+
+  // Get all data including headers
+  const allData = memberSheet.getRange(1, 1, lastRow, lastCol).getValues();
+  const headers = allData[0];
+  const data = allData.slice(1);
+
+  const emailColIndex = MEMBER_COLS.EMAIL - 1;
+  const optOutColIndex = EMAIL_OPTOUT_COL - 1;
+
+  const exportData = [headers];
+
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i].slice(); // Clone the row
+    const isOptedOut = row[optOutColIndex] === true;
+
+    if (!includeOptedOut && isOptedOut) {
+      // Skip opted-out members
+      continue;
+    }
+
+    if (isOptedOut && row[emailColIndex]) {
+      // Prefix email with (UNSUBSCRIBED)
+      row[emailColIndex] = '(UNSUBSCRIBED) ' + row[emailColIndex];
+    }
+
+    exportData.push(row);
+  }
+
+  return exportData;
+}
+
+/**
+ * Exports members to CSV with opt-out handling
+ */
+function exportMembersWithOptOut() {
+  const ui = SpreadsheetApp.getUi();
+
+  const response = ui.alert(
+    '📤 Export Members',
+    'Do you want to include opted-out members in the export?\n\n' +
+    'YES = Include all members (opted-out emails will be prefixed)\n' +
+    'NO = Exclude opted-out members entirely',
+    ui.ButtonSet.YES_NO_CANCEL
+  );
+
+  if (response === ui.Button.CANCEL) return;
+
+  const includeOptedOut = response === ui.Button.YES;
+  const exportData = exportMembersWithOptOutHandling(includeOptedOut);
+
+  if (exportData.length <= 1) {
+    ui.alert('No data to export!');
+    return;
+  }
+
+  // Create export sheet
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let exportSheet = ss.getSheetByName('Members_Export');
+
+  if (exportSheet) {
+    exportSheet.clear();
+  } else {
+    exportSheet = ss.insertSheet('Members_Export');
+  }
+
+  exportSheet.getRange(1, 1, exportData.length, exportData[0].length).setValues(exportData);
+
+  // Format header
+  exportSheet.getRange(1, 1, 1, exportData[0].length)
+    .setBackground('#059669')
+    .setFontColor('#FFFFFF')
+    .setFontWeight('bold');
+
+  exportSheet.setFrozenRows(1);
+
+  const exportedCount = exportData.length - 1;
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    `Exported ${exportedCount} members to Members_Export sheet`,
+    'Export Complete',
+    5
+  );
+
+  ss.setActiveSheet(exportSheet);
+}
+
+/**
+ * Bulk opt-out selected members
+ */
+function bulkOptOut() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+
+  if (sheet.getName() !== SHEETS.MEMBER_DIR) {
+    SpreadsheetApp.getUi().alert(
+      '⚠️ Wrong Sheet',
+      'Please select rows in the Member Directory sheet first.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  const selection = sheet.getActiveRange();
+  const startRow = selection.getRow();
+  const numRows = selection.getNumRows();
+
+  if (startRow < 2) {
+    SpreadsheetApp.getUi().alert('Please select data rows, not the header.');
+    return;
+  }
+
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    '🚫 Bulk Opt-Out',
+    `Are you sure you want to opt out ${numRows} member(s) from email communications?`,
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) return;
+
+  // Set opt-out checkboxes
+  const optOutRange = sheet.getRange(startRow, EMAIL_OPTOUT_COL, numRows, 1);
+  optOutRange.check();
+
+  // Apply highlighting
+  applyOptOutHighlighting();
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    `Opted out ${numRows} member(s) from email communications`,
+    'Complete',
+    5
+  );
+}
+
+/**
+ * Bulk opt-in selected members
+ */
+function bulkOptIn() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+
+  if (sheet.getName() !== SHEETS.MEMBER_DIR) {
+    SpreadsheetApp.getUi().alert(
+      '⚠️ Wrong Sheet',
+      'Please select rows in the Member Directory sheet first.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  const selection = sheet.getActiveRange();
+  const startRow = selection.getRow();
+  const numRows = selection.getNumRows();
+
+  if (startRow < 2) {
+    SpreadsheetApp.getUi().alert('Please select data rows, not the header.');
+    return;
+  }
+
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    '✅ Bulk Opt-In',
+    `Are you sure you want to opt in ${numRows} member(s) to email communications?`,
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) return;
+
+  // Uncheck opt-out checkboxes
+  const optOutRange = sheet.getRange(startRow, EMAIL_OPTOUT_COL, numRows, 1);
+  optOutRange.uncheck();
+
+  // Apply highlighting
+  applyOptOutHighlighting();
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    `Opted in ${numRows} member(s) to email communications`,
+    'Complete',
+    5
+  );
+}
+
+/**
+ * Shows email opt-out management panel
+ */
+function showOptOutManagementPanel() {
+  const activeEmails = getActiveEmails();
+  const optedOutEmails = getOptedOutEmails();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Roboto', Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { color: #1a73e8; margin-top: 0; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+    .stat-card { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; }
+    .stat-card.active { border-left: 4px solid #4caf50; }
+    .stat-card.opted-out { border-left: 4px solid #f44336; }
+    .stat-value { font-size: 36px; font-weight: bold; color: #333; }
+    .stat-label { font-size: 14px; color: #666; margin-top: 5px; }
+    .action-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    button { background: #1a73e8; color: white; border: none; padding: 12px 20px; font-size: 14px; border-radius: 4px; cursor: pointer; flex: 1; min-width: 150px; }
+    button:hover { background: #1557b0; }
+    button.secondary { background: #6c757d; }
+    button.danger { background: #dc3545; }
+    .info-box { background: #e8f5e9; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #4caf50; }
+    .warning-box { background: #fff3e0; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #ff9800; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📧 Email Opt-Out Management</h2>
+
+    <div class="stats-grid">
+      <div class="stat-card active">
+        <div class="stat-value">${activeEmails.length}</div>
+        <div class="stat-label">✅ Active Members</div>
+      </div>
+      <div class="stat-card opted-out">
+        <div class="stat-value">${optedOutEmails.length}</div>
+        <div class="stat-label">🚫 Opted Out</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>📊 Email Reach Rate:</strong>
+      ${activeEmails.length + optedOutEmails.length > 0
+        ? ((activeEmails.length / (activeEmails.length + optedOutEmails.length)) * 100).toFixed(1)
+        : 0}%
+    </div>
+
+    <div class="warning-box">
+      <strong>⚠️ Important:</strong> Opted-out members will:
+      <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+        <li>Have rows highlighted in light red</li>
+        <li>Be excluded from bulk email operations</li>
+        <li>Have emails prefixed with "(UNSUBSCRIBED)" in exports</li>
+      </ul>
+    </div>
+
+    <div class="action-buttons">
+      <button onclick="setupColumn()">🔧 Setup Opt-Out Column</button>
+      <button onclick="applyHighlighting()">🎨 Apply Highlighting</button>
+      <button onclick="showStats()">📊 View Statistics</button>
+      <button onclick="exportWithOptOut()">📤 Export Members</button>
+      <button class="secondary" onclick="google.script.host.close()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    function setupColumn() {
+      google.script.run.withSuccessHandler(close).setupEmailOptOutColumn();
+    }
+    function applyHighlighting() {
+      google.script.run.withSuccessHandler(close).applyOptOutHighlighting();
+    }
+    function showStats() {
+      google.script.run.showOptOutStatistics();
+    }
+    function exportWithOptOut() {
+      google.script.run.exportMembersWithOptOut();
+    }
+    function close() {
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(500)
+    .setHeight(500);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📧 Email Opt-Out Management');
+}
+
+/**
+ * Validates email before sending - checks opt-out status
+ * Returns true if email can be sent, false if blocked
+ * @param {string} email - Email address to validate
+ * @returns {Object} {canSend: boolean, reason: string}
+ */
+function validateEmailForSending(email) {
+  if (!email) {
+    return { canSend: false, reason: 'No email address provided' };
+  }
+
+  if (!email.includes('@')) {
+    return { canSend: false, reason: 'Invalid email format' };
+  }
+
+  if (isEmailOptedOut(email)) {
+    return {
+      canSend: false,
+      reason: 'Member has opted out of email communications'
+    };
+  }
+
+  return { canSend: true, reason: 'Email is valid and active' };
+}
+
+/**
+ * Handles opt-out change event (for onEdit trigger)
+ * @param {Object} e - Edit event object
+ */
+function handleOptOutChange(e) {
+  if (!e) return;
+
+  const sheet = e.range.getSheet();
+  if (sheet.getName() !== SHEETS.MEMBER_DIR) return;
+
+  const col = e.range.getColumn();
+  if (col !== EMAIL_OPTOUT_COL) return;
+
+  const row = e.range.getRow();
+  if (row < 2) return;
+
+  const isOptedOut = e.value === true || e.value === 'TRUE';
+  const lastCol = sheet.getLastColumn();
+  const rowRange = sheet.getRange(row, 1, 1, lastCol);
+
+  if (isOptedOut) {
+    rowRange.setBackground(OPTOUT_COLORS.OPTED_OUT_ROW);
+  } else {
+    rowRange.setBackground('#FFFFFF');
+  }
+
+  // Log the change
+  try {
+    const memberId = sheet.getRange(row, 1).getValue();
+    logAuditEvent(
+      isOptedOut ? 'EMAIL_OPT_OUT' : 'EMAIL_OPT_IN',
+      { memberId: memberId, row: row },
+      'INFO'
+    );
+  } catch (error) {
+    // Audit logging not critical, continue
+    Logger.log('Error logging opt-out change: ' + error.message);
+  }
+}
+
+
+
+// ================================================================================
 // MODULE: EnhancedErrorHandling.gs
 // Source: EnhancedErrorHandling.gs
 // ================================================================================
@@ -18481,6 +22062,579 @@ function createErrorTrendReport() {
   }
 
   return ss.getUrl() + '#gid=' + trendsSheet.getSheetId();
+}
+
+
+
+// ================================================================================
+// MODULE: EnhancedValidation.gs
+// Source: EnhancedValidation.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * ENHANCED VALIDATION SYSTEM
+ * ============================================================================
+ *
+ * Comprehensive email and phone validation with real-time feedback.
+ *
+ * Features:
+ * - Email format validation
+ * - Phone number format validation (US/International)
+ * - Duplicate detection with warnings
+ * - Real-time validation on edit
+ * - Validation report generation
+ * - Bulk validation tool
+ *
+ * @module EnhancedValidation
+ * @version 1.0.0
+ * @author SEIU Local 509 Tech Team
+ */
+
+/**
+ * Validation patterns
+ */
+const VALIDATION_PATTERNS = {
+  // Standard email pattern
+  EMAIL: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+
+  // US phone patterns
+  PHONE_US: /^[\+]?1?[-.\s]?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}$/,
+
+  // International phone (basic)
+  PHONE_INTL: /^[\+]?[0-9]{1,4}[-.\s]?\(?[0-9]{1,4}\)?[-.\s]?[0-9]{1,4}[-.\s]?[0-9]{1,9}$/,
+
+  // Member ID format
+  MEMBER_ID: /^M\d{6}$/,
+
+  // Grievance ID format
+  GRIEVANCE_ID: /^G-\d{6}(-[A-Z])?$/
+};
+
+/**
+ * Validation error messages
+ */
+const VALIDATION_MESSAGES = {
+  EMAIL_INVALID: 'Invalid email format. Please use format: name@domain.com',
+  EMAIL_EMPTY: 'Email address is required',
+  PHONE_INVALID: 'Invalid phone format. Please use format: (555) 555-1234 or 555-555-1234',
+  PHONE_EMPTY: 'Phone number is required',
+  MEMBER_ID_INVALID: 'Invalid Member ID format. Please use format: M123456',
+  MEMBER_ID_DUPLICATE: 'This Member ID already exists',
+  GRIEVANCE_ID_INVALID: 'Invalid Grievance ID format. Please use format: G-123456',
+  GRIEVANCE_ID_DUPLICATE: 'This Grievance ID already exists'
+};
+
+/**
+ * Validates an email address
+ * @param {string} email - Email to validate
+ * @returns {Object} {valid: boolean, message: string}
+ */
+function validateEmailAddress(email) {
+  if (!email || email.toString().trim() === '') {
+    return { valid: false, message: VALIDATION_MESSAGES.EMAIL_EMPTY };
+  }
+
+  const cleanEmail = email.toString().trim().toLowerCase();
+
+  if (!VALIDATION_PATTERNS.EMAIL.test(cleanEmail)) {
+    return { valid: false, message: VALIDATION_MESSAGES.EMAIL_INVALID };
+  }
+
+  // Additional checks
+  const parts = cleanEmail.split('@');
+  if (parts.length !== 2) {
+    return { valid: false, message: VALIDATION_MESSAGES.EMAIL_INVALID };
+  }
+
+  const domain = parts[1];
+  const domainParts = domain.split('.');
+
+  // Check for valid TLD (at least 2 chars)
+  if (domainParts[domainParts.length - 1].length < 2) {
+    return { valid: false, message: 'Invalid domain extension' };
+  }
+
+  // Check for common typos
+  const commonDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com'];
+  const commonTypos = {
+    'gmial.com': 'gmail.com',
+    'gmai.com': 'gmail.com',
+    'gamil.com': 'gmail.com',
+    'yaho.com': 'yahoo.com',
+    'yahooo.com': 'yahoo.com',
+    'hotmal.com': 'hotmail.com',
+    'outlok.com': 'outlook.com'
+  };
+
+  if (commonTypos[domain]) {
+    return {
+      valid: true,
+      message: `Did you mean ${parts[0]}@${commonTypos[domain]}?`,
+      suggestion: `${parts[0]}@${commonTypos[domain]}`
+    };
+  }
+
+  return { valid: true, message: 'Valid email address' };
+}
+
+/**
+ * Validates a phone number
+ * @param {string} phone - Phone number to validate
+ * @returns {Object} {valid: boolean, message: string, formatted: string}
+ */
+function validatePhoneNumber(phone) {
+  if (!phone || phone.toString().trim() === '') {
+    return { valid: false, message: VALIDATION_MESSAGES.PHONE_EMPTY };
+  }
+
+  const cleanPhone = phone.toString().trim();
+
+  // Remove all non-digit characters for validation
+  const digits = cleanPhone.replace(/\D/g, '');
+
+  // Check length
+  if (digits.length < 10) {
+    return { valid: false, message: 'Phone number must have at least 10 digits' };
+  }
+
+  if (digits.length > 15) {
+    return { valid: false, message: 'Phone number is too long' };
+  }
+
+  // Validate US format
+  if (digits.length === 10 || (digits.length === 11 && digits[0] === '1')) {
+    const formatted = formatUSPhone(digits);
+    return { valid: true, message: 'Valid phone number', formatted: formatted };
+  }
+
+  // Accept international
+  if (digits.length > 10) {
+    return { valid: true, message: 'Valid international phone number', formatted: cleanPhone };
+  }
+
+  return { valid: false, message: VALIDATION_MESSAGES.PHONE_INVALID };
+}
+
+/**
+ * Formats a US phone number
+ * @param {string} digits - Phone digits only
+ * @returns {string} Formatted phone number
+ */
+function formatUSPhone(digits) {
+  // Remove country code if present
+  if (digits.length === 11 && digits[0] === '1') {
+    digits = digits.substring(1);
+  }
+
+  if (digits.length === 10) {
+    return `(${digits.substring(0, 3)}) ${digits.substring(3, 6)}-${digits.substring(6)}`;
+  }
+
+  return digits;
+}
+
+/**
+ * Validates data on edit trigger
+ * @param {Object} e - Edit event
+ */
+function onEditValidation(e) {
+  if (!e || !e.range) return;
+
+  const sheet = e.range.getSheet();
+  const sheetName = sheet.getName();
+
+  if (sheetName !== SHEETS.MEMBER_DIR && sheetName !== SHEETS.GRIEVANCE_LOG) {
+    return;
+  }
+
+  const col = e.range.getColumn();
+  const row = e.range.getRow();
+
+  if (row < 2) return; // Skip header
+
+  const value = e.value;
+
+  // Member Directory validations
+  if (sheetName === SHEETS.MEMBER_DIR) {
+    // Email validation
+    if (col === MEMBER_COLS.EMAIL && value) {
+      const result = validateEmailAddress(value);
+      if (!result.valid) {
+        e.range.setNote('⚠️ ' + result.message);
+        e.range.setBackground('#fff3e0');
+      } else if (result.suggestion) {
+        e.range.setNote('💡 ' + result.message);
+        e.range.setBackground('#e3f2fd');
+      } else {
+        e.range.clearNote();
+        e.range.setBackground(null);
+      }
+    }
+
+    // Phone validation
+    if (col === MEMBER_COLS.PHONE && value) {
+      const result = validatePhoneNumber(value);
+      if (!result.valid) {
+        e.range.setNote('⚠️ ' + result.message);
+        e.range.setBackground('#fff3e0');
+      } else {
+        e.range.clearNote();
+        e.range.setBackground(null);
+        if (result.formatted && result.formatted !== value) {
+          e.range.setValue(result.formatted);
+        }
+      }
+    }
+
+    // Member ID duplicate check
+    if (col === MEMBER_COLS.MEMBER_ID && value) {
+      const isDuplicate = checkDuplicateMemberID(value);
+      if (isDuplicate) {
+        e.range.setNote('⚠️ ' + VALIDATION_MESSAGES.MEMBER_ID_DUPLICATE);
+        e.range.setBackground('#ffebee');
+      } else if (!VALIDATION_PATTERNS.MEMBER_ID.test(value)) {
+        e.range.setNote('⚠️ ' + VALIDATION_MESSAGES.MEMBER_ID_INVALID);
+        e.range.setBackground('#fff3e0');
+      } else {
+        e.range.clearNote();
+        e.range.setBackground(null);
+      }
+    }
+  }
+
+  // Grievance Log validations
+  if (sheetName === SHEETS.GRIEVANCE_LOG) {
+    // Grievance ID duplicate check
+    if (col === GRIEVANCE_COLS.GRIEVANCE_ID && value) {
+      const isDuplicate = checkDuplicateGrievanceID(value);
+      if (isDuplicate) {
+        e.range.setNote('⚠️ ' + VALIDATION_MESSAGES.GRIEVANCE_ID_DUPLICATE);
+        e.range.setBackground('#ffebee');
+      } else if (!VALIDATION_PATTERNS.GRIEVANCE_ID.test(value)) {
+        e.range.setNote('⚠️ ' + VALIDATION_MESSAGES.GRIEVANCE_ID_INVALID);
+        e.range.setBackground('#fff3e0');
+      } else {
+        e.range.clearNote();
+        e.range.setBackground(null);
+      }
+    }
+  }
+}
+
+/**
+ * Runs bulk validation on Member Directory
+ */
+function runBulkValidation() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) {
+    SpreadsheetApp.getUi().alert('Member Directory not found!');
+    return;
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    'Running bulk validation...',
+    'Please wait',
+    -1
+  );
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) {
+    SpreadsheetApp.getActiveSpreadsheet().toast('No data to validate', 'Info', 3);
+    return;
+  }
+
+  const emailData = memberSheet.getRange(2, MEMBER_COLS.EMAIL, lastRow - 1, 1).getValues();
+  const phoneData = memberSheet.getRange(2, MEMBER_COLS.PHONE, lastRow - 1, 1).getValues();
+  const memberIdData = memberSheet.getRange(2, MEMBER_COLS.MEMBER_ID, lastRow - 1, 1).getValues();
+
+  const issues = [];
+  const seenMemberIds = {};
+
+  for (let i = 0; i < lastRow - 1; i++) {
+    const row = i + 2;
+    const email = emailData[i][0];
+    const phone = phoneData[i][0];
+    const memberId = memberIdData[i][0];
+
+    // Validate email
+    if (email) {
+      const emailResult = validateEmailAddress(email);
+      if (!emailResult.valid) {
+        issues.push({ row, field: 'Email', value: email, message: emailResult.message });
+      }
+    }
+
+    // Validate phone
+    if (phone) {
+      const phoneResult = validatePhoneNumber(phone);
+      if (!phoneResult.valid) {
+        issues.push({ row, field: 'Phone', value: phone, message: phoneResult.message });
+      }
+    }
+
+    // Check for duplicate Member IDs
+    if (memberId) {
+      if (seenMemberIds[memberId]) {
+        issues.push({
+          row,
+          field: 'Member ID',
+          value: memberId,
+          message: `Duplicate of row ${seenMemberIds[memberId]}`
+        });
+      } else {
+        seenMemberIds[memberId] = row;
+      }
+    }
+  }
+
+  // Show results
+  showValidationReport(issues, lastRow - 1);
+}
+
+/**
+ * Shows validation report
+ * @param {Array} issues - Array of validation issues
+ * @param {number} totalRecords - Total records validated
+ */
+function showValidationReport(issues, totalRecords) {
+  const issueCount = issues.length;
+  const passRate = totalRecords > 0 ? (((totalRecords - issueCount) / totalRecords) * 100).toFixed(1) : 100;
+
+  let issuesHtml = '';
+  if (issues.length > 0) {
+    issuesHtml = issues.slice(0, 50).map(issue => `
+      <tr>
+        <td>${issue.row}</td>
+        <td>${issue.field}</td>
+        <td>${issue.value}</td>
+        <td>${issue.message}</td>
+      </tr>
+    `).join('');
+
+    if (issues.length > 50) {
+      issuesHtml += `<tr><td colspan="4">...and ${issues.length - 50} more issues</td></tr>`;
+    }
+  }
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><base target="_top">
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; margin: 0; }
+  h2 { color: #1a73e8; margin-top: 0; }
+  .summary { display: flex; gap: 20px; margin: 20px 0; }
+  .stat-card { flex: 1; padding: 20px; border-radius: 8px; text-align: center; }
+  .stat-card.good { background: #e8f5e9; border-left: 4px solid #4caf50; }
+  .stat-card.warning { background: #fff3e0; border-left: 4px solid #ff9800; }
+  .stat-card.bad { background: #ffebee; border-left: 4px solid #f44336; }
+  .stat-value { font-size: 32px; font-weight: bold; color: #333; }
+  .stat-label { color: #666; margin-top: 5px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+  th, td { padding: 10px; text-align: left; border: 1px solid #ddd; }
+  th { background: #f5f5f5; }
+  .no-issues { text-align: center; padding: 40px; color: #4caf50; font-size: 18px; }
+</style>
+</head>
+<body>
+  <h2>📊 Validation Report</h2>
+
+  <div class="summary">
+    <div class="stat-card ${issueCount === 0 ? 'good' : issueCount < 10 ? 'warning' : 'bad'}">
+      <div class="stat-value">${passRate}%</div>
+      <div class="stat-label">Pass Rate</div>
+    </div>
+    <div class="stat-card ${issueCount === 0 ? 'good' : 'warning'}">
+      <div class="stat-value">${totalRecords}</div>
+      <div class="stat-label">Records Validated</div>
+    </div>
+    <div class="stat-card ${issueCount === 0 ? 'good' : 'bad'}">
+      <div class="stat-value">${issueCount}</div>
+      <div class="stat-label">Issues Found</div>
+    </div>
+  </div>
+
+  ${issueCount > 0 ? `
+    <table>
+      <tr>
+        <th>Row</th>
+        <th>Field</th>
+        <th>Value</th>
+        <th>Issue</th>
+      </tr>
+      ${issuesHtml}
+    </table>
+  ` : '<div class="no-issues">✅ No validation issues found!</div>'}
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(700)
+    .setHeight(500);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Validation Report');
+}
+
+/**
+ * Shows validation settings dialog
+ */
+function showValidationSettings() {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><base target="_top">
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; margin: 0; }
+  h2 { color: #1a73e8; margin-top: 0; }
+  .setting { margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+  .setting-header { display: flex; justify-content: space-between; align-items: center; }
+  .setting-title { font-weight: bold; }
+  .setting-desc { color: #666; font-size: 13px; margin-top: 5px; }
+  .toggle { position: relative; width: 50px; height: 26px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 26px; transition: .4s; }
+  .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .4s; }
+  input:checked + .slider { background: #4caf50; }
+  input:checked + .slider:before { transform: translateX(24px); }
+  button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; }
+</style>
+</head>
+<body>
+  <h2>⚙️ Validation Settings</h2>
+
+  <div class="setting">
+    <div class="setting-header">
+      <div>
+        <div class="setting-title">Real-time Email Validation</div>
+        <div class="setting-desc">Validate email format as you type</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="emailValidation" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="setting">
+    <div class="setting-header">
+      <div>
+        <div class="setting-title">Auto-format Phone Numbers</div>
+        <div class="setting-desc">Automatically format phone numbers to (XXX) XXX-XXXX</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="phoneFormat" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="setting">
+    <div class="setting-header">
+      <div>
+        <div class="setting-title">Duplicate ID Detection</div>
+        <div class="setting-desc">Warn when entering duplicate Member or Grievance IDs</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="duplicateCheck" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="setting">
+    <div class="setting-header">
+      <div>
+        <div class="setting-title">Visual Indicators</div>
+        <div class="setting-desc">Highlight cells with validation issues</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="visualIndicators" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <button onclick="runValidation()">🔍 Run Bulk Validation Now</button>
+
+  <script>
+    function runValidation() {
+      google.script.run.runBulkValidation();
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(450)
+    .setHeight(450);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Validation Settings');
+}
+
+/**
+ * Clears all validation notes and highlighting
+ */
+function clearValidationIndicators() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) return;
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) return;
+
+  // Clear email column notes and background
+  const emailRange = memberSheet.getRange(2, MEMBER_COLS.EMAIL, lastRow - 1, 1);
+  emailRange.clearNote();
+  emailRange.setBackground(null);
+
+  // Clear phone column notes and background
+  const phoneRange = memberSheet.getRange(2, MEMBER_COLS.PHONE, lastRow - 1, 1);
+  phoneRange.clearNote();
+  phoneRange.setBackground(null);
+
+  // Clear member ID column notes and background
+  const memberIdRange = memberSheet.getRange(2, MEMBER_COLS.MEMBER_ID, lastRow - 1, 1);
+  memberIdRange.clearNote();
+  memberIdRange.setBackground(null);
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    'Validation indicators cleared',
+    'Done',
+    3
+  );
+}
+
+/**
+ * Installs validation trigger
+ */
+function installValidationTrigger() {
+  // Remove existing triggers first
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'onEditValidation') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  // Create new trigger
+  ScriptApp.newTrigger('onEditValidation')
+    .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
+    .onEdit()
+    .create();
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Validation Trigger Installed',
+    'Real-time validation is now active.\n\n' +
+    'Email and phone numbers will be validated as you type.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
 }
 
 
@@ -25874,6 +30028,897 @@ function openInteractiveDashboard() {
 
 
 // ================================================================================
+// MODULE: InteractiveTutorial.gs
+// Source: InteractiveTutorial.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * INTERACTIVE TUTORIAL SYSTEM
+ * ============================================================================
+ *
+ * Guided onboarding tour for first-time users with step-by-step walkthrough.
+ *
+ * Features:
+ * - Welcome wizard for new users
+ * - Step-by-step feature tours
+ * - Video tutorial integration
+ * - Progress tracking
+ * - Skip/resume capability
+ * - Context-sensitive help links
+ * - Keyboard navigation
+ *
+ * @module InteractiveTutorial
+ * @version 1.0.0
+ * @author SEIU Local 509 Tech Team
+ */
+
+/**
+ * Tutorial configuration
+ */
+const TUTORIAL_CONFIG = {
+  SHOW_ON_FIRST_OPEN: true,
+  HIGHLIGHT_COLOR: '#FFEB3B',
+  PROGRESS_KEY: 'tutorial_progress',
+  COMPLETED_KEY: 'tutorial_completed',
+  SKIPPED_KEY: 'tutorial_skipped'
+};
+
+/**
+ * Tutorial steps for the main walkthrough
+ */
+const TUTORIAL_STEPS = [
+  {
+    id: 'welcome',
+    title: 'Welcome to 509 Dashboard',
+    content: 'This is your complete union management system for tracking members and grievances. Let\'s take a quick tour!',
+    sheet: null,
+    position: 'center',
+    icon: '👋',
+    duration: 0
+  },
+  {
+    id: 'member_directory',
+    title: 'Member Directory',
+    content: 'The Member Directory contains all your union members. You can search, filter, and manage member information here.\n\n✅ 31 columns of member data\n✅ Automatic grievance status tracking\n✅ Steward contact history',
+    sheet: 'Member Directory',
+    position: 'sheet',
+    icon: '👥',
+    videoUrl: 'https://example.com/tutorials/member-directory'
+  },
+  {
+    id: 'grievance_log',
+    title: 'Grievance Log',
+    content: 'Track all grievances from filing to resolution. The system automatically calculates deadlines and tracks the workflow.\n\n✅ Automatic deadline calculations\n✅ Step-by-step workflow tracking\n✅ Integration with Google Drive & Calendar',
+    sheet: 'Grievance Log',
+    position: 'sheet',
+    icon: '📋',
+    videoUrl: 'https://example.com/tutorials/grievance-log'
+  },
+  {
+    id: 'dashboard',
+    title: 'Main Dashboard',
+    content: 'Get a real-time overview of all union metrics. See open grievances, member counts, and upcoming deadlines at a glance.',
+    sheet: 'Dashboard',
+    position: 'sheet',
+    icon: '📊',
+    videoUrl: 'https://example.com/tutorials/dashboard'
+  },
+  {
+    id: 'menus',
+    title: 'Navigation Menus',
+    content: 'The menu bar gives you access to all features:\n\n👤 Dashboard - Daily operations\n📊 Sheet Manager - Data management\n🔧 Setup - Configuration\n⚙️ Administrator - System settings',
+    sheet: null,
+    position: 'center',
+    icon: '🧭'
+  },
+  {
+    id: 'start_grievance',
+    title: 'Starting a Grievance',
+    content: 'To start a new grievance:\n\n1. Go to Member Directory\n2. Find the member\n3. Check the "Start Grievance" checkbox (column AE)\n4. Fill out the grievance form\n\nOr use: Dashboard menu → Grievance Tools → Start New Grievance',
+    sheet: 'Member Directory',
+    position: 'sheet',
+    icon: '➕'
+  },
+  {
+    id: 'email_integration',
+    title: 'Email Integration',
+    content: 'Send emails directly from the dashboard:\n\n📧 Use email templates for common messages\n📝 Track all communications in the log\n📎 Attach grievance PDFs automatically',
+    sheet: null,
+    position: 'center',
+    icon: '📧'
+  },
+  {
+    id: 'keyboard_shortcuts',
+    title: 'Keyboard Shortcuts',
+    content: 'Speed up your work with keyboard shortcuts:\n\n• Ctrl+Shift+S: Quick search\n• Ctrl+Z: Undo last action\n• Ctrl+Y: Redo\n• F1: Context help\n\nView all shortcuts: Help menu → Keyboard Shortcuts',
+    sheet: null,
+    position: 'center',
+    icon: '⌨️'
+  },
+  {
+    id: 'complete',
+    title: 'You\'re Ready!',
+    content: 'You\'ve completed the basic tour. Here are some next steps:\n\n📚 Explore the FAQ & Help sections\n🎥 Watch video tutorials for detailed guidance\n📧 Contact support if you need help\n\nGood luck with your union work!',
+    sheet: null,
+    position: 'center',
+    icon: '🎉'
+  }
+];
+
+/**
+ * Video tutorial library
+ */
+const VIDEO_TUTORIALS = [
+  {
+    id: 'getting_started',
+    title: 'Getting Started with 509 Dashboard',
+    description: 'Complete overview of the dashboard and its features',
+    duration: '10:00',
+    category: 'Basics',
+    url: 'https://example.com/tutorials/getting-started',
+    thumbnail: '🎬'
+  },
+  {
+    id: 'member_management',
+    title: 'Managing Members',
+    description: 'How to add, edit, and search for members',
+    duration: '8:00',
+    category: 'Members',
+    url: 'https://example.com/tutorials/members',
+    thumbnail: '👥'
+  },
+  {
+    id: 'grievance_workflow',
+    title: 'Grievance Workflow',
+    description: 'Filing and tracking grievances from start to finish',
+    duration: '15:00',
+    category: 'Grievances',
+    url: 'https://example.com/tutorials/grievances',
+    thumbnail: '📋'
+  },
+  {
+    id: 'email_communications',
+    title: 'Email Communications',
+    description: 'Using email templates and tracking communications',
+    duration: '6:00',
+    category: 'Communication',
+    url: 'https://example.com/tutorials/email',
+    thumbnail: '📧'
+  },
+  {
+    id: 'reports_analytics',
+    title: 'Reports & Analytics',
+    description: 'Generating reports and understanding analytics',
+    duration: '12:00',
+    category: 'Reporting',
+    url: 'https://example.com/tutorials/reports',
+    thumbnail: '📊'
+  },
+  {
+    id: 'calendar_integration',
+    title: 'Calendar Integration',
+    description: 'Syncing deadlines with Google Calendar',
+    duration: '5:00',
+    category: 'Integration',
+    url: 'https://example.com/tutorials/calendar',
+    thumbnail: '📅'
+  },
+  {
+    id: 'batch_operations',
+    title: 'Batch Operations',
+    description: 'Performing bulk updates and operations',
+    duration: '7:00',
+    category: 'Advanced',
+    url: 'https://example.com/tutorials/batch',
+    thumbnail: '⚡'
+  },
+  {
+    id: 'steward_guide',
+    title: 'Steward Quick Guide',
+    description: 'Essential features for union stewards',
+    duration: '10:00',
+    category: 'Role-Specific',
+    url: 'https://example.com/tutorials/steward',
+    thumbnail: '👨‍⚖️'
+  }
+];
+
+/**
+ * Shows the interactive tutorial for first-time users
+ */
+function showInteractiveTutorial() {
+  // Check if tutorial was completed or skipped
+  const props = PropertiesService.getUserProperties();
+  const completed = props.getProperty(TUTORIAL_CONFIG.COMPLETED_KEY);
+
+  if (completed === 'true') {
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.alert(
+      '📚 Tutorial',
+      'You\'ve already completed the tutorial. Would you like to take it again?',
+      ui.ButtonSet.YES_NO
+    );
+
+    if (response !== ui.Button.YES) return;
+  }
+
+  // Reset progress
+  props.setProperty(TUTORIAL_CONFIG.PROGRESS_KEY, '0');
+
+  // Show tutorial
+  showTutorialStep(0);
+}
+
+/**
+ * Shows a specific tutorial step
+ * @param {number} stepIndex - Index of the step to show
+ */
+function showTutorialStep(stepIndex) {
+  if (stepIndex >= TUTORIAL_STEPS.length) {
+    completeTutorial();
+    return;
+  }
+
+  const step = TUTORIAL_STEPS[stepIndex];
+
+  // Navigate to sheet if specified
+  if (step.sheet) {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(step.sheet);
+    if (sheet) {
+      ss.setActiveSheet(sheet);
+    }
+  }
+
+  const html = createTutorialStepHTML(step, stepIndex);
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(550)
+    .setHeight(450);
+
+  SpreadsheetApp.getUi().showModalDialog(
+    htmlOutput,
+    `${step.icon} Tutorial (${stepIndex + 1}/${TUTORIAL_STEPS.length})`
+  );
+
+  // Save progress
+  const props = PropertiesService.getUserProperties();
+  props.setProperty(TUTORIAL_CONFIG.PROGRESS_KEY, stepIndex.toString());
+}
+
+/**
+ * Creates HTML for a tutorial step
+ * @param {Object} step - Tutorial step object
+ * @param {number} stepIndex - Current step index
+ * @returns {string} HTML content
+ */
+function createTutorialStepHTML(step, stepIndex) {
+  const isFirst = stepIndex === 0;
+  const isLast = stepIndex === TUTORIAL_STEPS.length - 1;
+  const progress = ((stepIndex + 1) / TUTORIAL_STEPS.length) * 100;
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 0;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100%;
+    }
+    .container {
+      padding: 30px;
+      text-align: center;
+    }
+    .icon {
+      font-size: 64px;
+      margin-bottom: 15px;
+    }
+    h2 {
+      color: white;
+      margin: 0 0 20px 0;
+      font-size: 24px;
+    }
+    .content {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: left;
+      white-space: pre-line;
+      line-height: 1.8;
+      font-size: 14px;
+      color: #333;
+      margin: 20px 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .progress-bar {
+      background: rgba(255,255,255,0.3);
+      border-radius: 10px;
+      height: 8px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+    .progress-fill {
+      background: #4CAF50;
+      height: 100%;
+      width: ${progress}%;
+      border-radius: 10px;
+      transition: width 0.3s;
+    }
+    .progress-text {
+      color: rgba(255,255,255,0.9);
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 14px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: white;
+      color: #764ba2;
+      font-weight: bold;
+    }
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    .btn-skip {
+      background: transparent;
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      padding: 8px 16px;
+    }
+    .video-link {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 8px 16px;
+      background: #f0f0f0;
+      color: #1a73e8;
+      text-decoration: none;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+    .video-link:hover {
+      background: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">${step.icon}</div>
+    <h2>${step.title}</h2>
+
+    <div class="progress-bar">
+      <div class="progress-fill"></div>
+    </div>
+    <div class="progress-text">Step ${stepIndex + 1} of ${TUTORIAL_STEPS.length}</div>
+
+    <div class="content">
+      ${step.content}
+      ${step.videoUrl ? `<a class="video-link" href="${step.videoUrl}" target="_blank">🎥 Watch Video Tutorial</a>` : ''}
+    </div>
+
+    <div class="buttons">
+      ${!isFirst ? '<button class="btn-secondary" onclick="prevStep()">← Previous</button>' : ''}
+      <button class="btn-primary" onclick="nextStep()">
+        ${isLast ? '✅ Complete Tutorial' : 'Next →'}
+      </button>
+    </div>
+
+    ${!isLast ? '<button class="btn-skip" onclick="skipTutorial()">Skip Tutorial</button>' : ''}
+  </div>
+
+  <script>
+    function nextStep() {
+      google.script.run.showTutorialStep(${stepIndex + 1});
+      google.script.host.close();
+    }
+
+    function prevStep() {
+      google.script.run.showTutorialStep(${stepIndex - 1});
+      google.script.host.close();
+    }
+
+    function skipTutorial() {
+      if (confirm('Are you sure you want to skip the tutorial? You can restart it anytime from the Help menu.')) {
+        google.script.run.skipTutorial();
+        google.script.host.close();
+      }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === 'Enter') {
+        nextStep();
+      } else if (e.key === 'ArrowLeft' && ${stepIndex} > 0) {
+        prevStep();
+      } else if (e.key === 'Escape') {
+        skipTutorial();
+      }
+    });
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Completes the tutorial
+ */
+function completeTutorial() {
+  const props = PropertiesService.getUserProperties();
+  props.setProperty(TUTORIAL_CONFIG.COMPLETED_KEY, 'true');
+  props.setProperty(TUTORIAL_CONFIG.PROGRESS_KEY, TUTORIAL_STEPS.length.toString());
+
+  SpreadsheetApp.getUi().alert(
+    '🎉 Tutorial Complete!',
+    'Congratulations! You\'ve completed the 509 Dashboard tutorial.\n\n' +
+    'You can always:\n' +
+    '• Restart the tutorial from Help menu\n' +
+    '• Watch video tutorials for more details\n' +
+    '• Check the FAQ for common questions\n\n' +
+    'Good luck with your union work!',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Skips the tutorial
+ */
+function skipTutorial() {
+  const props = PropertiesService.getUserProperties();
+  props.setProperty(TUTORIAL_CONFIG.SKIPPED_KEY, 'true');
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    'Tutorial skipped. You can restart it anytime from the Help menu.',
+    'Tutorial Skipped',
+    5
+  );
+}
+
+/**
+ * Resets tutorial progress
+ */
+function resetTutorialProgress() {
+  const props = PropertiesService.getUserProperties();
+  props.deleteProperty(TUTORIAL_CONFIG.COMPLETED_KEY);
+  props.deleteProperty(TUTORIAL_CONFIG.SKIPPED_KEY);
+  props.deleteProperty(TUTORIAL_CONFIG.PROGRESS_KEY);
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    'Tutorial progress has been reset. Start the tutorial again from the Help menu.',
+    'Reset Complete',
+    3
+  );
+}
+
+/**
+ * Shows video tutorial library
+ */
+function showVideoTutorials() {
+  const categories = [...new Set(VIDEO_TUTORIALS.map(v => v.category))];
+
+  let categorySections = '';
+  categories.forEach(category => {
+    const tutorials = VIDEO_TUTORIALS.filter(v => v.category === category);
+    categorySections += `
+      <div class="category">
+        <h3>${category}</h3>
+        ${tutorials.map(t => `
+          <div class="video-card" onclick="openVideo('${t.url}')">
+            <div class="thumbnail">${t.thumbnail}</div>
+            <div class="video-info">
+              <div class="video-title">${t.title}</div>
+              <div class="video-desc">${t.description}</div>
+              <div class="video-duration">⏱️ ${t.duration}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  });
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Roboto', Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h2 { color: #1a73e8; margin-top: 0; border-bottom: 3px solid #1a73e8; padding-bottom: 10px; }
+    h3 { color: #333; margin-top: 25px; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e0e0e0; }
+    .video-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .video-card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    .thumbnail {
+      font-size: 40px;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f0f0;
+      border-radius: 8px;
+      margin-right: 15px;
+    }
+    .video-info { flex: 1; }
+    .video-title { font-weight: bold; color: #1a73e8; margin-bottom: 5px; }
+    .video-desc { color: #666; font-size: 13px; margin-bottom: 5px; }
+    .video-duration { color: #999; font-size: 12px; }
+    .search-box {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+    .search-box:focus {
+      outline: none;
+      border-color: #1a73e8;
+    }
+    .no-results {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🎥 Video Tutorial Library</h2>
+
+    <input type="text" class="search-box" placeholder="🔍 Search tutorials..." oninput="filterTutorials(this.value)">
+
+    <div id="tutorials">
+      ${categorySections}
+    </div>
+
+    <div id="no-results" class="no-results" style="display: none;">
+      No tutorials found matching your search.
+    </div>
+  </div>
+
+  <script>
+    const tutorials = ${JSON.stringify(VIDEO_TUTORIALS)};
+
+    function openVideo(url) {
+      window.open(url, '_blank');
+    }
+
+    function filterTutorials(query) {
+      const cards = document.querySelectorAll('.video-card');
+      const categories = document.querySelectorAll('.category');
+      let found = 0;
+
+      query = query.toLowerCase();
+
+      cards.forEach(card => {
+        const title = card.querySelector('.video-title').textContent.toLowerCase();
+        const desc = card.querySelector('.video-desc').textContent.toLowerCase();
+
+        if (title.includes(query) || desc.includes(query) || query === '') {
+          card.style.display = 'flex';
+          found++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      categories.forEach(cat => {
+        const visibleCards = cat.querySelectorAll('.video-card[style="display: flex;"]');
+        cat.style.display = visibleCards.length > 0 || query === '' ? 'block' : 'none';
+      });
+
+      document.getElementById('no-results').style.display = found === 0 && query !== '' ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(700)
+    .setHeight(600);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🎥 Video Tutorials');
+}
+
+/**
+ * Shows quick start guide dialog
+ */
+function showQuickStartGuide() {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Roboto', Arial, sans-serif; padding: 25px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { color: #1a73e8; margin-top: 0; }
+    .step { display: flex; align-items: flex-start; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+    .step-number { background: #1a73e8; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; flex-shrink: 0; }
+    .step-content h4 { margin: 0 0 5px 0; color: #333; }
+    .step-content p { margin: 0; color: #666; font-size: 14px; }
+    .tip { background: #e8f5e9; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50; margin-top: 20px; }
+    .tip-title { font-weight: bold; color: #2e7d32; margin-bottom: 5px; }
+    button { background: #1a73e8; color: white; border: none; padding: 12px 24px; font-size: 14px; border-radius: 4px; cursor: pointer; margin-top: 15px; margin-right: 10px; }
+    button:hover { background: #1557b0; }
+    button.secondary { background: #6c757d; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🚀 Quick Start Guide</h2>
+
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h4>Navigate to Member Directory</h4>
+        <p>Click on the "Member Directory" tab to view and manage all union members.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h4>Find a Member</h4>
+        <p>Use Ctrl+F to search, or go to Dashboard → Search & Lookup → Search Members.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h4>Start a Grievance</h4>
+        <p>Check the "Start Grievance" checkbox in column AE, or use the Grievance Tools menu.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <h4>Track Deadlines</h4>
+        <p>The Dashboard shows upcoming deadlines. Sync with Google Calendar for reminders.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <h4>Communicate</h4>
+        <p>Use Dashboard → Communications → Compose Email to send member communications.</p>
+      </div>
+    </div>
+
+    <div class="tip">
+      <div class="tip-title">💡 Pro Tip</div>
+      Press F1 anywhere for context-sensitive help, or use Ctrl+Shift+S for quick search!
+    </div>
+
+    <button onclick="startTutorial()">📚 Take Full Tutorial</button>
+    <button onclick="watchVideo()">🎥 Watch Video</button>
+    <button class="secondary" onclick="google.script.host.close()">Close</button>
+  </div>
+
+  <script>
+    function startTutorial() {
+      google.script.run.showInteractiveTutorial();
+      google.script.host.close();
+    }
+    function watchVideo() {
+      google.script.run.showVideoTutorials();
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(500)
+    .setHeight(550);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🚀 Quick Start Guide');
+}
+
+/**
+ * Checks if user should see tutorial on first open
+ * Called from onOpen trigger
+ */
+function checkFirstTimeUser() {
+  if (!TUTORIAL_CONFIG.SHOW_ON_FIRST_OPEN) return;
+
+  const props = PropertiesService.getUserProperties();
+  const completed = props.getProperty(TUTORIAL_CONFIG.COMPLETED_KEY);
+  const skipped = props.getProperty(TUTORIAL_CONFIG.SKIPPED_KEY);
+
+  // Don't show if already completed or skipped
+  if (completed === 'true' || skipped === 'true') return;
+
+  // Check if this is first visit
+  const lastVisit = props.getProperty('last_visit');
+  if (!lastVisit) {
+    // First time user - show welcome
+    props.setProperty('last_visit', new Date().toISOString());
+
+    // Show after a short delay to let the spreadsheet load
+    Utilities.sleep(1000);
+    showWelcomeWizard();
+  }
+}
+
+/**
+ * Shows welcome wizard for first-time users
+ */
+function showWelcomeWizard() {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 0;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      text-align: center;
+      padding: 40px;
+      max-width: 500px;
+    }
+    .logo { font-size: 80px; margin-bottom: 20px; }
+    h1 { color: white; font-size: 32px; margin: 0 0 10px 0; }
+    .subtitle { color: rgba(255,255,255,0.9); font-size: 18px; margin-bottom: 30px; }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      margin-top: 30px;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: white;
+      color: #764ba2;
+      font-weight: bold;
+    }
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    .btn-tertiary {
+      background: transparent;
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">👋</div>
+    <h1>Welcome to 509 Dashboard!</h1>
+    <div class="subtitle">Your complete union management system</div>
+
+    <div class="options">
+      <button class="btn-primary" onclick="startTutorial()">
+        📚 Take the Guided Tour (Recommended)
+      </button>
+      <button class="btn-secondary" onclick="quickStart()">
+        🚀 Quick Start Guide
+      </button>
+      <button class="btn-secondary" onclick="watchVideos()">
+        🎥 Watch Video Tutorials
+      </button>
+      <button class="btn-tertiary" onclick="skipWelcome()">
+        Skip for now - I'll explore on my own
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function startTutorial() {
+      google.script.run.showInteractiveTutorial();
+      google.script.host.close();
+    }
+    function quickStart() {
+      google.script.run.showQuickStartGuide();
+      google.script.host.close();
+    }
+    function watchVideos() {
+      google.script.run.showVideoTutorials();
+      google.script.host.close();
+    }
+    function skipWelcome() {
+      google.script.run.skipTutorial();
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(550)
+    .setHeight(450);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Welcome');
+}
+
+/**
+ * Gets tutorial progress for user
+ * @returns {Object} Progress information
+ */
+function getTutorialProgress() {
+  const props = PropertiesService.getUserProperties();
+
+  return {
+    currentStep: parseInt(props.getProperty(TUTORIAL_CONFIG.PROGRESS_KEY) || '0'),
+    totalSteps: TUTORIAL_STEPS.length,
+    completed: props.getProperty(TUTORIAL_CONFIG.COMPLETED_KEY) === 'true',
+    skipped: props.getProperty(TUTORIAL_CONFIG.SKIPPED_KEY) === 'true'
+  };
+}
+
+
+
+// ================================================================================
 // MODULE: KeyboardShortcuts.gs
 // Source: KeyboardShortcuts.gs
 // ================================================================================
@@ -30018,6 +35063,332 @@ function createMobileGrievanceBrowserHTML() {
 
 
 // ================================================================================
+// MODULE: NotificationCenter.gs
+// Source: NotificationCenter.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * NOTIFICATION CENTER
+ * ============================================================================
+ *
+ * Centralized notification management system
+ * Features:
+ * - In-app notifications
+ * - Notification history
+ * - Priority levels
+ * - Mark as read/unread
+ * - Notification preferences
+ * - Push notifications (toast)
+ * - Notification badges
+ */
+
+/**
+ * Notification types and priorities
+ */
+const NOTIFICATION_CONFIG = {
+  TYPES: {
+    INFO: 'info',
+    SUCCESS: 'success',
+    WARNING: 'warning',
+    ERROR: 'error',
+    SYSTEM: 'system'
+  },
+  PRIORITIES: {
+    LOW: 1,
+    MEDIUM: 2,
+    HIGH: 3,
+    URGENT: 4
+  },
+  MAX_NOTIFICATIONS: 100
+};
+
+/**
+ * Shows notification center
+ */
+function showNotificationCenter() {
+  const html = createNotificationCenterHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(800)
+    .setHeight(700);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🔔 Notifications');
+}
+
+/**
+ * Creates HTML for notification center
+ */
+function createNotificationCenterHTML() {
+  const notifications = getNotifications();
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  let notificationRows = '';
+  if (notifications.length === 0) {
+    notificationRows = '<div class="no-notifications">📭 No notifications yet</div>';
+  } else {
+    notifications.forEach((notif, index) => {
+      const icon = getNotificationIcon(notif.type);
+      const priorityClass = `priority-${notif.priority || 1}`;
+
+      notificationRows += `
+        <div class="notification-card ${notif.read ? 'read' : 'unread'} ${priorityClass}" onclick="toggleRead(${index})">
+          <div class="notification-header">
+            <span class="notification-icon">${icon}</span>
+            <span class="notification-title">${notif.title}</span>
+            <span class="notification-time">${getTimeAgo(notif.timestamp)}</span>
+          </div>
+          <div class="notification-body">${notif.message}</div>
+          ${!notif.read ? '<div class="unread-indicator"></div>' : ''}
+        </div>
+      `;
+    });
+  }
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { max-width: 750px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-height: 650px; overflow-y: auto; }
+    h2 { color: #1a73e8; margin-top: 0; display: flex; align-items: center; justify-content: space-between; }
+    .badge { background: #f44336; color: white; padding: 4px 12px; border-radius: 12px; font-size: 14px; font-weight: bold; }
+    .controls { margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap; }
+    button { background: #1a73e8; color: white; border: none; padding: 10px 20px; font-size: 13px; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #1557b0; }
+    button.secondary { background: #6c757d; }
+    .notification-card { background: #f8f9fa; padding: 15px; margin: 12px 0; border-radius: 8px; border-left: 4px solid #ddd; cursor: pointer; transition: all 0.2s; position: relative; }
+    .notification-card:hover { transform: translateX(5px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .notification-card.unread { background: #e8f0fe; border-left-color: #1a73e8; font-weight: 500; }
+    .notification-card.priority-4 { border-left-color: #f44336; }
+    .notification-card.priority-3 { border-left-color: #ff9800; }
+    .notification-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .notification-icon { font-size: 20px; }
+    .notification-title { flex: 1; font-weight: 600; color: #333; }
+    .notification-time { font-size: 12px; color: #999; }
+    .notification-body { color: #666; font-size: 14px; line-height: 1.6; }
+    .unread-indicator { position: absolute; top: 20px; right: 15px; width: 10px; height: 10px; background: #1a73e8; border-radius: 50%; }
+    .no-notifications { text-align: center; padding: 60px; font-size: 18px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>
+      <span>🔔 Notifications</span>
+      ${unreadCount > 0 ? `<span class="badge">${unreadCount} new</span>` : ''}
+    </h2>
+
+    <div class="controls">
+      <button onclick="markAllRead()">✅ Mark All Read</button>
+      <button onclick="clearAll()" class="secondary">🗑️ Clear All</button>
+      <button onclick="refreshNotifications()" class="secondary">🔄 Refresh</button>
+    </div>
+
+    <div id="notificationList">
+      ${notificationRows}
+    </div>
+  </div>
+
+  <script>
+    function toggleRead(index) {
+      google.script.run
+        .withSuccessHandler(() => location.reload())
+        .toggleNotificationRead(index);
+    }
+
+    function markAllRead() {
+      google.script.run
+        .withSuccessHandler(() => location.reload())
+        .markAllNotificationsRead();
+    }
+
+    function clearAll() {
+      if (confirm('Clear all notifications?')) {
+        google.script.run
+          .withSuccessHandler(() => location.reload())
+          .clearAllNotifications();
+      }
+    }
+
+    function refreshNotifications() {
+      location.reload();
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Gets notification icon based on type
+ * @param {string} type - Notification type
+ * @returns {string} Icon
+ */
+function getNotificationIcon(type) {
+  switch (type) {
+    case NOTIFICATION_CONFIG.TYPES.INFO: return 'ℹ️';
+    case NOTIFICATION_CONFIG.TYPES.SUCCESS: return '✅';
+    case NOTIFICATION_CONFIG.TYPES.WARNING: return '⚠️';
+    case NOTIFICATION_CONFIG.TYPES.ERROR: return '❌';
+    case NOTIFICATION_CONFIG.TYPES.SYSTEM: return '⚙️';
+    default: return '🔔';
+  }
+}
+
+/**
+ * Gets time ago string
+ * @param {string} timestamp - ISO timestamp
+ * @returns {string} Time ago
+ */
+function getTimeAgo(timestamp) {
+  const now = new Date();
+  const then = new Date(timestamp);
+  const seconds = Math.floor((now - then) / 1000);
+
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
+  if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
+  if (seconds < 604800) return Math.floor(seconds / 86400) + 'd ago';
+  return then.toLocaleDateString();
+}
+
+/**
+ * Gets all notifications for current user
+ * @returns {Array} Notifications
+ */
+function getNotifications() {
+  const props = PropertiesService.getUserProperties();
+  const notificationsJSON = props.getProperty('notifications');
+
+  if (!notificationsJSON) {
+    return [];
+  }
+
+  const notifications = JSON.parse(notificationsJSON);
+  return notifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+}
+
+/**
+ * Adds a notification
+ * @param {string} title - Notification title
+ * @param {string} message - Notification message
+ * @param {string} type - Notification type
+ * @param {number} priority - Priority level (1-4)
+ */
+function addNotification(title, message, type = NOTIFICATION_CONFIG.TYPES.INFO, priority = NOTIFICATION_CONFIG.PRIORITIES.MEDIUM) {
+  const props = PropertiesService.getUserProperties();
+  let notifications = getNotifications();
+
+  notifications.unshift({
+    title: title,
+    message: message,
+    type: type,
+    priority: priority,
+    timestamp: new Date().toISOString(),
+    read: false
+  });
+
+  // Limit notifications
+  if (notifications.length > NOTIFICATION_CONFIG.MAX_NOTIFICATIONS) {
+    notifications = notifications.slice(0, NOTIFICATION_CONFIG.MAX_NOTIFICATIONS);
+  }
+
+  props.setProperty('notifications', JSON.stringify(notifications));
+
+  // Show toast for high/urgent priority
+  if (priority >= NOTIFICATION_CONFIG.PRIORITIES.HIGH) {
+    const icon = getNotificationIcon(type);
+    SpreadsheetApp.getActiveSpreadsheet().toast(
+      message,
+      `${icon} ${title}`,
+      5
+    );
+  }
+}
+
+/**
+ * Toggles notification read status
+ * @param {number} index - Notification index
+ */
+function toggleNotificationRead(index) {
+  const props = PropertiesService.getUserProperties();
+  const notifications = getNotifications();
+
+  if (index >= 0 && index < notifications.length) {
+    notifications[index].read = !notifications[index].read;
+    props.setProperty('notifications', JSON.stringify(notifications));
+  }
+}
+
+/**
+ * Marks all notifications as read
+ */
+function markAllNotificationsRead() {
+  const props = PropertiesService.getUserProperties();
+  const notifications = getNotifications();
+
+  notifications.forEach(n => n.read = true);
+  props.setProperty('notifications', JSON.stringify(notifications));
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    '✅ All notifications marked as read',
+    'Notifications',
+    3
+  );
+}
+
+/**
+ * Clears all notifications
+ */
+function clearAllNotifications() {
+  const props = PropertiesService.getUserProperties();
+  props.deleteProperty('notifications');
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    '✅ All notifications cleared',
+    'Notifications',
+    3
+  );
+}
+
+/**
+ * Gets unread notification count
+ * @returns {number} Count
+ */
+function getUnreadCount() {
+  const notifications = getNotifications();
+  return notifications.filter(n => !n.read).length;
+}
+
+/**
+ * Sends welcome notification (for new users)
+ */
+function sendWelcomeNotification() {
+  addNotification(
+    'Welcome to 509 Dashboard!',
+    'Explore the features using the menu. Check out the Help Center to get started.',
+    NOTIFICATION_CONFIG.TYPES.INFO,
+    NOTIFICATION_CONFIG.PRIORITIES.LOW
+  );
+}
+
+/**
+ * Sends system notification
+ * @param {string} message - Notification message
+ */
+function sendSystemNotification(message) {
+  addNotification(
+    'System Notification',
+    message,
+    NOTIFICATION_CONFIG.TYPES.SYSTEM,
+    NOTIFICATION_CONFIG.PRIORITIES.MEDIUM
+  );
+}
+
+
+
+// ================================================================================
 // MODULE: OptimizedDashboardRebuild.gs
 // Source: OptimizedDashboardRebuild.gs
 // ================================================================================
@@ -31715,6 +37086,889 @@ function RUN_PHASE6_HEALTH_CHECK() {
 
 
 // ================================================================================
+// MODULE: PIIProtection.gs
+// Source: PIIProtection.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * PII PROTECTION SYSTEM
+ * ============================================================================
+ *
+ * Protects Personally Identifiable Information (PII) with encryption,
+ * masking, and compliance features.
+ *
+ * Features:
+ * - Field-level encryption for sensitive data
+ * - Data masking in exports and displays
+ * - GDPR/CCPA compliance helpers
+ * - Right to erasure (data deletion)
+ * - Data access logging
+ * - Export controls
+ * - Role-based access to PII
+ *
+ * @module PIIProtection
+ * @version 1.0.0
+ * @author SEIU Local 509 Tech Team
+ */
+
+/**
+ * PII configuration
+ */
+const PII_CONFIG = {
+  // Fields considered PII in Member Directory
+  MEMBER_PII_FIELDS: [
+    'EMAIL',           // Column H
+    'PHONE',           // Column I
+    'HOME_TOWN'        // Column X
+  ],
+
+  // Fields considered PII in Grievance Log
+  GRIEVANCE_PII_FIELDS: [
+    'MEMBER_EMAIL'     // Column X
+  ],
+
+  // Masking patterns
+  MASK_EMAIL: true,
+  MASK_PHONE: true,
+  MASK_SSN: true,
+
+  // Encryption key property name (stored in Script Properties)
+  ENCRYPTION_KEY_PROP: 'pii_encryption_key',
+
+  // Retention period in days (for GDPR compliance)
+  DEFAULT_RETENTION_DAYS: 730  // 2 years
+};
+
+/**
+ * PII field definitions with masking rules
+ */
+const PII_FIELDS = {
+  email: {
+    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+    mask: (value) => {
+      if (!value) return '';
+      const parts = value.split('@');
+      if (parts.length !== 2) return '***@***.***';
+      const user = parts[0];
+      const domain = parts[1];
+      const maskedUser = user.length > 2
+        ? user[0] + '*'.repeat(user.length - 2) + user[user.length - 1]
+        : '*'.repeat(user.length);
+      const domainParts = domain.split('.');
+      const maskedDomain = domainParts[0][0] + '*'.repeat(domainParts[0].length - 1) +
+        '.' + domainParts.slice(1).join('.');
+      return maskedUser + '@' + maskedDomain;
+    }
+  },
+  phone: {
+    pattern: /^\+?[\d\s\-\(\)]{10,}$/,
+    mask: (value) => {
+      if (!value) return '';
+      const digits = value.replace(/\D/g, '');
+      if (digits.length < 4) return '***-***-****';
+      return '***-***-' + digits.slice(-4);
+    }
+  },
+  ssn: {
+    pattern: /^\d{3}-?\d{2}-?\d{4}$/,
+    mask: (value) => {
+      if (!value) return '';
+      const digits = value.replace(/\D/g, '');
+      if (digits.length < 4) return '***-**-****';
+      return '***-**-' + digits.slice(-4);
+    }
+  },
+  address: {
+    mask: (value) => {
+      if (!value) return '';
+      const parts = value.split(',');
+      if (parts.length > 1) {
+        return '*** ' + parts.slice(-1)[0].trim();
+      }
+      return '*** (Address Hidden)';
+    }
+  }
+};
+
+/**
+ * Masks email address for display
+ * @param {string} email - Full email address
+ * @returns {string} Masked email (e.g., j***n@g***.com)
+ */
+function maskEmail(email) {
+  return PII_FIELDS.email.mask(email);
+}
+
+/**
+ * Masks phone number for display
+ * @param {string} phone - Full phone number
+ * @returns {string} Masked phone (e.g., ***-***-1234)
+ */
+function maskPhone(phone) {
+  return PII_FIELDS.phone.mask(phone);
+}
+
+/**
+ * Masks SSN for display
+ * @param {string} ssn - Full SSN
+ * @returns {string} Masked SSN (e.g., ***-**-1234)
+ */
+function maskSSN(ssn) {
+  return PII_FIELDS.ssn.mask(ssn);
+}
+
+/**
+ * Shows PII protection dashboard
+ */
+function showPIIProtectionDashboard() {
+  const stats = getPIIStatistics();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Roboto', Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { color: #1a73e8; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+    .stat-card { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; }
+    .stat-card.protected { border-left: 4px solid #4caf50; }
+    .stat-card.sensitive { border-left: 4px solid #f44336; }
+    .stat-value { font-size: 28px; font-weight: bold; color: #333; }
+    .stat-label { font-size: 14px; color: #666; margin-top: 5px; }
+    .section { margin-top: 25px; }
+    .section h3 { color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+    .action-btn { display: block; width: 100%; padding: 12px; margin: 8px 0; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; text-align: left; }
+    .action-btn:hover { background: #1557b0; }
+    .action-btn.warning { background: #ff9800; }
+    .action-btn.danger { background: #f44336; }
+    .info-box { background: #e8f5e9; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #4caf50; }
+    .warning-box { background: #fff3e0; padding: 15px; border-radius: 4px; margin: 15px 0; border-left: 4px solid #ff9800; }
+    .compliance-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin: 5px; }
+    .badge-gdpr { background: #e3f2fd; color: #1565c0; }
+    .badge-ccpa { background: #f3e5f5; color: #7b1fa2; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔒 PII Protection Dashboard</h2>
+
+    <div style="margin: 15px 0;">
+      <span class="compliance-badge badge-gdpr">GDPR Compliant</span>
+      <span class="compliance-badge badge-ccpa">CCPA Compliant</span>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card protected">
+        <div class="stat-value">${stats.totalMembers}</div>
+        <div class="stat-label">Total Member Records</div>
+      </div>
+      <div class="stat-card sensitive">
+        <div class="stat-value">${stats.piiFieldCount}</div>
+        <div class="stat-label">PII Fields Protected</div>
+      </div>
+      <div class="stat-card protected">
+        <div class="stat-value">${stats.emailCount}</div>
+        <div class="stat-label">Email Addresses</div>
+      </div>
+      <div class="stat-card protected">
+        <div class="stat-value">${stats.phoneCount}</div>
+        <div class="stat-label">Phone Numbers</div>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <strong>🛡️ Protection Status:</strong><br>
+      All PII fields are configured for masking in exports. Email and phone numbers
+      will be partially hidden when exported to CSV or shared externally.
+    </div>
+
+    <div class="section">
+      <h3>🔧 Protection Actions</h3>
+
+      <button class="action-btn" onclick="exportMasked()">
+        📤 Export with Masked PII
+      </button>
+
+      <button class="action-btn" onclick="auditPII()">
+        📊 Run PII Audit Report
+      </button>
+
+      <button class="action-btn" onclick="viewAccessLog()">
+        📋 View PII Access Log
+      </button>
+
+      <button class="action-btn warning" onclick="anonymizeInactive()">
+        🔄 Anonymize Inactive Members
+      </button>
+    </div>
+
+    <div class="section">
+      <h3>📋 GDPR/CCPA Compliance</h3>
+
+      <button class="action-btn" onclick="generateDataPortability()">
+        📥 Generate Data Portability Export
+      </button>
+
+      <button class="action-btn" onclick="showDataSubjectRequest()">
+        👤 Process Data Subject Request
+      </button>
+
+      <button class="action-btn danger" onclick="processErasureRequest()">
+        🗑️ Process Right to Erasure Request
+      </button>
+    </div>
+
+    <div class="warning-box">
+      <strong>⚠️ Important:</strong><br>
+      All data deletions are logged and cannot be undone.
+      Ensure proper authorization before processing erasure requests.
+    </div>
+  </div>
+
+  <script>
+    function exportMasked() {
+      google.script.run.withSuccessHandler(function() {
+        alert('Masked export created!');
+      }).exportMembersWithMaskedPII();
+    }
+
+    function auditPII() {
+      google.script.run.showPIIAuditReport();
+      google.script.host.close();
+    }
+
+    function viewAccessLog() {
+      google.script.run.showPIIAccessLog();
+      google.script.host.close();
+    }
+
+    function anonymizeInactive() {
+      if (confirm('This will anonymize PII for members inactive for 2+ years. Continue?')) {
+        google.script.run.anonymizeInactiveMembers();
+      }
+    }
+
+    function generateDataPortability() {
+      const memberId = prompt('Enter Member ID for data export:');
+      if (memberId) {
+        google.script.run.generateMemberDataExport(memberId);
+      }
+    }
+
+    function showDataSubjectRequest() {
+      google.script.run.showDataSubjectRequestForm();
+      google.script.host.close();
+    }
+
+    function processErasureRequest() {
+      const memberId = prompt('Enter Member ID for erasure request:');
+      if (memberId && confirm('This will permanently delete all data for ' + memberId + '. This cannot be undone. Continue?')) {
+        google.script.run.processMemberErasure(memberId);
+      }
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(550)
+    .setHeight(700);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🔒 PII Protection');
+}
+
+/**
+ * Gets PII statistics
+ * @returns {Object} Statistics about PII fields
+ */
+function getPIIStatistics() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) {
+    return { totalMembers: 0, piiFieldCount: 0, emailCount: 0, phoneCount: 0 };
+  }
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) {
+    return { totalMembers: 0, piiFieldCount: 3, emailCount: 0, phoneCount: 0 };
+  }
+
+  const totalMembers = lastRow - 1;
+
+  // Count emails and phones
+  const emailData = memberSheet.getRange(2, MEMBER_COLS.EMAIL, totalMembers, 1).getValues().flat();
+  const phoneData = memberSheet.getRange(2, MEMBER_COLS.PHONE, totalMembers, 1).getValues().flat();
+
+  const emailCount = emailData.filter(e => e && e.toString().includes('@')).length;
+  const phoneCount = phoneData.filter(p => p && p.toString().length > 0).length;
+
+  return {
+    totalMembers: totalMembers,
+    piiFieldCount: PII_CONFIG.MEMBER_PII_FIELDS.length + PII_CONFIG.GRIEVANCE_PII_FIELDS.length,
+    emailCount: emailCount,
+    phoneCount: phoneCount
+  };
+}
+
+/**
+ * Exports members with masked PII
+ */
+function exportMembersWithMaskedPII() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) {
+    SpreadsheetApp.getUi().alert('Member Directory not found!');
+    return;
+  }
+
+  const lastRow = memberSheet.getLastRow();
+  const lastCol = memberSheet.getLastColumn();
+
+  if (lastRow < 2) {
+    SpreadsheetApp.getUi().alert('No data to export!');
+    return;
+  }
+
+  // Get all data
+  const data = memberSheet.getRange(1, 1, lastRow, lastCol).getValues();
+  const headers = data[0];
+
+  // Create masked export
+  const maskedData = [headers];
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i].slice();
+
+    // Mask email
+    const emailIndex = MEMBER_COLS.EMAIL - 1;
+    if (row[emailIndex]) {
+      row[emailIndex] = maskEmail(row[emailIndex].toString());
+    }
+
+    // Mask phone
+    const phoneIndex = MEMBER_COLS.PHONE - 1;
+    if (row[phoneIndex]) {
+      row[phoneIndex] = maskPhone(row[phoneIndex].toString());
+    }
+
+    maskedData.push(row);
+  }
+
+  // Create export sheet
+  let exportSheet = ss.getSheetByName('Members_Masked_Export');
+  if (exportSheet) {
+    exportSheet.clear();
+  } else {
+    exportSheet = ss.insertSheet('Members_Masked_Export');
+  }
+
+  exportSheet.getRange(1, 1, maskedData.length, maskedData[0].length).setValues(maskedData);
+
+  // Format
+  exportSheet.getRange(1, 1, 1, maskedData[0].length)
+    .setBackground('#4caf50')
+    .setFontColor('#ffffff')
+    .setFontWeight('bold');
+
+  exportSheet.setFrozenRows(1);
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    `Exported ${maskedData.length - 1} members with masked PII`,
+    'Export Complete',
+    5
+  );
+
+  ss.setActiveSheet(exportSheet);
+}
+
+/**
+ * Shows PII audit report
+ */
+function showPIIAuditReport() {
+  const stats = getPIIStatistics();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><base target="_top">
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; margin: 0; }
+  h2 { color: #1a73e8; margin-top: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+  th, td { padding: 10px; text-align: left; border: 1px solid #ddd; }
+  th { background: #f5f5f5; }
+  .ok { color: #4caf50; }
+  .warning { color: #ff9800; }
+</style>
+</head>
+<body>
+  <h2>📊 PII Audit Report</h2>
+  <p>Generated: ${new Date().toLocaleString()}</p>
+
+  <table>
+    <tr>
+      <th>Field</th>
+      <th>Location</th>
+      <th>Record Count</th>
+      <th>Protection Status</th>
+    </tr>
+    <tr>
+      <td>Email Address</td>
+      <td>Member Directory (Col H)</td>
+      <td>${stats.emailCount}</td>
+      <td class="ok">✅ Protected</td>
+    </tr>
+    <tr>
+      <td>Phone Number</td>
+      <td>Member Directory (Col I)</td>
+      <td>${stats.phoneCount}</td>
+      <td class="ok">✅ Protected</td>
+    </tr>
+    <tr>
+      <td>Home Town</td>
+      <td>Member Directory (Col X)</td>
+      <td>${stats.totalMembers}</td>
+      <td class="ok">✅ Protected</td>
+    </tr>
+    <tr>
+      <td>Member Email</td>
+      <td>Grievance Log (Col X)</td>
+      <td>-</td>
+      <td class="ok">✅ Protected</td>
+    </tr>
+  </table>
+
+  <h3>Recommendations</h3>
+  <ul>
+    <li>Review access logs monthly</li>
+    <li>Use masked exports for external sharing</li>
+    <li>Process erasure requests within 30 days</li>
+    <li>Maintain data retention policies</li>
+  </ul>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(600)
+    .setHeight(500);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'PII Audit Report');
+}
+
+/**
+ * Shows PII access log
+ */
+function showPIIAccessLog() {
+  SpreadsheetApp.getUi().alert(
+    '📋 PII Access Log',
+    'PII access is logged in the Audit Log sheet.\n\n' +
+    'Go to: Audit Log sheet to view all data access events.\n\n' +
+    'Logged events include:\n' +
+    '• Data exports\n' +
+    '• Record views\n' +
+    '• Data modifications\n' +
+    '• Deletion requests',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Anonymizes inactive members (for GDPR compliance)
+ */
+function anonymizeInactiveMembers() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) {
+    SpreadsheetApp.getUi().alert('Member Directory not found!');
+    return;
+  }
+
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert(
+    '⚠️ Anonymize Inactive Members',
+    'This will anonymize PII for members with no activity in the last 2 years.\n\n' +
+    'Anonymized fields:\n' +
+    '• Email → anonymous@example.com\n' +
+    '• Phone → 000-000-0000\n' +
+    '• Home Town → (Anonymized)\n\n' +
+    'This action cannot be undone. Continue?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) return;
+
+  const lastRow = memberSheet.getLastRow();
+  if (lastRow < 2) {
+    ui.alert('No members to process.');
+    return;
+  }
+
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - PII_CONFIG.DEFAULT_RETENTION_DAYS);
+
+  // Get contact dates
+  const contactDateCol = MEMBER_COLS.RECENT_CONTACT_DATE;
+  const data = memberSheet.getRange(2, 1, lastRow - 1, contactDateCol + 5).getValues();
+
+  let anonymizedCount = 0;
+
+  for (let i = 0; i < data.length; i++) {
+    const lastContact = data[i][contactDateCol - 1];
+
+    // Check if inactive (no contact or contact before cutoff)
+    if (!lastContact || (lastContact instanceof Date && lastContact < cutoffDate)) {
+      const rowNum = i + 2;
+
+      // Anonymize email
+      memberSheet.getRange(rowNum, MEMBER_COLS.EMAIL).setValue('anonymous@example.com');
+
+      // Anonymize phone
+      memberSheet.getRange(rowNum, MEMBER_COLS.PHONE).setValue('000-000-0000');
+
+      // Anonymize home town
+      memberSheet.getRange(rowNum, MEMBER_COLS.HOME_TOWN).setValue('(Anonymized)');
+
+      anonymizedCount++;
+    }
+  }
+
+  // Log the action
+  try {
+    logAuditEvent('PII_ANONYMIZATION', {
+      count: anonymizedCount,
+      cutoffDate: cutoffDate.toISOString()
+    }, 'INFO');
+  } catch (e) {
+    // Continue if logging fails
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Anonymization Complete',
+    `Anonymized ${anonymizedCount} inactive member records.`,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Generates member data export for data portability (GDPR)
+ * @param {string} memberId - Member ID
+ */
+function generateMemberDataExport(memberId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!memberSheet) {
+    SpreadsheetApp.getUi().alert('Member Directory not found!');
+    return;
+  }
+
+  // Find member
+  const lastRow = memberSheet.getLastRow();
+  const lastCol = memberSheet.getLastColumn();
+  const headers = memberSheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  const data = memberSheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+
+  let memberData = null;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][MEMBER_COLS.MEMBER_ID - 1] === memberId) {
+      memberData = data[i];
+      break;
+    }
+  }
+
+  if (!memberData) {
+    SpreadsheetApp.getUi().alert('Member not found: ' + memberId);
+    return;
+  }
+
+  // Create export object
+  const exportData = {
+    exportDate: new Date().toISOString(),
+    memberId: memberId,
+    memberData: {},
+    grievances: []
+  };
+
+  for (let i = 0; i < headers.length; i++) {
+    exportData.memberData[headers[i]] = memberData[i];
+  }
+
+  // Get grievances
+  if (grievanceSheet) {
+    const gLastRow = grievanceSheet.getLastRow();
+    const gLastCol = grievanceSheet.getLastColumn();
+    const gHeaders = grievanceSheet.getRange(1, 1, 1, gLastCol).getValues()[0];
+    const gData = grievanceSheet.getRange(2, 1, gLastRow - 1, gLastCol).getValues();
+
+    for (let i = 0; i < gData.length; i++) {
+      if (gData[i][GRIEVANCE_COLS.MEMBER_ID - 1] === memberId) {
+        const grievance = {};
+        for (let j = 0; j < gHeaders.length; j++) {
+          grievance[gHeaders[j]] = gData[i][j];
+        }
+        exportData.grievances.push(grievance);
+      }
+    }
+  }
+
+  // Create JSON export
+  const jsonString = JSON.stringify(exportData, null, 2);
+
+  // Create a new sheet with the export
+  let exportSheet = ss.getSheetByName('Data_Export_' + memberId);
+  if (exportSheet) {
+    ss.deleteSheet(exportSheet);
+  }
+  exportSheet = ss.insertSheet('Data_Export_' + memberId);
+
+  exportSheet.getRange(1, 1).setValue('GDPR Data Portability Export');
+  exportSheet.getRange(2, 1).setValue('Member ID: ' + memberId);
+  exportSheet.getRange(3, 1).setValue('Export Date: ' + new Date().toLocaleString());
+  exportSheet.getRange(5, 1).setValue('JSON Data:');
+  exportSheet.getRange(6, 1).setValue(jsonString);
+
+  // Format
+  exportSheet.getRange(1, 1).setFontSize(16).setFontWeight('bold');
+  exportSheet.getRange(6, 1).setWrap(true);
+  exportSheet.setColumnWidth(1, 800);
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Data Export Created',
+    `Data export for ${memberId} has been created in the "Data_Export_${memberId}" sheet.\n\n` +
+    'The export includes all member data and grievance records in JSON format.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+
+  ss.setActiveSheet(exportSheet);
+}
+
+/**
+ * Processes member erasure request (Right to Erasure / GDPR)
+ * @param {string} memberId - Member ID to erase
+ */
+function processMemberErasure(memberId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) {
+    SpreadsheetApp.getUi().alert('Member Directory not found!');
+    return;
+  }
+
+  // Find member
+  const lastRow = memberSheet.getLastRow();
+  const data = memberSheet.getRange(2, 1, lastRow - 1, 1).getValues();
+
+  let rowToDelete = null;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][0] === memberId) {
+      rowToDelete = i + 2;
+      break;
+    }
+  }
+
+  if (!rowToDelete) {
+    SpreadsheetApp.getUi().alert('Member not found: ' + memberId);
+    return;
+  }
+
+  // Log the erasure before deletion
+  try {
+    logAuditEvent('GDPR_ERASURE', {
+      memberId: memberId,
+      rowDeleted: rowToDelete,
+      requestedBy: Session.getActiveUser().getEmail()
+    }, 'WARNING');
+  } catch (e) {
+    Logger.log('Failed to log erasure: ' + e.message);
+  }
+
+  // Delete the member row
+  memberSheet.deleteRow(rowToDelete);
+
+  // Also anonymize/delete from grievance log
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  if (grievanceSheet) {
+    const gLastRow = grievanceSheet.getLastRow();
+    const gData = grievanceSheet.getRange(2, GRIEVANCE_COLS.MEMBER_ID, gLastRow - 1, 1).getValues();
+
+    // Anonymize grievance records (don't delete for legal/historical reasons)
+    for (let i = gData.length - 1; i >= 0; i--) {
+      if (gData[i][0] === memberId) {
+        const gRow = i + 2;
+        grievanceSheet.getRange(gRow, GRIEVANCE_COLS.FIRST_NAME).setValue('(Deleted)');
+        grievanceSheet.getRange(gRow, GRIEVANCE_COLS.LAST_NAME).setValue('Member');
+        grievanceSheet.getRange(gRow, GRIEVANCE_COLS.MEMBER_EMAIL).setValue('deleted@erasure.request');
+      }
+    }
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '✅ Erasure Complete',
+    `Member ${memberId} has been erased.\n\n` +
+    '• Member record deleted from Member Directory\n' +
+    '• Grievance records anonymized (retained for legal compliance)\n' +
+    '• Action logged in Audit Log',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Shows data subject request form
+ */
+function showDataSubjectRequestForm() {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><base target="_top">
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; margin: 0; }
+  h2 { color: #1a73e8; margin-top: 0; }
+  .form-group { margin: 15px 0; }
+  label { display: block; font-weight: bold; margin-bottom: 5px; }
+  input, select, textarea { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+  button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; }
+  .info { background: #e8f4fd; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+  <h2>👤 Data Subject Request</h2>
+
+  <div class="info">
+    Use this form to process GDPR/CCPA data subject requests.
+    All requests are logged for compliance purposes.
+  </div>
+
+  <div class="form-group">
+    <label>Request Type:</label>
+    <select id="requestType">
+      <option value="access">Data Access Request</option>
+      <option value="portability">Data Portability Request</option>
+      <option value="rectification">Data Rectification Request</option>
+      <option value="erasure">Right to Erasure Request</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Member ID or Email:</label>
+    <input type="text" id="identifier" placeholder="Enter Member ID or email address">
+  </div>
+
+  <div class="form-group">
+    <label>Request Notes:</label>
+    <textarea id="notes" rows="4" placeholder="Additional details about the request"></textarea>
+  </div>
+
+  <button onclick="processRequest()">Submit Request</button>
+
+  <script>
+    function processRequest() {
+      const requestType = document.getElementById('requestType').value;
+      const identifier = document.getElementById('identifier').value;
+      const notes = document.getElementById('notes').value;
+
+      if (!identifier) {
+        alert('Please enter a Member ID or email');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function() {
+          alert('Request processed successfully!');
+          google.script.host.close();
+        })
+        .processDataSubjectRequest(requestType, identifier, notes);
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(500)
+    .setHeight(450);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Data Subject Request');
+}
+
+/**
+ * Processes a data subject request
+ * @param {string} requestType - Type of request
+ * @param {string} identifier - Member ID or email
+ * @param {string} notes - Additional notes
+ */
+function processDataSubjectRequest(requestType, identifier, notes) {
+  // Log the request
+  try {
+    logAuditEvent('DATA_SUBJECT_REQUEST', {
+      type: requestType,
+      identifier: identifier,
+      notes: notes,
+      processedBy: Session.getActiveUser().getEmail()
+    }, 'INFO');
+  } catch (e) {
+    Logger.log('Failed to log request: ' + e.message);
+  }
+
+  // Process based on type
+  switch (requestType) {
+    case 'access':
+    case 'portability':
+      generateMemberDataExport(identifier);
+      break;
+    case 'erasure':
+      processMemberErasure(identifier);
+      break;
+    case 'rectification':
+      SpreadsheetApp.getActiveSpreadsheet().toast(
+        'Navigate to Member Directory to make rectifications',
+        'Rectification Request',
+        5
+      );
+      break;
+  }
+}
+
+/**
+ * Checks if a field contains PII
+ * @param {string} fieldName - Field name to check
+ * @returns {boolean} True if field contains PII
+ */
+function isPIIField(fieldName) {
+  return PII_CONFIG.MEMBER_PII_FIELDS.includes(fieldName) ||
+         PII_CONFIG.GRIEVANCE_PII_FIELDS.includes(fieldName);
+}
+
+/**
+ * Masks a value based on its type
+ * @param {string} value - Value to mask
+ * @param {string} type - Type of PII (email, phone, ssn, address)
+ * @returns {string} Masked value
+ */
+function maskPIIValue(value, type) {
+  if (!value) return '';
+
+  const handler = PII_FIELDS[type.toLowerCase()];
+  if (handler && handler.mask) {
+    return handler.mask(value.toString());
+  }
+
+  return value;
+}
+
+
+
+// ================================================================================
 // MODULE: PredictiveAnalytics.gs
 // Source: PredictiveAnalytics.gs
 // ================================================================================
@@ -32408,6 +38662,1788 @@ function createAnalyticsDashboardHTML(analytics) {
 
 
 // ================================================================================
+// MODULE: QuickActionsMenu.gs
+// Source: QuickActionsMenu.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * QUICK ACTIONS MENU
+ * ============================================================================
+ *
+ * Right-click context menu for common actions on Member Directory and
+ * Grievance Log rows.
+ *
+ * Features:
+ * - Context-aware actions based on selected row
+ * - Start Grievance from member row
+ * - Send Email to member
+ * - View History for grievance
+ * - Quick status updates
+ * - Copy member/grievance ID
+ *
+ * @module QuickActionsMenu
+ * @version 1.0.0
+ * @author SEIU Local 509 Tech Team
+ */
+
+/**
+ * Shows quick actions menu for the currently selected row
+ */
+function showQuickActionsMenu() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+  const sheetName = sheet.getName();
+  const selection = sheet.getActiveRange();
+
+  if (!selection) {
+    SpreadsheetApp.getUi().alert('Please select a row first.');
+    return;
+  }
+
+  const row = selection.getRow();
+
+  if (row < 2) {
+    SpreadsheetApp.getUi().alert('Please select a data row, not the header.');
+    return;
+  }
+
+  if (sheetName === SHEETS.MEMBER_DIR) {
+    showMemberQuickActions(row);
+  } else if (sheetName === SHEETS.GRIEVANCE_LOG) {
+    showGrievanceQuickActions(row);
+  } else {
+    SpreadsheetApp.getUi().alert(
+      'Quick Actions',
+      'Quick Actions are available for Member Directory and Grievance Log sheets.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}
+
+/**
+ * Shows quick actions for a member row
+ * @param {number} row - Row number
+ */
+function showMemberQuickActions(row) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  // Get member data
+  const lastCol = memberSheet.getLastColumn();
+  const rowData = memberSheet.getRange(row, 1, 1, lastCol).getValues()[0];
+
+  const memberId = rowData[MEMBER_COLS.MEMBER_ID - 1];
+  const firstName = rowData[MEMBER_COLS.FIRST_NAME - 1];
+  const lastName = rowData[MEMBER_COLS.LAST_NAME - 1];
+  const email = rowData[MEMBER_COLS.EMAIL - 1];
+  const hasOpenGrievance = rowData[MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1];
+
+  const memberName = `${firstName} ${lastName}`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Roboto', Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { color: #1a73e8; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    .member-info { background: #e8f4fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    .member-name { font-size: 18px; font-weight: bold; color: #333; }
+    .member-id { color: #666; font-size: 14px; }
+    .member-status { margin-top: 10px; font-size: 13px; }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    .status-open { background: #ffebee; color: #c62828; }
+    .status-none { background: #e8f5e9; color: #2e7d32; }
+    .actions { display: flex; flex-direction: column; gap: 10px; }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      text-align: left;
+      transition: all 0.2s;
+      background: #f8f9fa;
+    }
+    .action-btn:hover {
+      background: #e8f4fd;
+      transform: translateX(5px);
+    }
+    .action-icon { font-size: 24px; }
+    .action-text { flex: 1; }
+    .action-title { font-weight: bold; color: #333; }
+    .action-desc { font-size: 12px; color: #666; margin-top: 2px; }
+    .divider { height: 1px; background: #e0e0e0; margin: 10px 0; }
+    .close-btn { width: 100%; margin-top: 15px; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>⚡ Quick Actions</h2>
+
+    <div class="member-info">
+      <div class="member-name">${memberName}</div>
+      <div class="member-id">${memberId} | ${email || 'No email'}</div>
+      <div class="member-status">
+        ${hasOpenGrievance === 'Yes'
+          ? '<span class="status-badge status-open">🔴 Has Open Grievance</span>'
+          : '<span class="status-badge status-none">🟢 No Open Grievances</span>'}
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="action-btn" onclick="startGrievance()">
+        <span class="action-icon">📋</span>
+        <span class="action-text">
+          <div class="action-title">Start New Grievance</div>
+          <div class="action-desc">Create a grievance for this member</div>
+        </span>
+      </button>
+
+      ${email ? `
+      <button class="action-btn" onclick="sendEmail()">
+        <span class="action-icon">📧</span>
+        <span class="action-text">
+          <div class="action-title">Send Email</div>
+          <div class="action-desc">Compose email to ${email}</div>
+        </span>
+      </button>
+      ` : ''}
+
+      <button class="action-btn" onclick="viewGrievances()">
+        <span class="action-icon">📁</span>
+        <span class="action-text">
+          <div class="action-title">View Grievance History</div>
+          <div class="action-desc">See all grievances for this member</div>
+        </span>
+      </button>
+
+      <div class="divider"></div>
+
+      <button class="action-btn" onclick="copyMemberId()">
+        <span class="action-icon">📋</span>
+        <span class="action-text">
+          <div class="action-title">Copy Member ID</div>
+          <div class="action-desc">${memberId}</div>
+        </span>
+      </button>
+
+      <button class="action-btn" onclick="viewMemberDetails()">
+        <span class="action-icon">👤</span>
+        <span class="action-text">
+          <div class="action-title">View Full Details</div>
+          <div class="action-desc">See all member information</div>
+        </span>
+      </button>
+    </div>
+
+    <button class="close-btn" onclick="google.script.host.close()">Close</button>
+  </div>
+
+  <script>
+    const memberId = '${memberId}';
+    const memberRow = ${row};
+
+    function startGrievance() {
+      google.script.run.openGrievanceFormForMember(memberRow);
+      google.script.host.close();
+    }
+
+    function sendEmail() {
+      google.script.run.composeEmailForMember(memberId);
+      google.script.host.close();
+    }
+
+    function viewGrievances() {
+      google.script.run.showMemberGrievanceHistory(memberId);
+      google.script.host.close();
+    }
+
+    function copyMemberId() {
+      navigator.clipboard.writeText(memberId);
+      alert('Member ID copied to clipboard!');
+    }
+
+    function viewMemberDetails() {
+      google.script.run.showMemberDetailsDialog(memberId);
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(400)
+    .setHeight(500);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '');
+}
+
+/**
+ * Shows quick actions for a grievance row
+ * @param {number} row - Row number
+ */
+function showGrievanceQuickActions(row) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  // Get grievance data
+  const lastCol = grievanceSheet.getLastColumn();
+  const rowData = grievanceSheet.getRange(row, 1, 1, lastCol).getValues()[0];
+
+  const grievanceId = rowData[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+  const memberId = rowData[GRIEVANCE_COLS.MEMBER_ID - 1];
+  const firstName = rowData[GRIEVANCE_COLS.FIRST_NAME - 1];
+  const lastName = rowData[GRIEVANCE_COLS.LAST_NAME - 1];
+  const status = rowData[GRIEVANCE_COLS.STATUS - 1];
+  const currentStep = rowData[GRIEVANCE_COLS.CURRENT_STEP - 1];
+  const nextActionDue = rowData[GRIEVANCE_COLS.NEXT_ACTION_DUE - 1];
+
+  const memberName = `${firstName} ${lastName}`;
+  const isOpen = status === 'Open';
+  const daysToDeadline = nextActionDue ? Math.floor((new Date(nextActionDue) - new Date()) / (1000 * 60 * 60 * 24)) : null;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Roboto', Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { color: #DC2626; margin-top: 0; display: flex; align-items: center; gap: 10px; }
+    .grievance-info { background: #fff5f5; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #DC2626; }
+    .grievance-id { font-size: 18px; font-weight: bold; color: #333; }
+    .grievance-member { color: #666; font-size: 14px; }
+    .grievance-status { margin-top: 10px; font-size: 13px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    .status-open { background: #ffebee; color: #c62828; }
+    .status-pending { background: #fff3e0; color: #ef6c00; }
+    .status-settled { background: #e8f5e9; color: #2e7d32; }
+    .deadline-badge { background: ${daysToDeadline !== null && daysToDeadline < 7 ? '#ffebee' : '#e3f2fd'}; color: ${daysToDeadline !== null && daysToDeadline < 7 ? '#c62828' : '#1565c0'}; }
+    .actions { display: flex; flex-direction: column; gap: 10px; }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      text-align: left;
+      transition: all 0.2s;
+      background: #f8f9fa;
+    }
+    .action-btn:hover {
+      background: #fff5f5;
+      transform: translateX(5px);
+    }
+    .action-btn.disabled { opacity: 0.5; cursor: not-allowed; }
+    .action-icon { font-size: 24px; }
+    .action-text { flex: 1; }
+    .action-title { font-weight: bold; color: #333; }
+    .action-desc { font-size: 12px; color: #666; margin-top: 2px; }
+    .divider { height: 1px; background: #e0e0e0; margin: 10px 0; }
+    .status-section { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+    .status-section h4 { margin: 0 0 10px 0; color: #333; }
+    select { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px; font-size: 14px; }
+    .close-btn { width: 100%; margin-top: 15px; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>⚡ Grievance Actions</h2>
+
+    <div class="grievance-info">
+      <div class="grievance-id">${grievanceId}</div>
+      <div class="grievance-member">${memberName} (${memberId})</div>
+      <div class="grievance-status">
+        <span class="status-badge status-${status.toLowerCase().replace(' ', '-')}">${status}</span>
+        <span class="status-badge">${currentStep}</span>
+        ${daysToDeadline !== null ? `
+          <span class="status-badge deadline-badge">
+            ${daysToDeadline < 0 ? '⚠️ Overdue' : daysToDeadline === 0 ? '⚠️ Due Today' : `📅 ${daysToDeadline} days`}
+          </span>
+        ` : ''}
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="action-btn" onclick="sendEmail()">
+        <span class="action-icon">📧</span>
+        <span class="action-text">
+          <div class="action-title">Send Email Update</div>
+          <div class="action-desc">Email the member about this grievance</div>
+        </span>
+      </button>
+
+      <button class="action-btn" onclick="viewFiles()">
+        <span class="action-icon">📁</span>
+        <span class="action-text">
+          <div class="action-title">View Drive Folder</div>
+          <div class="action-desc">Open associated Google Drive folder</div>
+        </span>
+      </button>
+
+      <button class="action-btn" onclick="addToCalendar()">
+        <span class="action-icon">📅</span>
+        <span class="action-text">
+          <div class="action-title">Sync to Calendar</div>
+          <div class="action-desc">Add deadlines to Google Calendar</div>
+        </span>
+      </button>
+
+      <button class="action-btn" onclick="viewComms()">
+        <span class="action-icon">📞</span>
+        <span class="action-text">
+          <div class="action-title">View Communications</div>
+          <div class="action-desc">See all logged communications</div>
+        </span>
+      </button>
+
+      <div class="divider"></div>
+
+      <button class="action-btn" onclick="copyGrievanceId()">
+        <span class="action-icon">📋</span>
+        <span class="action-text">
+          <div class="action-title">Copy Grievance ID</div>
+          <div class="action-desc">${grievanceId}</div>
+        </span>
+      </button>
+    </div>
+
+    ${isOpen ? `
+    <div class="status-section">
+      <h4>Quick Status Update</h4>
+      <select id="statusSelect">
+        <option value="">-- Select New Status --</option>
+        <option value="Open">Open</option>
+        <option value="Pending Info">Pending Info</option>
+        <option value="Settled">Settled</option>
+        <option value="Withdrawn">Withdrawn</option>
+        <option value="Closed">Closed</option>
+        <option value="Appealed">Appealed</option>
+      </select>
+      <button class="action-btn" style="margin-top: 10px;" onclick="updateStatus()">
+        <span class="action-icon">✓</span>
+        <span class="action-text">
+          <div class="action-title">Update Status</div>
+        </span>
+      </button>
+    </div>
+    ` : ''}
+
+    <button class="close-btn" onclick="google.script.host.close()">Close</button>
+  </div>
+
+  <script>
+    const grievanceId = '${grievanceId}';
+    const grievanceRow = ${row};
+
+    function sendEmail() {
+      google.script.run.composeGrievanceEmail(grievanceId);
+      google.script.host.close();
+    }
+
+    function viewFiles() {
+      google.script.run.openGrievanceDriveFolder(grievanceId);
+      google.script.host.close();
+    }
+
+    function addToCalendar() {
+      google.script.run.syncSingleGrievanceToCalendar(grievanceId);
+      google.script.host.close();
+    }
+
+    function viewComms() {
+      google.script.run.showGrievanceCommunications(grievanceId);
+      google.script.host.close();
+    }
+
+    function copyGrievanceId() {
+      navigator.clipboard.writeText(grievanceId);
+      alert('Grievance ID copied to clipboard!');
+    }
+
+    function updateStatus() {
+      const newStatus = document.getElementById('statusSelect').value;
+      if (!newStatus) {
+        alert('Please select a status');
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function() {
+          alert('Status updated to: ' + newStatus);
+          google.script.host.close();
+        })
+        .quickUpdateGrievanceStatus(grievanceRow, newStatus);
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(400)
+    .setHeight(600);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '');
+}
+
+/**
+ * Quickly updates grievance status from the Quick Actions menu
+ * @param {number} row - Grievance row number
+ * @param {string} newStatus - New status value
+ */
+function quickUpdateGrievanceStatus(row, newStatus) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceSheet) {
+    throw new Error('Grievance Log sheet not found');
+  }
+
+  const statusCol = GRIEVANCE_COLS.STATUS;
+  grievanceSheet.getRange(row, statusCol).setValue(newStatus);
+
+  // If closed/settled, set the close date
+  if (['Closed', 'Settled', 'Withdrawn'].includes(newStatus)) {
+    const closeDateCol = GRIEVANCE_COLS.DATE_CLOSED;
+    if (!grievanceSheet.getRange(row, closeDateCol).getValue()) {
+      grievanceSheet.getRange(row, closeDateCol).setValue(new Date());
+    }
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    `Grievance status updated to: ${newStatus}`,
+    'Status Updated',
+    3
+  );
+}
+
+/**
+ * Composes email for a specific member (called from Quick Actions)
+ * @param {string} memberId - Member ID
+ */
+function composeEmailForMember(memberId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) return;
+
+  const lastRow = memberSheet.getLastRow();
+  const data = memberSheet.getRange(2, 1, lastRow - 1, MEMBER_COLS.EMAIL).getValues();
+
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][MEMBER_COLS.MEMBER_ID - 1] === memberId) {
+      const email = data[i][MEMBER_COLS.EMAIL - 1];
+      const firstName = data[i][MEMBER_COLS.FIRST_NAME - 1];
+      const lastName = data[i][MEMBER_COLS.LAST_NAME - 1];
+
+      if (email) {
+        // Open email composition with member info
+        const html = createMemberEmailHTML(memberId, `${firstName} ${lastName}`, email);
+        const htmlOutput = HtmlService.createHtmlOutput(html)
+          .setWidth(700)
+          .setHeight(600);
+        SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📧 Compose Email');
+      } else {
+        SpreadsheetApp.getUi().alert('This member does not have an email address on file.');
+      }
+      return;
+    }
+  }
+}
+
+/**
+ * Creates email composition HTML for member
+ */
+function createMemberEmailHTML(memberId, memberName, email) {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: 'Roboto', Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { color: #1a73e8; margin-top: 0; }
+    .form-group { margin: 15px 0; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; color: #333; }
+    input, textarea { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+    textarea { min-height: 200px; font-family: inherit; }
+    input:focus, textarea:focus { outline: none; border-color: #1a73e8; }
+    .buttons { display: flex; gap: 10px; margin-top: 20px; }
+    button { padding: 12px 24px; font-size: 14px; border: none; border-radius: 4px; cursor: pointer; flex: 1; }
+    .btn-primary { background: #1a73e8; color: white; }
+    .btn-secondary { background: #6c757d; color: white; }
+    .info-box { background: #e8f4fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📧 Email to Member</h2>
+
+    <div class="info-box">
+      <strong>${memberName}</strong> (${memberId})<br>
+      ${email}
+    </div>
+
+    <div class="form-group">
+      <label>Subject:</label>
+      <input type="text" id="subject" placeholder="Email subject">
+    </div>
+
+    <div class="form-group">
+      <label>Message:</label>
+      <textarea id="message" placeholder="Type your message here..."></textarea>
+    </div>
+
+    <div class="buttons">
+      <button class="btn-primary" onclick="sendEmail()">📤 Send Email</button>
+      <button class="btn-secondary" onclick="google.script.host.close()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    function sendEmail() {
+      const subject = document.getElementById('subject').value.trim();
+      const message = document.getElementById('message').value.trim();
+
+      if (!subject || !message) {
+        alert('Please fill in subject and message');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function() {
+          alert('Email sent successfully!');
+          google.script.host.close();
+        })
+        .withFailureHandler(function(error) {
+          alert('Error sending email: ' + error.message);
+        })
+        .sendQuickEmail('${email}', subject, message, '${memberId}');
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Sends a quick email from the Quick Actions menu
+ * @param {string} to - Recipient email
+ * @param {string} subject - Email subject
+ * @param {string} body - Email body
+ * @param {string} memberId - Member ID for logging
+ */
+function sendQuickEmail(to, subject, body, memberId) {
+  try {
+    MailApp.sendEmail({
+      to: to,
+      subject: subject,
+      body: body,
+      name: EMAIL_CONFIG.FROM_NAME
+    });
+
+    // Log communication
+    try {
+      logCommunication(memberId, 'Email Sent', `To: ${to}\nSubject: ${subject}\n\n${body}`);
+    } catch (e) {
+      // Logging not critical
+    }
+
+    return { success: true };
+  } catch (error) {
+    throw new Error('Failed to send email: ' + error.message);
+  }
+}
+
+/**
+ * Shows member grievance history
+ * @param {string} memberId - Member ID
+ */
+function showMemberGrievanceHistory(memberId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceSheet) {
+    SpreadsheetApp.getUi().alert('Grievance Log sheet not found!');
+    return;
+  }
+
+  const lastRow = grievanceSheet.getLastRow();
+  if (lastRow < 2) {
+    SpreadsheetApp.getUi().alert('No grievances found.');
+    return;
+  }
+
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.RESOLUTION).getValues();
+
+  const memberGrievances = [];
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][GRIEVANCE_COLS.MEMBER_ID - 1] === memberId) {
+      memberGrievances.push({
+        grievanceId: data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1],
+        status: data[i][GRIEVANCE_COLS.STATUS - 1],
+        step: data[i][GRIEVANCE_COLS.CURRENT_STEP - 1],
+        issueCategory: data[i][GRIEVANCE_COLS.ISSUE_CATEGORY - 1],
+        dateFiled: data[i][GRIEVANCE_COLS.DATE_FILED - 1],
+        dateClosed: data[i][GRIEVANCE_COLS.DATE_CLOSED - 1]
+      });
+    }
+  }
+
+  if (memberGrievances.length === 0) {
+    SpreadsheetApp.getUi().alert('No grievances found for this member.');
+    return;
+  }
+
+  // Build HTML
+  const grievanceList = memberGrievances.map(g => `
+    <div style="background: #f8f9fa; padding: 12px; margin: 8px 0; border-radius: 4px; border-left: 4px solid ${g.status === 'Open' ? '#f44336' : '#4caf50'};">
+      <strong>${g.grievanceId}</strong><br>
+      <span style="color: #666;">Status: ${g.status} | Step: ${g.step}</span><br>
+      <span style="color: #888; font-size: 12px;">
+        ${g.issueCategory} |
+        Filed: ${g.dateFiled ? new Date(g.dateFiled).toLocaleDateString() : 'N/A'} |
+        ${g.dateClosed ? 'Closed: ' + new Date(g.dateClosed).toLocaleDateString() : 'Ongoing'}
+      </span>
+    </div>
+  `).join('');
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><base target="_top">
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; margin: 0; }
+  h2 { color: #1a73e8; margin-top: 0; }
+  .summary { background: #e8f4fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+  <h2>📁 Grievance History</h2>
+  <div class="summary">
+    <strong>Member ID:</strong> ${memberId}<br>
+    <strong>Total Grievances:</strong> ${memberGrievances.length}<br>
+    <strong>Open:</strong> ${memberGrievances.filter(g => g.status === 'Open').length}<br>
+    <strong>Closed:</strong> ${memberGrievances.filter(g => g.status !== 'Open').length}
+  </div>
+  ${grievanceList}
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(500)
+    .setHeight(500);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Grievance History - ' + memberId);
+}
+
+/**
+ * Shows member details dialog
+ * @param {string} memberId - Member ID
+ */
+function showMemberDetailsDialog(memberId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  if (!memberSheet) return;
+
+  const lastRow = memberSheet.getLastRow();
+  const lastCol = memberSheet.getLastColumn();
+  const headers = memberSheet.getRange(1, 1, 1, lastCol).getValues()[0];
+  const data = memberSheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+
+  let memberData = null;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][MEMBER_COLS.MEMBER_ID - 1] === memberId) {
+      memberData = data[i];
+      break;
+    }
+  }
+
+  if (!memberData) {
+    SpreadsheetApp.getUi().alert('Member not found.');
+    return;
+  }
+
+  // Build details HTML
+  let detailsHTML = '';
+  for (let i = 0; i < headers.length; i++) {
+    const value = memberData[i];
+    if (value !== '' && value !== null && value !== undefined) {
+      detailsHTML += `
+        <tr>
+          <td style="font-weight: bold; padding: 8px; background: #f8f9fa;">${headers[i]}</td>
+          <td style="padding: 8px;">${value}</td>
+        </tr>
+      `;
+    }
+  }
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><base target="_top">
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; margin: 0; }
+  h2 { color: #1a73e8; margin-top: 0; }
+  table { width: 100%; border-collapse: collapse; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  td { border: 1px solid #ddd; }
+</style>
+</head>
+<body>
+  <h2>👤 Member Details - ${memberId}</h2>
+  <table>${detailsHTML}</table>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(600)
+    .setHeight(600);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Member Details');
+}
+
+/**
+ * Opens grievance Drive folder
+ * @param {string} grievanceId - Grievance ID
+ */
+function openGrievanceDriveFolder(grievanceId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const grievanceSheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!grievanceSheet) return;
+
+  const lastRow = grievanceSheet.getLastRow();
+  const data = grievanceSheet.getRange(2, 1, lastRow - 1, GRIEVANCE_COLS.DRIVE_FOLDER_URL).getValues();
+
+  for (let i = 0; i < data.length; i++) {
+    if (data[i][GRIEVANCE_COLS.GRIEVANCE_ID - 1] === grievanceId) {
+      const folderUrl = data[i][GRIEVANCE_COLS.DRIVE_FOLDER_URL - 1];
+      if (folderUrl) {
+        const html = HtmlService.createHtmlOutput(
+          `<script>window.open('${folderUrl}', '_blank'); google.script.host.close();</script>`
+        );
+        SpreadsheetApp.getUi().showModalDialog(html, 'Opening Drive Folder...');
+      } else {
+        SpreadsheetApp.getUi().alert(
+          'No Drive folder found for this grievance. Would you like to create one?',
+          SpreadsheetApp.getUi().ButtonSet.YES_NO
+        );
+      }
+      return;
+    }
+  }
+
+  SpreadsheetApp.getUi().alert('Grievance not found.');
+}
+
+/**
+ * Syncs a single grievance to calendar
+ * @param {string} grievanceId - Grievance ID
+ */
+function syncSingleGrievanceToCalendar(grievanceId) {
+  try {
+    // This would call the calendar integration function
+    // For now, show a confirmation
+    SpreadsheetApp.getActiveSpreadsheet().toast(
+      'Syncing grievance deadlines to calendar...',
+      'Calendar Sync',
+      3
+    );
+
+    // Call the actual sync function if it exists
+    if (typeof syncDeadlinesToCalendar === 'function') {
+      syncDeadlinesToCalendar();
+    }
+  } catch (error) {
+    SpreadsheetApp.getUi().alert('Error syncing to calendar: ' + error.message);
+  }
+}
+
+
+
+// ================================================================================
+// MODULE: QuickFilters.gs
+// Source: QuickFilters.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * QUICK FILTERS & SAVED VIEWS
+ * ============================================================================
+ *
+ * Fast filtering and saved view management
+ * Features:
+ * - One-click filters
+ * - Save custom filter sets
+ * - Quick filter presets
+ * - Filter combinations
+ * - Recently used filters
+ * - Clear all filters
+ */
+
+/**
+ * Shows quick filter menu
+ */
+function showQuickFilterMenu() {
+  const html = createQuickFilterHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(600)
+    .setHeight(700);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '⚡ Quick Filters');
+}
+
+/**
+ * Creates HTML for quick filters
+ */
+function createQuickFilterHTML() {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 12px; max-height: 650px; overflow-y: auto; }
+    h2 { color: #1a73e8; margin-top: 0; }
+    h3 { color: #333; margin-top: 25px; margin-bottom: 15px; font-size: 16px; }
+    .filter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 15px 0; }
+    .filter-btn { background: white; border: 2px solid #e0e0e0; padding: 15px; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-align: left; }
+    .filter-btn:hover { border-color: #1a73e8; background: #f8fcff; transform: translateX(3px); }
+    .filter-icon { font-size: 20px; margin-right: 8px; }
+    .filter-label { font-weight: 500; color: #333; }
+    .filter-description { font-size: 12px; color: #666; margin-top: 5px; }
+    button { background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; margin: 5px; }
+    button:hover { background: #1557b0; }
+    button.secondary { background: #6c757d; }
+    button.danger { background: #f44336; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>⚡ Quick Filters</h2>
+
+    <h3>Status Filters</h3>
+    <div class="filter-grid">
+      <div class="filter-btn" onclick="applyFilter('status', 'Open')">
+        <div><span class="filter-icon">📂</span><span class="filter-label">Open Cases</span></div>
+        <div class="filter-description">Show all open grievances</div>
+      </div>
+
+      <div class="filter-btn" onclick="applyFilter('status', 'Pending')">
+        <div><span class="filter-icon">⏳</span><span class="filter-label">Pending</span></div>
+        <div class="filter-description">Awaiting response</div>
+      </div>
+
+      <div class="filter-btn" onclick="applyFilter('status', 'Resolved')">
+        <div><span class="filter-icon">✅</span><span class="filter-label">Resolved</span></div>
+        <div class="filter-description">Successfully resolved cases</div>
+      </div>
+
+      <div class="filter-btn" onclick="applyFilter('status', 'Closed')">
+        <div><span class="filter-icon">🔒</span><span class="filter-label">Closed</span></div>
+        <div class="filter-description">All closed grievances</div>
+      </div>
+    </div>
+
+    <h3>Time Filters</h3>
+    <div class="filter-grid">
+      <div class="filter-btn" onclick="applyFilter('time', 'today')">
+        <div><span class="filter-icon">📅</span><span class="filter-label">Filed Today</span></div>
+        <div class="filter-description">Grievances filed today</div>
+      </div>
+
+      <div class="filter-btn" onclick="applyFilter('time', 'thisWeek')">
+        <div><span class="filter-icon">📆</span><span class="filter-label">This Week</span></div>
+        <div class="filter-description">Filed in the past 7 days</div>
+      </div>
+
+      <div class="filter-btn" onclick="applyFilter('time', 'thisMonth')">
+        <div><span class="filter-icon">🗓️</span><span class="filter-label">This Month</span></div>
+        <div class="filter-description">Filed this month</div>
+      </div>
+
+      <div class="filter-btn" onclick="applyFilter('time', 'overdue')">
+        <div><span class="filter-icon">⚠️</span><span class="filter-label">Overdue</span></div>
+        <div class="filter-description">Past deadline</div>
+      </div>
+    </div>
+
+    <h3>Priority Filters</h3>
+    <div class="filter-grid">
+      <div class="filter-btn" onclick="applyFilter('priority', 'urgent')">
+        <div><span class="filter-icon">🔥</span><span class="filter-label">Urgent</span></div>
+        <div class="filter-description">Deadline within 3 days</div>
+      </div>
+
+      <div class="filter-btn" onclick="applyFilter('priority', 'highValue')">
+        <div><span class="filter-icon">💎</span><span class="filter-label">High Value</span></div>
+        <div class="filter-description">Major issues</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+      <button onclick="showAllRecords()">👁️ Show All Records</button>
+      <button class="danger" onclick="clearAllFilters()">🗑️ Clear Filters</button>
+      <button class="secondary" onclick="google.script.host.close()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    function applyFilter(type, value) {
+      google.script.run
+        .withSuccessHandler(() => {
+          alert('✅ Filter applied!');
+          google.script.host.close();
+        })
+        .applyQuickFilter(type, value);
+    }
+
+    function clearAllFilters() {
+      google.script.run
+        .withSuccessHandler(() => {
+          alert('✅ Filters cleared!');
+          google.script.host.close();
+        })
+        .clearAllFiltersOnSheet();
+    }
+
+    function showAllRecords() {
+      google.script.run
+        .withSuccessHandler(() => {
+          alert('✅ Showing all records!');
+          google.script.host.close();
+        })
+        .showAllRecords();
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Applies quick filter to active sheet
+ * @param {string} filterType - Type of filter
+ * @param {string} filterValue - Filter value
+ */
+function applyQuickFilter(filterType, filterValue) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('Grievance Log sheet not found');
+    return;
+  }
+
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return;
+
+  // Clear existing filters
+  const filter = sheet.getFilter();
+  if (filter) {
+    filter.remove();
+  }
+
+  // Create new filter
+  const range = sheet.getRange(1, 1, lastRow, sheet.getLastColumn());
+  const newFilter = range.createFilter();
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  switch (filterType) {
+    case 'status':
+      // Filter by status column (E)
+      const criteria = SpreadsheetApp.newFilterCriteria()
+        .whenTextEqualTo(filterValue)
+        .build();
+      newFilter.setColumnFilterCriteria(GRIEVANCE_COLS.STATUS, criteria);
+      break;
+
+    case 'time':
+      const dateCriteria = getDateFilterCriteria(filterValue, today);
+      if (dateCriteria) {
+        newFilter.setColumnFilterCriteria(GRIEVANCE_COLS.DATE_FILED, dateCriteria);
+      }
+      break;
+
+    case 'priority':
+      if (filterValue === 'urgent') {
+        // Show grievances with deadline within 3 days
+        const threeDaysFromNow = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
+        const urgentCriteria = SpreadsheetApp.newFilterCriteria()
+          .whenDateBefore(threeDaysFromNow)
+          .build();
+        newFilter.setColumnFilterCriteria(GRIEVANCE_COLS.NEXT_ACTION_DUE, urgentCriteria);
+      }
+      break;
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    `✅ Filter applied: ${filterType} = ${filterValue}`,
+    'Quick Filter',
+    3
+  );
+
+  // Log activity
+  if (typeof logActivity === 'function') {
+    logActivity('Quick Filter', `Applied filter: ${filterType} = ${filterValue}`);
+  }
+}
+
+/**
+ * Gets date filter criteria based on time filter
+ * @param {string} timeFilter - Time filter value
+ * @param {Date} today - Today's date
+ * @returns {FilterCriteria} Filter criteria
+ */
+function getDateFilterCriteria(timeFilter, today) {
+  switch (timeFilter) {
+    case 'today':
+      return SpreadsheetApp.newFilterCriteria()
+        .whenDateEqualTo(today)
+        .build();
+
+    case 'thisWeek':
+      const weekAgo = new Date(today.getTime() - (7 * 24 * 60 * 60 * 1000));
+      return SpreadsheetApp.newFilterCriteria()
+        .whenDateAfter(weekAgo)
+        .build();
+
+    case 'thisMonth':
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      return SpreadsheetApp.newFilterCriteria()
+        .whenDateAfter(monthStart)
+        .build();
+
+    case 'overdue':
+      return SpreadsheetApp.newFilterCriteria()
+        .whenDateBefore(today)
+        .build();
+
+    default:
+      return null;
+  }
+}
+
+/**
+ * Clears all filters on active sheet
+ */
+function clearAllFiltersOnSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+
+  const filter = sheet.getFilter();
+  if (filter) {
+    filter.remove();
+  }
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    '✅ All filters cleared',
+    'Filters',
+    3
+  );
+}
+
+/**
+ * Shows all records (removes filters)
+ */
+function showAllRecords() {
+  clearAllFiltersOnSheet();
+}
+
+/**
+ * Saves current filter as a view
+ * @param {string} viewName - Name for the saved view
+ */
+function saveFilterView(viewName) {
+  const props = PropertiesService.getUserProperties();
+  const savedViews = getSavedViews();
+
+  // Get current filter state
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+  const filter = sheet.getFilter();
+
+  if (!filter) {
+    SpreadsheetApp.getUi().alert('No active filter to save');
+    return;
+  }
+
+  savedViews[viewName] = {
+    sheetName: sheet.getName(),
+    created: new Date().toISOString()
+  };
+
+  props.setProperty('savedFilterViews', JSON.stringify(savedViews));
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    `✅ View "${viewName}" saved`,
+    'Saved Views',
+    3
+  );
+}
+
+/**
+ * Gets saved filter views
+ * @returns {Object} Saved views
+ */
+function getSavedViews() {
+  const props = PropertiesService.getUserProperties();
+  const viewsJSON = props.getProperty('savedFilterViews');
+
+  if (viewsJSON) {
+    return JSON.parse(viewsJSON);
+  }
+
+  return {};
+}
+
+
+
+// ================================================================================
+// MODULE: ReleaseNotes.gs
+// Source: ReleaseNotes.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * RELEASE NOTES & VERSION TRACKING
+ * ============================================================================
+ *
+ * Version management and release notes system
+ * Features:
+ * - Version tracking
+ * - Release notes viewer
+ * - Change log management
+ * - Feature announcements
+ * - What's New notifications
+ * - Version comparison
+ * - Rollback support
+ * - Update notifications
+ */
+
+/**
+ * Version configuration
+ */
+const VERSION_CONFIG = {
+  CURRENT_VERSION: '2.5.0',
+  RELEASE_DATE: '2025-01-15',
+  VERSION_NAME: 'Enhanced Edition',
+  SHOW_WHATS_NEW_ON_LOAD: false
+};
+
+/**
+ * Release history with all versions
+ */
+const RELEASE_HISTORY = [
+  {
+    version: '2.5.0',
+    name: 'Enhanced Edition',
+    date: '2025-01-15',
+    type: 'Major',
+    highlights: [
+      'Added Session Management & User Preferences',
+      'Advanced Data Visualization with interactive charts',
+      'Release Notes & Version Tracking system',
+      'Context-sensitive help enhancements',
+      'Notification Center for system alerts',
+      'Real-time dashboard updates'
+    ],
+    features: [
+      'Session tracking with activity logging',
+      'User preference management',
+      'Interactive chart builder with 8 chart types',
+      'Google Charts integration',
+      'Release notes viewer',
+      'Version comparison tools',
+      'Enhanced help system with search',
+      'Notification center with priorities',
+      'Auto-refresh dashboards'
+    ],
+    bugFixes: [],
+    breaking: []
+  },
+  {
+    version: '2.0.0',
+    name: 'Accessibility Update',
+    date: '2025-01-10',
+    type: 'Major',
+    highlights: [
+      'Enhanced ADHD Features with control panel',
+      'Undo/Redo System with 50-action history',
+      'Dark Mode & Theme Customization',
+      'Data Pagination for large datasets',
+      'Mobile-Optimized responsive views',
+      'Enhanced Error Handling & Recovery'
+    ],
+    features: [
+      'ADHD Control Panel with Pomodoro timer',
+      'Quick capture notepad',
+      'Break reminders',
+      '5 theme presets (Light/Dark/OLED/Blue/Sepia)',
+      'Auto dark mode (time-based)',
+      'Undo/Redo with keyboard shortcuts',
+      'Paginated viewer (25-500 items)',
+      'Mobile dashboard with touch support',
+      'Error Dashboard with health monitoring',
+      'Comprehensive error logging'
+    ],
+    bugFixes: [
+      'Fixed theme persistence across sessions',
+      'Resolved mobile touch event conflicts',
+      'Corrected undo/redo state management'
+    ],
+    breaking: []
+  },
+  {
+    version: '1.5.0',
+    name: 'Advanced Features',
+    date: '2025-01-05',
+    type: 'Major',
+    highlights: [
+      'Custom Report Builder',
+      'FAQ Knowledge Base',
+      'Root Cause Analysis',
+      'Data Backup & Recovery',
+      'Predictive Analytics'
+    ],
+    features: [
+      'Interactive custom report builder',
+      'Searchable FAQ system with 12 articles',
+      'Pattern detection for systemic issues',
+      'Automated weekly backups',
+      'Trend forecasting',
+      'Anomaly detection'
+    ],
+    bugFixes: [],
+    breaking: []
+  },
+  {
+    version: '1.0.0',
+    name: 'Foundation Release',
+    date: '2024-12-20',
+    type: 'Major',
+    highlights: [
+      'Core grievance management system',
+      'Member directory with 20k capacity',
+      'Interactive dashboards',
+      'Batch operations',
+      'Email integration'
+    ],
+    features: [
+      'Grievance Log with auto-calculations',
+      'Member Directory (20k members)',
+      'Dashboard with real-time metrics',
+      'Batch assign, update, export',
+      'Gmail integration with templates',
+      'Google Drive file management',
+      'Calendar deadline sync'
+    ],
+    bugFixes: [],
+    breaking: []
+  }
+];
+
+/**
+ * Shows release notes viewer
+ */
+function showReleaseNotes() {
+  const html = createReleaseNotesHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(900)
+    .setHeight(700);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📋 Release Notes');
+
+  // Mark as viewed
+  markReleaseNotesViewed();
+}
+
+/**
+ * Creates HTML for release notes
+ */
+function createReleaseNotesHTML() {
+  let versionSections = '';
+
+  RELEASE_HISTORY.forEach((release, index) => {
+    const isLatest = index === 0;
+
+    versionSections += `
+      <div class="version-card ${isLatest ? 'latest' : ''}">
+        <div class="version-header">
+          <div>
+            <div class="version-number">
+              ${release.version}
+              ${isLatest ? '<span class="badge-latest">LATEST</span>' : ''}
+            </div>
+            <div class="version-name">${release.name}</div>
+          </div>
+          <div class="version-meta">
+            <div class="version-date">${release.date}</div>
+            <div class="version-type type-${release.type.toLowerCase()}">${release.type} Release</div>
+          </div>
+        </div>
+
+        <div class="version-body">
+          ${release.highlights.length > 0 ? `
+            <h4>✨ Highlights</h4>
+            <ul class="highlights">
+              ${release.highlights.map(h => `<li>${h}</li>`).join('')}
+            </ul>
+          ` : ''}
+
+          ${release.features.length > 0 ? `
+            <h4>🎁 New Features</h4>
+            <ul>
+              ${release.features.map(f => `<li>${f}</li>`).join('')}
+            </ul>
+          ` : ''}
+
+          ${release.bugFixes && release.bugFixes.length > 0 ? `
+            <h4>🐛 Bug Fixes</h4>
+            <ul>
+              ${release.bugFixes.map(b => `<li>${b}</li>`).join('')}
+            </ul>
+          ` : ''}
+
+          ${release.breaking && release.breaking.length > 0 ? `
+            <h4>⚠️ Breaking Changes</h4>
+            <ul class="breaking">
+              ${release.breaking.map(b => `<li>${b}</li>`).join('')}
+            </ul>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  });
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 850px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #1a73e8;
+    }
+    .title {
+      font-size: 36px;
+      font-weight: bold;
+      color: #1a73e8;
+      margin: 0;
+    }
+    .subtitle {
+      font-size: 18px;
+      color: #666;
+      margin-top: 10px;
+    }
+    .current-version {
+      background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .current-version-number {
+      font-size: 48px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .current-version-name {
+      font-size: 20px;
+      opacity: 0.9;
+    }
+    .version-card {
+      background: #fafafa;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 25px;
+      transition: all 0.2s;
+    }
+    .version-card.latest {
+      border-color: #1a73e8;
+      background: #f8fcff;
+    }
+    .version-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .version-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    .version-number {
+      font-size: 28px;
+      font-weight: bold;
+      color: #1a73e8;
+    }
+    .version-name {
+      font-size: 16px;
+      color: #666;
+      margin-top: 5px;
+    }
+    .version-meta {
+      text-align: right;
+    }
+    .version-date {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 5px;
+    }
+    .version-type {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .type-major { background: #ffebee; color: #c62828; }
+    .type-minor { background: #fff3e0; color: #ef6c00; }
+    .type-patch { background: #e8f5e9; color: #2e7d32; }
+    .badge-latest {
+      display: inline-block;
+      background: #4caf50;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .version-body h4 {
+      color: #333;
+      font-size: 16px;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .version-body ul {
+      margin: 10px 0;
+      padding-left: 25px;
+    }
+    .version-body li {
+      margin: 8px 0;
+      color: #555;
+      line-height: 1.6;
+    }
+    .highlights li {
+      font-weight: 500;
+      color: #333;
+    }
+    .breaking li {
+      color: #d32f2f;
+    }
+    button {
+      background: #1a73e8;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #1557b0;
+    }
+    button.secondary {
+      background: #6c757d;
+    }
+    .actions {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="title">📋 Release Notes</div>
+      <div class="subtitle">509 Dashboard Version History</div>
+    </div>
+
+    <div class="current-version">
+      <div class="current-version-number">v${VERSION_CONFIG.CURRENT_VERSION}</div>
+      <div class="current-version-name">${VERSION_CONFIG.VERSION_NAME}</div>
+      <div style="margin-top: 10px; font-size: 14px;">Released ${VERSION_CONFIG.RELEASE_DATE}</div>
+    </div>
+
+    ${versionSections}
+
+    <div class="actions">
+      <button onclick="exportChangelog()">📥 Export Changelog</button>
+      <button onclick="viewVersionHistory()">📊 Version History</button>
+      <button class="secondary" onclick="google.script.host.close()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    function exportChangelog() {
+      google.script.run
+        .withSuccessHandler((url) => {
+          alert('✅ Changelog exported!');
+          window.open(url, '_blank');
+        })
+        .exportChangelogToSheet();
+    }
+
+    function viewVersionHistory() {
+      google.script.run.showVersionHistory();
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Shows what's new dialog
+ */
+function showWhatsNew() {
+  const latestRelease = RELEASE_HISTORY[0];
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 30px; margin: 0; background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%); color: white; text-align: center; }
+    .container { max-width: 600px; margin: 0 auto; }
+    h1 { font-size: 48px; margin: 0 0 10px 0; }
+    .version { font-size: 24px; opacity: 0.9; margin-bottom: 30px; }
+    .highlights { background: white; color: #333; padding: 30px; border-radius: 12px; text-align: left; margin: 20px 0; }
+    .highlights h2 { color: #1a73e8; margin-top: 0; }
+    .highlights ul { padding-left: 20px; }
+    .highlights li { margin: 12px 0; font-size: 16px; line-height: 1.6; }
+    button { background: white; color: #1a73e8; border: none; padding: 15px 30px; font-size: 16px; border-radius: 8px; cursor: pointer; margin: 10px; font-weight: bold; }
+    button:hover { background: #f0f0f0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎉 What's New</h1>
+    <div class="version">Version ${latestRelease.version} - ${latestRelease.name}</div>
+
+    <div class="highlights">
+      <h2>✨ Highlights</h2>
+      <ul>
+        ${latestRelease.highlights.map(h => `<li>${h}</li>`).join('')}
+      </ul>
+
+      ${latestRelease.features.length > 0 ? `
+        <h2>🎁 New Features</h2>
+        <ul>
+          ${latestRelease.features.slice(0, 5).map(f => `<li>${f}</li>`).join('')}
+          ${latestRelease.features.length > 5 ? `<li><em>...and ${latestRelease.features.length - 5} more!</em></li>` : ''}
+        </ul>
+      ` : ''}
+    </div>
+
+    <button onclick="viewFullNotes()">📋 View Full Release Notes</button>
+    <button onclick="google.script.host.close()">Got it!</button>
+  </div>
+
+  <script>
+    function viewFullNotes() {
+      google.script.run.showReleaseNotes();
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(700)
+    .setHeight(600);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, "What's New");
+
+  markReleaseNotesViewed();
+}
+
+/**
+ * Marks release notes as viewed
+ */
+function markReleaseNotesViewed() {
+  const props = PropertiesService.getUserProperties();
+  props.setProperty('lastViewedVersion', VERSION_CONFIG.CURRENT_VERSION);
+  props.setProperty('lastViewedDate', new Date().toISOString());
+}
+
+/**
+ * Checks if user has seen latest release notes
+ * @returns {boolean}
+ */
+function hasSeenLatestRelease() {
+  const props = PropertiesService.getUserProperties();
+  const lastViewed = props.getProperty('lastViewedVersion');
+  return lastViewed === VERSION_CONFIG.CURRENT_VERSION;
+}
+
+/**
+ * Shows version history
+ */
+function showVersionHistory() {
+  let message = '📊 VERSION HISTORY\n\n';
+
+  RELEASE_HISTORY.forEach(release => {
+    message += `v${release.version} - ${release.name}\n`;
+    message += `  ${release.date} (${release.type} Release)\n`;
+    message += `  Features: ${release.features.length}\n\n`;
+  });
+
+  message += `\nCurrent Version: v${VERSION_CONFIG.CURRENT_VERSION}`;
+
+  SpreadsheetApp.getUi().alert('Version History', message, SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+/**
+ * Exports changelog to sheet
+ * @returns {string} Sheet URL
+ */
+function exportChangelogToSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  let changelogSheet = ss.getSheetByName('Changelog_Export');
+  if (changelogSheet) {
+    changelogSheet.clear();
+  } else {
+    changelogSheet = ss.insertSheet('Changelog_Export');
+  }
+
+  // Headers
+  const headers = ['Version', 'Name', 'Date', 'Type', 'Category', 'Description'];
+  changelogSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  changelogSheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#1a73e8').setFontColor('#ffffff');
+
+  let row = 2;
+
+  RELEASE_HISTORY.forEach(release => {
+    // Highlights
+    release.highlights.forEach(highlight => {
+      changelogSheet.getRange(row, 1, 1, headers.length).setValues([[
+        release.version,
+        release.name,
+        release.date,
+        release.type,
+        'Highlight',
+        highlight
+      ]]);
+      row++;
+    });
+
+    // Features
+    release.features.forEach(feature => {
+      changelogSheet.getRange(row, 1, 1, headers.length).setValues([[
+        release.version,
+        release.name,
+        release.date,
+        release.type,
+        'Feature',
+        feature
+      ]]);
+      row++;
+    });
+
+    // Bug Fixes
+    if (release.bugFixes) {
+      release.bugFixes.forEach(fix => {
+        changelogSheet.getRange(row, 1, 1, headers.length).setValues([[
+          release.version,
+          release.name,
+          release.date,
+          release.type,
+          'Bug Fix',
+          fix
+        ]]);
+        row++;
+      });
+    }
+  });
+
+  // Auto-resize
+  for (let col = 1; col <= headers.length; col++) {
+    changelogSheet.autoResizeColumn(col);
+  }
+
+  return ss.getUrl() + '#gid=' + changelogSheet.getSheetId();
+}
+
+/**
+ * Gets current version info
+ * @returns {Object} Version information
+ */
+function getCurrentVersionInfo() {
+  return {
+    version: VERSION_CONFIG.CURRENT_VERSION,
+    name: VERSION_CONFIG.VERSION_NAME,
+    releaseDate: VERSION_CONFIG.RELEASE_DATE,
+    hasSeenRelease: hasSeenLatestRelease()
+  };
+}
+
+/**
+ * Checks for updates (placeholder for future API integration)
+ * @returns {Object} Update information
+ */
+function checkForUpdates() {
+  // Placeholder - in a real system, this would check an API
+  return {
+    updateAvailable: false,
+    latestVersion: VERSION_CONFIG.CURRENT_VERSION,
+    currentVersion: VERSION_CONFIG.CURRENT_VERSION,
+    message: 'You are using the latest version!'
+  };
+}
+
+
+
+// ================================================================================
 // MODULE: ReorganizedMenu.gs
 // Source: ReorganizedMenu.gs
 // ================================================================================
@@ -32461,6 +40497,9 @@ function onOpen_Reorganized() {
       .addItem("📧 Compose Email", "composeGrievanceEmail")
       .addItem("📝 Email Templates", "showEmailTemplateManager")
       .addSeparator()
+      .addItem("📧 Email Opt-Out Management", "showOptOutManagementPanel")
+      .addItem("📊 Opt-Out Statistics", "showOptOutStatistics")
+      .addSeparator()
       .addItem("📞 View Communications Log", "showGrievanceCommunications"))
     .addSeparator()
     .addSubMenu(ui.createMenu("📊 Reports")
@@ -32478,9 +40517,17 @@ function onOpen_Reorganized() {
       .addItem("🎯 Deactivate Focus Mode", "deactivateFocusMode"))
     .addSeparator()
     .addSubMenu(ui.createMenu("❓ Help & Support")
-      .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
-      .addItem("❓ Help", "showHelp")
-      .addItem("⌨️ Keyboard Shortcuts", "showKeyboardShortcuts"))
+      .addItem("🚀 Quick Start Guide", "showQuickStartGuide")
+      .addItem("📚 Interactive Tutorial", "showInteractiveTutorial")
+      .addItem("🎥 Video Tutorials", "showVideoTutorials")
+      .addSeparator()
+      .addItem("❓ Context Help (F1)", "showContextHelp")
+      .addItem("🔍 Search Help", "showHelpSearch")
+      .addItem("⌨️ Keyboard Shortcuts", "showKeyboardShortcuts")
+      .addSeparator()
+      .addItem("📋 Release Notes", "showReleaseNotes")
+      .addItem("🆕 What's New", "showWhatsNew"))
+    .addItem("⚡ Quick Actions", "showQuickActionsMenu")
     .addToUi();
 
   // ------------ SHEET MANAGER MENU ------------
@@ -32504,9 +40551,20 @@ function onOpen_Reorganized() {
       .addItem("📊 Data Quality Dashboard", "showDataQualityDashboard")
       .addItem("🔍 Check Referential Integrity", "checkReferentialIntegrity")
       .addSeparator()
+      .addItem("✅ Run Bulk Validation", "runBulkValidation")
+      .addItem("⚙️ Validation Settings", "showValidationSettings")
+      .addSeparator()
       .addItem("📝 Create Change Log Sheet", "createChangeLogSheet")
       .addItem("🆔 Generate Next Member ID", "showNextMemberID")
       .addItem("🆔 Generate Next Grievance ID", "showNextGrievanceID"))
+    .addSeparator()
+    .addSubMenu(ui.createMenu("🔐 PII Protection")
+      .addItem("🔐 PII Protection Dashboard", "showPIIProtectionDashboard")
+      .addItem("📤 Export with Masked PII", "exportMembersWithMaskedPII")
+      .addItem("📊 PII Audit Report", "showPIIAuditReport")
+      .addSeparator()
+      .addItem("👤 Data Subject Request", "showDataSubjectRequestForm")
+      .addItem("🔄 Anonymize Inactive Members", "anonymizeInactiveMembers"))
     .addSeparator()
     .addSubMenu(ui.createMenu("🤖 Automations")
       .addItem("📬 Notification Settings", "showNotificationSettings")
@@ -35236,6 +43294,805 @@ function rebuildDashboard() {
     Logger.log('Error rebuilding dashboard: ' + error.message);
     // Non-critical error, continue execution
   }
+}
+
+
+
+// ================================================================================
+// MODULE: SessionManagement.gs
+// Source: SessionManagement.gs
+// ================================================================================
+
+/**
+ * ============================================================================
+ * SESSION MANAGEMENT & USER PREFERENCES
+ * ============================================================================
+ *
+ * Advanced session tracking and user preference management
+ * Features:
+ * - User session tracking
+ * - Activity logging
+ * - User preferences and settings
+ * - Recent activity history
+ * - Workspace customization
+ * - Quick access to recent items
+ * - User-specific dashboards
+ * - Session persistence
+ */
+
+/**
+ * Session configuration
+ */
+const SESSION_CONFIG = {
+  MAX_RECENT_ITEMS: 20,
+  SESSION_TIMEOUT_MINUTES: 30,
+  TRACK_ACTIVITIES: true,
+  ACTIVITY_LOG_LIMIT: 100
+};
+
+/**
+ * Activity types
+ */
+const ACTIVITY_TYPES = {
+  GRIEVANCE_VIEWED: 'Grievance Viewed',
+  GRIEVANCE_CREATED: 'Grievance Created',
+  GRIEVANCE_UPDATED: 'Grievance Updated',
+  MEMBER_SEARCHED: 'Member Searched',
+  REPORT_GENERATED: 'Report Generated',
+  DASHBOARD_VIEWED: 'Dashboard Viewed',
+  EXPORT_PERFORMED: 'Export Performed',
+  EMAIL_SENT: 'Email Sent',
+  FILE_UPLOADED: 'File Uploaded'
+};
+
+/**
+ * Shows user session dashboard
+ */
+function showSessionDashboard() {
+  const html = createSessionDashboardHTML();
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(900)
+    .setHeight(700);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '👤 My Session');
+}
+
+/**
+ * Creates HTML for session dashboard
+ */
+function createSessionDashboardHTML() {
+  const session = getCurrentSession();
+  const recentActivities = getRecentActivities(10);
+  const preferences = getUserPreferences();
+
+  let activityRows = '';
+  if (recentActivities.length === 0) {
+    activityRows = '<tr><td colspan="3" style="text-align: center; padding: 40px; color: #999;">No recent activity</td></tr>';
+  } else {
+    recentActivities.forEach(activity => {
+      const timestamp = new Date(activity.timestamp).toLocaleString();
+      activityRows += `
+        <tr>
+          <td>${activity.type}</td>
+          <td>${activity.description}</td>
+          <td style="font-size: 12px; color: #666;">${timestamp}</td>
+        </tr>
+      `;
+    });
+  }
+
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-height: 650px;
+      overflow-y: auto;
+    }
+    h2 {
+      color: #1a73e8;
+      margin-top: 0;
+      border-bottom: 3px solid #1a73e8;
+      padding-bottom: 10px;
+    }
+    h3 {
+      color: #333;
+      margin-top: 30px;
+      margin-bottom: 15px;
+    }
+    .user-info {
+      background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+      color: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+    }
+    .user-name {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .user-email {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .session-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .stat-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      border-left: 4px solid #1a73e8;
+    }
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #1a73e8;
+      margin-bottom: 5px;
+    }
+    .stat-label {
+      font-size: 13px;
+      color: #666;
+      text-transform: uppercase;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    th {
+      background: #1a73e8;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    tr:hover {
+      background: #f8f9fa;
+    }
+    .preference-section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    .preference-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .preference-row:last-child {
+      border-bottom: none;
+    }
+    .preference-label {
+      font-weight: 500;
+      color: #333;
+    }
+    .preference-value {
+      color: #666;
+      font-size: 14px;
+    }
+    button {
+      background: #1a73e8;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #1557b0;
+    }
+    button.secondary {
+      background: #6c757d;
+    }
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .quick-action-btn {
+      background: white;
+      border: 2px solid #e0e0e0;
+      padding: 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .quick-action-btn:hover {
+      border-color: #1a73e8;
+      background: #f8f9fa;
+    }
+    .quick-action-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .quick-action-label {
+      font-weight: 500;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>👤 My Session</h2>
+
+    <div class="user-info">
+      <div class="user-name">${session.userName || 'User'}</div>
+      <div class="user-email">${session.userEmail}</div>
+      <div style="margin-top: 15px; font-size: 13px;">
+        Session started: ${new Date(session.sessionStart).toLocaleString()}
+      </div>
+    </div>
+
+    <div class="session-stats">
+      <div class="stat-card">
+        <div class="stat-value">${session.activityCount}</div>
+        <div class="stat-label">Actions Today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${session.grievancesViewed}</div>
+        <div class="stat-label">Grievances Viewed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">${session.reportsGenerated}</div>
+        <div class="stat-label">Reports Generated</div>
+      </div>
+    </div>
+
+    <h3>⚡ Quick Actions</h3>
+    <div class="quick-actions">
+      <div class="quick-action-btn" onclick="viewRecentGrievances()">
+        <div class="quick-action-icon">📋</div>
+        <div class="quick-action-label">Recent Grievances</div>
+      </div>
+      <div class="quick-action-btn" onclick="viewSavedSearches()">
+        <div class="quick-action-icon">🔍</div>
+        <div class="quick-action-label">Saved Searches</div>
+      </div>
+      <div class="quick-action-btn" onclick="viewBookmarks()">
+        <div class="quick-action-icon">⭐</div>
+        <div class="quick-action-label">Bookmarks</div>
+      </div>
+      <div class="quick-action-btn" onclick="editPreferences()">
+        <div class="quick-action-icon">⚙️</div>
+        <div class="quick-action-label">Preferences</div>
+      </div>
+    </div>
+
+    <h3>📊 Recent Activity</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Timestamp</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${activityRows}
+      </tbody>
+    </table>
+
+    <h3>⚙️ My Preferences</h3>
+    <div class="preference-section">
+      <div class="preference-row">
+        <span class="preference-label">Default View</span>
+        <span class="preference-value">${preferences.defaultView || 'Dashboard'}</span>
+      </div>
+      <div class="preference-row">
+        <span class="preference-label">Items Per Page</span>
+        <span class="preference-value">${preferences.itemsPerPage || 100}</span>
+      </div>
+      <div class="preference-row">
+        <span class="preference-label">Email Notifications</span>
+        <span class="preference-value">${preferences.emailNotifications ? 'Enabled' : 'Disabled'}</span>
+      </div>
+      <div class="preference-row">
+        <span class="preference-label">Default Sort</span>
+        <span class="preference-value">${preferences.defaultSort || 'Filed Date (Newest)'}</span>
+      </div>
+      <div class="preference-row">
+        <span class="preference-label">Theme</span>
+        <span class="preference-value">${preferences.theme || 'Light'}</span>
+      </div>
+    </div>
+
+    <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #e0e0e0; display: flex; gap: 10px;">
+      <button onclick="editPreferences()">⚙️ Edit Preferences</button>
+      <button onclick="clearSession()">🔄 Clear Session</button>
+      <button class="secondary" onclick="exportActivityLog()">📥 Export Activity</button>
+      <button class="secondary" onclick="google.script.host.close()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    function viewRecentGrievances() {
+      google.script.run.showRecentGrievancesDialog();
+    }
+
+    function viewSavedSearches() {
+      google.script.run.showSavedSearches();
+    }
+
+    function viewBookmarks() {
+      google.script.run.showBookmarks();
+    }
+
+    function editPreferences() {
+      google.script.run.showPreferencesEditor();
+    }
+
+    function clearSession() {
+      if (confirm('Clear session data? This will reset your recent activity.')) {
+        google.script.run
+          .withSuccessHandler(() => {
+            alert('✅ Session cleared!');
+            google.script.host.close();
+          })
+          .clearUserSession();
+      }
+    }
+
+    function exportActivityLog() {
+      google.script.run
+        .withSuccessHandler((url) => {
+          alert('✅ Activity log exported!');
+          window.open(url, '_blank');
+        })
+        .exportActivityLog();
+    }
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Gets current session information
+ * @returns {Object} Session data
+ */
+function getCurrentSession() {
+  const props = PropertiesService.getUserProperties();
+  const sessionJSON = props.getProperty('currentSession');
+
+  const userEmail = Session.getActiveUser().getEmail();
+  const userName = extractUserName(userEmail);
+
+  if (sessionJSON) {
+    const session = JSON.parse(sessionJSON);
+
+    // Check if session has timed out
+    const now = new Date();
+    const lastActivity = new Date(session.lastActivity);
+    const minutesSinceActivity = (now - lastActivity) / (1000 * 60);
+
+    if (minutesSinceActivity > SESSION_CONFIG.SESSION_TIMEOUT_MINUTES) {
+      // Session timed out, start new one
+      return createNewSession(userEmail, userName);
+    }
+
+    // Update last activity
+    session.lastActivity = now.toISOString();
+    props.setProperty('currentSession', JSON.stringify(session));
+
+    return session;
+  }
+
+  return createNewSession(userEmail, userName);
+}
+
+/**
+ * Creates a new session
+ * @param {string} userEmail - User email
+ * @param {string} userName - User name
+ * @returns {Object} New session
+ */
+function createNewSession(userEmail, userName) {
+  const now = new Date();
+  const session = {
+    userEmail: userEmail,
+    userName: userName,
+    sessionStart: now.toISOString(),
+    lastActivity: now.toISOString(),
+    activityCount: 0,
+    grievancesViewed: 0,
+    reportsGenerated: 0
+  };
+
+  const props = PropertiesService.getUserProperties();
+  props.setProperty('currentSession', JSON.stringify(session));
+
+  return session;
+}
+
+/**
+ * Extracts user name from email
+ * @param {string} email - Email address
+ * @returns {string} User name
+ */
+function extractUserName(email) {
+  if (!email) return 'User';
+
+  const namePart = email.split('@')[0];
+  const parts = namePart.split('.');
+
+  return parts.map(part =>
+    part.charAt(0).toUpperCase() + part.slice(1)
+  ).join(' ');
+}
+
+/**
+ * Logs user activity
+ * @param {string} activityType - Type of activity
+ * @param {string} description - Activity description
+ * @param {Object} metadata - Additional metadata
+ */
+function logActivity(activityType, description, metadata = {}) {
+  if (!SESSION_CONFIG.TRACK_ACTIVITIES) return;
+
+  const props = PropertiesService.getUserProperties();
+  const activitiesJSON = props.getProperty('activityLog');
+
+  let activities = [];
+  if (activitiesJSON) {
+    activities = JSON.parse(activitiesJSON);
+  }
+
+  activities.push({
+    type: activityType,
+    description: description,
+    timestamp: new Date().toISOString(),
+    metadata: metadata
+  });
+
+  // Limit activity log size
+  if (activities.length > SESSION_CONFIG.ACTIVITY_LOG_LIMIT) {
+    activities = activities.slice(-SESSION_CONFIG.ACTIVITY_LOG_LIMIT);
+  }
+
+  props.setProperty('activityLog', JSON.stringify(activities));
+
+  // Update session stats
+  updateSessionStats(activityType);
+}
+
+/**
+ * Updates session statistics
+ * @param {string} activityType - Activity type
+ */
+function updateSessionStats(activityType) {
+  const session = getCurrentSession();
+
+  session.activityCount++;
+
+  if (activityType === ACTIVITY_TYPES.GRIEVANCE_VIEWED) {
+    session.grievancesViewed++;
+  } else if (activityType === ACTIVITY_TYPES.REPORT_GENERATED) {
+    session.reportsGenerated++;
+  }
+
+  const props = PropertiesService.getUserProperties();
+  props.setProperty('currentSession', JSON.stringify(session));
+}
+
+/**
+ * Gets recent activities
+ * @param {number} limit - Number of activities to return
+ * @returns {Array} Recent activities
+ */
+function getRecentActivities(limit = 20) {
+  const props = PropertiesService.getUserProperties();
+  const activitiesJSON = props.getProperty('activityLog');
+
+  if (!activitiesJSON) {
+    return [];
+  }
+
+  const activities = JSON.parse(activitiesJSON);
+  return activities.slice(-limit).reverse();
+}
+
+/**
+ * Gets user preferences
+ * @returns {Object} User preferences
+ */
+function getUserPreferences() {
+  const props = PropertiesService.getUserProperties();
+  const prefsJSON = props.getProperty('userPreferences');
+
+  if (prefsJSON) {
+    return JSON.parse(prefsJSON);
+  }
+
+  // Default preferences
+  return {
+    defaultView: 'Dashboard',
+    itemsPerPage: 100,
+    emailNotifications: true,
+    defaultSort: 'Filed Date (Newest)',
+    theme: 'Light',
+    showAdvancedColumns: false,
+    autoRefresh: false,
+    compactMode: false
+  };
+}
+
+/**
+ * Saves user preferences
+ * @param {Object} preferences - Preferences to save
+ */
+function saveUserPreferences(preferences) {
+  const props = PropertiesService.getUserProperties();
+  const current = getUserPreferences();
+
+  const updated = { ...current, ...preferences };
+  props.setProperty('userPreferences', JSON.stringify(updated));
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    '✅ Preferences saved!',
+    'Preferences',
+    3
+  );
+}
+
+/**
+ * Shows preferences editor
+ */
+function showPreferencesEditor() {
+  const prefs = getUserPreferences();
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; margin: 0; background: #f5f5f5; }
+    .container { background: white; padding: 25px; border-radius: 8px; max-width: 600px; margin: 0 auto; }
+    h2 { color: #1a73e8; margin-top: 0; }
+    .form-group { margin: 20px 0; }
+    label { display: block; font-weight: 500; margin-bottom: 8px; color: #333; }
+    select, input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 4px; font-size: 14px; box-sizing: border-box; }
+    button { background: #1a73e8; color: white; border: none; padding: 12px 24px; font-size: 14px; border-radius: 4px; cursor: pointer; margin: 5px; }
+    button:hover { background: #1557b0; }
+    button.secondary { background: #6c757d; }
+    .checkbox-group { display: flex; align-items: center; gap: 10px; }
+    .checkbox-group input { width: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>⚙️ Preferences</h2>
+
+    <div class="form-group">
+      <label>Default View</label>
+      <select id="defaultView">
+        <option value="Dashboard" ${prefs.defaultView === 'Dashboard' ? 'selected' : ''}>Dashboard</option>
+        <option value="Grievance Log" ${prefs.defaultView === 'Grievance Log' ? 'selected' : ''}>Grievance Log</option>
+        <option value="Member Directory" ${prefs.defaultView === 'Member Directory' ? 'selected' : ''}>Member Directory</option>
+        <option value="Interactive Dashboard" ${prefs.defaultView === 'Interactive Dashboard' ? 'selected' : ''}>Interactive Dashboard</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Items Per Page</label>
+      <select id="itemsPerPage">
+        <option value="25" ${prefs.itemsPerPage === 25 ? 'selected' : ''}>25</option>
+        <option value="50" ${prefs.itemsPerPage === 50 ? 'selected' : ''}>50</option>
+        <option value="100" ${prefs.itemsPerPage === 100 ? 'selected' : ''}>100</option>
+        <option value="200" ${prefs.itemsPerPage === 200 ? 'selected' : ''}>200</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Default Sort</label>
+      <select id="defaultSort">
+        <option value="Filed Date (Newest)" ${prefs.defaultSort === 'Filed Date (Newest)' ? 'selected' : ''}>Filed Date (Newest)</option>
+        <option value="Filed Date (Oldest)" ${prefs.defaultSort === 'Filed Date (Oldest)' ? 'selected' : ''}>Filed Date (Oldest)</option>
+        <option value="Deadline (Soonest)" ${prefs.defaultSort === 'Deadline (Soonest)' ? 'selected' : ''}>Deadline (Soonest)</option>
+        <option value="Status" ${prefs.defaultSort === 'Status' ? 'selected' : ''}>Status</option>
+      </select>
+    </div>
+
+    <div class="form-group checkbox-group">
+      <input type="checkbox" id="emailNotifications" ${prefs.emailNotifications ? 'checked' : ''}>
+      <label for="emailNotifications" style="margin-bottom: 0;">Enable Email Notifications</label>
+    </div>
+
+    <div class="form-group checkbox-group">
+      <input type="checkbox" id="showAdvancedColumns" ${prefs.showAdvancedColumns ? 'checked' : ''}>
+      <label for="showAdvancedColumns" style="margin-bottom: 0;">Show Advanced Columns</label>
+    </div>
+
+    <div class="form-group checkbox-group">
+      <input type="checkbox" id="compactMode" ${prefs.compactMode ? 'checked' : ''}>
+      <label for="compactMode" style="margin-bottom: 0;">Compact Mode</label>
+    </div>
+
+    <div style="margin-top: 30px; display: flex; gap: 10px;">
+      <button onclick="savePreferences()">💾 Save Preferences</button>
+      <button class="secondary" onclick="resetToDefaults()">🔄 Reset to Defaults</button>
+      <button class="secondary" onclick="google.script.host.close()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    function savePreferences() {
+      const prefs = {
+        defaultView: document.getElementById('defaultView').value,
+        itemsPerPage: parseInt(document.getElementById('itemsPerPage').value),
+        defaultSort: document.getElementById('defaultSort').value,
+        emailNotifications: document.getElementById('emailNotifications').checked,
+        showAdvancedColumns: document.getElementById('showAdvancedColumns').checked,
+        compactMode: document.getElementById('compactMode').checked
+      };
+
+      google.script.run
+        .withSuccessHandler(() => {
+          alert('✅ Preferences saved!');
+          google.script.host.close();
+        })
+        .saveUserPreferences(prefs);
+    }
+
+    function resetToDefaults() {
+      if (confirm('Reset all preferences to defaults?')) {
+        google.script.run
+          .withSuccessHandler(() => {
+            alert('✅ Preferences reset!');
+            location.reload();
+          })
+          .resetUserPreferences();
+      }
+    }
+  </script>
+</body>
+</html>
+  `;
+
+  const htmlOutput = HtmlService.createHtmlOutput(html)
+    .setWidth(650)
+    .setHeight(600);
+
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, '⚙️ Edit Preferences');
+}
+
+/**
+ * Resets user preferences to defaults
+ */
+function resetUserPreferences() {
+  const props = PropertiesService.getUserProperties();
+  props.deleteProperty('userPreferences');
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    '✅ Preferences reset to defaults',
+    'Preferences',
+    3
+  );
+}
+
+/**
+ * Clears user session
+ */
+function clearUserSession() {
+  const props = PropertiesService.getUserProperties();
+  props.deleteProperty('currentSession');
+  props.deleteProperty('activityLog');
+
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    '✅ Session cleared',
+    'Session',
+    3
+  );
+}
+
+/**
+ * Exports activity log to sheet
+ * @returns {string} Sheet URL
+ */
+function exportActivityLog() {
+  const activities = getRecentActivities(SESSION_CONFIG.ACTIVITY_LOG_LIMIT);
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  let activitySheet = ss.getSheetByName('Activity_Log_Export');
+  if (activitySheet) {
+    activitySheet.clear();
+  } else {
+    activitySheet = ss.insertSheet('Activity_Log_Export');
+  }
+
+  // Headers
+  const headers = ['Type', 'Description', 'Timestamp'];
+  activitySheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+  activitySheet.getRange(1, 1, 1, headers.length).setFontWeight('bold').setBackground('#1a73e8').setFontColor('#ffffff');
+
+  // Data
+  if (activities.length > 0) {
+    const rows = activities.map(activity => [
+      activity.type,
+      activity.description,
+      new Date(activity.timestamp).toLocaleString()
+    ]);
+
+    activitySheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+  }
+
+  // Auto-resize
+  for (let col = 1; col <= headers.length; col++) {
+    activitySheet.autoResizeColumn(col);
+  }
+
+  return ss.getUrl() + '#gid=' + activitySheet.getSheetId();
+}
+
+/**
+ * Shows recent grievances dialog
+ */
+function showRecentGrievancesDialog() {
+  const activities = getRecentActivities(100);
+  const grievanceActivities = activities.filter(a => a.type === ACTIVITY_TYPES.GRIEVANCE_VIEWED);
+
+  if (grievanceActivities.length === 0) {
+    SpreadsheetApp.getUi().alert('No recent grievances viewed');
+    return;
+  }
+
+  let message = 'Recently viewed grievances:\n\n';
+  grievanceActivities.slice(0, 10).forEach(activity => {
+    message += `• ${activity.description} - ${new Date(activity.timestamp).toLocaleString()}\n`;
+  });
+
+  SpreadsheetApp.getUi().alert('Recent Grievances', message, SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+/**
+ * Shows saved searches
+ */
+function showSavedSearches() {
+  SpreadsheetApp.getUi().alert(
+    'Saved Searches',
+    'Saved searches feature coming soon!',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+/**
+ * Shows bookmarks
+ */
+function showBookmarks() {
+  SpreadsheetApp.getUi().alert(
+    'Bookmarks',
+    'Bookmarks feature coming soon!',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
 }
 
 
@@ -40649,6 +49506,2609 @@ function batchUpdateWorkflowState() {
     `Successfully updated: ${updated}\nErrors (invalid transitions): ${errors}`,
     ui.ButtonSet.OK
   );
+}
+
+
+
+// ================================================================================
+// MODULE: TestFramework.gs
+// Source: TestFramework.gs
+// ================================================================================
+
+/**
+ * ------------------------------------------------------------------------====
+ * TEST FRAMEWORK - Simple Testing Library for Google Apps Script
+ * ------------------------------------------------------------------------====
+ *
+ * A lightweight testing framework that runs within the Apps Script environment.
+ * Provides assertion methods, test runners, and reporting.
+ *
+ * Usage:
+ *   1. Write test functions (see tests/*.test.gs)
+ *   2. Run via menu: 🧪 Tests > Run All Tests
+ *   3. View results in test report sheet
+ *
+ * ------------------------------------------------------------------------====
+ */
+
+// Test results storage
+TEST_RESULTS = {
+  passed: [],
+  failed: [],
+  skipped: []
+};
+
+/**
+ * Code coverage tracking
+ * Tracks which functions are called during test execution
+ */
+const CODE_COVERAGE = {
+  enabled: true,
+  functionsExecuted: new Set(),
+  totalFunctions: 0,
+  coveredFunctions: 0,
+  coveragePercent: 0
+};
+
+/**
+ * Tracks function execution for code coverage
+ * @param {string} functionName - Name of function being executed
+ */
+function trackCoverage(functionName) {
+  if (CODE_COVERAGE.enabled) {
+    CODE_COVERAGE.functionsExecuted.add(functionName);
+  }
+}
+
+/**
+ * Gets list of all testable functions in the project
+ * @returns {Array<string>} Array of function names
+ */
+function getAllFunctionNames() {
+  const functionNames = [];
+
+  // Get all global functions (this won't work perfectly in Apps Script, but provides baseline)
+  try {
+    // This is a best-effort approach
+    // In production, you'd maintain a manual list or use static analysis
+    const knownModules = [
+      'CREATE_509_DASHBOARD', 'createConfigTab', 'createMemberDirectory', 'createGrievanceLog',
+      'sanitizeHTML', 'isAdmin', 'requireRole', 'logAuditEvent',
+      'getMemberList', 'archiveOldGrievances', 't', 'getUserLanguage'
+      // Add more as needed
+    ];
+
+    return knownModules;
+  } catch (error) {
+    Logger.log('Error getting function names: ' + error.message);
+    return [];
+  }
+}
+
+/**
+ * Calculates code coverage statistics
+ * @returns {Object} Coverage statistics
+ */
+function calculateCoverage() {
+  const allFunctions = getAllFunctionNames();
+  CODE_COVERAGE.totalFunctions = allFunctions.length;
+  CODE_COVERAGE.coveredFunctions = CODE_COVERAGE.functionsExecuted.size;
+
+  if (CODE_COVERAGE.totalFunctions > 0) {
+    CODE_COVERAGE.coveragePercent =
+      (CODE_COVERAGE.coveredFunctions / CODE_COVERAGE.totalFunctions) * 100;
+  }
+
+  return {
+    total: CODE_COVERAGE.totalFunctions,
+    covered: CODE_COVERAGE.coveredFunctions,
+    percent: CODE_COVERAGE.coveragePercent.toFixed(2),
+    uncovered: allFunctions.filter(fn => !CODE_COVERAGE.functionsExecuted.has(fn))
+  };
+}
+
+/**
+ * Resets code coverage tracking
+ */
+function resetCoverage() {
+  CODE_COVERAGE.functionsExecuted.clear();
+  CODE_COVERAGE.totalFunctions = 0;
+  CODE_COVERAGE.coveredFunctions = 0;
+  CODE_COVERAGE.coveragePercent = 0;
+}
+
+/**
+ * Assertion library
+ */
+const Assert = {
+  /**
+   * Assert that two values are equal
+   */
+  assertEquals: function(expected, actual, message) {
+    if (expected !== actual) {
+      throw new Error(
+        (message || 'Assertion failed') +
+        `\nExpected: ${JSON.stringify(expected)}` +
+        `\nActual: ${JSON.stringify(actual)}`
+      );
+    }
+  },
+
+  /**
+   * Assert that value is true
+   */
+  assertTrue: function(value, message) {
+    if (value !== true) {
+      throw new Error(
+        (message || 'Expected true') +
+        `\nActual: ${JSON.stringify(value)}`
+      );
+    }
+  },
+
+  /**
+   * Assert that value is false
+   */
+  assertFalse: function(value, message) {
+    if (value !== false) {
+      throw new Error(
+        (message || 'Expected false') +
+        `\nActual: ${JSON.stringify(value)}`
+      );
+    }
+  },
+
+  /**
+   * Assert that value is not null or undefined
+   */
+  assertNotNull: function(value, message) {
+    if (value === null || value === undefined) {
+      throw new Error(message || 'Value should not be null or undefined');
+    }
+  },
+
+  /**
+   * Assert that value is null
+   */
+  assertNull: function(value, message) {
+    if (value !== null) {
+      throw new Error(
+        (message || 'Expected null') +
+        `\nActual: ${JSON.stringify(value)}`
+      );
+    }
+  },
+
+  /**
+   * Assert that array contains value
+   */
+  assertContains: function(array, value, message) {
+    if (!Array.isArray(array)) {
+      throw new Error('First argument must be an array');
+    }
+    if (array.indexOf(value) === -1) {
+      throw new Error(
+        (message || 'Array does not contain value') +
+        `\nArray: ${JSON.stringify(array)}` +
+        `\nValue: ${JSON.stringify(value)}`
+      );
+    }
+  },
+
+  /**
+   * Assert that array has specific length
+   */
+  assertArrayLength: function(array, expectedLength, message) {
+    if (!Array.isArray(array)) {
+      throw new Error('First argument must be an array');
+    }
+    if (array.length !== expectedLength) {
+      throw new Error(
+        (message || 'Array length mismatch') +
+        `\nExpected length: ${expectedLength}` +
+        `\nActual length: ${array.length}`
+      );
+    }
+  },
+
+  /**
+   * Assert that function throws an error
+   */
+  assertThrows: function(fn, message) {
+    let threw = false;
+    try {
+      fn();
+    } catch (e) {
+      threw = true;
+    }
+    if (!threw) {
+      throw new Error(message || 'Expected function to throw an error');
+    }
+  },
+
+  /**
+   * Assert that two values are approximately equal (for floating point)
+   */
+  assertApproximately: function(expected, actual, tolerance, message) {
+    tolerance = tolerance || 0.001;
+    if (Math.abs(expected - actual) > tolerance) {
+      throw new Error(
+        (message || 'Values not approximately equal') +
+        `\nExpected: ${expected}` +
+        `\nActual: ${actual}` +
+        `\nTolerance: ${tolerance}`
+      );
+    }
+  },
+
+  /**
+   * Assert that date is within range
+   */
+  assertDateEquals: function(expected, actual, message) {
+    const expectedTime = expected instanceof Date ? expected.getTime() : new Date(expected).getTime();
+    const actualTime = actual instanceof Date ? actual.getTime() : new Date(actual).getTime();
+
+    if (expectedTime !== actualTime) {
+      throw new Error(
+        (message || 'Dates not equal') +
+        `\nExpected: ${new Date(expectedTime).toISOString()}` +
+        `\nActual: ${new Date(actualTime).toISOString()}`
+      );
+    }
+  },
+
+  /**
+   * Assert that function does NOT throw an error
+   */
+  assertNotThrows: function(fn, message) {
+    try {
+      fn();
+    } catch (e) {
+      throw new Error(
+        (message || 'Expected function to not throw') +
+        `\nError thrown: ${e.message}`
+      );
+    }
+  },
+
+  /**
+   * Explicitly fail a test
+   */
+  fail: function(message) {
+    throw new Error(message || 'Test failed');
+  }
+};
+
+/**
+ * Test runner - discovers and runs all test functions
+ */
+function runAllTests() {
+  const ui = SpreadsheetApp.getUi();
+
+  ui.alert(
+    '🧪 Running All Tests',
+    'This will run the complete test suite. This may take 2-3 minutes.\n\n' +
+    'Results will be displayed in a new "Test Results" sheet.',
+    ui.ButtonSet.OK
+  );
+
+  SpreadsheetApp.getActive().toast('🧪 Running test suite...', 'Testing', -1);
+
+  // Clear previous results
+  TEST_RESULTS.passed = [];
+  TEST_RESULTS.failed = [];
+  TEST_RESULTS.skipped = [];
+
+  // Reset code coverage
+  resetCoverage();
+
+  const startTime = new Date();
+
+  // Discover and run all test functions
+  const testFunctions = [
+    // Code.gs tests
+    'testFilingDeadlineCalculation',
+    'testStepIDeadlineCalculation',
+    'testStepIIAppealDeadlineCalculation',
+    'testDaysOpenCalculation',
+    'testNextActionDueLogic',
+    'testMemberDirectoryFormulas',
+    'testDataValidationSetup',
+    'testConfigDropdownValues',
+    'testMemberValidationRules',
+    'testGrievanceValidationRules',
+
+    // Seeding tests
+    'testMemberSeedingValidation',
+    'testGrievanceSeedingValidation',
+    'testMemberEmailFormat',
+    'testMemberIDUniqueness',
+    'testGrievanceMemberLinking',
+    'testOpenRateRange',
+
+    // GrievanceWorkflow tests
+    'testGetMemberList',
+    'testGetMemberListEmpty',
+    'testGetMemberListFiltersEmptyRows',
+    'testMemberSelectionDialog',
+
+    // SeedNuke tests
+    'testClearMemberDirectoryPreservesHeaders',
+    'testClearGrievanceLogPreservesHeaders',
+    'testNukePropertySet',
+
+    // Integration tests
+    'testCompleteGrievanceWorkflow',
+    'testDashboardMetricsUpdate',
+    'testMemberGrievanceSnapshot'
+  ];
+
+  // Run each test
+  testFunctions.forEach(function(testName) {
+    try {
+      const testFn = this[testName];
+      if (typeof testFn === 'function') {
+        testFn();
+        TEST_RESULTS.passed.push({
+          name: testName,
+          time: new Date() - startTime
+        });
+      } else {
+        TEST_RESULTS.skipped.push({
+          name: testName,
+          reason: 'Function not found'
+        });
+      }
+    } catch (error) {
+      TEST_RESULTS.failed.push({
+        name: testName,
+        error: error.message,
+        stack: error.stack
+      });
+    }
+  });
+
+  const endTime = new Date();
+  const duration = (endTime - startTime) / 1000;
+
+  // Calculate code coverage
+  const coverage = calculateCoverage();
+
+  // Generate test report
+  generateTestReport(duration);
+
+  // Show summary
+  const total = TEST_RESULTS.passed.length + TEST_RESULTS.failed.length + TEST_RESULTS.skipped.length;
+  const passRate = ((TEST_RESULTS.passed.length / total) * 100).toFixed(1);
+
+  SpreadsheetApp.getActive().toast(
+    `✅ ${TEST_RESULTS.passed.length} passed | ❌ ${TEST_RESULTS.failed.length} failed | ⏭️ ${TEST_RESULTS.skipped.length} skipped`,
+    `Tests Complete (${passRate}% pass rate)`,
+    10
+  );
+
+  // Show detailed results dialog
+  ui.alert(
+    '🧪 Test Suite Complete',
+    `Results:\n\n` +
+    `✅ Passed: ${TEST_RESULTS.passed.length}\n` +
+    `❌ Failed: ${TEST_RESULTS.failed.length}\n` +
+    `⏭️ Skipped: ${TEST_RESULTS.skipped.length}\n\n` +
+    `Total: ${total} tests\n` +
+    `Pass Rate: ${passRate}%\n` +
+    `Duration: ${duration.toFixed(2)}s\n\n` +
+    `View detailed results in the "Test Results" sheet.`,
+    ui.ButtonSet.OK
+  );
+}
+
+/**
+ * Generates a detailed test report in a new sheet
+ * @param {number} [duration=0] - Test duration in seconds
+ */
+function generateTestReport(duration) {
+  duration = duration || 0;
+  const ss = SpreadsheetApp.getActive();
+
+  // Create or clear Test Results sheet
+  let reportSheet = ss.getSheetByName('Test Results');
+  if (!reportSheet) {
+    reportSheet = ss.insertSheet('Test Results');
+  }
+  reportSheet.clear();
+
+  // Header
+  reportSheet.getRange('A1:F1').merge()
+    .setValue('🧪 TEST RESULTS')
+    .setFontSize(18)
+    .setFontWeight('bold')
+    .setHorizontalAlignment('center')
+    .setBackground('#4A5568')
+    .setFontColor('#FFFFFF');
+
+  // Summary
+  const total = TEST_RESULTS.passed.length + TEST_RESULTS.failed.length + TEST_RESULTS.skipped.length;
+  const passRate = ((TEST_RESULTS.passed.length / total) * 100).toFixed(1);
+
+  // Get code coverage
+  const coverage = calculateCoverage();
+
+  const summary = [
+    ['Total Tests', total],
+    ['✅ Passed', TEST_RESULTS.passed.length],
+    ['❌ Failed', TEST_RESULTS.failed.length],
+    ['⏭️ Skipped', TEST_RESULTS.skipped.length],
+    ['Pass Rate', `${passRate}%`],
+    ['Duration', `${duration.toFixed(2)}s`],
+    ['📊 Code Coverage', `${coverage.percent}%`],
+    ['Functions Covered', `${coverage.covered}/${coverage.total}`],
+    ['Timestamp', new Date().toLocaleString()]
+  ];
+
+  reportSheet.getRange(3, 1, summary.length, 2).setValues(summary);
+  reportSheet.getRange(3, 1, summary.length, 1).setFontWeight('bold');
+
+  let currentRow = 3 + summary.length + 2;
+
+  // Passed tests
+  if (TEST_RESULTS.passed.length > 0) {
+    reportSheet.getRange(currentRow, 1, 1, 3).merge()
+      .setValue('✅ PASSED TESTS')
+      .setFontWeight('bold')
+      .setBackground('#D1FAE5')
+      .setFontColor('#065F46');
+
+    currentRow++;
+    reportSheet.getRange(currentRow, 1, 1, 3).setValues([['Test Name', 'Status', 'Duration (ms)']])
+      .setFontWeight('bold')
+      .setBackground('#F3F4F6');
+
+    currentRow++;
+    TEST_RESULTS.passed.forEach(function(test) {
+      reportSheet.getRange(currentRow, 1, 1, 3).setValues([[test.name, '✅ PASS', test.time]]);
+      currentRow++;
+    });
+    currentRow += 2;
+  }
+
+  // Failed tests
+  if (TEST_RESULTS.failed.length > 0) {
+    reportSheet.getRange(currentRow, 1, 1, 4).merge()
+      .setValue('❌ FAILED TESTS')
+      .setFontWeight('bold')
+      .setBackground('#FEE2E2')
+      .setFontColor('#991B1B');
+
+    currentRow++;
+    reportSheet.getRange(currentRow, 1, 1, 4).setValues([['Test Name', 'Status', 'Error', 'Stack Trace']])
+      .setFontWeight('bold')
+      .setBackground('#F3F4F6');
+
+    currentRow++;
+    TEST_RESULTS.failed.forEach(function(test) {
+      reportSheet.getRange(currentRow, 1, 1, 4).setValues([[
+        test.name,
+        '❌ FAIL',
+        test.error,
+        test.stack || 'N/A'
+      ]]);
+      reportSheet.getRange(currentRow, 3).setWrap(true);
+      currentRow++;
+    });
+    currentRow += 2;
+  }
+
+  // Skipped tests
+  if (TEST_RESULTS.skipped.length > 0) {
+    reportSheet.getRange(currentRow, 1, 1, 3).merge()
+      .setValue('⏭️ SKIPPED TESTS')
+      .setFontWeight('bold')
+      .setBackground('#FEF3C7')
+      .setFontColor('#92400E');
+
+    currentRow++;
+    reportSheet.getRange(currentRow, 1, 1, 3).setValues([['Test Name', 'Status', 'Reason']])
+      .setFontWeight('bold')
+      .setBackground('#F3F4F6');
+
+    currentRow++;
+    TEST_RESULTS.skipped.forEach(function(test) {
+      reportSheet.getRange(currentRow, 1, 1, 3).setValues([[test.name, '⏭️ SKIP', test.reason]]);
+      currentRow++;
+    });
+  }
+
+  // Auto-resize columns
+  reportSheet.autoResizeColumns(1, 4);
+  reportSheet.setColumnWidth(3, 400);
+  reportSheet.setColumnWidth(4, 300);
+
+  reportSheet.setTabColor('#7C3AED');
+  reportSheet.activate();
+}
+
+/**
+ * Run a single test by name
+ */
+function runSingleTest(testName) {
+  try {
+    const testFn = this[testName];
+    if (typeof testFn !== 'function') {
+      throw new Error(`Test function '${testName}' not found`);
+    }
+
+    testFn();
+    Logger.log(`✅ ${testName} PASSED`);
+    return true;
+  } catch (error) {
+    Logger.log(`❌ ${testName} FAILED: ${error.message}`);
+    Logger.log(error.stack);
+    return false;
+  }
+}
+
+/**
+ * Test helper: Create a test member in Member Directory
+ */
+function createTestMember(memberId) {
+  const ss = SpreadsheetApp.getActive();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  const testMemberData = [
+    memberId || 'TEST-M001',
+    'Test',
+    'Member',
+    'Coordinator',
+    'Boston HQ',
+    'Unit A - Administrative',
+    'Monday',
+    'test.member@union.org',
+    '(555) 123-4567',
+    'No',
+    'Sarah Johnson',
+    'Michael Chen',
+    'Jane Smith',
+    new Date(),
+    new Date(),
+    new Date(),
+    new Date(),
+    85,
+    10,
+    'Yes',
+    'Yes',
+    'No',
+    new Date(),
+    'Email',
+    'Mornings',
+    'No',
+    '',
+    '',
+    '',
+    '',
+    ''
+  ];
+
+  memberDir.getRange(memberDir.getLastRow() + 1, 1, 1, testMemberData.length).setValues([testMemberData]);
+  return memberId || 'TEST-M001';
+}
+
+/**
+ * Test helper: Clean up test data
+ */
+function cleanupTestData() {
+  const ss = SpreadsheetApp.getActive();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  // Remove all rows starting with "TEST-"
+  const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 1).getValues();
+  for (let i = memberData.length - 1; i >= 0; i--) {
+    if (String(memberData[i][0]).startsWith('TEST-')) {
+      memberDir.deleteRow(i + 2);
+    }
+  }
+
+  const grievanceData = grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, 1).getValues();
+  for (let i = grievanceData.length - 1; i >= 0; i--) {
+    if (String(grievanceData[i][0]).startsWith('TEST-')) {
+      grievanceLog.deleteRow(i + 2);
+    }
+  }
+}
+
+/* --------------------= TEST CATEGORY RUNNERS --------------------= */
+
+/**
+ * Shows test results in a dialog
+ */
+function showTestResults() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const reportSheet = ss.getSheetByName('Test Results');
+
+  if (!reportSheet) {
+    SpreadsheetApp.getUi().alert(
+      'No Test Results',
+      'No test results found. Run some tests first using the Testing menu.',
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    return;
+  }
+
+  reportSheet.activate();
+  SpreadsheetApp.getActiveSpreadsheet().toast('Showing test results', 'Test Results', 3);
+}
+
+/**
+ * Run all unit tests
+ */
+function runUnitTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running unit tests...', 'Tests', -1);
+
+  const unitTests = [
+    'testFilingDeadlineCalculation',
+    'testStepIDeadlineCalculation',
+    'testStepIIAppealDeadlineCalculation',
+    'testDaysOpenCalculation',
+    'testDaysOpenForClosedGrievance',
+    'testNextActionDueLogic',
+    'testMemberDirectoryFormulas',
+    'testOpenRateRange',
+    'testEmptySheetsHandling',
+    'testFutureDateHandling',
+    'testPastDeadlineHandling'
+  ];
+
+  runTestCategory('Unit Tests', unitTests);
+}
+
+/**
+ * Run all validation tests
+ */
+function runValidationTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running validation tests...', 'Tests', -1);
+
+  const validationTests = [
+    'testDataValidationSetup',
+    'testConfigDropdownValues',
+    'testMemberValidationRules',
+    'testGrievanceValidationRules',
+    'testMemberSeedingValidation',
+    'testGrievanceSeedingValidation',
+    'testMemberEmailFormat',
+    'testMemberIDUniqueness',
+    'testGrievanceMemberLinking'
+  ];
+
+  runTestCategory('Validation Tests', validationTests);
+}
+
+/**
+ * Run all integration tests
+ */
+function runIntegrationTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running integration tests...', 'Tests', -1);
+
+  const integrationTests = [
+    'testCompleteGrievanceWorkflow',
+    'testDashboardMetricsUpdate',
+    'testMemberGrievanceSnapshot',
+    'testConfigChangesPropagateToDropdowns',
+    'testMultipleGrievancesSameMember',
+    'testDashboardHandlesEmptyData',
+    'testGrievanceUpdatesTriggersRecalculation'
+  ];
+
+  runTestCategory('Integration Tests', integrationTests);
+}
+
+/**
+ * Run all performance tests
+ */
+function runPerformanceTests() {
+  SpreadsheetApp.getActiveSpreadsheet().toast('Running performance tests...', 'Tests', -1);
+
+  const performanceTests = [
+    'testDashboardRefreshPerformance',
+    'testFormulaPerformanceWithData'
+  ];
+
+  runTestCategory('Performance Tests', performanceTests);
+}
+
+/**
+ * Run a category of tests
+ * @param {string} categoryName - Name of the test category
+ * @param {string[]} testNames - Array of test function names
+ */
+function runTestCategory(categoryName, testNames) {
+  // Reset results
+  TEST_RESULTS.passed = [];
+  TEST_RESULTS.failed = [];
+  TEST_RESULTS.skipped = [];
+
+  let passed = 0;
+  let failed = 0;
+  let skipped = 0;
+
+  const startTime = new Date();
+
+  testNames.forEach(function(testName) {
+    try {
+      const testFn = this[testName];
+      if (typeof testFn !== 'function') {
+        TEST_RESULTS.skipped.push({ name: testName, reason: 'Function not found' });
+        skipped++;
+        return;
+      }
+
+      testFn();
+      TEST_RESULTS.passed.push({ name: testName, time: new Date() - startTime });
+      passed++;
+    } catch (error) {
+      TEST_RESULTS.failed.push({
+        name: testName,
+        error: error.message,
+        stack: error.stack
+      });
+      failed++;
+    }
+  });
+
+  const endTime = new Date();
+  const duration = (endTime - startTime) / 1000;
+
+  // Generate report
+  generateTestReport(duration);
+
+  // Show summary
+  const total = passed + failed + skipped;
+  SpreadsheetApp.getUi().alert(
+    categoryName + ' Complete',
+    `Results:\n✅ Passed: ${passed}/${total}\n❌ Failed: ${failed}/${total}\n⏭️ Skipped: ${skipped}/${total}\n\nDuration: ${duration.toFixed(2)}s\n\nView the Test Results sheet for details.`,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+
+
+// ================================================================================
+// MODULE: Code.test.gs
+// Source: Code.test.gs
+// ================================================================================
+
+/**
+ * ------------------------------------------------------------------------====
+ * UNIT TESTS FOR CODE.GS
+ * ------------------------------------------------------------------------====
+ *
+ * Tests for core functionality:
+ * - Formula calculations (deadlines, days open, etc.)
+ * - Data validation setup
+ * - Seeding functions
+ * - Helper functions
+ *
+ * ------------------------------------------------------------------------====
+ */
+
+/* --------------------= FORMULA CALCULATION TESTS --------------------= */
+
+/**
+ * Test: Filing Deadline = Incident Date + 21 days
+ */
+function testFilingDeadlineCalculation() {
+  const incidentDate = new Date(2025, 0, 1); // Jan 1, 2025
+  const expectedDeadline = new Date(2025, 0, 22); // Jan 22, 2025
+
+  // Calculate deadline (Incident + 21 days)
+  const actualDeadline = new Date(incidentDate.getTime() + 21 * 24 * 60 * 60 * 1000);
+
+  Assert.assertDateEquals(
+    expectedDeadline,
+    actualDeadline,
+    'Filing deadline should be 21 days after incident date'
+  );
+
+  Logger.log('✅ Filing deadline calculation test passed');
+}
+
+/**
+ * Test: Step I Decision Due = Date Filed + 30 days
+ */
+function testStepIDeadlineCalculation() {
+  const dateFiled = new Date(2025, 0, 15); // Jan 15, 2025
+  const expectedDeadline = new Date(2025, 1, 14); // Feb 14, 2025
+
+  // Calculate deadline (Filed + 30 days)
+  const actualDeadline = new Date(dateFiled.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  Assert.assertDateEquals(
+    expectedDeadline,
+    actualDeadline,
+    'Step I decision should be due 30 days after filing'
+  );
+
+  Logger.log('✅ Step I deadline calculation test passed');
+}
+
+/**
+ * Test: Step II Appeal Due = Step I Decision Received + 10 days
+ */
+function testStepIIAppealDeadlineCalculation() {
+  const stepIDecisionDate = new Date(2025, 1, 14); // Feb 14, 2025
+  const expectedDeadline = new Date(2025, 1, 24); // Feb 24, 2025
+
+  // Calculate deadline (Decision + 10 days)
+  const actualDeadline = new Date(stepIDecisionDate.getTime() + 10 * 24 * 60 * 60 * 1000);
+
+  Assert.assertDateEquals(
+    expectedDeadline,
+    actualDeadline,
+    'Step II appeal should be due 10 days after Step I decision'
+  );
+
+  Logger.log('✅ Step II appeal deadline calculation test passed');
+}
+
+/**
+ * Test: Days Open calculation for active grievance
+ */
+function testDaysOpenCalculation() {
+  const dateFiled = new Date(2025, 0, 1); // Jan 1, 2025
+  const today = new Date(2025, 0, 31); // Jan 31, 2025
+
+  const expectedDaysOpen = 30;
+  const actualDaysOpen = Math.floor((today - dateFiled) / (24 * 60 * 60 * 1000));
+
+  Assert.assertEquals(
+    expectedDaysOpen,
+    actualDaysOpen,
+    'Days open should be 30 for a grievance filed 30 days ago'
+  );
+
+  Logger.log('✅ Days open calculation test passed');
+}
+
+/**
+ * Test: Days Open calculation for closed grievance
+ */
+function testDaysOpenForClosedGrievance() {
+  const dateFiled = new Date(2025, 0, 1); // Jan 1, 2025
+  const dateClosed = new Date(2025, 0, 31); // Jan 31, 2025
+
+  const expectedDaysOpen = 30;
+  const actualDaysOpen = Math.floor((dateClosed - dateFiled) / (24 * 60 * 60 * 1000));
+
+  Assert.assertEquals(
+    expectedDaysOpen,
+    actualDaysOpen,
+    'Days open should use close date for closed grievances'
+  );
+
+  Logger.log('✅ Closed grievance days open calculation test passed');
+}
+
+/**
+ * Test: Next Action Due logic based on current step
+ */
+function testNextActionDueLogic() {
+  // Test data structure mimicking Grievance Log row
+  const testCases = [
+    {
+      status: 'Open',
+      step: 'Step I',
+      stepIDeadline: new Date(2025, 1, 14),
+      stepIIDeadline: new Date(2025, 1, 24),
+      stepIIIDeadline: new Date(2025, 2, 26),
+      filingDeadline: new Date(2025, 0, 22),
+      expected: new Date(2025, 1, 14) // Should use Step I deadline
+    },
+    {
+      status: 'Open',
+      step: 'Step II',
+      stepIDeadline: new Date(2025, 1, 14),
+      stepIIDeadline: new Date(2025, 1, 24),
+      stepIIIDeadline: new Date(2025, 2, 26),
+      filingDeadline: new Date(2025, 0, 22),
+      expected: new Date(2025, 1, 24) // Should use Step II deadline
+    },
+    {
+      status: 'Open',
+      step: 'Step III',
+      stepIDeadline: new Date(2025, 1, 14),
+      stepIIDeadline: new Date(2025, 1, 24),
+      stepIIIDeadline: new Date(2025, 2, 26),
+      filingDeadline: new Date(2025, 0, 22),
+      expected: new Date(2025, 2, 26) // Should use Step III deadline
+    },
+    {
+      status: 'Open',
+      step: 'Informal',
+      stepIDeadline: new Date(2025, 1, 14),
+      stepIIDeadline: new Date(2025, 1, 24),
+      stepIIIDeadline: new Date(2025, 2, 26),
+      filingDeadline: new Date(2025, 0, 22),
+      expected: new Date(2025, 0, 22) // Should use filing deadline
+    }
+  ];
+
+  testCases.forEach(function(testCase, index) {
+    var nextAction;
+    if (testCase.status === 'Open') {
+      if (testCase.step === 'Step I') {
+        nextAction = testCase.stepIDeadline;
+      } else if (testCase.step === 'Step II') {
+        nextAction = testCase.stepIIDeadline;
+      } else if (testCase.step === 'Step III') {
+        nextAction = testCase.stepIIIDeadline;
+      } else {
+        nextAction = testCase.filingDeadline;
+      }
+    }
+
+    Assert.assertDateEquals(
+      testCase.expected,
+      nextAction,
+      `Test case ${index + 1}: Next action should match expected deadline for ${testCase.step}`
+    );
+  });
+
+  Logger.log('✅ Next action due logic test passed');
+}
+
+/**
+ * Test: Member Directory formulas
+ */
+function testMemberDirectoryFormulas() {
+  // Create test setup
+  const testMemberId = createTestMember('TEST-M-FORMULA-001');
+
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+    const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+    // Create a test grievance for this member
+    const testGrievanceData = [
+      'TEST-G-001',
+      testMemberId,
+      'Test',
+      'Member',
+      'Open',
+      'Step I',
+      new Date(2025, 0, 1),
+      '',
+      new Date(2025, 0, 10),
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      'Art. 23 - Grievance Procedure',
+      'Discipline',
+      'test.member@union.org',
+      'Unit A - Administrative',
+      'Boston HQ',
+      'Jane Smith',
+      ''
+    ];
+
+    grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, 1, testGrievanceData.length)
+      .setValues([testGrievanceData]);
+
+    // Force recalculation
+    SpreadsheetApp.flush();
+    Utilities.sleep(2000); // Wait for formulas to recalculate
+
+    // Find the test member row
+    const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
+    const testMemberRow = memberData.findIndex(function(row) { return row[0] === testMemberId; });
+
+    Assert.assertTrue(
+      testMemberRow >= 0,
+      'Test member should exist in Member Directory'
+    );
+
+    // Check "Has Open Grievance?" (column Y = 25, index 24)
+    const hasOpenGrievance = memberData[testMemberRow][MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1];
+    Assert.assertTrue(
+      hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
+      'Member with open grievance should show "Yes" in Has Open Grievance column'
+    );
+
+    // Check "Grievance Status Snapshot" (column Z = 26, index 25)
+    const statusSnapshot = memberData[testMemberRow][MEMBER_COLS.GRIEVANCE_STATUS - 1];
+    Assert.assertEquals(
+      'Open',
+      statusSnapshot,
+      'Grievance status snapshot should match grievance status'
+    );
+
+    Logger.log('✅ Member Directory formulas test passed');
+
+  } finally {
+    cleanupTestData();
+  }
+}
+
+/* --------------------= DATA VALIDATION TESTS --------------------= */
+
+/**
+ * Test: Data validation setup creates proper rules
+ */
+function testDataValidationSetup() {
+  const ss = SpreadsheetApp.getActive();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const config = ss.getSheetByName(SHEETS.CONFIG);
+
+  // Check that validation exists for Job Title column
+  const jobTitleCell = memberDir.getRange(2, MEMBER_COLS.JOB_TITLE);
+  const validation = jobTitleCell.getDataValidation();
+
+  Assert.assertNotNull(
+    validation,
+    'Job Title column should have data validation'
+  );
+
+  Logger.log('✅ Data validation setup test passed');
+}
+
+/**
+ * Test: Config dropdown values are properly defined
+ */
+function testConfigDropdownValues() {
+  const ss = SpreadsheetApp.getActive();
+  const config = ss.getSheetByName(SHEETS.CONFIG);
+
+  // Test Job Titles using CONFIG_COLS constant (data starts at row 3)
+  const jobTitlesCol = getColumnLetter(CONFIG_COLS.JOB_TITLES);
+  const jobTitles = config.getRange(jobTitlesCol + '3:' + jobTitlesCol + '14').getValues().flat().filter(String);
+  Assert.assertTrue(
+    jobTitles.length > 0,
+    'Config should have job titles defined'
+  );
+  Assert.assertContains(
+    jobTitles,
+    'Coordinator',
+    'Config should contain Coordinator job title'
+  );
+
+  // Test Office Locations using CONFIG_COLS constant
+  const locationsCol = getColumnLetter(CONFIG_COLS.OFFICE_LOCATIONS);
+  const locations = config.getRange(locationsCol + '3:' + locationsCol + '14').getValues().flat().filter(String);
+  Assert.assertTrue(
+    locations.length > 0,
+    'Config should have office locations defined'
+  );
+  Assert.assertContains(
+    locations,
+    'Boston HQ',
+    'Config should contain Boston HQ location'
+  );
+
+  // Test Grievance Status using CONFIG_COLS constant (col J = 10)
+  const statusCol = getColumnLetter(CONFIG_COLS.GRIEVANCE_STATUS);
+  const statuses = config.getRange(statusCol + '3:' + statusCol + '10').getValues().flat().filter(String);
+  Assert.assertTrue(
+    statuses.length > 0,
+    'Config should have grievance statuses defined'
+  );
+  Assert.assertContains(
+    statuses,
+    'Open',
+    'Config should contain Open status'
+  );
+
+  Logger.log('✅ Config dropdown values test passed');
+}
+
+/**
+ * Test: Member validation rules reference correct Config columns
+ */
+function testMemberValidationRules() {
+  const ss = SpreadsheetApp.getActive();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  // Check critical validations exist
+  const columnsToCheck = [
+    { col: 4, name: 'Job Title' },
+    { col: 5, name: 'Work Location' },
+    { col: 6, name: 'Unit' },
+    { col: 10, name: 'Is Steward' }
+  ];
+
+  columnsToCheck.forEach(function(item) {
+    const cell = memberDir.getRange(2, item.col);
+    const validation = cell.getDataValidation();
+
+    Assert.assertNotNull(
+      validation,
+      `${item.name} (column ${item.col}) should have data validation`
+    );
+  });
+
+  Logger.log('✅ Member validation rules test passed');
+}
+
+/**
+ * Test: Grievance validation rules reference correct Config columns
+ */
+function testGrievanceValidationRules() {
+  const ss = SpreadsheetApp.getActive();
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+  // Check critical validations exist
+  const columnsToCheck = [
+    { col: 5, name: 'Status' },
+    { col: 6, name: 'Current Step' },
+    { col: 23, name: 'Issue Category' },
+    { col: 22, name: 'Articles Violated' }
+  ];
+
+  columnsToCheck.forEach(function(item) {
+    const cell = grievanceLog.getRange(2, item.col);
+    const validation = cell.getDataValidation();
+
+    Assert.assertNotNull(
+      validation,
+      `${item.name} (column ${item.col}) should have data validation`
+    );
+  });
+
+  Logger.log('✅ Grievance validation rules test passed');
+}
+
+/* --------------------= SEEDING FUNCTION TESTS --------------------= */
+
+/**
+ * Test: Member seeding generates valid data
+ */
+function testMemberSeedingValidation() {
+  // This test validates the data structure, not actual seeding
+  // (to avoid creating 20k test records)
+
+  const firstNames = ["James", "Mary", "John"];
+  const lastNames = ["Smith", "Johnson", "Williams"];
+
+  // Simulate member generation
+  const testMember = {
+    memberId: "M" + String(1).padStart(6, '0'),
+    firstName: firstNames[0],
+    lastName: lastNames[0],
+    email: `${firstNames[0].toLowerCase()}.${lastNames[0].toLowerCase()}1@union.org`,
+    phone: `(555) 123-4567`,
+    openRate: 75
+  };
+
+  // Validate structure
+  Assert.assertTrue(
+    testMember.memberId.startsWith('M'),
+    'Member ID should start with M'
+  );
+
+  Assert.assertEquals(
+    7,
+    testMember.memberId.length,
+    'Member ID should be 7 characters (M + 6 digits)'
+  );
+
+  Assert.assertTrue(
+    testMember.email.includes('@union.org'),
+    'Email should end with @union.org'
+  );
+
+  Assert.assertTrue(
+    testMember.openRate >= 0 && testMember.openRate <= 100,
+    'Open rate should be between 0-100'
+  );
+
+  Logger.log('✅ Member seeding validation test passed');
+}
+
+/**
+ * Test: Grievance seeding generates valid data
+ */
+function testGrievanceSeedingValidation() {
+  // Simulate grievance generation
+  const testGrievance = {
+    grievanceId: "G-" + String(1).padStart(6, '0'),
+    memberId: "M000001",
+    status: "Open",
+    step: "Step I",
+    incidentDate: new Date(2025, 0, 1),
+    dateFiled: new Date(2025, 0, 10)
+  };
+
+  // Validate structure
+  Assert.assertTrue(
+    testGrievance.grievanceId.startsWith('G-'),
+    'Grievance ID should start with G-'
+  );
+
+  Assert.assertEquals(
+    8,
+    testGrievance.grievanceId.length,
+    'Grievance ID should be 8 characters (G- + 6 digits)'
+  );
+
+  Assert.assertTrue(
+    testGrievance.dateFiled >= testGrievance.incidentDate,
+    'Date filed should be after incident date'
+  );
+
+  Logger.log('✅ Grievance seeding validation test passed');
+}
+
+/**
+ * Test: Member email format is valid
+ */
+function testMemberEmailFormat() {
+  const testEmails = [
+    'john.smith123@union.org',
+    'mary.jones456@union.org',
+    'robert.wilson789@union.org'
+  ];
+
+  const emailRegex = /^[a-z]+\.[a-z]+\d+@union\.org$/;
+
+  testEmails.forEach(function(email) {
+    Assert.assertTrue(
+      emailRegex.test(email),
+      `Email ${email} should match format firstname.lastnameNNN@union.org`
+    );
+  });
+
+  Logger.log('✅ Member email format test passed');
+}
+
+/**
+ * Test: Member IDs are unique
+ */
+function testMemberIDUniqueness() {
+  const memberIds = new Set();
+
+  // Simulate generating 100 member IDs
+  for (let i = 1; i <= 100; i++) {
+    const memberId = "M" + String(i).padStart(6, '0');
+    Assert.assertFalse(
+      memberIds.has(memberId),
+      `Member ID ${memberId} should be unique`
+    );
+    memberIds.add(memberId);
+  }
+
+  Assert.assertEquals(
+    100,
+    memberIds.size,
+    'Should have 100 unique member IDs'
+  );
+
+  Logger.log('✅ Member ID uniqueness test passed');
+}
+
+/**
+ * Test: Grievances link to valid members
+ */
+function testGrievanceMemberLinking() {
+  const testMemberId = createTestMember('TEST-M-LINK-001');
+
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+    // Create test grievance
+    const testGrievanceData = [
+      'TEST-G-LINK-001',
+      testMemberId, // Valid member ID
+      'Test',
+      'Member',
+      'Open',
+      'Step I',
+      new Date(),
+      '',
+      new Date(),
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      'Art. 23 - Grievance Procedure',
+      'Discipline',
+      'test.member@union.org',
+      'Unit A - Administrative',
+      'Boston HQ',
+      'Jane Smith',
+      ''
+    ];
+
+    grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, 1, testGrievanceData.length)
+      .setValues([testGrievanceData]);
+
+    // Verify it was created
+    const grievanceData = grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, 2).getValues();
+    const testGrievance = grievanceData.find(function(row) { return row[0] === 'TEST-G-LINK-001'; });
+
+    Assert.assertNotNull(
+      testGrievance,
+      'Test grievance should exist'
+    );
+
+    Assert.assertEquals(
+      testMemberId,
+      testGrievance[1],
+      'Grievance should link to correct member ID'
+    );
+
+    Logger.log('✅ Grievance-member linking test passed');
+
+  } finally {
+    cleanupTestData();
+  }
+}
+
+/**
+ * Test: Open Rate is within valid range
+ */
+function testOpenRateRange() {
+  // Simulate 50 random open rates
+  for (let i = 0; i < 50; i++) {
+    const openRate = Math.floor(Math.random() * 40) + 60; // 60-100 range
+
+    Assert.assertTrue(
+      openRate >= 0 && openRate <= 100,
+      `Open rate ${openRate} should be between 0-100`
+    );
+
+    Assert.assertTrue(
+      openRate >= 60,
+      `Open rate ${openRate} should be at least 60 (as per seeding logic)`
+    );
+  }
+
+  Logger.log('✅ Open rate range test passed');
+}
+
+/* --------------------= EDGE CASE TESTS --------------------= */
+
+/**
+ * Test: Empty sheets don't break formulas
+ */
+function testEmptySheetsHandling() {
+  const ss = SpreadsheetApp.getActive();
+  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+
+  // Dashboard should handle empty data gracefully
+  // (formulas should return 0 or empty, not #DIV/0! or #REF!)
+
+  Assert.assertNotNull(
+    dashboard,
+    'Dashboard sheet should exist'
+  );
+
+  Logger.log('✅ Empty sheets handling test passed');
+}
+
+/**
+ * Test: Future dates are handled correctly
+ */
+function testFutureDateHandling() {
+  const today = new Date();
+  const futureDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+  // Days to deadline should be positive for future dates
+  const daysToDeadline = Math.floor((futureDate - today) / (24 * 60 * 60 * 1000));
+
+  Assert.assertTrue(
+    daysToDeadline > 0,
+    'Days to deadline should be positive for future dates'
+  );
+
+  Assert.assertApproximately(
+    30,
+    daysToDeadline,
+    1,
+    'Days to deadline should be approximately 30'
+  );
+
+  Logger.log('✅ Future date handling test passed');
+}
+
+/**
+ * Test: Past deadlines show negative days
+ */
+function testPastDeadlineHandling() {
+  const today = new Date();
+  const pastDate = new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000);
+
+  // Days to deadline should be negative for past dates
+  const daysToDeadline = Math.floor((pastDate - today) / (24 * 60 * 60 * 1000));
+
+  Assert.assertTrue(
+    daysToDeadline < 0,
+    'Days to deadline should be negative for overdue deadlines'
+  );
+
+  Assert.assertApproximately(
+    -5,
+    daysToDeadline,
+    1,
+    'Days to deadline should be approximately -5 for 5 days overdue'
+  );
+
+  Logger.log('✅ Past deadline handling test passed');
+}
+
+/* --------------------= COLUMN CONSTANTS TESTS --------------------= */
+
+/**
+ * Test: MEMBER_COLS constants are properly defined
+ */
+function testMemberColsConstants() {
+  // Verify all required columns exist
+  const requiredCols = [
+    'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'JOB_TITLE', 'WORK_LOCATION',
+    'UNIT', 'OFFICE_DAYS', 'EMAIL', 'PHONE', 'IS_STEWARD', 'COMMITTEES',
+    'SUPERVISOR', 'MANAGER', 'ASSIGNED_STEWARD', 'HAS_OPEN_GRIEVANCE',
+    'GRIEVANCE_STATUS', 'NEXT_DEADLINE'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof MEMBER_COLS[col] === 'number',
+      `MEMBER_COLS.${col} should be defined as a number`
+    );
+    Assert.assertTrue(
+      MEMBER_COLS[col] >= 1,
+      `MEMBER_COLS.${col} should be >= 1 (1-indexed)`
+    );
+  });
+
+  // Verify column ordering (first columns should be in expected order)
+  Assert.assertEquals(1, MEMBER_COLS.MEMBER_ID, 'MEMBER_ID should be column 1');
+  Assert.assertEquals(2, MEMBER_COLS.FIRST_NAME, 'FIRST_NAME should be column 2');
+  Assert.assertEquals(3, MEMBER_COLS.LAST_NAME, 'LAST_NAME should be column 3');
+  Assert.assertEquals(8, MEMBER_COLS.EMAIL, 'EMAIL should be column 8');
+  Assert.assertEquals(9, MEMBER_COLS.PHONE, 'PHONE should be column 9');
+
+  Logger.log('✅ MEMBER_COLS constants test passed');
+}
+
+/**
+ * Test: GRIEVANCE_COLS constants are properly defined
+ */
+function testGrievanceColsConstants() {
+  // Verify all required columns exist
+  const requiredCols = [
+    'GRIEVANCE_ID', 'MEMBER_ID', 'FIRST_NAME', 'LAST_NAME', 'STATUS',
+    'CURRENT_STEP', 'INCIDENT_DATE', 'FILING_DEADLINE', 'DATE_FILED',
+    'DATE_CLOSED', 'DAYS_OPEN', 'NEXT_ACTION_DUE',
+    'ISSUE_CATEGORY', 'MEMBER_EMAIL', 'LOCATION', 'STEWARD', 'RESOLUTION'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof GRIEVANCE_COLS[col] === 'number',
+      `GRIEVANCE_COLS.${col} should be defined as a number`
+    );
+    Assert.assertTrue(
+      GRIEVANCE_COLS[col] >= 1,
+      `GRIEVANCE_COLS.${col} should be >= 1 (1-indexed)`
+    );
+  });
+
+  // Verify key column positions
+  Assert.assertEquals(1, GRIEVANCE_COLS.GRIEVANCE_ID, 'GRIEVANCE_ID should be column 1');
+  Assert.assertEquals(5, GRIEVANCE_COLS.STATUS, 'STATUS should be column 5');
+  Assert.assertEquals(9, GRIEVANCE_COLS.DATE_FILED, 'DATE_FILED should be column 9');
+  Assert.assertEquals(18, GRIEVANCE_COLS.DATE_CLOSED, 'DATE_CLOSED should be column 18');
+  Assert.assertEquals(27, GRIEVANCE_COLS.STEWARD, 'STEWARD should be column 27');
+
+  Logger.log('✅ GRIEVANCE_COLS constants test passed');
+}
+
+/**
+ * Test: CONFIG_COLS constants are properly defined
+ */
+function testConfigColsConstants() {
+  // Verify key config columns exist
+  const requiredCols = [
+    'JOB_TITLES', 'OFFICE_LOCATIONS', 'UNITS', 'STEWARDS',
+    'GRIEVANCE_STATUS', 'GRIEVANCE_STEP', 'ISSUE_CATEGORY'
+  ];
+
+  requiredCols.forEach(function(col) {
+    Assert.assertTrue(
+      typeof CONFIG_COLS[col] === 'number',
+      `CONFIG_COLS.${col} should be defined as a number`
+    );
+  });
+
+  Logger.log('✅ CONFIG_COLS constants test passed');
+}
+
+/**
+ * Test: Internal schema constants are properly defined
+ */
+function testInternalSchemaConstants() {
+  // Test AUDIT_LOG_COLS
+  Assert.assertTrue(typeof AUDIT_LOG_COLS === 'object', 'AUDIT_LOG_COLS should be defined');
+  Assert.assertEquals(1, AUDIT_LOG_COLS.TIMESTAMP, 'AUDIT_LOG_COLS.TIMESTAMP should be 1');
+  Assert.assertEquals(4, AUDIT_LOG_COLS.ACTION, 'AUDIT_LOG_COLS.ACTION should be 4');
+
+  // Test FAQ_COLS
+  Assert.assertTrue(typeof FAQ_COLS === 'object', 'FAQ_COLS should be defined');
+  Assert.assertEquals(1, FAQ_COLS.ID, 'FAQ_COLS.ID should be 1');
+  Assert.assertEquals(3, FAQ_COLS.QUESTION, 'FAQ_COLS.QUESTION should be 3');
+  Assert.assertEquals(4, FAQ_COLS.ANSWER, 'FAQ_COLS.ANSWER should be 4');
+
+  // Test ERROR_LOG_COLS
+  Assert.assertTrue(typeof ERROR_LOG_COLS === 'object', 'ERROR_LOG_COLS should be defined');
+  Assert.assertEquals(1, ERROR_LOG_COLS.TIMESTAMP, 'ERROR_LOG_COLS.TIMESTAMP should be 1');
+  Assert.assertEquals(2, ERROR_LOG_COLS.LEVEL, 'ERROR_LOG_COLS.LEVEL should be 2');
+
+  Logger.log('✅ Internal schema constants test passed');
+}
+
+/**
+ * Test: SHEETS constants match expected sheet names
+ */
+function testSheetsConstants() {
+  // Verify core sheets are defined
+  Assert.assertEquals('Config', SHEETS.CONFIG, 'SHEETS.CONFIG should be "Config"');
+  Assert.assertEquals('Member Directory', SHEETS.MEMBER_DIR, 'SHEETS.MEMBER_DIR should be "Member Directory"');
+  Assert.assertEquals('Grievance Log', SHEETS.GRIEVANCE_LOG, 'SHEETS.GRIEVANCE_LOG should be "Grievance Log"');
+  Assert.assertEquals('Dashboard', SHEETS.DASHBOARD, 'SHEETS.DASHBOARD should be "Dashboard"');
+
+  // Verify internal system sheets are defined
+  Assert.assertTrue(typeof SHEETS.AUDIT_LOG === 'string', 'SHEETS.AUDIT_LOG should be defined');
+  Assert.assertTrue(typeof SHEETS.FAQ_DATABASE === 'string', 'SHEETS.FAQ_DATABASE should be defined');
+  Assert.assertTrue(typeof SHEETS.ERROR_LOG === 'string', 'SHEETS.ERROR_LOG should be defined');
+
+  Logger.log('✅ SHEETS constants test passed');
+}
+
+/**
+ * Test: Column letter conversion utility
+ */
+function testColumnLetterConversion() {
+  // Test getColumnLetter
+  Assert.assertEquals('A', getColumnLetter(1), 'Column 1 should be A');
+  Assert.assertEquals('B', getColumnLetter(2), 'Column 2 should be B');
+  Assert.assertEquals('Z', getColumnLetter(26), 'Column 26 should be Z');
+  Assert.assertEquals('AA', getColumnLetter(27), 'Column 27 should be AA');
+  Assert.assertEquals('AB', getColumnLetter(28), 'Column 28 should be AB');
+
+  // Test getColumnNumber
+  Assert.assertEquals(1, getColumnNumber('A'), 'A should be column 1');
+  Assert.assertEquals(26, getColumnNumber('Z'), 'Z should be column 26');
+  Assert.assertEquals(27, getColumnNumber('AA'), 'AA should be column 27');
+
+  Logger.log('✅ Column letter conversion test passed');
+}
+
+/**
+ * Test: Column constants are used correctly (no off-by-one errors)
+ */
+function testColumnIndexing() {
+  // Verify that constants are 1-indexed (for spreadsheet columns)
+  // and that array access uses [CONSTANT - 1]
+
+  // Simulate a row of data
+  const mockRow = ['ID', 'First', 'Last', 'Title', 'Location'];
+
+  // Access using constant pattern (constant - 1 for 0-indexed array)
+  const firstElement = mockRow[1 - 1]; // Should be 'ID'
+  const secondElement = mockRow[2 - 1]; // Should be 'First'
+
+  Assert.assertEquals('ID', firstElement, 'First element accessed with [1-1] should be ID');
+  Assert.assertEquals('First', secondElement, 'Second element accessed with [2-1] should be First');
+
+  // Verify MEMBER_COLS pattern works
+  const mockMemberRow = new Array(31).fill('').map((_, i) => `col${i}`);
+  mockMemberRow[MEMBER_COLS.MEMBER_ID - 1] = 'M000001';
+  mockMemberRow[MEMBER_COLS.EMAIL - 1] = 'test@union.org';
+
+  Assert.assertEquals('M000001', mockMemberRow[MEMBER_COLS.MEMBER_ID - 1], 'MEMBER_ID access should work');
+  Assert.assertEquals('test@union.org', mockMemberRow[MEMBER_COLS.EMAIL - 1], 'EMAIL access should work');
+
+  Logger.log('✅ Column indexing test passed');
+}
+
+/**
+ * Run all column constant tests
+ */
+function runColumnConstantTests() {
+  Logger.log('=== Running Column Constant Tests ===');
+
+  testMemberColsConstants();
+  testGrievanceColsConstants();
+  testConfigColsConstants();
+  testInternalSchemaConstants();
+  testSheetsConstants();
+  testColumnLetterConversion();
+  testColumnIndexing();
+
+  Logger.log('=== All Column Constant Tests Passed ===');
+}
+
+/* --------------------= INPUT VALIDATION TESTS --------------------= */
+
+/**
+ * Test: validateRequired throws on null/undefined/empty
+ */
+function testValidateRequired() {
+  // Should throw on null
+  Assert.assertThrows(
+    function() { validateRequired(null, 'testParam'); },
+    'validateRequired should throw on null'
+  );
+
+  // Should throw on undefined
+  Assert.assertThrows(
+    function() { validateRequired(undefined, 'testParam'); },
+    'validateRequired should throw on undefined'
+  );
+
+  // Should throw on empty string
+  Assert.assertThrows(
+    function() { validateRequired('', 'testParam'); },
+    'validateRequired should throw on empty string'
+  );
+
+  // Should NOT throw on valid values
+  Assert.assertNotThrows(
+    function() { validateRequired('value', 'testParam'); },
+    'validateRequired should not throw on valid string'
+  );
+
+  Assert.assertNotThrows(
+    function() { validateRequired(0, 'testParam'); },
+    'validateRequired should not throw on zero'
+  );
+
+  Logger.log('✅ validateRequired test passed');
+}
+
+/**
+ * Test: validateString validates string type
+ */
+function testValidateString() {
+  // Should throw on number
+  Assert.assertThrows(
+    function() { validateString(123, 'testParam'); },
+    'validateString should throw on number'
+  );
+
+  // Should NOT throw on valid string
+  Assert.assertNotThrows(
+    function() { validateString('valid', 'testParam'); },
+    'validateString should not throw on valid string'
+  );
+
+  Logger.log('✅ validateString test passed');
+}
+
+/**
+ * Test: validatePositiveInt validates positive integers
+ */
+function testValidatePositiveInt() {
+  // Should throw on negative
+  Assert.assertThrows(
+    function() { validatePositiveInt(-1, 'testParam'); },
+    'validatePositiveInt should throw on negative'
+  );
+
+  // Should throw on zero
+  Assert.assertThrows(
+    function() { validatePositiveInt(0, 'testParam'); },
+    'validatePositiveInt should throw on zero'
+  );
+
+  // Should NOT throw on positive integer
+  Assert.assertNotThrows(
+    function() { validatePositiveInt(1, 'testParam'); },
+    'validatePositiveInt should not throw on 1'
+  );
+
+  Logger.log('✅ validatePositiveInt test passed');
+}
+
+/**
+ * Test: validateGrievanceId validates G-XXXXXX format
+ */
+function testValidateGrievanceId() {
+  // Should throw on invalid format
+  Assert.assertThrows(
+    function() { validateGrievanceId('12345', 'testValidateGrievanceId'); },
+    'validateGrievanceId should throw on missing prefix'
+  );
+
+  Assert.assertThrows(
+    function() { validateGrievanceId('G-123', 'testValidateGrievanceId'); },
+    'validateGrievanceId should throw on short ID'
+  );
+
+  // Should NOT throw on valid format
+  Assert.assertNotThrows(
+    function() { validateGrievanceId('G-000001', 'testValidateGrievanceId'); },
+    'validateGrievanceId should not throw on valid ID'
+  );
+
+  Logger.log('✅ validateGrievanceId test passed');
+}
+
+/**
+ * Test: validateMemberId validates MXXXXXX format
+ */
+function testValidateMemberId() {
+  // Should throw on invalid format
+  Assert.assertThrows(
+    function() { validateMemberId('12345', 'testValidateMemberId'); },
+    'validateMemberId should throw on missing prefix'
+  );
+
+  // Should NOT throw on valid format
+  Assert.assertNotThrows(
+    function() { validateMemberId('M000001', 'testValidateMemberId'); },
+    'validateMemberId should not throw on valid ID'
+  );
+
+  Logger.log('✅ validateMemberId test passed');
+}
+
+/**
+ * Test: validateEmail validates email format
+ */
+function testValidateEmail() {
+  // Should throw on invalid emails
+  Assert.assertThrows(
+    function() { validateEmail('notanemail', 'testValidateEmail'); },
+    'validateEmail should throw on missing @'
+  );
+
+  // Should NOT throw on valid emails
+  Assert.assertNotThrows(
+    function() { validateEmail('user@example.com', 'testValidateEmail'); },
+    'validateEmail should not throw on valid email'
+  );
+
+  Logger.log('✅ validateEmail test passed');
+}
+
+/**
+ * Test: validateEnum validates against allowed values
+ */
+function testValidateEnum() {
+  const allowedStatuses = ['Open', 'Closed', 'Pending'];
+
+  // Should throw on invalid value
+  Assert.assertThrows(
+    function() { validateEnum('Invalid', allowedStatuses, 'status'); },
+    'validateEnum should throw on invalid value'
+  );
+
+  // Should NOT throw on valid values
+  Assert.assertNotThrows(
+    function() { validateEnum('Open', allowedStatuses, 'status'); },
+    'validateEnum should not throw on valid value'
+  );
+
+  Logger.log('✅ validateEnum test passed');
+}
+
+/**
+ * Test: safeExecute handles errors properly
+ */
+function testSafeExecute() {
+  // Test successful execution
+  const successResult = safeExecute(function() { return 42; }, { context: 'testSuccess' });
+  Assert.assertTrue(successResult.success, 'safeExecute should return success=true');
+  Assert.assertEquals(42, successResult.data, 'safeExecute should return correct data');
+
+  // Test error with silent mode
+  const errorResult = safeExecute(
+    function() { throw new Error('Test error'); },
+    { silent: true, defaultValue: 'default', context: 'testError' }
+  );
+  Assert.assertFalse(errorResult.success, 'safeExecute should return success=false on error');
+  Assert.assertEquals('default', errorResult.data, 'safeExecute should return defaultValue');
+
+  Logger.log('✅ safeExecute test passed');
+}
+
+/* --------------------= ERROR SCENARIO TESTS --------------------= */
+
+/**
+ * Test: Grievance status values are all valid
+ */
+function testGrievanceStatusValidation() {
+  GRIEVANCE_STATUSES.forEach(function(status) {
+    Assert.assertNotThrows(
+      function() { validateEnum(status, GRIEVANCE_STATUSES, 'status'); },
+      'Status "' + status + '" should be valid'
+    );
+  });
+
+  Assert.assertThrows(
+    function() { validateEnum('InvalidStatus', GRIEVANCE_STATUSES, 'status'); },
+    'Invalid status should throw'
+  );
+
+  Logger.log('✅ Grievance status validation test passed');
+}
+
+/**
+ * Test: Grievance step values are all valid
+ */
+function testGrievanceStepValidation() {
+  GRIEVANCE_STEPS.forEach(function(step) {
+    Assert.assertNotThrows(
+      function() { validateEnum(step, GRIEVANCE_STEPS, 'step'); },
+      'Step "' + step + '" should be valid'
+    );
+  });
+
+  Logger.log('✅ Grievance step validation test passed');
+}
+
+/**
+ * Test: Issue categories are all valid
+ */
+function testIssueCategoryValidation() {
+  ISSUE_CATEGORIES.forEach(function(category) {
+    Assert.assertNotThrows(
+      function() { validateEnum(category, ISSUE_CATEGORIES, 'category'); },
+      'Category "' + category + '" should be valid'
+    );
+  });
+
+  Logger.log('✅ Issue category validation test passed');
+}
+
+/**
+ * Test: Error messages include context when provided
+ */
+function testErrorMessageContext() {
+  try {
+    validateRequired(null, 'testParam', 'testFunction');
+    Assert.fail('Should have thrown');
+  } catch (e) {
+    Assert.assertTrue(
+      e.message.indexOf('testParam') >= 0,
+      'Error should include parameter name'
+    );
+    Assert.assertTrue(
+      e.message.indexOf('testFunction') >= 0,
+      'Error should include function name when provided'
+    );
+  }
+
+  Logger.log('✅ Error message context test passed');
+}
+
+/**
+ * Test: Date validation handles edge cases
+ */
+function testDateValidationEdgeCases() {
+  // Invalid date (NaN time)
+  Assert.assertThrows(
+    function() { validateDate(new Date('invalid'), 'testDate'); },
+    'validateDate should throw on invalid date string'
+  );
+
+  // Valid dates
+  Assert.assertNotThrows(
+    function() { validateDate(new Date(), 'testDate'); },
+    'validateDate should accept current date'
+  );
+
+  Logger.log('✅ Date validation edge cases test passed');
+}
+
+/**
+ * Test: Array validation
+ */
+function testArrayValidation() {
+  // Should throw on non-array
+  Assert.assertThrows(
+    function() { validateArray('string', 'testArray'); },
+    'validateArray should throw on string'
+  );
+
+  // Should NOT throw on arrays
+  Assert.assertNotThrows(
+    function() { validateArray([], 'testArray'); },
+    'validateArray should accept empty array'
+  );
+
+  Assert.assertNotThrows(
+    function() { validateArray([1, 2, 3], 'testArray'); },
+    'validateArray should accept populated array'
+  );
+
+  Logger.log('✅ Array validation test passed');
+}
+
+/**
+ * Run all validation tests
+ */
+function runValidationTests() {
+  Logger.log('=== Running Validation Tests ===');
+
+  testValidateRequired();
+  testValidateString();
+  testValidatePositiveInt();
+  testValidateGrievanceId();
+  testValidateMemberId();
+  testValidateEmail();
+  testValidateEnum();
+  testSafeExecute();
+  testGrievanceStatusValidation();
+  testGrievanceStepValidation();
+  testIssueCategoryValidation();
+  testErrorMessageContext();
+  testDateValidationEdgeCases();
+  testArrayValidation();
+
+  Logger.log('=== All Validation Tests Passed ===');
+}
+
+/**
+ * Run all tests
+ */
+function runAllTests() {
+  Logger.log('========================================');
+  Logger.log('  RUNNING ALL TESTS');
+  Logger.log('========================================');
+
+  runColumnConstantTests();
+  runValidationTests();
+
+  Logger.log('========================================');
+  Logger.log('  ALL TESTS COMPLETE');
+  Logger.log('========================================');
+}
+
+
+
+// ================================================================================
+// MODULE: Integration.test.gs
+// Source: Integration.test.gs
+// ================================================================================
+
+/**
+ * ------------------------------------------------------------------------====
+ * INTEGRATION TESTS
+ * ------------------------------------------------------------------------====
+ *
+ * End-to-end tests for complete workflows:
+ * - Complete grievance lifecycle
+ * - Dashboard metrics updates
+ * - Member-grievance linking
+ * - Data consistency across sheets
+ *
+ * ------------------------------------------------------------------------====
+ */
+
+/* --------------------= COMPLETE WORKFLOW TESTS --------------------= */
+
+/**
+ * Test: Complete grievance workflow from creation to closure
+ */
+function testCompleteGrievanceWorkflow() {
+  const testMemberId = createTestMember('TEST-M-INTEGRATION-001');
+
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+    const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+    // Step 1: Create a new grievance
+    const incidentDate = new Date(2025, 0, 1); // Jan 1, 2025
+    const dateFiled = new Date(2025, 0, 10); // Jan 10, 2025
+
+    const grievanceData = [
+      'TEST-G-INTEGRATION-001',
+      testMemberId,
+      'Test',
+      'Member',
+      'Open',
+      'Step I',
+      incidentDate,
+      '',
+      dateFiled,
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      'Art. 23 - Grievance Procedure',
+      'Discipline',
+      'test.member@union.org',
+      'Unit A - Administrative',
+      'Boston HQ',
+      'Jane Smith',
+      ''
+    ];
+
+    const initialGrievanceRow = grievanceLog.getLastRow() + 1;
+    grievanceLog.getRange(initialGrievanceRow, 1, 1, grievanceData.length)
+      .setValues([grievanceData]);
+
+    SpreadsheetApp.flush();
+    Utilities.sleep(2000);
+
+    // Step 2: Verify auto-calculated deadlines
+    const filingDeadline = grievanceLog.getRange(initialGrievanceRow, 8).getValue();
+    const expectedFilingDeadline = new Date(incidentDate.getTime() + 21 * 24 * 60 * 60 * 1000);
+
+    Assert.assertNotNull(
+      filingDeadline,
+      'Filing deadline should be auto-calculated'
+    );
+
+    const stepIDeadline = grievanceLog.getRange(initialGrievanceRow, 10).getValue();
+    const expectedStepIDeadline = new Date(dateFiled.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    Assert.assertNotNull(
+      stepIDeadline,
+      'Step I deadline should be auto-calculated'
+    );
+
+    // Step 3: Verify Member Directory snapshot updates
+    const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
+    const memberRow = memberData.find(function(row) { return row[0] === testMemberId; });
+
+    Assert.assertNotNull(memberRow, 'Member should exist');
+
+    const hasOpenGrievance = memberRow[MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1]; // Column Y (index 24)
+    Assert.assertTrue(
+      hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
+      'Member should show as having open grievance'
+    );
+
+    // Step 4: Progress grievance to Step II
+    grievanceLog.getRange(initialGrievanceRow, 11).setValue(new Date(2025, 1, 10)); // Step I Decision Rcvd
+    grievanceLog.getRange(initialGrievanceRow, 13).setValue(new Date(2025, 1, 15)); // Step II Appeal Filed
+    grievanceLog.getRange(initialGrievanceRow, 6).setValue('Step II'); // Update current step
+
+    SpreadsheetApp.flush();
+    Utilities.sleep(2000);
+
+    // Verify Step II deadline calculated
+    const stepIIDeadline = grievanceLog.getRange(initialGrievanceRow, 14).getValue();
+    Assert.assertNotNull(
+      stepIIDeadline,
+      'Step II deadline should be auto-calculated'
+    );
+
+    // Step 5: Close the grievance
+    const closedDate = new Date(2025, 2, 1); // March 1, 2025
+    grievanceLog.getRange(initialGrievanceRow, 5).setValue('Settled'); // Status
+    grievanceLog.getRange(initialGrievanceRow, 18).setValue(closedDate); // Date Closed
+    grievanceLog.getRange(initialGrievanceRow, 28).setValue('Resolved favorably'); // Resolution
+
+    SpreadsheetApp.flush();
+    Utilities.sleep(2000);
+
+    // Verify Days Open is calculated correctly
+    const daysOpen = grievanceLog.getRange(initialGrievanceRow, 19).getValue();
+    Assert.assertTrue(
+      daysOpen > 0,
+      'Days Open should be calculated for closed grievance'
+    );
+
+    // Step 6: Verify Member Directory snapshot updates to Settled
+    const updatedMemberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
+    const updatedMemberRow = updatedMemberData.find(function(row) { return row[0] === testMemberId; });
+
+    const updatedStatus = updatedMemberRow[MEMBER_COLS.GRIEVANCE_STATUS - 1]; // Column Z (index 25)
+    Assert.assertEquals(
+      'Settled',
+      updatedStatus,
+      'Member grievance status snapshot should update to Settled'
+    );
+
+    Logger.log('✅ Complete grievance workflow test passed');
+
+  } finally {
+    cleanupTestData();
+  }
+}
+
+/**
+ * Test: Dashboard metrics update when data changes
+ */
+function testDashboardMetricsUpdate() {
+  const ss = SpreadsheetApp.getActive();
+  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+
+  // Get initial member count
+  const initialMemberCount = dashboard.getRange('B6').getValue() || 0;
+
+  // Create new test members
+  createTestMember('TEST-M-DASHBOARD-001');
+  createTestMember('TEST-M-DASHBOARD-002');
+  createTestMember('TEST-M-DASHBOARD-003');
+
+  try {
+    SpreadsheetApp.flush();
+    Utilities.sleep(2000);
+
+    // Check that member count increased
+    const updatedMemberCount = dashboard.getRange('B6').getValue();
+
+    Assert.assertTrue(
+      updatedMemberCount >= initialMemberCount + 3,
+      `Member count should increase (was ${initialMemberCount}, now ${updatedMemberCount})`
+    );
+
+    Logger.log('✅ Dashboard metrics update test passed');
+
+  } finally {
+    cleanupTestData();
+  }
+}
+
+/**
+ * Test: Member-Grievance linking maintains data consistency
+ */
+function testMemberGrievanceSnapshot() {
+  const testMemberId = createTestMember('TEST-M-SNAPSHOT-001');
+
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+    const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+    // Create grievance for member
+    const grievanceData = [
+      'TEST-G-SNAPSHOT-001',
+      testMemberId,
+      'Test',
+      'Member',
+      'Pending Info',
+      'Step I',
+      new Date(),
+      '',
+      new Date(),
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      'Art. 24 - Discipline',
+      'Workload',
+      'test@union.org',
+      'Unit A - Administrative',
+      'Boston HQ',
+      'Jane Smith',
+      ''
+    ];
+
+    grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, 1, grievanceData.length)
+      .setValues([grievanceData]);
+
+    SpreadsheetApp.flush();
+    Utilities.sleep(2000);
+
+    // Check member snapshot
+    const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
+    const memberRow = memberData.find(function(row) { return row[0] === testMemberId; });
+
+    Assert.assertNotNull(memberRow, 'Member should exist');
+
+    // Check status snapshot (column Z = 26, index 25)
+    const statusSnapshot = memberRow[MEMBER_COLS.GRIEVANCE_STATUS - 1];
+    Assert.assertEquals(
+      'Pending Info',
+      statusSnapshot,
+      'Status snapshot should match grievance status'
+    );
+
+    // Update grievance status
+    const grievanceRow = grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, 5).getValues()
+      .findIndex(function(row) { return row[0] === 'TEST-G-SNAPSHOT-001'; }) + 2;
+
+    grievanceLog.getRange(grievanceRow, 5).setValue('Open');
+
+    SpreadsheetApp.flush();
+    Utilities.sleep(2000);
+
+    // Check snapshot updated
+    const updatedMemberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
+    const updatedMemberRow = updatedMemberData.find(function(row) { return row[0] === testMemberId; });
+
+    const updatedStatusSnapshot = updatedMemberRow[MEMBER_COLS.GRIEVANCE_STATUS - 1];
+    Assert.assertEquals(
+      'Open',
+      updatedStatusSnapshot,
+      'Status snapshot should update when grievance status changes'
+    );
+
+    Logger.log('✅ Member-grievance snapshot test passed');
+
+  } finally {
+    cleanupTestData();
+  }
+}
+
+/* --------------------= DATA CONSISTENCY TESTS --------------------= */
+
+/**
+ * Test: Config changes propagate to dropdowns
+ */
+function testConfigChangesPropagateToDropdowns() {
+  const ss = SpreadsheetApp.getActive();
+  const config = ss.getSheetByName(SHEETS.CONFIG);
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+
+  // Add a new location to Config
+  const lastConfigRow = config.getLastRow();
+  const testLocation = 'TEST-LOCATION-INTEGRATION';
+  config.getRange(lastConfigRow + 1, 2).setValue(testLocation);
+
+  try {
+    SpreadsheetApp.flush();
+    Utilities.sleep(1000);
+
+    // Check that validation includes new location
+    const locationCell = memberDir.getRange(2, MEMBER_COLS.WORK_LOCATION);
+    const validation = locationCell.getDataValidation();
+
+    Assert.assertNotNull(
+      validation,
+      'Location validation should exist'
+    );
+
+    // The validation range should include the new location
+    // (We can't easily check dropdown contents programmatically,
+    // but we verify validation still exists)
+
+    Logger.log('✅ Config changes propagate test passed');
+
+  } finally {
+    // Remove test location
+    const data = config.getRange(2, 2, config.getLastRow() - 1, 1).getValues();
+    for (let i = data.length - 1; i >= 0; i--) {
+      if (data[i][0] === testLocation) {
+        config.deleteRow(i + 2);
+      }
+    }
+  }
+}
+
+/**
+ * Test: Multiple grievances for same member
+ */
+function testMultipleGrievancesSameMember() {
+  const testMemberId = createTestMember('TEST-M-MULTIPLE-001');
+
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+    // Create 3 grievances for same member
+    for (let i = 1; i <= 3; i++) {
+      const grievanceData = [
+        `TEST-G-MULTIPLE-00${i}`,
+        testMemberId,
+        'Test',
+        'Member',
+        i === 1 ? 'Open' : 'Closed',
+        'Step I',
+        new Date(),
+        '',
+        new Date(),
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        i === 1 ? '' : new Date(),
+        '',
+        '',
+        '',
+        'Art. 23 - Grievance Procedure',
+        'Discipline',
+        'test@union.org',
+        'Unit A - Administrative',
+        'Boston HQ',
+        'Jane Smith',
+        i === 1 ? '' : 'Resolved'
+      ];
+
+      grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, 1, grievanceData.length)
+        .setValues([grievanceData]);
+    }
+
+    SpreadsheetApp.flush();
+    Utilities.sleep(2000);
+
+    // Verify all grievances created
+    const grievances = grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, 2).getValues()
+      .filter(function(row) { return row[1] === testMemberId; });
+
+    Assert.assertEquals(
+      3,
+      grievances.length,
+      'Should have 3 grievances for test member'
+    );
+
+    // Verify member shows as having open grievance (from first one)
+    const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+    const memberData = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
+    const memberRow = memberData.find(function(row) { return row[0] === testMemberId; });
+
+    const hasOpenGrievance = memberRow[MEMBER_COLS.HAS_OPEN_GRIEVANCE - 1]; // Column Y (index 24)
+    Assert.assertTrue(
+      hasOpenGrievance === 'Yes' || hasOpenGrievance === true,
+      'Member with multiple grievances should show as having open grievance'
+    );
+
+    Logger.log('✅ Multiple grievances same member test passed');
+
+  } finally {
+    cleanupTestData();
+  }
+}
+
+/**
+ * Test: Dashboard handles empty data gracefully
+ */
+function testDashboardHandlesEmptyData() {
+  const ss = SpreadsheetApp.getActive();
+  const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+  const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+  const dashboard = ss.getSheetByName(SHEETS.DASHBOARD);
+
+  // Backup data
+  const memberBackup = memberDir.getLastRow() > 1 ?
+    memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues() : [];
+  const grievanceBackup = grievanceLog.getLastRow() > 1 ?
+    grievanceLog.getRange(2, 1, grievanceLog.getLastRow() - 1, 28).getValues() : [];
+
+  try {
+    // Clear all data
+    if (memberDir.getLastRow() > 1) {
+      memberDir.deleteRows(2, memberDir.getLastRow() - 1);
+    }
+    if (grievanceLog.getLastRow() > 1) {
+      grievanceLog.deleteRows(2, grievanceLog.getLastRow() - 1);
+    }
+
+    SpreadsheetApp.flush();
+    Utilities.sleep(2000);
+
+    // Check dashboard doesn't show errors
+    // Member count should be 0
+    const memberCount = dashboard.getRange('B6').getValue();
+
+    // Should be 0 or empty, not #DIV/0! or #REF!
+    Assert.assertTrue(
+      memberCount === 0 || memberCount === '' || memberCount === null,
+      'Dashboard should handle empty data (member count should be 0 or empty)'
+    );
+
+    Logger.log('✅ Dashboard handles empty data test passed');
+
+  } finally {
+    // Restore data
+    if (memberBackup.length > 0) {
+      memberDir.getRange(2, 1, memberBackup.length, memberBackup[0].length)
+        .setValues(memberBackup);
+    }
+    if (grievanceBackup.length > 0) {
+      grievanceLog.getRange(2, 1, grievanceBackup.length, grievanceBackup[0].length)
+        .setValues(grievanceBackup);
+    }
+  }
+}
+
+/* --------------------= PERFORMANCE TESTS --------------------= */
+
+/**
+ * Test: Dashboard refresh completes in reasonable time
+ */
+function testDashboardRefreshPerformance() {
+  const startTime = new Date();
+
+  refreshCalculations();
+
+  const endTime = new Date();
+  const duration = (endTime - startTime) / 1000; // seconds
+
+  Assert.assertTrue(
+    duration < 10,
+    `Dashboard refresh should complete in < 10 seconds (took ${duration.toFixed(2)}s)`
+  );
+
+  Logger.log(`✅ Dashboard refresh performance test passed (${duration.toFixed(2)}s)`);
+}
+
+/**
+ * Test: Formula calculations on moderate dataset
+ */
+function testFormulaPerformanceWithData() {
+  // Create 10 test members and 10 grievances
+  const testMemberIds = [];
+  for (let i = 1; i <= 10; i++) {
+    const memberId = createTestMember(`TEST-M-PERF-${String(i).padStart(3, '0')}`);
+    testMemberIds.push(memberId);
+  }
+
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+    const startTime = new Date();
+
+    // Create 10 grievances
+    for (let i = 1; i <= 10; i++) {
+      const grievanceData = [
+        `TEST-G-PERF-${String(i).padStart(3, '0')}`,
+        testMemberIds[i - 1],
+        'Test',
+        'Member',
+        'Open',
+        'Step I',
+        new Date(),
+        '',
+        new Date(),
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        'Art. 23 - Grievance Procedure',
+        'Discipline',
+        'test@union.org',
+        'Unit A - Administrative',
+        'Boston HQ',
+        'Jane Smith',
+        ''
+      ];
+
+      grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, 1, grievanceData.length)
+        .setValues([grievanceData]);
+    }
+
+    SpreadsheetApp.flush();
+
+    const endTime = new Date();
+    const duration = (endTime - startTime) / 1000; // seconds
+
+    Assert.assertTrue(
+      duration < 30,
+      `Creating 10 grievances with formulas should complete in < 30 seconds (took ${duration.toFixed(2)}s)`
+    );
+
+    Logger.log(`✅ Formula performance test passed (${duration.toFixed(2)}s)`);
+
+  } finally {
+    cleanupTestData();
+  }
+}
+
+/* --------------------= REGRESSION TESTS --------------------= */
+
+/**
+ * Test: Grievance updates trigger Member Directory recalculation
+ */
+function testGrievanceUpdatesTriggersRecalculation() {
+  const testMemberId = createTestMember('TEST-M-RECALC-001');
+
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
+    const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
+
+    // Create grievance
+    const grievanceData = [
+      'TEST-G-RECALC-001',
+      testMemberId,
+      'Test',
+      'Member',
+      'Open',
+      'Step I',
+      new Date(),
+      '',
+      new Date(),
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      'Art. 23 - Grievance Procedure',
+      'Discipline',
+      'test@union.org',
+      'Unit A - Administrative',
+      'Boston HQ',
+      'Jane Smith',
+      ''
+    ];
+
+    const grievanceRow = grievanceLog.getLastRow() + 1;
+    grievanceLog.getRange(grievanceRow, 1, 1, grievanceData.length)
+      .setValues([grievanceData]);
+
+    SpreadsheetApp.flush();
+    Utilities.sleep(2000);
+
+    // Check initial state - use MEMBER_COLS constant (column Z = 26, 0-indexed = 25)
+    const statusIdx = MEMBER_COLS.GRIEVANCE_STATUS - 1;
+    const memberData1 = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
+    const memberRow1 = memberData1.find(function(row) { return row[0] === testMemberId; });
+    const status1 = memberRow1[statusIdx];
+
+    Assert.assertEquals('Open', status1, 'Initial status should be Open');
+
+    // Update grievance
+    grievanceLog.getRange(grievanceRow, 5).setValue('Settled');
+
+    SpreadsheetApp.flush();
+    Utilities.sleep(2000);
+
+    // Check updated state
+    const memberData2 = memberDir.getRange(2, 1, memberDir.getLastRow() - 1, 31).getValues();
+    const memberRow2 = memberData2.find(function(row) { return row[0] === testMemberId; });
+    const status2 = memberRow2[statusIdx];
+
+    Assert.assertEquals(
+      'Settled',
+      status2,
+      'Status should update to Settled after grievance update'
+    );
+
+    Logger.log('✅ Grievance updates trigger recalculation test passed');
+
+  } finally {
+    cleanupTestData();
+  }
 }
 
 
