@@ -3082,53 +3082,34 @@ function SEED_20K_MEMBERS() {
 function SEED_GRIEVANCES_TOGGLE_1() { seedGrievancesWithCount(2500, "Toggle 1"); }
 function SEED_GRIEVANCES_TOGGLE_2() { seedGrievancesWithCount(2500, "Toggle 2"); }
 
+/**
+ * Seeds grievance log with test data
+ * Refactored to use helper functions for maintainability
+ */
 function seedGrievancesWithCount(count, toggleName) {
   const ss = SpreadsheetApp.getActive();
   const grievanceLog = ss.getSheetByName(SHEETS.GRIEVANCE_LOG);
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  // Verify sheets exist
-  if (!grievanceLog) {
-    SpreadsheetApp.getUi().alert('Error', 'Grievance Log sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
-    return;
-  }
-  if (!memberDir) {
-    SpreadsheetApp.getUi().alert('Error', 'Member Directory sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
-    return;
-  }
-  if (!config) {
-    SpreadsheetApp.getUi().alert('Error', 'Config sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
-    return;
-  }
+  // Validate sheets
+  if (!validateGrievanceSeedSheets(grievanceLog, memberDir, config)) return;
 
+  // Confirm with user
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
     `Seed ${count} Grievances (${toggleName})`,
     `This will add ${count} grievance records. This may take 1-2 minutes. Continue?`,
     ui.ButtonSet.YES_NO
   );
-
   if (response !== ui.Button.YES) return;
 
   SpreadsheetApp.getActive().toast(`🚀 Seeding ${count} grievances (${toggleName})...`, "Processing", -1);
 
-  // Clear existing data validations on columns that will receive seeded data
-  const lastRow = Math.max(grievanceLog.getLastRow(), 2);
-  const maxSeedRows = lastRow + count + 100;
-  try {
-    // Clear validations on columns matching Grievance Log headers:
-    // E (Status), F (Step), V (Articles), W (Category), AA (Assigned Steward)
-    const columnsToClean = [5, 6, 22, 23, 27];
-    columnsToClean.forEach(function(col) {
-      grievanceLog.getRange(2, col, maxSeedRows, 1).clearDataValidations();
-    });
-    Logger.log('Cleared grievance data validations for seed operation');
-  } catch (e) {
-    Logger.log('Warning: Could not clear some validations: ' + e.message);
-  }
+  // Prepare for seeding
+  clearGrievanceValidationsForSeed(grievanceLog, count);
 
-  // Get member data ONCE before the loop (CRITICAL FIX)
+  // Get member data
   const memberLastRow = memberDir.getLastRow();
   if (memberLastRow < 2) {
     ui.alert('Error', 'No members found. Please seed members first.', ui.ButtonSet.OK);
@@ -3138,142 +3119,197 @@ function seedGrievancesWithCount(count, toggleName) {
   const allMemberData = memberDir.getRange(2, 1, memberLastRow - 1, 31).getValues();
   const memberIDs = allMemberData.map(function(row) { return row[MEMBER_COLS.MEMBER_ID - 1]; }).filter(String);
 
-  // Get grievance dropdown values using dynamic helpers
+  // Get seed configuration
+  const seedConfig = getGrievanceSeedConfig();
+  if (!seedConfig) return;
+
+  // Generate and write data
+  const startingRow = grievanceLog.getLastRow();
+  const successCount = generateAndWriteGrievanceData(grievanceLog, count, startingRow, toggleName, seedConfig, allMemberData, memberIDs);
+
+  // Restore sheet state
+  restoreGrievanceSheetAfterSeed();
+
+  const finalRow = grievanceLog.getLastRow();
+  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added (${toggleName})! Total: ${finalRow - 1} grievances.`, "Complete", 5);
+}
+
+/**
+ * Validates sheets exist for grievance seeding
+ */
+function validateGrievanceSeedSheets(grievanceLog, memberDir, config) {
+  if (!grievanceLog) {
+    SpreadsheetApp.getUi().alert('Error', 'Grievance Log sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return false;
+  }
+  if (!memberDir) {
+    SpreadsheetApp.getUi().alert('Error', 'Member Directory sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return false;
+  }
+  if (!config) {
+    SpreadsheetApp.getUi().alert('Error', 'Config sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Clears data validations before grievance seeding
+ */
+function clearGrievanceValidationsForSeed(grievanceLog, count) {
+  const lastRow = Math.max(grievanceLog.getLastRow(), 2);
+  const maxSeedRows = lastRow + count + 100;
+  try {
+    const columnsToClean = [5, 6, 22, 23, 27];
+    columnsToClean.forEach(function(col) {
+      grievanceLog.getRange(2, col, maxSeedRows, 1).clearDataValidations();
+    });
+    Logger.log('Cleared grievance data validations for seed operation');
+  } catch (e) {
+    Logger.log('Warning: Could not clear some validations: ' + e.message);
+  }
+}
+
+/**
+ * Gets configuration data for grievance seeding
+ */
+function getGrievanceSeedConfig() {
   const grievanceDropdowns = getGrievanceLogDropdownValues();
-  const statuses = grievanceDropdowns.statuses;
-  const steps = grievanceDropdowns.steps;
-  const categories = grievanceDropdowns.categories;
-  const articles = grievanceDropdowns.articles;
-  const stewards = grievanceDropdowns.stewards;
 
-  // Get deadline config values
-  const deadlineConfig = getAllDeadlineConfig();
+  const seedConfig = {
+    statuses: grievanceDropdowns.statuses,
+    steps: grievanceDropdowns.steps,
+    categories: grievanceDropdowns.categories,
+    articles: grievanceDropdowns.articles,
+    stewards: grievanceDropdowns.stewards,
+    deadlineConfig: getAllDeadlineConfig(),
+    resolutions: ["Won - Resolved favorably", "Won - Full remedy granted", "Lost - No violation found", "Lost - Withdrawn by member", "Settled - Partial remedy", "Settled - Compromise reached"]
+  };
 
-  // Validate config data with debugging
-  Logger.log('Grievance Seed Config Debug: statuses=' + statuses.length + ', steps=' + steps.length +
-             ', categories=' + categories.length + ', articles=' + articles.length + ', stewards=' + stewards.length);
-
-  if (statuses.length === 0 || steps.length === 0 || articles.length === 0 ||
-      categories.length === 0 || stewards.length === 0) {
-    ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.\n\n' +
-             'Debug info:\n' +
-             '• Statuses: ' + statuses.length + '\n' +
-             '• Steps: ' + steps.length + '\n' +
-             '• Categories: ' + categories.length + '\n' +
-             '• Articles: ' + articles.length + '\n' +
-             '• Stewards: ' + stewards.length, ui.ButtonSet.OK);
-    return;
+  if (seedConfig.statuses.length === 0 || seedConfig.steps.length === 0 ||
+      seedConfig.articles.length === 0 || seedConfig.categories.length === 0 ||
+      seedConfig.stewards.length === 0) {
+    SpreadsheetApp.getUi().alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return null;
   }
 
+  return seedConfig;
+}
+
+/**
+ * Generates and writes grievance data in batches
+ */
+function generateAndWriteGrievanceData(grievanceLog, count, startingRow, toggleName, config, allMemberData, memberIDs) {
   const BATCH_SIZE = 500;
   let data = [];
   let successCount = 0;
-  const startingRow = grievanceLog.getLastRow();
 
   for (let i = 1; i <= count; i++) {
-    // Get random member
     const memberIndex = Math.floor(Math.random() * memberIDs.length);
     const memberID = memberIDs[memberIndex];
     const memberData = allMemberData[memberIndex];
 
     if (!memberData || !memberID) continue;
 
-    const grievanceID = "G-" + String(startingRow + i).padStart(6, '0');
-    const firstName = memberData[1];
-    const lastName = memberData[2];
-    const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const step = steps[Math.floor(Math.random() * steps.length)];
-
-    const daysAgo = Math.floor(Math.random() * 365);
-    const incidentDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
-    const dateFiled = new Date(incidentDate.getTime() + Math.random() * 14 * 24 * 60 * 60 * 1000);
-
-    const article = articles[Math.floor(Math.random() * articles.length)];
-    const category = categories[Math.floor(Math.random() * categories.length)];
-    const email = memberData[7];
-    const unit = memberData[5];
-    const location = memberData[4];
-    const assignedSteward = stewards[Math.floor(Math.random() * stewards.length)];
-
-    const isClosed = status === "Closed" || status === "Settled" || status === "Withdrawn";
-    const dateClosed = isClosed ? new Date(dateFiled.getTime() + Math.random() * 90 * 24 * 60 * 60 * 1000) : "";
-    const resolution = isClosed ? ["Won - Resolved favorably", "Won - Full remedy granted", "Lost - No violation found", "Lost - Withdrawn by member", "Settled - Partial remedy", "Settled - Compromise reached"][Math.floor(Math.random() * 6)] : "";
-
-    // Calculate all deadline columns based on contract rules (using dynamic config values)
-    const DAY_MS = 24 * 60 * 60 * 1000;
-    const filingDeadline = new Date(incidentDate.getTime() + deadlineConfig.filingDeadlineDays * DAY_MS);
-    const step1DecisionDue = new Date(dateFiled.getTime() + deadlineConfig.step1ResponseDays * DAY_MS);
-    const step1DecisionRcvd = (step !== "Informal" && Math.random() > 0.3) ? new Date(dateFiled.getTime() + Math.random() * deadlineConfig.step1ResponseDays * DAY_MS) : "";
-    const step2AppealDue = step1DecisionRcvd ? new Date(step1DecisionRcvd.getTime() + deadlineConfig.step2AppealDays * DAY_MS) : "";
-    const step2AppealFiled = (step === "Step II" || step === "Step III" || step === "Arbitration") && step2AppealDue ? new Date(step1DecisionRcvd.getTime() + Math.random() * deadlineConfig.step2AppealDays * DAY_MS) : "";
-    const step2DecisionDue = step2AppealFiled ? new Date(step2AppealFiled.getTime() + deadlineConfig.step2ResponseDays * DAY_MS) : "";
-    const step2DecisionRcvd = (step === "Step III" || step === "Arbitration") && step2DecisionDue ? new Date(step2AppealFiled.getTime() + Math.random() * deadlineConfig.step2ResponseDays * DAY_MS) : "";
-    const step3AppealDue = step2DecisionRcvd ? new Date(step2DecisionRcvd.getTime() + GRIEVANCE_TIMELINES.STEP3_APPEAL_DAYS * DAY_MS) : "";
-    const step3AppealFiled = (step === "Step III" || step === "Arbitration") && step3AppealDue ? new Date(step2DecisionRcvd.getTime() + Math.random() * GRIEVANCE_TIMELINES.STEP3_APPEAL_DAYS * DAY_MS) : "";
-    const daysOpen = isClosed && dateClosed ? Math.floor((dateClosed - dateFiled) / (1000 * 60 * 60 * 24)) : Math.floor((Date.now() - dateFiled.getTime()) / (1000 * 60 * 60 * 24));
-    let nextActionDue = "";
-    if (!isClosed) {
-      if (step === "Informal" || step === "Step I") nextActionDue = step1DecisionDue;
-      else if (step === "Step II") nextActionDue = step2DecisionDue || step2AppealDue;
-      else if (step === "Step III") nextActionDue = step3AppealDue;
-      else if (step === "Arbitration") nextActionDue = new Date(Date.now() + Math.random() * 60 * 24 * 60 * 60 * 1000);
-    }
-    const daysToDeadline = nextActionDue ? Math.floor((nextActionDue - Date.now()) / (1000 * 60 * 60 * 24)) : "";
-
-    const row = [
-      grievanceID, memberID, firstName, lastName, status, step,
-      incidentDate, filingDeadline, dateFiled, step1DecisionDue, step1DecisionRcvd,
-      step2AppealDue, step2AppealFiled, step2DecisionDue, step2DecisionRcvd,
-      step3AppealDue, step3AppealFiled, dateClosed, daysOpen, nextActionDue, daysToDeadline,
-      article, category, email, unit, location, assignedSteward, resolution
-    ];
-
+    const row = generateSingleGrievanceRow(i, startingRow, memberID, memberData, config);
     data.push(row);
     successCount++;
 
     if (data.length === BATCH_SIZE) {
-      try {
-        grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-        SpreadsheetApp.getActive().toast(`Added ${successCount} of ${count} grievances (${toggleName})...`, "Progress", 1);
-        data = [];
-        SpreadsheetApp.flush();
-      } catch (e) {
-        Logger.log(`Error writing batch at count ${successCount}: ${e.message}`);
-        SpreadsheetApp.getActive().toast(`⚠️ Error at ${successCount}. Retrying...`, "Warning", 2);
-        // Retry once
-        Utilities.sleep(1000);
-        try {
-          grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-          data = [];
-        } catch (e2) {
-          Logger.log(`Retry failed: ${e2.message}`);
-          throw new Error(`Failed to write grievances: ${e2.message}`);
-        }
-      }
+      writeGrievanceBatch(grievanceLog, data, successCount, count, toggleName);
+      data = [];
     }
   }
 
-  // Write remaining data
   if (data.length > 0) {
+    writeGrievanceBatch(grievanceLog, data, successCount, count, toggleName);
+  }
+
+  SpreadsheetApp.flush();
+  Logger.log('Grievance seed complete. Grievance Log now has ' + grievanceLog.getLastRow() + ' rows');
+  return successCount;
+}
+
+/**
+ * Generates a single grievance row
+ */
+function generateSingleGrievanceRow(index, startingRow, memberID, memberData, config) {
+  const grievanceID = "G-" + String(startingRow + index).padStart(6, '0');
+  const status = config.statuses[Math.floor(Math.random() * config.statuses.length)];
+  const step = config.steps[Math.floor(Math.random() * config.steps.length)];
+
+  const daysAgo = Math.floor(Math.random() * 365);
+  const incidentDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+  const dateFiled = new Date(incidentDate.getTime() + Math.random() * 14 * 24 * 60 * 60 * 1000);
+
+  const isClosed = status === "Closed" || status === "Settled" || status === "Withdrawn";
+  const dateClosed = isClosed ? new Date(dateFiled.getTime() + Math.random() * 90 * 24 * 60 * 60 * 1000) : "";
+  const resolution = isClosed ? config.resolutions[Math.floor(Math.random() * config.resolutions.length)] : "";
+
+  // Calculate deadlines
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const dc = config.deadlineConfig;
+  const filingDeadline = new Date(incidentDate.getTime() + dc.filingDeadlineDays * DAY_MS);
+  const step1DecisionDue = new Date(dateFiled.getTime() + dc.step1ResponseDays * DAY_MS);
+  const step1DecisionRcvd = (step !== "Informal" && Math.random() > 0.3) ? new Date(dateFiled.getTime() + Math.random() * dc.step1ResponseDays * DAY_MS) : "";
+  const step2AppealDue = step1DecisionRcvd ? new Date(step1DecisionRcvd.getTime() + dc.step2AppealDays * DAY_MS) : "";
+  const step2AppealFiled = (step === "Step II" || step === "Step III" || step === "Arbitration") && step2AppealDue ? new Date(step1DecisionRcvd.getTime() + Math.random() * dc.step2AppealDays * DAY_MS) : "";
+  const step2DecisionDue = step2AppealFiled ? new Date(step2AppealFiled.getTime() + dc.step2ResponseDays * DAY_MS) : "";
+  const step2DecisionRcvd = (step === "Step III" || step === "Arbitration") && step2DecisionDue ? new Date(step2AppealFiled.getTime() + Math.random() * dc.step2ResponseDays * DAY_MS) : "";
+  const step3AppealDue = step2DecisionRcvd ? new Date(step2DecisionRcvd.getTime() + GRIEVANCE_TIMELINES.STEP3_APPEAL_DAYS * DAY_MS) : "";
+  const step3AppealFiled = (step === "Step III" || step === "Arbitration") && step3AppealDue ? new Date(step2DecisionRcvd.getTime() + Math.random() * GRIEVANCE_TIMELINES.STEP3_APPEAL_DAYS * DAY_MS) : "";
+  const daysOpen = isClosed && dateClosed ? Math.floor((dateClosed - dateFiled) / DAY_MS) : Math.floor((Date.now() - dateFiled.getTime()) / DAY_MS);
+
+  let nextActionDue = "";
+  if (!isClosed) {
+    if (step === "Informal" || step === "Step I") nextActionDue = step1DecisionDue;
+    else if (step === "Step II") nextActionDue = step2DecisionDue || step2AppealDue;
+    else if (step === "Step III") nextActionDue = step3AppealDue;
+    else if (step === "Arbitration") nextActionDue = new Date(Date.now() + Math.random() * 60 * DAY_MS);
+  }
+  const daysToDeadline = nextActionDue ? Math.floor((nextActionDue - Date.now()) / DAY_MS) : "";
+
+  return [
+    grievanceID, memberID, memberData[1], memberData[2], status, step,
+    incidentDate, filingDeadline, dateFiled, step1DecisionDue, step1DecisionRcvd,
+    step2AppealDue, step2AppealFiled, step2DecisionDue, step2DecisionRcvd,
+    step3AppealDue, step3AppealFiled, dateClosed, daysOpen, nextActionDue, daysToDeadline,
+    config.articles[Math.floor(Math.random() * config.articles.length)],
+    config.categories[Math.floor(Math.random() * config.categories.length)],
+    memberData[7], memberData[5], memberData[4],
+    config.stewards[Math.floor(Math.random() * config.stewards.length)],
+    resolution
+  ];
+}
+
+/**
+ * Writes a batch of grievance data to the sheet
+ */
+function writeGrievanceBatch(grievanceLog, data, currentCount, totalCount, toggleName) {
+  try {
+    grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+    SpreadsheetApp.getActive().toast(`Added ${currentCount} of ${totalCount} grievances (${toggleName})...`, "Progress", 1);
+    SpreadsheetApp.flush();
+  } catch (e) {
+    Logger.log(`Error writing batch at count ${currentCount}: ${e.message}`);
+    SpreadsheetApp.getActive().toast(`⚠️ Error at ${currentCount}. Retrying...`, "Warning", 2);
+    Utilities.sleep(1000);
     try {
       grievanceLog.getRange(grievanceLog.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
-    } catch (e) {
-      Logger.log(`Error writing final batch: ${e.message}`);
-      throw new Error(`Failed to write final grievances: ${e.message}`);
+    } catch (e2) {
+      Logger.log(`Retry failed: ${e2.message}`);
+      throw new Error(`Failed to write grievances: ${e2.message}`);
     }
   }
+}
 
-  // Force write to sheet
-  SpreadsheetApp.flush();
-
-  // Verify data was written
-  const finalRow = grievanceLog.getLastRow();
-  Logger.log('Grievance seed complete. Grievance Log now has ' + finalRow + ' rows (including header)');
-
+/**
+ * Restores formulas and dropdowns after grievance seeding
+ */
+function restoreGrievanceSheetAfterSeed() {
   SpreadsheetApp.getActive().toast(`Updating formulas and snapshots...`, "Processing", -1);
   updateMemberDirectorySnapshots();
 
-  // CRITICAL: Re-apply formulas for calculated columns (Days Open, Next Action, Days to Deadline)
   try {
     refreshGrievanceFormulas();
     Logger.log('Successfully re-applied grievance formulas after seeding');
@@ -3281,15 +3317,12 @@ function seedGrievancesWithCount(count, toggleName) {
     Logger.log('Warning: Could not re-apply grievance formulas: ' + e.message);
   }
 
-  // CRITICAL: Re-apply dropdowns
   try {
     setupGrievanceLogDropdownsSilent();
     Logger.log('Successfully re-applied grievance dropdowns after seeding');
   } catch (e) {
     Logger.log('Warning: Could not re-apply grievance dropdowns: ' + e.message);
   }
-
-  SpreadsheetApp.getActive().toast(`✅ ${successCount} grievances added (${toggleName})! Total: ${finalRow - 1} grievances.`, "Complete", 5);
 }
 
 /* --------------------- LEGACY: SEED 5,000 GRIEVANCES --------------------- */

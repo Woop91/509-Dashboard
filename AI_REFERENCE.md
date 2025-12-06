@@ -97,6 +97,21 @@ Refactored 6 large multi-responsibility functions into smaller, focused helper f
 - `writeMemberBatch()` - Batch writing with retry
 - `restoreMemberSheetAfterSeed()` - Post-seed restoration
 
+✅ **`showSharingOptionsDialog()` (224 lines → 4 helper functions)** (`GrievanceWorkflow.gs`)
+- `buildSharingDialogHTML()` - Complete HTML template
+- `getSharingDialogStyles()` - CSS styles
+- `buildRecipientCheckboxes()` - Recipient checkboxes
+- `getSharingDialogScripts()` - JavaScript code
+
+✅ **`seedGrievancesWithCount()` (208 lines → 7 helper functions)** (`Code.gs`)
+- `validateGrievanceSeedSheets()` - Sheet validation
+- `clearGrievanceValidationsForSeed()` - Pre-seed cleanup
+- `getGrievanceSeedConfig()` - Configuration assembly
+- `generateAndWriteGrievanceData()` - Main generation loop
+- `generateSingleGrievanceRow()` - Row generation
+- `writeGrievanceBatch()` - Batch writing with retry
+- `restoreGrievanceSheetAfterSeed()` - Post-seed restoration
+
 **Benefits:**
 - Improved code readability and maintainability
 - Each helper function has a single responsibility
@@ -109,9 +124,10 @@ Refactored 6 large multi-responsibility functions into smaller, focused helper f
 - `UnifiedOperationsMonitor.gs` - 1 function refactored (12 new helpers)
 - `AdvancedVisualization.gs` - 1 function refactored (4 new helpers)
 - `InteractiveDashboard.gs` - 1 function refactored (8 new helpers)
-- `Code.gs` - 1 function refactored (8 new helpers)
+- `Code.gs` - 2 functions refactored (15 new helpers)
+- `GrievanceWorkflow.gs` - 1 function refactored (4 new helpers)
 
-**Total:** 6 functions refactored, 45 new helper functions created
+**Total:** 8 functions refactored, 56 new helper functions created
 
 ---
 
