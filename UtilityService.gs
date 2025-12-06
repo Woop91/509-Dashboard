@@ -479,3 +479,154 @@ function logInfo(context, message) {
 function logWarning(context, message) {
   Logger.log(`[WARNING] ${context}: ${message}`);
 }
+
+/* --------------------= ORG CONFIGURATION HELPERS --------------------= */
+
+/**
+ * Gets organization configuration value from Config sheet with fallback to ORG_DEFAULTS
+ *
+ * Config sheet values take precedence over ORG_DEFAULTS.
+ * This allows runtime customization without code changes.
+ *
+ * @param {string} key - Configuration key (e.g., 'ORG_NAME', 'CONTRACT_ARTICLE_GRIEVANCE')
+ * @returns {string} Configuration value
+ *
+ * @example
+ * const orgName = getOrgConfig('ORG_NAME'); // Returns value from Config or "SEIU Local 509"
+ * const article = getOrgConfig('CONTRACT_ARTICLE_GRIEVANCE'); // Returns "Article 23A" or custom
+ */
+function getOrgConfig(key) {
+  // Check cache first
+  const cacheKey = 'ORG_CONFIG_' + key;
+  const cached = SimpleCache.get(cacheKey);
+  if (cached !== null) {
+    return cached;
+  }
+
+  // Map key to Config column
+  const keyToColMap = {
+    'ORG_NAME': CONFIG_COLS.ORG_NAME,
+    'LOCAL_NUMBER': CONFIG_COLS.LOCAL_NUMBER,
+    'MAIN_ADDRESS': CONFIG_COLS.MAIN_ADDRESS,
+    'MAIN_PHONE': CONFIG_COLS.MAIN_PHONE,
+    'UNION_PARENT': CONFIG_COLS.UNION_PARENT,
+    'STATE_REGION': CONFIG_COLS.STATE_REGION,
+    'ORG_WEBSITE': CONFIG_COLS.ORG_WEBSITE,
+    'CONTRACT_ARTICLE_GRIEVANCE': CONFIG_COLS.CONTRACT_ARTICLE_GRIEVANCE,
+    'CONTRACT_ARTICLE_DISCIPLINE': CONFIG_COLS.CONTRACT_ARTICLE_DISCIPLINE,
+    'CONTRACT_ARTICLE_WORKLOAD': CONFIG_COLS.CONTRACT_ARTICLE_WORKLOAD,
+    'CONTRACT_NAME': CONFIG_COLS.CONTRACT_NAME,
+    'GRIEVANCE_EMAIL': CONFIG_COLS.ADMIN_EMAILS, // Use first admin email as grievance email
+    'FILING_DEADLINE_DAYS': CONFIG_COLS.FILING_DEADLINE_DAYS,
+    'STEP1_RESPONSE_DAYS': CONFIG_COLS.STEP1_RESPONSE_DAYS,
+    'STEP2_APPEAL_DAYS': CONFIG_COLS.STEP2_APPEAL_DAYS,
+    'STEP2_RESPONSE_DAYS': CONFIG_COLS.STEP2_RESPONSE_DAYS
+  };
+
+  const col = keyToColMap[key];
+  let value = null;
+
+  // Try to get from Config sheet
+  if (col) {
+    try {
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      const configSheet = ss.getSheetByName(SHEETS.CONFIG);
+
+      if (configSheet) {
+        const lastRow = configSheet.getLastRow();
+        if (lastRow >= 2) {
+          const cellValue = configSheet.getRange(2, col).getValue();
+          if (cellValue && String(cellValue).trim() !== '') {
+            value = String(cellValue).trim();
+          }
+        }
+      }
+    } catch (error) {
+      Logger.log('getOrgConfig error reading Config sheet: ' + error.message);
+    }
+  }
+
+  // Fallback to ORG_DEFAULTS
+  if (value === null && ORG_DEFAULTS[key] !== undefined) {
+    value = String(ORG_DEFAULTS[key]);
+  }
+
+  // Final fallback
+  if (value === null) {
+    value = '';
+    Logger.log('getOrgConfig: Unknown key or no default for: ' + key);
+  }
+
+  // Cache the result
+  SimpleCache.set(cacheKey, value);
+
+  return value;
+}
+
+/**
+ * Gets all organization config as an object
+ * Useful for passing to HTML templates
+ *
+ * @returns {Object} Organization configuration object
+ */
+function getAllOrgConfig() {
+  const cacheKey = 'ORG_CONFIG_ALL';
+  const cached = SimpleCache.get(cacheKey);
+  if (cached !== null) {
+    return cached;
+  }
+
+  const config = {
+    orgName: getOrgConfig('ORG_NAME'),
+    localNumber: getOrgConfig('LOCAL_NUMBER'),
+    unionParent: getOrgConfig('UNION_PARENT'),
+    stateRegion: getOrgConfig('STATE_REGION'),
+    orgWebsite: getOrgConfig('ORG_WEBSITE'),
+    mainAddress: getOrgConfig('MAIN_ADDRESS'),
+    mainPhone: getOrgConfig('MAIN_PHONE'),
+    grievanceEmail: getOrgConfig('GRIEVANCE_EMAIL'),
+    contractName: getOrgConfig('CONTRACT_NAME'),
+    articleGrievance: getOrgConfig('CONTRACT_ARTICLE_GRIEVANCE'),
+    articleDiscipline: getOrgConfig('CONTRACT_ARTICLE_DISCIPLINE'),
+    articleWorkload: getOrgConfig('CONTRACT_ARTICLE_WORKLOAD'),
+    filingDeadlineDays: parseInt(getOrgConfig('FILING_DEADLINE_DAYS')) || 21,
+    step1ResponseDays: parseInt(getOrgConfig('STEP1_RESPONSE_DAYS')) || 30,
+    step2AppealDays: parseInt(getOrgConfig('STEP2_APPEAL_DAYS')) || 10,
+    step2ResponseDays: parseInt(getOrgConfig('STEP2_RESPONSE_DAYS')) || 30
+  };
+
+  SimpleCache.set(cacheKey, config);
+  return config;
+}
+
+/**
+ * Clears org config cache (call when Config sheet is updated)
+ */
+function clearOrgConfigCache() {
+  // Clear all org config cache keys
+  const keys = [
+    'ORG_CONFIG_ALL',
+    'ORG_CONFIG_ORG_NAME',
+    'ORG_CONFIG_LOCAL_NUMBER',
+    'ORG_CONFIG_UNION_PARENT',
+    'ORG_CONFIG_STATE_REGION',
+    'ORG_CONFIG_ORG_WEBSITE',
+    'ORG_CONFIG_MAIN_ADDRESS',
+    'ORG_CONFIG_MAIN_PHONE',
+    'ORG_CONFIG_GRIEVANCE_EMAIL',
+    'ORG_CONFIG_CONTRACT_NAME',
+    'ORG_CONFIG_CONTRACT_ARTICLE_GRIEVANCE',
+    'ORG_CONFIG_CONTRACT_ARTICLE_DISCIPLINE',
+    'ORG_CONFIG_CONTRACT_ARTICLE_WORKLOAD',
+    'ORG_CONFIG_FILING_DEADLINE_DAYS',
+    'ORG_CONFIG_STEP1_RESPONSE_DAYS',
+    'ORG_CONFIG_STEP2_APPEAL_DAYS',
+    'ORG_CONFIG_STEP2_RESPONSE_DAYS'
+  ];
+
+  keys.forEach(function(key) {
+    SimpleCache.remove(key);
+  });
+
+  Logger.log('Org config cache cleared');
+}

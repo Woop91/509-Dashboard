@@ -405,8 +405,55 @@ const CONFIG_COLS = {
   // Multi-select options (cols 31-32)
   BEST_TIMES: 31,             // AE - best times to contact members
   HOME_TOWNS: 32,             // AF - list of home towns in area
+  // Contract & Legal References (cols 33-36)
+  CONTRACT_ARTICLE_GRIEVANCE: 33, // AG - grievance procedure article (e.g., "Article 23A")
+  CONTRACT_ARTICLE_DISCIPLINE: 34,// AH - discipline article (e.g., "Article 12")
+  CONTRACT_ARTICLE_WORKLOAD: 35,  // AI - workload article (e.g., "Article 15")
+  CONTRACT_NAME: 36,              // AJ - contract name (e.g., "2023-2026 CBA")
+  // Org Identity (cols 37-39)
+  UNION_PARENT: 37,           // AK - parent union (e.g., "SEIU")
+  STATE_REGION: 38,           // AL - state/region (e.g., "Massachusetts")
+  ORG_WEBSITE: 39,            // AM - organization website URL
   // Backward compatibility alias
   COMMITTEES: 9               // Alias for STEWARD_COMMITTEES (col I)
+};
+
+/* --------------------= ORG DEFAULTS --------------------= */
+
+/**
+ * Default organization settings
+ * These are fallback values when Config sheet doesn't have the value set.
+ * To customize for your organization:
+ *   1. Edit these defaults here, OR
+ *   2. Set values in the Config sheet (takes precedence)
+ *
+ * @const {Object}
+ */
+const ORG_DEFAULTS = {
+  // Organization Identity
+  ORG_NAME: 'SEIU Local 509',
+  LOCAL_NUMBER: '509',
+  UNION_PARENT: 'SEIU',
+  STATE_REGION: 'Massachusetts',
+  ORG_WEBSITE: 'https://www.seiu509.org',
+
+  // Contact Info
+  MAIN_ADDRESS: '888 Worcester St, Suite 100, Wellesley, MA 02482',
+  MAIN_PHONE: '(617) 924-8509',
+  GRIEVANCE_EMAIL: 'grievances@seiu509.org',
+  INFO_EMAIL: 'info@seiu509.org',
+
+  // Contract References (update when contract changes)
+  CONTRACT_NAME: '2023-2026 Collective Bargaining Agreement',
+  CONTRACT_ARTICLE_GRIEVANCE: 'Article 23A',
+  CONTRACT_ARTICLE_DISCIPLINE: 'Article 12',
+  CONTRACT_ARTICLE_WORKLOAD: 'Article 15',
+
+  // Deadline Defaults (in days)
+  FILING_DEADLINE_DAYS: 21,
+  STEP1_RESPONSE_DAYS: 30,
+  STEP2_APPEAL_DAYS: 10,
+  STEP2_RESPONSE_DAYS: 30
 };
 
 /* --------------------= CACHE CONFIGURATION --------------------= */
@@ -499,9 +546,11 @@ const UI_CONFIG = {
  * @const {Object}
  */
 const EMAIL_CONFIG = {
-  FROM_NAME: 'SEIU Local 509',
-  REPLY_TO: 'info@seiu509.org',
-  GRIEVANCE_EMAIL: 'grievances@seiu509.org',
+  // Note: FROM_NAME, REPLY_TO, GRIEVANCE_EMAIL now use ORG_DEFAULTS
+  // To customize, update ORG_DEFAULTS or Config sheet values
+  FROM_NAME: ORG_DEFAULTS.ORG_NAME,
+  REPLY_TO: ORG_DEFAULTS.INFO_EMAIL,
+  GRIEVANCE_EMAIL: ORG_DEFAULTS.GRIEVANCE_EMAIL,
   MAX_SUBJECT_LENGTH: 200,
   MAX_BODY_LENGTH: 10000,
   ATTACHMENTS_ENABLED: true,
