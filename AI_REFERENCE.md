@@ -1787,18 +1787,30 @@ All 16 features (79-94) are fully implemented and integrated into the menu syste
 
 ## Feature 95: Coordinator Notification System
 
-**Purpose:** Checkbox-based row highlighting and email notifications for grievance coordinator messages
+**Purpose:** Checkbox-based row highlighting and email notifications for grievance coordinator messages with steward acknowledgment tracking
 
-**Overview:**
-When a grievance coordinator checks the "Coordinator Notified" checkbox in the Grievance Log:
+**Overview - Complete Workflow:**
+
+**Step 1 - Coordinator Sends Message:**
+When a grievance coordinator checks the "Coordinator Notified" checkbox:
 1. The entire row is highlighted in yellow with an orange border
 2. Emails are automatically sent to the member and assigned steward with the coordinator's message
-3. The row remains highlighted until the checkbox is manually unchecked
-4. All notifications are logged to Audit_Log (if enabled)
+3. Notification is logged to Audit_Log
+4. Row remains highlighted until steward acknowledges
+
+**Step 2 - Steward Acknowledges:**
+When a steward unchecks the "Coordinator Notified" checkbox:
+1. Row highlighting is removed (white background)
+2. System records WHO acknowledged (steward email) in "Acknowledged By" column
+3. System records WHEN acknowledged (timestamp) in "Acknowledged Date" column
+4. Coordinator message is KEPT in the "Coordinator Message" column for permanent record keeping
+5. Acknowledgment is logged to Audit_Log
 
 **Grievance Log Columns Added:**
-- **Column AC (29):** ✓ Coordinator Notified - Checkbox column
-- **Column AD (30):** Coordinator Message - Text message from coordinator
+- **Column AC (29):** ✓ Coordinator Notified - Checkbox column (checked by coordinator, unchecked by steward)
+- **Column AD (30):** Coordinator Message - Text message from coordinator (PERMANENT - never cleared)
+- **Column AE (31):** Acknowledged By - Email of steward who acknowledged (auto-filled when unchecked)
+- **Column AF (32):** Acknowledged Date - Timestamp of acknowledgment (auto-filled when unchecked)
 
 **Functions:**
 
@@ -1824,10 +1836,14 @@ When a grievance coordinator checks the "Coordinator Notified" checkbox in the G
    - Adds thick orange border (#F97316) for visibility
    - Applies to entire row across all columns
 
-5. **removeRowHighlight(sheet, row)** - Remove Highlighting
+5. **removeRowHighlight(sheet, row)** - Steward Acknowledgment Handler
    - Resets background to white (#FFFFFF)
    - Removes all borders
-   - Triggered when checkbox is unchecked
+   - Records acknowledging steward email in "Acknowledged By" column
+   - Records acknowledgment timestamp in "Acknowledged Date" column
+   - Keeps coordinator message for permanent record
+   - Logs acknowledgment to Audit_Log
+   - Triggered when checkbox is unchecked (steward acknowledging)
 
 6. **sendCoordinatorEmails(...)** - Email Notifications
    - Sends personalized emails to member and steward
@@ -1945,15 +1961,34 @@ SEIU Local 509 Grievance Coordinator
 
 **Data Validation:**
 - Column AC (Coordinator Notified): Checkbox validation (true/false)
-- Column AD (Coordinator Message): Free text entry
+- Column AD (Coordinator Message): Free text entry (permanent record)
+- Column AE (Acknowledged By): Auto-filled (steward email)
+- Column AF (Acknowledged Date): Auto-filled (timestamp)
+
+**Record Keeping:**
+- Coordinator messages are NEVER automatically deleted
+- Messages remain in column AD for permanent audit trail
+- Each message has associated acknowledgment tracking (who/when)
+- Full history visible in Audit_Log sheet
 
 **Logging:**
-All coordinator notifications are logged to Audit_Log with:
-- Action Type: COORDINATOR_NOTIFICATION or COORDINATOR_NOTIFICATION_CLEARED
+All coordinator notifications and steward acknowledgments are logged to Audit_Log:
+
+**Coordinator Notification (when checkbox checked):**
+- Action Type: COORDINATOR_NOTIFICATION
 - Sheet Name: Grievance Log
 - Record ID: Grievance ID
 - Field Changed: Coordinator Notified
-- Old/New Value: FALSE/TRUE or TRUE/FALSE
+- Old Value: FALSE
+- New Value: TRUE
+
+**Steward Acknowledgment (when checkbox unchecked):**
+- Action Type: STEWARD_ACKNOWLEDGED
+- Sheet Name: Grievance Log
+- Record ID: Grievance ID
+- Field Changed: Coordinator Message Acknowledged
+- Old Value: [Coordinator's message text]
+- New Value: "Acknowledged by [steward email] at [timestamp]"
 
 **Error Handling:**
 - Invalid emails are skipped with log message

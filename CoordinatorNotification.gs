@@ -96,8 +96,8 @@ function onGrievanceEdit(e) {
  */
 function handleCoordinatorNotification(sheet, row) {
   try {
-    // Get grievance data
-    const data = sheet.getRange(row, 1, 1, 30).getValues()[0];
+    // Get grievance data (now 32 columns with Acknowledged By and Date)
+    const data = sheet.getRange(row, 1, 1, 32).getValues()[0];
 
     const grievanceId = data[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
     const memberId = data[GRIEVANCE_COLS.MEMBER_ID - 1];
@@ -176,7 +176,8 @@ function highlightRow(sheet, row) {
 }
 
 /**
- * Removes highlighting from a grievance row
+ * Removes highlighting and records steward acknowledgment
+ * When a steward unchecks the box, this logs their acknowledgment
  */
 function removeRowHighlight(sheet, row) {
   const numColumns = sheet.getLastColumn();
@@ -188,18 +189,31 @@ function removeRowHighlight(sheet, row) {
   // Remove borders
   range.setBorder(false, false, false, false, false, false);
 
-  Logger.log(`Row ${row} highlighting removed`);
+  // Get current user (the steward who is acknowledging)
+  const acknowledgedBy = Session.getActiveUser().getEmail();
+  const acknowledgedDate = new Date();
 
-  // Log the removal
+  // Get grievance details for logging
   const grievanceId = sheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
+  const coordinatorMessage = sheet.getRange(row, GRIEVANCE_COLS.COORDINATOR_MESSAGE).getValue();
+
+  // Record who acknowledged and when
+  sheet.getRange(row, GRIEVANCE_COLS.ACKNOWLEDGED_BY).setValue(acknowledgedBy);
+  sheet.getRange(row, GRIEVANCE_COLS.ACKNOWLEDGED_DATE).setValue(acknowledgedDate);
+
+  // NOTE: We DO NOT clear the Coordinator Message - it stays for record keeping
+
+  Logger.log(`Row ${row} acknowledged by ${acknowledgedBy} at ${acknowledgedDate}`);
+
+  // Log the acknowledgment to Audit_Log
   if (typeof logDataModification === 'function') {
     logDataModification(
-      'COORDINATOR_NOTIFICATION_CLEARED',
+      'STEWARD_ACKNOWLEDGED',
       'Grievance Log',
       grievanceId,
-      'Coordinator Notified',
-      'TRUE',
-      'FALSE'
+      'Coordinator Message Acknowledged',
+      coordinatorMessage || 'N/A',
+      `Acknowledged by ${acknowledgedBy} at ${acknowledgedDate.toLocaleString()}`
     );
   }
 }

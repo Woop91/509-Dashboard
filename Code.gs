@@ -84,7 +84,9 @@ const GRIEVANCE_COLS = {
   STEWARD: 27,          // AA
   RESOLUTION: 28,       // AB
   COORDINATOR_NOTIFIED: 29,  // AC - Checkbox for coordinator message
-  COORDINATOR_MESSAGE: 30    // AD - Coordinator's message text
+  COORDINATOR_MESSAGE: 30,   // AD - Coordinator's message text
+  ACKNOWLEDGED_BY: 31,       // AE - Steward who acknowledged (unchecked)
+  ACKNOWLEDGED_DATE: 32      // AF - When steward acknowledged
 };
 
 /**
@@ -363,7 +365,9 @@ function createGrievanceLog() {
     "Assigned Steward (Name)",
     "Resolution Summary",
     "✓ Coordinator Notified",  // AC - Checkbox
-    "Coordinator Message"       // AD - Message text
+    "Coordinator Message",      // AD - Message text
+    "Acknowledged By",          // AE - Steward who acknowledged
+    "Acknowledged Date"         // AF - When acknowledged
   ];
 
   grievanceLog.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -381,6 +385,8 @@ function createGrievanceLog() {
   grievanceLog.setColumnWidth(28, 250);
   grievanceLog.setColumnWidth(29, 150); // Coordinator Notified
   grievanceLog.setColumnWidth(30, 300); // Coordinator Message
+  grievanceLog.setColumnWidth(31, 180); // Acknowledged By
+  grievanceLog.setColumnWidth(32, 140); // Acknowledged Date
 
   grievanceLog.setTabColor("#DC2626");
 }
