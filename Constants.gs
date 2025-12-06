@@ -33,9 +33,9 @@ const SHEETS = {
   LOCATION: "🗺️ Location Analytics",
   TYPE_ANALYSIS: "📊 Type Analysis",
   EXECUTIVE_DASHBOARD: "💼 Executive Dashboard",
-  EXECUTIVE: "💼 Executive Dashboard",  // Alias for backward compatibility
+  EXECUTIVE: "💼 Executive Dashboard",  // ALIAS: Intentional duplicate for backward compatibility - keep in sync!
   KPI_PERFORMANCE: "📊 KPI Performance Dashboard",
-  KPI_BOARD: "📊 KPI Performance Dashboard",  // Alias for backward compatibility
+  KPI_BOARD: "📊 KPI Performance Dashboard",  // ALIAS: Intentional duplicate for backward compatibility - keep in sync!
   MEMBER_ENGAGEMENT: "👥 Member Engagement",
   COST_IMPACT: "💰 Cost Impact",
   QUICK_STATS: "⚡ Quick Stats",

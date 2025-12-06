@@ -12,8 +12,9 @@
  * 3. This file will be regenerated automatically
  *
  * Build Info:
- * - Version: 2.0.0
- * - Build Date: 2025-12-06T00:38:00.336Z
+ * - Version: 2.1.0 (Security Enhanced + Code Review Improvements)
+ * - Build ID: 20251202-improvements
+ * - Build Date: 2025-12-06T01:02:20.396Z
  * - Build Type: PRODUCTION
  * - Modules: 59 files
  * - Tests Included: No
@@ -62,9 +63,9 @@ const SHEETS = {
   LOCATION: "🗺️ Location Analytics",
   TYPE_ANALYSIS: "📊 Type Analysis",
   EXECUTIVE_DASHBOARD: "💼 Executive Dashboard",
-  EXECUTIVE: "💼 Executive Dashboard",  // Alias for backward compatibility
+  EXECUTIVE: "💼 Executive Dashboard",  // ALIAS: Intentional duplicate for backward compatibility - keep in sync!
   KPI_PERFORMANCE: "📊 KPI Performance Dashboard",
-  KPI_BOARD: "📊 KPI Performance Dashboard",  // Alias for backward compatibility
+  KPI_BOARD: "📊 KPI Performance Dashboard",  // ALIAS: Intentional duplicate for backward compatibility - keep in sync!
   MEMBER_ENGAGEMENT: "👥 Member Engagement",
   COST_IMPACT: "💰 Cost Impact",
   QUICK_STATS: "⚡ Quick Stats",
