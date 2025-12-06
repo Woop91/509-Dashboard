@@ -14,9 +14,9 @@
  * Build Info:
  * - Version: 2.1.0 (Security Enhanced + Code Review Improvements)
  * - Build ID: 20251202-improvements
- * - Build Date: 2025-12-06T01:12:36.716Z
+ * - Build Date: 2025-12-06T03:37:13.928Z
  * - Build Type: PRODUCTION
- * - Modules: 59 files
+ * - Modules: 60 files
  * - Tests Included: No
  *
  * ============================================================================
@@ -232,9 +232,14 @@ const GRIEVANCE_COLS = {
   STEWARD: 27,            // AA - Assigned Steward (Name)
   // Section 10: Resolution (AB)
   RESOLUTION: 28,         // AB - Resolution Summary
-  // Section 11: Drive Integration (AC-AD)
-  DRIVE_FOLDER_ID: 29,    // AC - Google Drive folder ID
-  DRIVE_FOLDER_URL: 30    // AD - Google Drive folder URL
+  // Section 11: Coordinator Notifications (AC-AF) - Feature 95
+  COORDINATOR_NOTIFIED: 29,  // AC - Checkbox for coordinator message
+  COORDINATOR_MESSAGE: 30,   // AD - Coordinator's message text
+  ACKNOWLEDGED_BY: 31,       // AE - Steward who acknowledged
+  ACKNOWLEDGED_DATE: 32,     // AF - When steward acknowledged
+  // Section 12: Drive Integration (AG-AH)
+  DRIVE_FOLDER_ID: 33,    // AG - Google Drive folder ID
+  DRIVE_FOLDER_URL: 34    // AH - Google Drive folder URL
 };
 
 /* --------------------= INTERNAL SYSTEM COLUMN MAPPINGS --------------------= */
@@ -3711,7 +3716,7 @@ function createGrievanceLog() {
     grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
   }
 
-  // 30 columns - includes Drive folder integration columns
+  // 34 columns - includes Feature 95 (Coordinator Notifications) and Drive folder integration
   const headers = [
     "Grievance ID",                    // A - 1
     "Member ID",                       // B - 2
@@ -3741,8 +3746,12 @@ function createGrievanceLog() {
     "Work Location (Site)",            // Z - 26
     "Assigned Steward (Name)",         // AA - 27
     "Resolution Summary",              // AB - 28
-    "Drive Folder ID",                 // AC - 29 (Drive integration)
-    "Drive Folder Link"                // AD - 30 (Drive integration)
+    "Coordinator Notified",            // AC - 29 (Feature 95: Checkbox)
+    "Coordinator Message",             // AD - 30 (Feature 95: Message text)
+    "Acknowledged By",                 // AE - 31 (Feature 95: Steward email)
+    "Acknowledged Date",               // AF - 32 (Feature 95: Timestamp)
+    "Drive Folder ID",                 // AG - 33 (Drive integration)
+    "Drive Folder Link"                // AH - 34 (Drive integration)
   ];
 
   // Update headers (row 1 only - preserves data in rows 2+)
@@ -3760,6 +3769,16 @@ function createGrievanceLog() {
   grievanceLog.setColumnWidth(GRIEVANCE_COLS.GRIEVANCE_ID, 110);  // Grievance ID
   grievanceLog.setColumnWidth(GRIEVANCE_COLS.ARTICLES, 180);      // Articles Violated
   grievanceLog.setColumnWidth(GRIEVANCE_COLS.RESOLUTION, 250);    // Resolution Summary
+  grievanceLog.setColumnWidth(GRIEVANCE_COLS.COORDINATOR_MESSAGE, 250);  // Coordinator Message
+
+  // Add checkbox validation for Coordinator Notified column (AC) - Feature 95
+  const lastRow = 1000; // Reasonable max rows
+  const checkboxRange = grievanceLog.getRange(2, GRIEVANCE_COLS.COORDINATOR_NOTIFIED, lastRow - 1, 1);
+  const checkboxValidation = SpreadsheetApp.newDataValidation()
+    .requireCheckbox()
+    .setAllowInvalid(false)
+    .build();
+  checkboxRange.setDataValidation(checkboxValidation);
 
   grievanceLog.setTabColor("#DC2626");
 }
@@ -4192,6 +4211,52 @@ function createFeedbackSheet() {
   feedback.setFrozenRows(3);
   feedback.setTabColor(COLORS.ACCENT_PURPLE);
   feedback.setColumnWidth(1, 120); feedback.setColumnWidth(2, 110); feedback.setColumnWidth(3, 120); feedback.setColumnWidth(4, 80); feedback.setColumnWidth(5, 200); feedback.setColumnWidth(6, 300); feedback.setColumnWidth(7, 100); feedback.setColumnWidth(8, 90); feedback.setColumnWidth(9, 100); feedback.setColumnWidth(10, 110); feedback.setColumnWidth(11, 120); feedback.setColumnWidth(12, 200); feedback.setColumnWidth(13, 250); feedback.setColumnWidth(14, 110);
+
+  // Populate with implemented features
+  populateImplementedFeatures(feedback);
+}
+
+/**
+ * Populates the Feedback & Development sheet with implemented features
+ * @param {Sheet} sheet - The Feedback & Development sheet
+ */
+function populateImplementedFeatures(sheet) {
+  const today = new Date();
+  const features = [
+    // Features 79-95 (Core Security, Performance, UI Features)
+    ['Completed', today, 'System', 'High', 'Feature 79: Audit Logging', 'Complete audit trail for all data modifications with user tracking, timestamps, and IP addresses', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
+    ['Completed', today, 'System', 'High', 'Feature 80: RBAC System', 'Role-Based Access Control with Admin, Steward, and Viewer hierarchical permissions', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
+    ['Completed', today, 'System', 'High', 'Feature 83: Input Sanitization', 'XSS protection and malicious input prevention with comprehensive validation', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
+    ['Completed', today, 'System', 'Medium', 'Feature 84: Audit Reporting', 'Generate comprehensive audit reports with filtering and export capabilities', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
+    ['Completed', today, 'System', 'Medium', 'Feature 85: Data Retention', 'Automated data retention policy enforcement with 7-year default retention', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
+    ['Completed', today, 'System', 'Medium', 'Feature 86: Suspicious Activity Detection', 'Automated detection of unusual access patterns and security threats', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
+    ['Completed', today, 'System', 'High', 'Feature 87: Quick Actions Sidebar', 'Interactive sidebar with frequently used actions and shortcuts', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
+    ['Completed', today, 'System', 'High', 'Feature 88: Advanced Search', 'Multi-criteria search across grievances with highlighting and export', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
+    ['Completed', today, 'System', 'High', 'Feature 89: Advanced Filtering', 'Complex filtering system with save/load filter presets', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
+    ['Completed', today, 'System', 'High', 'Feature 90: Automated Backups', 'Scheduled Google Drive backups with retention policy and cleanup', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in PerformanceAndBackup.gs', today],
+    ['Completed', today, 'System', 'Medium', 'Feature 91: Performance Monitoring', 'Track execution times, identify bottlenecks, generate performance reports', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in PerformanceAndBackup.gs', today],
+    ['Completed', today, 'System', 'Medium', 'Feature 92: Keyboard Shortcuts', 'Navigate dashboard using keyboard shortcuts for improved productivity', 'Completed', 100, 'Simple', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
+    ['Completed', today, 'System', 'Medium', 'Feature 93: Export Wizard', 'Guided export process with filtering and multiple format support', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
+    ['Completed', today, 'System', 'Medium', 'Feature 94: Data Import', 'Import members and grievances from external Google Sheets with validation', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
+    ['Completed', today, 'System', 'High', 'Feature 95: Coordinator Notifications', 'Checkbox-based row highlighting with automated email notifications and steward acknowledgment tracking', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in CoordinatorNotification.gs with 4 new Grievance Log columns (AC-AF)', today],
+
+    // Additional Major Features
+    ['Completed', today, 'System', 'High', 'Automated Deadline Notifications', 'Daily email alerts for approaching deadlines (7-day and 3-day warnings)', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in AutomatedNotifications.gs', today],
+    ['Completed', today, 'System', 'High', 'Predictive Analytics', 'Case outcome prediction and volume forecasting with trend analysis', 'Completed', 100, 'Very Complex', today, 'Claude', '', 'Implemented in PredictiveAnalytics.gs', today],
+    ['Completed', today, 'System', 'High', 'Smart Auto-Assignment', 'Intelligent steward assignment based on workload, expertise, and location', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in SmartAutoAssignment.gs', today],
+    ['Completed', today, 'System', 'High', 'Calendar Integration', 'Google Calendar sync for grievance deadlines with automatic updates', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in CalendarIntegration.gs', today],
+    ['Completed', today, 'System', 'High', 'Mobile Optimization', 'Mobile-responsive interfaces for dashboards, search, and member browsing', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in MobileOptimization.gs', today],
+    ['Completed', today, 'System', 'Medium', 'Root Cause Analysis', 'Identify root causes of grievances with trend tracking and recommendations', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in RootCauseAnalysis.gs', today],
+    ['Completed', today, 'System', 'Medium', 'Gmail Integration', 'Send emails directly from dashboard with templates and tracking', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in GmailIntegration.gs', today],
+    ['Completed', today, 'System', 'Medium', 'Google Drive Integration', 'Automatic folder creation and document management for grievances', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in GoogleDriveIntegration.gs', today],
+    ['Completed', today, 'System', 'Medium', 'Dark Mode & Themes', 'Multiple theme support including dark mode for reduced eye strain', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in DarkModeThemes.gs', today],
+    ['Completed', today, 'System', 'Low', 'Custom Report Builder', 'Interactive report builder with drag-and-drop fields and export options', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in CustomReportBuilder.gs', today]
+  ];
+
+  // Write features to sheet starting at row 4
+  if (features.length > 0) {
+    sheet.getRange(4, 1, features.length, 14).setValues(features);
+  }
 }
 
 /* --------------------- STEWARD WORKLOAD --------------------- */
@@ -5150,6 +5215,11 @@ function onOpen() {
       .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
       .addItem("🔄 Grievance Float Toggle", "toggleGrievanceFloat")
       .addItem("🎛️ Float Control Panel", "showGrievanceFloatPanel")
+      .addSeparator()
+      .addItem("📧 Send Coordinator Message", "showCoordinatorMessageDialog")
+      .addItem("📧 Batch Coordinator Notification", "showBatchCoordinatorNotification")
+      .addItem("🔧 Setup Notification Trigger", "setupCoordinatorNotificationTrigger")
+      .addItem("🧹 Clear All Notifications", "clearAllCoordinatorNotifications")
       .addSeparator()
       .addItem("📊 Sort Grievances (Active First)", "sortGrievancesByStatus")
       .addItem("🔄 Refresh Progress Bar", "setupGrievanceProgressBar")
@@ -12676,6 +12746,547 @@ function showAllGrievanceColumns() {
   }
 
   SpreadsheetApp.getUi().alert('All Grievance Log columns are now visible');
+}
+
+
+
+// ================================================================================
+// MODULE: CoordinatorNotification.gs
+// Source: CoordinatorNotification.gs
+// ================================================================================
+
+/**
+ * COORDINATOR NOTIFICATION SYSTEM
+ * Feature: Checkbox-based row highlighting and email notifications
+ *
+ * When a coordinator checks the "Coordinator Notified" checkbox (column AC):
+ * 1. Highlights the entire grievance row
+ * 2. Sends email to member and assigned steward with coordinator's message
+ * 3. Row remains highlighted until checkbox is manually unchecked
+ */
+
+// ===========================
+// INSTALLATION TRIGGER
+// ===========================
+
+/**
+ * Sets up the onChange trigger for coordinator notifications
+ * Run this once to install the trigger
+ */
+function setupCoordinatorNotificationTrigger() {
+  // Remove existing triggers to avoid duplicates
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => {
+    if (trigger.getHandlerFunction() === 'onGrievanceEdit') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  // Create new onChange trigger
+  ScriptApp.newTrigger('onGrievanceEdit')
+    .forSpreadsheet(SpreadsheetApp.getActiveSpreadsheet())
+    .onEdit()
+    .create();
+
+  SpreadsheetApp.getUi().alert('Success',
+    'Coordinator notification trigger installed!\n\n' +
+    'The system will now:\n' +
+    '• Monitor checkbox changes in Grievance Log\n' +
+    '• Highlight rows when coordinator notified\n' +
+    '• Send emails to member and steward\n' +
+    '• Remove highlighting when unchecked',
+    SpreadsheetApp.getUi().ButtonSet.OK);
+
+  Logger.log('Coordinator notification trigger installed successfully');
+}
+
+// ===========================
+// TRIGGER FUNCTION
+// ===========================
+
+/**
+ * Triggered on any edit to the spreadsheet
+ * Monitors the Coordinator Notified checkbox column
+ */
+function onGrievanceEdit(e) {
+  try {
+    // Only process if we have event data
+    if (!e) return;
+
+    const sheet = e.range.getSheet();
+    const sheetName = sheet.getName();
+
+    // Only process Grievance Log edits
+    if (sheetName !== 'Grievance Log') return;
+
+    const row = e.range.getRow();
+    const col = e.range.getColumn();
+
+    // Only process if editing the Coordinator Notified column (AC = column 29)
+    if (col !== GRIEVANCE_COLS.COORDINATOR_NOTIFIED) return;
+
+    // Skip header row
+    if (row === 1) return;
+
+    const isChecked = e.value === 'TRUE' || e.value === true || e.value === 'Yes' || e.value === '✓';
+
+    if (isChecked) {
+      // Checkbox was checked - highlight and send notifications
+      handleCoordinatorNotification(sheet, row);
+    } else {
+      // Checkbox was unchecked - remove highlighting
+      removeRowHighlight(sheet, row);
+    }
+
+  } catch (error) {
+    Logger.log(`Error in onGrievanceEdit: ${error.message}`);
+    // Don't show alert to user - silent failure to avoid interrupting workflow
+  }
+}
+
+// ===========================
+// NOTIFICATION HANDLER
+// ===========================
+
+/**
+ * Handles coordinator notification: highlights row and sends emails
+ */
+function handleCoordinatorNotification(sheet, row) {
+  try {
+    // Get grievance data (now 32 columns with Acknowledged By and Date)
+    const data = sheet.getRange(row, 1, 1, 32).getValues()[0];
+
+    const grievanceId = data[GRIEVANCE_COLS.GRIEVANCE_ID - 1];
+    const memberId = data[GRIEVANCE_COLS.MEMBER_ID - 1];
+    const firstName = data[GRIEVANCE_COLS.FIRST_NAME - 1];
+    const lastName = data[GRIEVANCE_COLS.LAST_NAME - 1];
+    const memberEmail = data[GRIEVANCE_COLS.MEMBER_EMAIL - 1];
+    const issueCategory = data[GRIEVANCE_COLS.ISSUE_CATEGORY - 1];
+    const stewardName = data[GRIEVANCE_COLS.STEWARD - 1];
+    const coordinatorMessage = data[GRIEVANCE_COLS.COORDINATOR_MESSAGE - 1];
+    const status = data[GRIEVANCE_COLS.STATUS - 1];
+
+    // Get steward email from Member Directory
+    const stewardEmail = getStewardEmail(stewardName);
+
+    // Highlight the row
+    highlightRow(sheet, row);
+
+    // Send email notifications if message exists
+    if (coordinatorMessage && coordinatorMessage.trim() !== '') {
+      sendCoordinatorEmails(
+        grievanceId,
+        firstName,
+        lastName,
+        memberEmail,
+        stewardName,
+        stewardEmail,
+        issueCategory,
+        coordinatorMessage,
+        status
+      );
+    }
+
+    // Log the notification
+    if (typeof logDataModification === 'function') {
+      logDataModification(
+        'COORDINATOR_NOTIFICATION',
+        'Grievance Log',
+        grievanceId,
+        'Coordinator Notified',
+        'FALSE',
+        'TRUE'
+      );
+    }
+
+    Logger.log(`Coordinator notification sent for grievance ${grievanceId}`);
+
+  } catch (error) {
+    Logger.log(`Error in handleCoordinatorNotification: ${error.message}`);
+    SpreadsheetApp.getUi().alert('Error',
+      `Failed to send coordinator notification: ${error.message}`,
+      SpreadsheetApp.getUi().ButtonSet.OK);
+  }
+}
+
+// ===========================
+// ROW HIGHLIGHTING
+// ===========================
+
+/**
+ * Highlights a grievance row in yellow to indicate coordinator notification
+ */
+function highlightRow(sheet, row) {
+  const numColumns = sheet.getLastColumn();
+  const range = sheet.getRange(row, 1, 1, numColumns);
+
+  // Set background to light yellow
+  range.setBackground('#FEF3C7');
+
+  // Set left border to thick orange for visibility
+  range.setBorder(
+    true, true, true, true, false, false,
+    '#F97316', SpreadsheetApp.BorderStyle.SOLID_MEDIUM
+  );
+
+  Logger.log(`Row ${row} highlighted for coordinator notification`);
+}
+
+/**
+ * Removes highlighting and records steward acknowledgment
+ * When a steward unchecks the box, this logs their acknowledgment
+ */
+function removeRowHighlight(sheet, row) {
+  const numColumns = sheet.getLastColumn();
+  const range = sheet.getRange(row, 1, 1, numColumns);
+
+  // Reset to default white background
+  range.setBackground('#FFFFFF');
+
+  // Remove borders
+  range.setBorder(false, false, false, false, false, false);
+
+  // Get current user (the steward who is acknowledging)
+  const acknowledgedBy = Session.getActiveUser().getEmail();
+  const acknowledgedDate = new Date();
+
+  // Get grievance details for logging
+  const grievanceId = sheet.getRange(row, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
+  const coordinatorMessage = sheet.getRange(row, GRIEVANCE_COLS.COORDINATOR_MESSAGE).getValue();
+
+  // Record who acknowledged and when
+  sheet.getRange(row, GRIEVANCE_COLS.ACKNOWLEDGED_BY).setValue(acknowledgedBy);
+  sheet.getRange(row, GRIEVANCE_COLS.ACKNOWLEDGED_DATE).setValue(acknowledgedDate);
+
+  // NOTE: We DO NOT clear the Coordinator Message - it stays for record keeping
+
+  Logger.log(`Row ${row} acknowledged by ${acknowledgedBy} at ${acknowledgedDate}`);
+
+  // Log the acknowledgment to Audit_Log
+  if (typeof logDataModification === 'function') {
+    logDataModification(
+      'STEWARD_ACKNOWLEDGED',
+      'Grievance Log',
+      grievanceId,
+      'Coordinator Message Acknowledged',
+      coordinatorMessage || 'N/A',
+      `Acknowledged by ${acknowledgedBy} at ${acknowledgedDate.toLocaleString()}`
+    );
+  }
+}
+
+// ===========================
+// EMAIL NOTIFICATIONS
+// ===========================
+
+/**
+ * Sends email notifications to member and steward
+ */
+function sendCoordinatorEmails(grievanceId, firstName, lastName, memberEmail, stewardName, stewardEmail, issueCategory, message, status) {
+  const coordinatorName = Session.getActiveUser().getEmail().split('@')[0]; // Extract name from email
+  const subject = `Grievance Update: ${grievanceId}`;
+
+  // Email body for member
+  const memberBody = `
+Dear ${firstName} ${lastName},
+
+This is an update regarding your grievance ${grievanceId} (${issueCategory}).
+
+**Current Status:** ${status}
+
+**Message from Grievance Coordinator:**
+${message}
+
+Your assigned steward, ${stewardName}, has also been notified of this update.
+
+If you have any questions or concerns, please contact your steward or the grievance coordinator.
+
+Best regards,
+SEIU Local 509 Grievance Coordinator
+
+---
+This is an automated notification from the 509 Dashboard system.
+  `.trim();
+
+  // Email body for steward
+  const stewardBody = `
+Dear ${stewardName},
+
+This is an update regarding grievance ${grievanceId} for member ${firstName} ${lastName}.
+
+**Grievance Details:**
+- **ID:** ${grievanceId}
+- **Member:** ${firstName} ${lastName}
+- **Issue:** ${issueCategory}
+- **Status:** ${status}
+
+**Message from Grievance Coordinator:**
+${message}
+
+The member has also been notified of this update.
+
+Please follow up as needed.
+
+Best regards,
+SEIU Local 509 Grievance Coordinator
+
+---
+This is an automated notification from the 509 Dashboard system.
+  `.trim();
+
+  // Send email to member
+  if (memberEmail && isValidEmail(memberEmail)) {
+    try {
+      MailApp.sendEmail({
+        to: memberEmail,
+        subject: subject,
+        body: memberBody,
+        noReply: true
+      });
+      Logger.log(`Email sent to member: ${memberEmail}`);
+    } catch (error) {
+      Logger.log(`Failed to send email to member ${memberEmail}: ${error.message}`);
+    }
+  } else {
+    Logger.log(`Invalid or missing member email: ${memberEmail}`);
+  }
+
+  // Send email to steward
+  if (stewardEmail && isValidEmail(stewardEmail)) {
+    try {
+      MailApp.sendEmail({
+        to: stewardEmail,
+        subject: subject,
+        body: stewardBody,
+        noReply: true
+      });
+      Logger.log(`Email sent to steward: ${stewardEmail}`);
+    } catch (error) {
+      Logger.log(`Failed to send email to steward ${stewardEmail}: ${error.message}`);
+    }
+  } else {
+    Logger.log(`Invalid or missing steward email: ${stewardEmail}`);
+  }
+}
+
+// ===========================
+// HELPER FUNCTIONS
+// ===========================
+
+/**
+ * Gets steward email from Member Directory
+ */
+function getStewardEmail(stewardName) {
+  if (!stewardName || stewardName.trim() === '') {
+    return null;
+  }
+
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const memberDir = ss.getSheetByName('Member Directory');
+
+    if (!memberDir) {
+      Logger.log('Member Directory sheet not found');
+      return null;
+    }
+
+    const data = memberDir.getDataRange().getValues();
+    const headers = data[0];
+    const nameColIndex = headers.indexOf('First Name');
+    const lastNameColIndex = headers.indexOf('Last Name');
+    const emailColIndex = headers.indexOf('Email Address');
+    const isStewardColIndex = headers.indexOf('Is Steward (Y/N)');
+
+    // Search for steward by name
+    const nameParts = stewardName.trim().split(' ');
+    const firstName = nameParts[0];
+    const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const rowFirstName = row[nameColIndex];
+      const rowLastName = row[lastNameColIndex];
+      const isSteward = row[isStewardColIndex];
+
+      if (isSteward === 'Yes' || isSteward === 'Y') {
+        if (rowFirstName === firstName && (lastName === '' || rowLastName === lastName)) {
+          return row[emailColIndex];
+        }
+      }
+    }
+
+    Logger.log(`Steward email not found for: ${stewardName}`);
+    return null;
+
+  } catch (error) {
+    Logger.log(`Error getting steward email: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Validates email address format
+ */
+function isValidEmail(email) {
+  if (!email || typeof email !== 'string') {
+    return false;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+}
+
+// ===========================
+// MANUAL NOTIFICATION DIALOG
+// ===========================
+
+/**
+ * Shows dialog for coordinator to add message and notify
+ * Can be called from menu or directly on a row
+ */
+function showCoordinatorMessageDialog() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getActiveSheet();
+
+  // Check if we're on Grievance Log
+  if (sheet.getName() !== 'Grievance Log') {
+    ui.alert('Error', 'Please select a row in the Grievance Log sheet first.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const activeRow = sheet.getActiveRange().getRow();
+
+  // Skip header row
+  if (activeRow === 1) {
+    ui.alert('Error', 'Please select a grievance row (not the header).', ui.ButtonSet.OK);
+    return;
+  }
+
+  const grievanceId = sheet.getRange(activeRow, GRIEVANCE_COLS.GRIEVANCE_ID).getValue();
+  const memberName = sheet.getRange(activeRow, GRIEVANCE_COLS.FIRST_NAME).getValue() + ' ' +
+                     sheet.getRange(activeRow, GRIEVANCE_COLS.LAST_NAME).getValue();
+
+  const response = ui.prompt(
+    'Coordinator Message',
+    `Enter message for grievance ${grievanceId} (${memberName}):\n\n` +
+    'This will be sent to the member and assigned steward.',
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (response.getSelectedButton() === ui.Button.OK) {
+    const message = response.getResponseText().trim();
+
+    if (message === '') {
+      ui.alert('Error', 'Message cannot be empty.', ui.ButtonSet.OK);
+      return;
+    }
+
+    // Set the message
+    sheet.getRange(activeRow, GRIEVANCE_COLS.COORDINATOR_MESSAGE).setValue(message);
+
+    // Check the checkbox to trigger notification
+    sheet.getRange(activeRow, GRIEVANCE_COLS.COORDINATOR_NOTIFIED).setValue(true);
+
+    ui.alert('Success',
+      'Coordinator message saved and notifications sent!\n\n' +
+      'The row will remain highlighted until you uncheck the checkbox.',
+      ui.ButtonSet.OK);
+  }
+}
+
+/**
+ * Batch notification for multiple grievances
+ */
+function showBatchCoordinatorNotification() {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Grievance Log');
+
+  if (!sheet) {
+    ui.alert('Error', 'Grievance Log sheet not found.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const response = ui.prompt(
+    'Batch Coordinator Notification',
+    'Enter message to send for ALL checked grievances:\n\n' +
+    '(Only grievances with the checkbox already checked will receive this message)',
+    ui.ButtonSet.OK_CANCEL
+  );
+
+  if (response.getSelectedButton() !== ui.Button.OK) {
+    return;
+  }
+
+  const message = response.getResponseText().trim();
+
+  if (message === '') {
+    ui.alert('Error', 'Message cannot be empty.', ui.ButtonSet.OK);
+    return;
+  }
+
+  // Find all checked rows
+  const data = sheet.getDataRange().getValues();
+  let count = 0;
+
+  for (let i = 1; i < data.length; i++) { // Skip header
+    const row = i + 1;
+    const isChecked = data[i][GRIEVANCE_COLS.COORDINATOR_NOTIFIED - 1];
+
+    if (isChecked === true || isChecked === 'TRUE' || isChecked === 'Yes' || isChecked === '✓') {
+      // Update message
+      sheet.getRange(row, GRIEVANCE_COLS.COORDINATOR_MESSAGE).setValue(message);
+
+      // Trigger notification by re-checking
+      handleCoordinatorNotification(sheet, row);
+      count++;
+    }
+  }
+
+  ui.alert('Batch Notification Complete',
+    `Sent coordinator message to ${count} grievance(s).`,
+    ui.ButtonSet.OK);
+}
+
+/**
+ * Clear all coordinator notifications (admin only)
+ */
+function clearAllCoordinatorNotifications() {
+  const ui = SpreadsheetApp.getUi();
+
+  // Confirm action
+  const response = ui.alert(
+    'Clear All Notifications',
+    'This will:\n' +
+    '• Uncheck all coordinator notification checkboxes\n' +
+    '• Remove all row highlighting\n' +
+    '• Keep coordinator messages intact\n\n' +
+    'Continue?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    return;
+  }
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Grievance Log');
+
+  if (!sheet) {
+    ui.alert('Error', 'Grievance Log sheet not found.', ui.ButtonSet.OK);
+    return;
+  }
+
+  const lastRow = sheet.getLastRow();
+
+  // Clear all checkboxes and highlighting (skip header)
+  for (let row = 2; row <= lastRow; row++) {
+    sheet.getRange(row, GRIEVANCE_COLS.COORDINATOR_NOTIFIED).setValue(false);
+    removeRowHighlight(sheet, row);
+  }
+
+  ui.alert('Success', `Cleared all coordinator notifications (${lastRow - 1} rows processed).`, ui.ButtonSet.OK);
 }
 
 

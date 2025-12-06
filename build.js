@@ -88,6 +88,7 @@ const CORE_MODULES = [
   'BatchOperations.gs',
   'CalendarIntegration.gs',
   'ColumnToggles.gs',
+  'CoordinatorNotification.gs',      // Feature 95: Coordinator notification system
   'CustomReportBuilder.gs',
   'DarkModeThemes.gs',
   'DataBackupRecovery.gs',
