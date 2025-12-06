@@ -479,11 +479,11 @@ function createMobileDashboardHTML() {
         let startX = 0;
         let currentX = 0;
 
-        card.addEventListenerfunction('touchstart', (e) {
+        card.addEventListener('touchstart', function(e) {
           startX = e.touches[0].clientX;
         });
 
-        card.addEventListenerfunction('touchmove', (e) {
+        card.addEventListener('touchmove', function(e) {
           currentX = e.touches[0].clientX;
           const diff = currentX - startX;
           if (Math.abs(diff) > 10) {
@@ -491,12 +491,12 @@ function createMobileDashboardHTML() {
           }
         });
 
-        card.addEventListenerfunction('touchend', () {
+        card.addEventListener('touchend', function() {
           const diff = currentX - startX;
           if (Math.abs(diff) > 100) {
             // Swipe action
             card.style.opacity = '0.5';
-            setTimeout(function() { return card.style.display = 'none', 200; });
+            setTimeout(function() { card.style.display = 'none'; }, 200);
           } else {
             card.style.transform = '';
           }
@@ -541,11 +541,11 @@ function createMobileDashboardHTML() {
 
     // Pull-to-refresh
     let touchStartY = 0;
-    document.addEventListenerfunction('touchstart', (e) {
+    document.addEventListener('touchstart', function(e) {
       touchStartY = e.touches[0].clientY;
     });
 
-    document.addEventListenerfunction('touchmove', (e) {
+    document.addEventListener('touchmove', function(e) {
       const touchY = e.touches[0].clientY;
       if (touchY - touchStartY > 150 && window.scrollY === 0) {
         refreshDashboard();

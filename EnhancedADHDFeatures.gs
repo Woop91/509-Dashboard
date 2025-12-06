@@ -356,22 +356,22 @@ function createADHDControlPanelHTML() {
 
     function toggleZebraStripes() {
       google.script.run.toggleZebraStripes();
-      setTimeout(function() { return location.reload(), 1000; });
+      setTimeout(function() { location.reload(); }, 1000);
     }
 
     function toggleGridlines() {
       google.script.run.toggleGridlinesADHD();
-      setTimeout(function() { return location.reload(), 1000; });
+      setTimeout(function() { location.reload(); }, 1000);
     }
 
     function toggleReducedMotion() {
       google.script.run.toggleReducedMotion();
-      setTimeout(function() { return location.reload(), 1000; });
+      setTimeout(function() { location.reload(); }, 1000);
     }
 
     function toggleComplexityIndicators() {
       google.script.run.toggleComplexityIndicators();
-      setTimeout(function() { return location.reload(), 1000; });
+      setTimeout(function() { location.reload(); }, 1000);
     }
 
     function activateFocusMode() {
