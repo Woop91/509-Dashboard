@@ -1920,26 +1920,26 @@ function onOpen() {
     return;
   }
 
-  // ============ 🚀 FIRST TIME SETUP MENU ============
-  // Put this first so new users see it immediately
+  // ============ 🚀 OPTIONAL EXTRAS MENU ============
+  // NOTE: CREATE_509_DASHBOARD already sets up all sheets, validations, and dropdowns.
+  // This menu contains OPTIONAL extras - automations and verification tools.
   // Can be hidden via Admin > View & Display > Hide Setup Menu
   if (!isSetupMenuHidden()) {
-    ui.createMenu("🚀 Setup")
+    ui.createMenu("🚀 Optional Extras")
       .addItem("📚 Getting Started Guide", "showGettingStartedGuide")
       .addItem("❓ Help", "showHelp")
       .addSeparator()
-      .addSubMenu(ui.createMenu("1️⃣ Initial Setup (Run First)")
-        .addItem("🎨 Setup Dashboard Enhancements", "SETUP_DASHBOARD_ENHANCEMENTS")
-        .addItem("📋 Setup Member Directory Dropdowns", "setupMemberDirectoryDropdowns")
-        .addItem("🔄 Refresh Steward Dropdowns", "refreshStewardDropdowns"))
-      .addSeparator()
-      .addSubMenu(ui.createMenu("2️⃣ Enable Automations")
+      .addSubMenu(ui.createMenu("⚡ Enable Automations (Optional)")
         .addItem("✅ Enable Automated Backups", "setupAutomatedBackups")
         .addItem("✅ Enable Daily Deadline Notifications", "setupDailyDeadlineNotifications")
         .addItem("✅ Enable Monthly Reports", "setupMonthlyReports")
         .addItem("✅ Enable Quarterly Reports", "setupQuarterlyReports"))
       .addSeparator()
-      .addSubMenu(ui.createMenu("3️⃣ Verify Setup")
+      .addSubMenu(ui.createMenu("🔄 Refresh Dropdowns (If Needed)")
+        .addItem("🔄 Refresh Steward Dropdowns", "refreshStewardDropdowns")
+        .addItem("ℹ️ Note: Only use if stewards changed", "showDropdownRefreshInfo"))
+      .addSeparator()
+      .addSubMenu(ui.createMenu("🔍 Verify & Diagnose")
         .addItem("🧪 Run All Tests", "runAllTests")
         .addItem("📊 View Test Results", "showTestResults")
         .addItem("🔧 Diagnose Setup", "DIAGNOSE_SETUP")
@@ -2737,6 +2737,34 @@ No fake CPU/memory metrics - everything tracks actual union activity.
   `;
 
   SpreadsheetApp.getUi().alert("Help", helpText, SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+/**
+ * Shows info about when to refresh dropdowns
+ * Called from Optional Extras menu to explain dropdown refresh
+ */
+function showDropdownRefreshInfo() {
+  const infoText = `
+🔄 DROPDOWN REFRESH INFO
+
+The dropdowns are automatically set up when you run CREATE_509_DASHBOARD.
+
+You only need to refresh dropdowns if:
+• You added new stewards to Member Directory
+• You changed steward assignments
+• Dropdown lists appear empty or incorrect
+
+⚠️ IMPORTANT: Do NOT run "Setup Dashboard Enhancements" or
+"Setup Member Directory Dropdowns" from older menus - these can
+conflict with the validations already set up by CREATE_509_DASHBOARD.
+
+If you experience dropdown issues:
+1. First try "Refresh Steward Dropdowns" (safe)
+2. If still broken, run DIAGNOSE_SETUP from Verify & Diagnose menu
+3. Contact support if issues persist
+  `;
+
+  SpreadsheetApp.getUi().alert("Dropdown Refresh Info", infoText, SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
 /* --------------------- SEED MEMBERS (WITH TOGGLES) --------------------- */

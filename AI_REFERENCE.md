@@ -83,10 +83,17 @@
 - ✅ **DIAGNOSE_SETUP()** - Comprehensive system health check function
 - ✅ **Enhanced nukeSeedData()** - True nuclear option for clearing all test data
 - ✅ **Build System** - Auto-generate ConsolidatedDashboard.gs with 60 modules
+- ✅ **Coordinator Notification System** - Feature 95 for grievance coordinator notifications
+
+**Menu System Updates:**
+- 🔄 **Renamed "🚀 Setup" to "🚀 Optional Extras"** - Clarifies menu is optional after CREATE_509_DASHBOARD
+- ❌ **Removed conflicting Initial Setup items** - "Setup Dashboard Enhancements" and "Setup Member Directory Dropdowns" were removed as they conflicted with CREATE_509_DASHBOARD validations
+- ➕ **Added showDropdownRefreshInfo()** - Explains when to refresh dropdowns
 
 **Critical Bug Fixes:**
 - 🐛 **Fixed build.js syntax error** - MODULES array was improperly terminated
-- 🐛 **Fixed missing modules in build** - Added 5 modules that were not in build configuration
+- 🐛 **Fixed missing modules in build** - Added CoordinatorNotification.gs and 5 other modules that were not in build configuration
+- 🐛 **Fixed Setup menu conflicts** - Initial Setup items were duplicating/overwriting CREATE_509_DASHBOARD validations
 - 🐛 **Fixed updateMemberDirectorySnapshots() column bug** - Was overwriting formula columns (Z, AA, AB), now correctly writes to AC, AD, AE
 - 🐛 **Fixed ADHDEnhancements.gs sheet references** - Removed invalid sheet name constants
 - 🐛 **Added null checks to clearAllData()** - Prevents errors if sheets don't exist
