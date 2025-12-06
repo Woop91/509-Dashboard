@@ -2375,6 +2375,217 @@ grep -n "function createGrievanceFolder(" *.gs
 
 ---
 
+## Comprehensive Code Audit - Version 2.7
+
+### 1. Large Multi-Responsibility Functions (Refactoring Opportunities)
+
+**Priority 1 - Critical (400+ lines):**
+
+| Function | File | Lines | Size | Responsibilities |
+|----------|------|-------|------|------------------|
+| `createMobileDashboardHTML()` | MobileOptimization.gs | 138-558 | 420 | HTML, CSS, JS, data fetching, event handling |
+| `getUnifiedOperationsMonitorHTML()` | UnifiedOperationsMonitor.gs | 717-1116 | 399 | HTML, terminal CSS, 7 dashboard sections |
+| `createVisualizationBuilderHTML()` | AdvancedVisualization.gs | 51-436 | 385 | HTML, CSS, chart library integration |
+| `createMobileUnifiedSearchHTML()` | MobileOptimization.gs | 921-1284 | 363 | HTML, CSS, JS, tab/filter/search logic |
+
+**Priority 2 - High (250-350 lines):**
+
+| Function | File | Lines | Size | Responsibilities |
+|----------|------|-------|------|------------------|
+| `createInteractiveDashboardSheet()` | InteractiveDashboard.gs | 19-330 | 311 | Sheet creation, formatting, layout, validation |
+| `seedMembersWithCount()` | Code.gs | 2792-3063 | 271 | Config reading, data generation, writing, UI |
+| `showSharingOptionsDialog()` | GrievanceWorkflow.gs | 618-842 | 224 | Data fetching, HTML generation, dialog |
+| `seedGrievancesWithCount()` | Code.gs | 3092-3300 | 208 | Data fetching, date math, batch writing |
+
+**Refactoring Recommendations:**
+- Extract HTML/CSS/JS into separate template helper functions
+- Split data fetching from rendering
+- Create `buildDashboardViewModel()`, `renderDashboardCards()` patterns
+- Keep public entry function names, orchestrate smaller helpers internally
+
+---
+
+### 2. Mixed var/let/const Usage
+
+**Current State:** 6 instances of `var` across 3 files (mostly clean)
+
+| File | Line | Pattern | Fix |
+|------|------|---------|-----|
+| ConsolidatedDashboard.gs | 812 | `var letter = ''` in loop | Change to `let` |
+| ConsolidatedDashboard.gs | 831 | `var number = 0` in loop | Change to `let` |
+| ConsolidatedDashboard.gs | 50446 | `var nextAction` in forEach callback | Change to `let` |
+| Constants.gs | 782 | `var letter = ''` (duplicate) | Change to `let` |
+| Constants.gs | 801 | `var number = 0` (duplicate) | Change to `let` |
+| Code.test.gs | 157 | `var nextAction` in forEach | Change to `let` |
+
+**Note:** `getColumnLetter()` and `getColumnNumber()` are duplicated in both Constants.gs and ConsolidatedDashboard.gs.
+
+---
+
+### 3. Unused/Dead Code Functions (29 functions)
+
+**⚠️ These functions are defined but NEVER called anywhere:**
+
+**SecurityService.gs (10 functions):**
+- `withPermission()` - Line 295
+- `logDataChange()` - Line 405
+- `logUserAccess()` - Line 416
+- `filterMemberDataByPermission()` - Line 434 ⚠️ SECURITY CRITICAL
+- `filterGrievanceDataByPermission()` - Line 484 ⚠️ SECURITY CRITICAL
+- `protectedSeedMembers()` - Line 551
+- `protectedClearAllData()` - Line 562
+- `showUserManagement()` - Line 588
+- `showAuditLog()` - Line 617
+- `exportAuditLog()` - Line 647
+
+**SecurityUtils.gs (6 functions):**
+- `sanitizeArray()` - Line 122
+- `isValidDate()` - Line 425
+- `validateInput()` - Line 446
+- `getAuditLog()` - Line 597
+- `getAllMemberEmails()` - Line 734
+- `showSecurityAudit()` - Line 857
+
+**DarkModeThemes.gs (3 functions):**
+- `exportCurrentTheme()` - Line 728
+- `importThemeFromJSON()` - Line 741
+- `installAutoThemeTrigger()` - Line 753
+
+**DataCachingLayer.gs (2 functions):**
+- `onEditCacheInvalidation()` - Line 423
+- `getCachePerformanceStats()` - Line 443
+
+**CalendarIntegration.gs (2 functions):**
+- `syncSingleDeadlineToCalendar()` - Line 173
+- `removeCalendarEvent()` - Line 258
+
+**Constants.gs (2 functions):**
+- `getFullVersionString()` - Line 766
+- `validateRequiredSheets()` - Line 842
+
+**Other Files (4 functions):**
+- `applyUserSettings()` - ADHDEnhancements.gs:379
+- `ADD_RECOMMENDATIONS_TO_FEATURES_TAB()` - AddRecommendations.gs:13
+- `benchmarkGrievanceRecalc()` - BatchGrievanceRecalc.gs:237
+- `verifyBackup()` - DataBackupRecovery.gs:506
+
+**Missing Function:**
+- `toggleGrievanceColumns` - Referenced in docs but not defined anywhere
+
+**Recommendation:** Either wire these functions into menus/code paths or move to an archive file.
+
+---
+
+### 4. Placeholder/Stub Implementations
+
+**High Priority - Configuration Required:**
+
+| File | Function/Config | Issue |
+|------|-----------------|-------|
+| GrievanceWorkflow.gs:25 | `GRIEVANCE_FORM_CONFIG.FORM_URL` | Contains `YOUR_FORM_ID` placeholder |
+| GrievanceWorkflow.gs:33-44 | Entry field IDs | Mock IDs `entry.1000000XXX` |
+| MemberDirectoryGoogleFormLink.gs:19 | `MEMBER_FORM_CONFIG.FORM_URL` | Contains `YOUR_MEMBER_FORM_ID` placeholder |
+| MemberDirectoryGoogleFormLink.gs:22-32 | Entry field IDs | Mock IDs `entry.2000000XXX` |
+
+**Medium Priority - Placeholder Functions:**
+
+| File | Line | Function | Returns |
+|------|------|----------|---------|
+| MobileOptimization.gs | 76-100 | `getDeviceAnalytics()` | Hardcoded zeros |
+| AutomatedReports.gs | 540-548 | `getReportRecipients()` | Script owner only |
+| DataCachingLayer.gs | 440-450 | `getCachePerformanceStats()` | Basic info only |
+| ReleaseNotes.gs | 604-614 | `checkForUpdates()` | Fixed version info |
+| EnhancedHelp.gs | 352 | Video tutorials | "Coming soon!" message |
+| AdvancedExport.gs | 295-304 | Date range filtering | Exports full sheet |
+| QuickActionsMenu.gs | 788-803 | Calendar sync | Toast only, no actual sync |
+
+---
+
+### 5. Security & Permission Filtering Gaps ⚠️ CRITICAL
+
+**Problem:** Permission filtering functions exist but are NEVER CALLED.
+
+**Data Exposure Paths Without Permission Checks:**
+
+| Function | File | Risk Level | Exposed Data |
+|----------|------|------------|--------------|
+| `exportToCSV()` | AdvancedExport.gs:179 | 🔴 Critical | All PII - emails, phones, names |
+| `exportToExcel()` | AdvancedExport.gs:204 | 🔴 Critical | Complete spreadsheet |
+| `exportToJSON()` | AdvancedExport.gs:254 | 🔴 Critical | All data in JSON |
+| `getMobileDashboardStats()` | MobileOptimization.gs:564 | 🟠 High | All member/grievance data |
+| `getRecentGrievancesForMobile()` | MobileOptimization.gs:617 | 🟠 High | Member names, issues |
+| `getUnifiedDashboardData()` | UnifiedOperationsMonitor.gs:36 | 🟠 High | Complete dashboard metrics |
+| `generateReportData()` | CustomReportBuilder.gs:647 | 🟠 High | All selected data |
+| `gatherMonthlyData()` | AutomatedReports.gs:136 | 🟡 Medium | Steward assignments |
+| `createMobileDashboardHTML()` | MobileOptimization.gs:138 | 🟠 High | Raw data embedded in JS |
+
+**Required Fixes:**
+1. Wrap data access functions with `requirePermission()` checks
+2. Call `filterMemberDataByPermission()` / `filterGrievanceDataByPermission()` BEFORE returning data
+3. Apply PII masking in exports for non-admin roles
+4. Filter HTML embedded data before sending to client
+
+**Role-Based Access Expected (but not enforced):**
+- **MEMBER:** Should only see own data
+- **STEWARD:** Should only see assigned grievances
+- **VIEWER:** Should see anonymized data (emails/phones as `[REDACTED]`)
+- **Currently:** Everyone sees ALL data
+
+---
+
+### 6. Testing & Tooling Recommendations
+
+**Pre-Commit Checks (add to build.js):**
+```bash
+# Check for broken patterns
+grep "addEventListenerfunction" *.gs && echo "ERROR: Broken event listener syntax"
+grep "setTimeout(function() { return.*," *.gs && echo "ERROR: Misplaced setTimeout delay"
+
+# Check for duplicate function names
+grep -h "^function " *.gs | sort | uniq -d
+
+# Check for hardcoded column references
+grep "'Member Directory'![A-Z]:[A-Z]" *.gs | wc -l
+grep "'Grievance Log'![A-Z]:[A-Z]" *.gs | wc -l
+```
+
+**HTML Template Testing:**
+- Smoke test each HTML dialog in browser console
+- Check for `addEventListenerfunction` or other syntax errors
+- Verify all `google.script.run` calls reference existing functions
+
+---
+
+### 7. Code Quality Verification Commands
+
+```bash
+# All should return 0 for clean code:
+
+# Broken event listeners
+grep "addEventListenerfunction" *.gs | wc -l
+
+# Misplaced setTimeout delays
+grep "setTimeout(function() { return.*," *.gs | wc -l
+
+# Hardcoded sheet column references
+grep "'Member Directory'![A-Z]:[A-Z]" *.gs | wc -l
+grep "'Grievance Log'![A-Z]:[A-Z]" *.gs | wc -l
+
+# Hardcoded array indices in UnifiedOperationsMonitor
+grep "g\[[0-9]\+\]\|m\[[0-9]\+\]" UnifiedOperationsMonitor.gs | wc -l
+
+# Check for placeholder form URLs
+grep "YOUR_FORM_ID\|YOUR_MEMBER_FORM_ID" *.gs
+
+# Find var declarations (should migrate to let/const)
+grep "^\s*var " *.gs | wc -l
+
+# Find duplicate function definitions
+grep -h "^function " *.gs | sort | uniq -d
+```
+
+---
+
 ## Support & Maintenance
 
 ### How to Debug Issues
