@@ -78,10 +78,9 @@ function sensitiveFunction() {
 
 **Before:**
 ```javascript
-// Constants duplicated in 3+ files
+// Constants duplicated in multiple files
 const SHEETS = { CONFIG: "Config", ... };  // Code.gs
-const SHEETS = { CONFIG: "Config", ... };  // Complete509Dashboard.gs
-const SHEETS = { CONFIG: "Config", ... };  // ConsolidatedDashboard.gs
+const SHEETS = { CONFIG: "Config", ... };  // Other files
 ```
 
 **After:**
@@ -90,11 +89,11 @@ const SHEETS = { CONFIG: "Config", ... };  // ConsolidatedDashboard.gs
 const SHEETS = { CONFIG: "Config", ... };  // Constants.gs only
 ```
 
-### 3. build.js (New - 280 lines)
+### 3. build.js (Updated)
 **Purpose:** Automated build system
 
 **Features:**
-- Automatically concatenates all 51 modules into ConsolidatedDashboard.gs
+- Automatically concatenates all 59 modules into ConsolidatedDashboard.gs
 - Eliminates manual sync errors
 - Version stamping
 - Build verification
@@ -521,10 +520,10 @@ showSecurityAudit();  // Shows comprehensive security report
 **Example:**
 ```javascript
 // Before: Change filing deadline from 21 to 14 days
-// Must edit: Code.gs, Complete509Dashboard.gs, ConsolidatedDashboard.gs
+// Must edit multiple files manually
 
 // After: Change filing deadline from 21 to 14 days
-// Edit Constants.gs only:
+// Edit Constants.gs only, then run: node build.js --production
 const GRIEVANCE_TIMELINES = {
   FILING_DEADLINE_DAYS: 14,  // Changed from 21
   // ...

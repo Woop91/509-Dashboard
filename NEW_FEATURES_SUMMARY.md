@@ -149,50 +149,42 @@ Rename `onOpen_Reorganized()` to `onOpen()` in ReorganizedMenu.gs, and rename th
 
 Dropdowns have been added for these columns via `setupMemberDirectoryDropdowns()`.
 
-## Applying Changes to ConsolidatedDashboard.gs
+## Building & Deploying
 
-⚠️ **CRITICAL**: The following changes MUST be applied to both ConsolidatedDashboard.gs and Complete509Dashboard.gs:
+ConsolidatedDashboard.gs is **auto-generated** by the build system. No manual sync required!
 
-### 1. Update GRIEVANCE_COLS Constant
-Add two new columns to GRIEVANCE_COLS (around line 96):
-```javascript
-  STEWARD: 27,          // AA
-  RESOLUTION: 28,       // AB
-  DRIVE_FOLDER_ID: 29,  // AC - Google Drive folder ID
-  DRIVE_FOLDER_URL: 30  // AD - Google Drive folder URL
-};
+### To Rebuild ConsolidatedDashboard.gs:
+
+```bash
+# Production build (excludes tests)
+node build.js --production
+
+# Development build (includes tests)
+node build.js
+
+# Check for duplicate declarations
+node build.js --check-duplicates
 ```
 
-### 2. Update createGrievanceLog() Headers
-Add two new headers to the headers array (around line 403):
-```javascript
-    "Resolution Summary",
-    "Drive Folder ID",
-    "Drive Folder Link"
-  ];
-```
+### Build Process Includes:
+- All 59 modules concatenated in dependency order
+- Duplicate declaration detection
+- All feature files automatically included:
+  - GrievanceFloatToggle.gs
+  - MemberDirectoryDropdowns.gs
+  - MemberDirectoryGoogleFormLink.gs
+  - ReorganizedMenu.gs
+  - And 55 other modules
 
-### 3. Append New Feature Files
-Append these files' contents to the consolidated files:
-1. `GrievanceFloatToggle.gs` - Append entire file
-2. `MemberDirectoryDropdowns.gs` - Append entire file
-3. `MemberDirectoryGoogleFormLink.gs` - Append entire file
-4. `ReorganizedMenu.gs` - Replace onOpen() function or add as alternative
-
-### 4. Update Existing Functions
-The following changes have already been made to modular files and need to be synced:
-- `GoogleDriveIntegration.gs`: Updated to use GRIEVANCE_COLS.DRIVE_FOLDER_ID and GRIEVANCE_COLS.DRIVE_FOLDER_URL
-- `GrievanceWorkflow.gs`: Added auto-folder creation in `addGrievanceToLog()`
-
-### 5. Fix Remaining Hardcoded Column References (CRITICAL)
-The consolidated files still have hardcoded column references that need to be made dynamic:
-- Complete509Dashboard.gs: Lines 1288, 1292, 1345, 1350, 1358
-- ConsolidatedDashboard.gs: Lines 1058, 1062, 1115, 1120, 1128
-
-These references to 'Grievance Log'!A:A and 'Member Directory'!J:J should use dynamic column constants per AI_REFERENCE requirements.
+### Important Notes:
+- **Never edit ConsolidatedDashboard.gs directly** - it will be overwritten on rebuild
+- Make changes to individual module files (e.g., Code.gs, Constants.gs)
+- Complete509Dashboard.gs has been **removed** (was deprecated legacy version)
 
 ## Testing Checklist
 
+- [ ] Run `node build.js --production` to generate fresh ConsolidatedDashboard.gs
+- [ ] Deploy to Google Apps Script
 - [ ] Test Grievance Float Toggle (enable/disable/sort)
 - [ ] Test Google Drive folder auto-creation on new grievance
 - [ ] Test Member Directory dropdowns (all fields)
@@ -200,7 +192,7 @@ These references to 'Grievance Log'!A:A and 'Member Directory'!J:J should use dy
 - [ ] Test emergency contact column removal
 - [ ] Test Member Google Form link (requires form configuration)
 - [ ] Test reorganized menu navigation
-- [ ] Verify all functions work in ConsolidatedDashboard.gs
+- [ ] Run DIAGNOSE_SETUP() to verify system health
 
 ## Pending Features Added
 
