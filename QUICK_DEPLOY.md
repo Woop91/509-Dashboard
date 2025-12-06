@@ -72,7 +72,14 @@ Download `ConsolidatedDashboard.gs` from this repository's main branch.
 1. Close the Apps Script editor tab
 2. Go back to your Google Sheet
 3. **Refresh the page** (F5 or Ctrl+R / Cmd+R)
-4. You should see three new menus: **👤 Dashboard**, **📊 Sheet Manager**, and **⚙️ Administrator**
+4. You should see menus including: **👤 Dashboard**, **📊 Sheet Manager**, **⚙️ Administrator**, and **🚀 Optional Extras**
+
+> ⚠️ **IMPORTANT: Skip the "Optional Extras" menu for now!**
+>
+> `CREATE_509_DASHBOARD` already set up all sheets, dropdowns, and validations.
+> The **🚀 Optional Extras** menu is for **later** - it contains automations (backups, notifications) and diagnostic tools.
+>
+> **Do NOT** run any "Setup Enhancements" or "Setup Dropdowns" functions - these can conflict with the validations already configured.
 
 ### **Step 7: Seed Test Data**
 
@@ -121,6 +128,12 @@ Your dashboard is fully operational with:
 | **👤 Dashboard** (Average User) | Daily operations, search, grievances, reports, accessibility |
 | **📊 Sheet Manager** | Data management, backups, automations, analytics |
 | **⚙️ Administrator** | System setup, seed functions, health monitoring |
+| **🚀 Optional Extras** | Enable automations, refresh dropdowns, run diagnostics |
+
+> 💡 **When to use Optional Extras:**
+> - **Enable Automations**: Set up automated backups, deadline notifications, monthly/quarterly reports
+> - **Refresh Dropdowns**: Only if you added new stewards and need to update dropdown lists
+> - **Verify & Diagnose**: Run tests and health checks if something seems wrong
 
 #### Quick Access:
 - **Refresh All**: Dashboard → 🔄 Refresh All
