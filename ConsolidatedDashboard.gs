@@ -14,7 +14,7 @@
  * Build Info:
  * - Version: 2.1.0 (Security Enhanced + Code Review Improvements)
  * - Build ID: 20251202-improvements
- * - Build Date: 2025-12-06T04:04:41.557Z
+ * - Build Date: 2025-12-06T04:26:12.255Z
  * - Build Type: PRODUCTION
  * - Modules: 60 files
  * - Tests Included: No
@@ -4219,52 +4219,6 @@ function createFeedbackSheet() {
   feedback.setFrozenRows(3);
   feedback.setTabColor(COLORS.ACCENT_PURPLE);
   feedback.setColumnWidth(1, 120); feedback.setColumnWidth(2, 110); feedback.setColumnWidth(3, 120); feedback.setColumnWidth(4, 80); feedback.setColumnWidth(5, 200); feedback.setColumnWidth(6, 300); feedback.setColumnWidth(7, 100); feedback.setColumnWidth(8, 90); feedback.setColumnWidth(9, 100); feedback.setColumnWidth(10, 110); feedback.setColumnWidth(11, 120); feedback.setColumnWidth(12, 200); feedback.setColumnWidth(13, 250); feedback.setColumnWidth(14, 110);
-
-  // Populate with implemented features
-  populateImplementedFeatures(feedback);
-}
-
-/**
- * Populates the Feedback & Development sheet with implemented features
- * @param {Sheet} sheet - The Feedback & Development sheet
- */
-function populateImplementedFeatures(sheet) {
-  const today = new Date();
-  const features = [
-    // Features 79-95 (Core Security, Performance, UI Features)
-    ['Completed', today, 'System', 'High', 'Feature 79: Audit Logging', 'Complete audit trail for all data modifications with user tracking, timestamps, and IP addresses', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
-    ['Completed', today, 'System', 'High', 'Feature 80: RBAC System', 'Role-Based Access Control with Admin, Steward, and Viewer hierarchical permissions', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
-    ['Completed', today, 'System', 'High', 'Feature 83: Input Sanitization', 'XSS protection and malicious input prevention with comprehensive validation', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
-    ['Completed', today, 'System', 'Medium', 'Feature 84: Audit Reporting', 'Generate comprehensive audit reports with filtering and export capabilities', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
-    ['Completed', today, 'System', 'Medium', 'Feature 85: Data Retention', 'Automated data retention policy enforcement with 7-year default retention', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
-    ['Completed', today, 'System', 'Medium', 'Feature 86: Suspicious Activity Detection', 'Automated detection of unusual access patterns and security threats', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in SecurityAndAdmin.gs', today],
-    ['Completed', today, 'System', 'High', 'Feature 87: Quick Actions Sidebar', 'Interactive sidebar with frequently used actions and shortcuts', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
-    ['Completed', today, 'System', 'High', 'Feature 88: Advanced Search', 'Multi-criteria search across grievances with highlighting and export', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
-    ['Completed', today, 'System', 'High', 'Feature 89: Advanced Filtering', 'Complex filtering system with save/load filter presets', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
-    ['Completed', today, 'System', 'High', 'Feature 90: Automated Backups', 'Scheduled Google Drive backups with retention policy and cleanup', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in PerformanceAndBackup.gs', today],
-    ['Completed', today, 'System', 'Medium', 'Feature 91: Performance Monitoring', 'Track execution times, identify bottlenecks, generate performance reports', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in PerformanceAndBackup.gs', today],
-    ['Completed', today, 'System', 'Medium', 'Feature 92: Keyboard Shortcuts', 'Navigate dashboard using keyboard shortcuts for improved productivity', 'Completed', 100, 'Simple', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
-    ['Completed', today, 'System', 'Medium', 'Feature 93: Export Wizard', 'Guided export process with filtering and multiple format support', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
-    ['Completed', today, 'System', 'Medium', 'Feature 94: Data Import', 'Import members and grievances from external Google Sheets with validation', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in UIFeatures.gs', today],
-    ['Completed', today, 'System', 'High', 'Feature 95: Coordinator Notifications', 'Checkbox-based row highlighting with automated email notifications and steward acknowledgment tracking', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in CoordinatorNotification.gs with 4 new Grievance Log columns (AC-AF)', today],
-
-    // Additional Major Features
-    ['Completed', today, 'System', 'High', 'Automated Deadline Notifications', 'Daily email alerts for approaching deadlines (7-day and 3-day warnings)', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in AutomatedNotifications.gs', today],
-    ['Completed', today, 'System', 'High', 'Predictive Analytics', 'Case outcome prediction and volume forecasting with trend analysis', 'Completed', 100, 'Very Complex', today, 'Claude', '', 'Implemented in PredictiveAnalytics.gs', today],
-    ['Completed', today, 'System', 'High', 'Smart Auto-Assignment', 'Intelligent steward assignment based on workload, expertise, and location', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in SmartAutoAssignment.gs', today],
-    ['Completed', today, 'System', 'High', 'Calendar Integration', 'Google Calendar sync for grievance deadlines with automatic updates', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in CalendarIntegration.gs', today],
-    ['Completed', today, 'System', 'High', 'Mobile Optimization', 'Mobile-responsive interfaces for dashboards, search, and member browsing', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in MobileOptimization.gs', today],
-    ['Completed', today, 'System', 'Medium', 'Root Cause Analysis', 'Identify root causes of grievances with trend tracking and recommendations', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in RootCauseAnalysis.gs', today],
-    ['Completed', today, 'System', 'Medium', 'Gmail Integration', 'Send emails directly from dashboard with templates and tracking', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in GmailIntegration.gs', today],
-    ['Completed', today, 'System', 'Medium', 'Google Drive Integration', 'Automatic folder creation and document management for grievances', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in GoogleDriveIntegration.gs', today],
-    ['Completed', today, 'System', 'Medium', 'Dark Mode & Themes', 'Multiple theme support including dark mode for reduced eye strain', 'Completed', 100, 'Moderate', today, 'Claude', '', 'Implemented in DarkModeThemes.gs', today],
-    ['Completed', today, 'System', 'Low', 'Custom Report Builder', 'Interactive report builder with drag-and-drop fields and export options', 'Completed', 100, 'Complex', today, 'Claude', '', 'Implemented in CustomReportBuilder.gs', today]
-  ];
-
-  // Write features to sheet starting at row 4
-  if (features.length > 0) {
-    sheet.getRange(4, 1, features.length, 14).setValues(features);
-  }
 }
 
 /* --------------------- STEWARD WORKLOAD --------------------- */
@@ -4782,6 +4736,8 @@ function setupFormulasAndCalculations() {
   const gCurrentStepCol = getColumnLetter(GRIEVANCE_COLS.CURRENT_STEP);
   const gMemberIdCol = getColumnLetter(GRIEVANCE_COLS.MEMBER_ID);
 
+  // IMPORTANT: Using 10000 rows to support large datasets (5k grievances + buffer)
+
   // Filing Deadline (Incident Date + 21 days) - Column H
   grievanceLog.getRange(gFilingDeadlineCol + "2").setFormula(
     `=ARRAYFORMULA(IF(${gIncidentDateCol}2:${gIncidentDateCol}10000<>"",${gIncidentDateCol}2:${gIncidentDateCol}10000+21,""))`
@@ -4824,7 +4780,7 @@ function setupFormulasAndCalculations() {
   );
 
   // Add conditional formatting for Days to Deadline column
-  const daysToDeadlineRange = grievanceLog.getRange(gDaysToDeadlineCol + "2:" + gDaysToDeadlineCol + "1000");
+  const daysToDeadlineRange = grievanceLog.getRange(gDaysToDeadlineCol + "2:" + gDaysToDeadlineCol + "10000");
 
   // Rule 1: OVERDUE - Red background
   const overdueRule = SpreadsheetApp.newConditionalFormatRule()
@@ -4865,6 +4821,8 @@ function setupFormulasAndCalculations() {
   grievanceLog.setConditionalFormatRules([overdueRule, dueTodayRule, dueSoonRule, onTrackRule, ...existingRules]);
 
   // ----- MEMBER DIRECTORY FORMULAS -----
+  // IMPORTANT: Using 25000 rows to support large datasets (20k members + buffer)
+
   // Has Open Grievance? - Column AB (28)
   // Counts grievances with ANY active status: Open, Pending Info, Appealed, In Arbitration
   const hasGrievanceCol = getColumnLetter(MEMBER_COLS.HAS_OPEN_GRIEVANCE);
@@ -5395,7 +5353,9 @@ function onOpen() {
     .addSeparator()
     .addSubMenu(ui.createMenu("🛠️ Advanced Setup")
       .addItem("📊 Populate Analytics Sheets", "populateAllAnalyticsSheets")
-      .addItem("📝 Add Sample Feedback Entries", "addSampleFeedbackEntries"))
+      .addItem("📝 Add Sample Feedback Entries", "addSampleFeedbackEntries")
+      .addSeparator()
+      .addItem("🗑️ Remove Emergency Contact Columns", "removeEmergencyContactColumns"))
     .addSeparator()
     .addSubMenu(ui.createMenu("🌱 Seed Data (Testing)")
       .addSubMenu(ui.createMenu("👥 Seed Members")
