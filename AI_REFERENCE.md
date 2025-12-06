@@ -2344,12 +2344,47 @@ All errors logged here with timestamps.
   - Bulk import capability
 - **Usage:** Menu → Import/Export → Import Wizard
 
+---
+
+## Feature 95: Coordinator Notification System
+
+**Purpose:** Checkbox-based row highlighting and email notifications for grievance coordinator messages with steward acknowledgment tracking
+
+**Grievance Log Columns Added:**
+- **Column AC (29):** ✓ Coordinator Notified - Checkbox column (checked by coordinator, unchecked by steward)
+- **Column AD (30):** Coordinator Message - Text message from coordinator (PERMANENT - never cleared)
+- **Column AE (31):** Acknowledged By - Email of steward who acknowledged (auto-filled when unchecked)
+- **Column AF (32):** Acknowledged Date - Timestamp of acknowledgment (auto-filled when unchecked)
+
+**Note:** Drive Integration columns moved from AC-AD to AG-AH (columns 33-34) to accommodate Feature 95.
+
+**Key Functions:**
+- `setupCoordinatorNotificationTrigger()` - One-time setup
+- `onGrievanceEdit(e)` - Auto-triggered on checkbox changes
+- `handleCoordinatorNotification()` - Highlights row and sends emails
+- `removeRowHighlight()` - Records steward acknowledgment
+- `showCoordinatorMessageDialog()` - Manual message entry
+- `showBatchCoordinatorNotification()` - Batch processing
+
+**Menu Location:** Grievance Tools submenu
+**File Location:** CoordinatorNotification.gs
+
+**Workflow:**
+1. Coordinator writes message → checks box → row highlights → emails sent
+2. Steward unchecks box → highlighting removed → acknowledgment recorded (who/when)
+3. Messages kept permanently for audit trail
+
+**Dependencies:** Member Directory, MailApp, Feature 79 (Audit Logging - optional)
+
+---
+
 ### File Architecture Updates
 
 **New Files Added:**
 1. **SecurityAndAdmin.gs** - Features 79, 80, 83, 84, 85, 86 + helper functions
 2. **PerformanceAndBackup.gs** - Features 90, 91
 3. **UIFeatures.gs** - Features 87, 88, 89, 92, 93, 94
+4. **CoordinatorNotification.gs** - Feature 95 (Coordinator Notification System)
 
 ### Menu System Updates
 
@@ -2408,15 +2443,16 @@ All errors logged here with timestamps.
 | 92 - Keyboard Shortcuts | None | - |
 | 93 - Export Wizard | Source sheets | Feature 79 (logs exports) |
 | 94 - Data Import | Source sheets | Feature 79 (logs imports) |
+| 95 - Coordinator Notifications | Member Directory, MailApp | Feature 79 (logs notifications) |
 
 ### Feature Status: ALL IMPLEMENTED ✅
 
-All 16 features (79-94) are fully implemented and integrated into the menu system.
+All 17 features (79-95) are fully implemented and integrated into the menu system.
 
 ---
 
-**Document Version:** 2.1
-**Last Updated:** 2025-01-27
+**Document Version:** 2.2
+**Last Updated:** 2025-12-06
 **Maintained By:** Claude (AI Assistant)
 **Repository:** [Add GitHub URL]
 

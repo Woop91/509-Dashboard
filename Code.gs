@@ -504,7 +504,7 @@ function createGrievanceLog() {
     grievanceLog = ss.insertSheet(SHEETS.GRIEVANCE_LOG);
   }
 
-  // 30 columns - includes Drive folder integration columns
+  // 34 columns - includes Feature 95 (Coordinator Notifications) and Drive folder integration
   const headers = [
     "Grievance ID",                    // A - 1
     "Member ID",                       // B - 2
@@ -534,8 +534,12 @@ function createGrievanceLog() {
     "Work Location (Site)",            // Z - 26
     "Assigned Steward (Name)",         // AA - 27
     "Resolution Summary",              // AB - 28
-    "Drive Folder ID",                 // AC - 29 (Drive integration)
-    "Drive Folder Link"                // AD - 30 (Drive integration)
+    "Coordinator Notified",            // AC - 29 (Feature 95: Checkbox)
+    "Coordinator Message",             // AD - 30 (Feature 95: Message text)
+    "Acknowledged By",                 // AE - 31 (Feature 95: Steward email)
+    "Acknowledged Date",               // AF - 32 (Feature 95: Timestamp)
+    "Drive Folder ID",                 // AG - 33 (Drive integration)
+    "Drive Folder Link"                // AH - 34 (Drive integration)
   ];
 
   // Update headers (row 1 only - preserves data in rows 2+)
@@ -553,6 +557,16 @@ function createGrievanceLog() {
   grievanceLog.setColumnWidth(GRIEVANCE_COLS.GRIEVANCE_ID, 110);  // Grievance ID
   grievanceLog.setColumnWidth(GRIEVANCE_COLS.ARTICLES, 180);      // Articles Violated
   grievanceLog.setColumnWidth(GRIEVANCE_COLS.RESOLUTION, 250);    // Resolution Summary
+  grievanceLog.setColumnWidth(GRIEVANCE_COLS.COORDINATOR_MESSAGE, 250);  // Coordinator Message
+
+  // Add checkbox validation for Coordinator Notified column (AC) - Feature 95
+  const lastRow = 1000; // Reasonable max rows
+  const checkboxRange = grievanceLog.getRange(2, GRIEVANCE_COLS.COORDINATOR_NOTIFIED, lastRow - 1, 1);
+  const checkboxValidation = SpreadsheetApp.newDataValidation()
+    .requireCheckbox()
+    .setAllowInvalid(false)
+    .build();
+  checkboxRange.setDataValidation(checkboxValidation);
 
   grievanceLog.setTabColor("#DC2626");
 }
@@ -1943,6 +1957,11 @@ function onOpen() {
       .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
       .addItem("🔄 Grievance Float Toggle", "toggleGrievanceFloat")
       .addItem("🎛️ Float Control Panel", "showGrievanceFloatPanel")
+      .addSeparator()
+      .addItem("📧 Send Coordinator Message", "showCoordinatorMessageDialog")
+      .addItem("📧 Batch Coordinator Notification", "showBatchCoordinatorNotification")
+      .addItem("🔧 Setup Notification Trigger", "setupCoordinatorNotificationTrigger")
+      .addItem("🧹 Clear All Notifications", "clearAllCoordinatorNotifications")
       .addSeparator()
       .addItem("📊 Sort Grievances (Active First)", "sortGrievancesByStatus")
       .addItem("🔄 Refresh Progress Bar", "setupGrievanceProgressBar")

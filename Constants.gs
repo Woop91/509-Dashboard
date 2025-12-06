@@ -202,9 +202,14 @@ const GRIEVANCE_COLS = {
   STEWARD: 27,            // AA - Assigned Steward (Name)
   // Section 10: Resolution (AB)
   RESOLUTION: 28,         // AB - Resolution Summary
-  // Section 11: Drive Integration (AC-AD)
-  DRIVE_FOLDER_ID: 29,    // AC - Google Drive folder ID
-  DRIVE_FOLDER_URL: 30    // AD - Google Drive folder URL
+  // Section 11: Coordinator Notifications (AC-AF) - Feature 95
+  COORDINATOR_NOTIFIED: 29,  // AC - Checkbox for coordinator message
+  COORDINATOR_MESSAGE: 30,   // AD - Coordinator's message text
+  ACKNOWLEDGED_BY: 31,       // AE - Steward who acknowledged
+  ACKNOWLEDGED_DATE: 32,     // AF - When steward acknowledged
+  // Section 12: Drive Integration (AG-AH)
+  DRIVE_FOLDER_ID: 33,    // AG - Google Drive folder ID
+  DRIVE_FOLDER_URL: 34    // AH - Google Drive folder URL
 };
 
 /* --------------------= INTERNAL SYSTEM COLUMN MAPPINGS --------------------= */
