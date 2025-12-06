@@ -47,6 +47,7 @@ function showVisualizationBuilder() {
 
 /**
  * Creates HTML for visualization builder
+ * Refactored to use helper functions for maintainability
  */
 function createVisualizationBuilderHTML() {
   return `
@@ -55,7 +56,24 @@ function createVisualizationBuilderHTML() {
 <head>
   <base target="_top">
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <style>
+  <style>${getVisualizationBuilderStyles()}</style>
+</head>
+<body>
+  <div class="layout">
+${getVisualizationBuilderSidebar()}
+${getVisualizationBuilderMainContent()}
+  </div>
+  <script>${getVisualizationBuilderScripts()}</script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Returns CSS styles for visualization builder
+ */
+function getVisualizationBuilderStyles() {
+  return `
     body {
       font-family: 'Roboto', Arial, sans-serif;
       padding: 0;
@@ -191,10 +209,14 @@ function createVisualizationBuilderHTML() {
       border-color: #1a73e8;
       background: #f8f9fa;
     }
-  </style>
-</head>
-<body>
-  <div class="layout">
+  `;
+}
+
+/**
+ * Returns sidebar HTML for visualization builder
+ */
+function getVisualizationBuilderSidebar() {
+  return `
     <div class="sidebar">
       <h2>📊 Chart Builder</h2>
 
@@ -250,8 +272,14 @@ function createVisualizationBuilderHTML() {
       <button onclick="generateChart()">🔄 Refresh Chart</button>
       <button onclick="exportChart()" class="secondary">📥 Export as Image</button>
       <button onclick="saveToSheet()" class="secondary">💾 Save to Sheet</button>
-    </div>
+    </div>`;
+}
 
+/**
+ * Returns main content HTML for visualization builder
+ */
+function getVisualizationBuilderMainContent() {
+  return `
     <div class="main">
       <div id="statsContainer" class="stats-grid"></div>
       <div id="chartContainer">
@@ -260,10 +288,15 @@ function createVisualizationBuilderHTML() {
           <div>Loading chart...</div>
         </div>
       </div>
-    </div>
-  </div>
+    </div>`;
+}
 
-  <script>
+/**
+ * Returns JavaScript for visualization builder
+ */
+function getVisualizationBuilderScripts() {
+  const defaultColors = JSON.stringify(VIZ_CONFIG.DEFAULT_COLORS);
+  return `
     google.charts.load('current', {'packages':['corechart', 'timeline']});
     google.charts.setOnLoadCallback(initializeChart);
 
@@ -313,7 +346,7 @@ function createVisualizationBuilderHTML() {
         backgroundColor: '#ffffff',
         legend: { position: 'bottom' },
         chartArea: { width: '80%', height: '70%' },
-        colors: ${JSON.stringify(VIZ_CONFIG.DEFAULT_COLORS)},
+        colors: ${defaultColors},
         animation: {
           startup: true,
           duration: 1000,
@@ -429,9 +462,6 @@ function createVisualizationBuilderHTML() {
     function handleError(error) {
       document.getElementById('chartContainer').innerHTML = '<div class="loading">❌ Error: ' + error.message + '</div>';
     }
-  </script>
-</body>
-</html>
   `;
 }
 
