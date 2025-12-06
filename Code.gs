@@ -98,6 +98,83 @@ function getColumnLetter(columnNumber) {
   return letter;
 }
 
+/* ===================== DIAGNOSTICS ===================== */
+/**
+ * Diagnoses dashboard setup and reports missing sheets
+ * Shows what sheets exist and what's missing
+ */
+function DIAGNOSE_SETUP() {
+  const ss = SpreadsheetApp.getActive();
+  const ui = SpreadsheetApp.getUi();
+
+  let report = "=== 509 DASHBOARD DIAGNOSTIC REPORT ===\n\n";
+
+  // Check sheets
+  report += "📋 SHEET STATUS:\n";
+  const requiredSheets = [
+    "Config",
+    "Member Directory",
+    "Grievance Log",
+    "Dashboard",
+    "Analytics Data",
+    "Member Satisfaction",
+    "Feedback & Development",
+    "🎯 Interactive (Your Custom View)",
+    "📚 Getting Started",
+    "❓ FAQ",
+    "⚙️ User Settings",
+    "👨‍⚖️ Steward Workload",
+    "📈 Trends & Timeline",
+    "🗺️ Location Analytics",
+    "📊 Type Analysis",
+    "💼 Executive Dashboard",
+    "📊 KPI Performance Dashboard",
+    "👥 Member Engagement",
+    "💰 Cost Impact",
+    "📦 Archive",
+    "🔧 Diagnostics"
+  ];
+
+  let missingSheets = [];
+  requiredSheets.forEach(sheetName => {
+    const exists = ss.getSheetByName(sheetName) !== null;
+    report += exists ? "✅ " : "❌ ";
+    report += sheetName + "\n";
+    if (!exists) missingSheets.push(sheetName);
+  });
+
+  report += "\n";
+
+  if (missingSheets.length > 0) {
+    report += "⚠️ MISSING SHEETS: " + missingSheets.length + "\n";
+    report += "YOU NEED TO RUN: CREATE_509_DASHBOARD()\n\n";
+    report += "HOW TO FIX:\n";
+    report += "1. In Apps Script editor toolbar, select 'CREATE_509_DASHBOARD' from dropdown\n";
+    report += "2. Click the Run button (▶️)\n";
+    report += "3. Authorize when prompted\n";
+    report += "4. Wait for completion (~10 seconds)\n";
+    report += "5. Close Apps Script and refresh your Google Sheet\n";
+  } else {
+    report += "✅ ALL SHEETS EXIST!\n\n";
+    report += "NEXT STEPS:\n";
+    report += "1. Refresh your Google Sheet (F5)\n";
+    report += "2. Check for '📊 509 Dashboard' menu\n";
+    report += "3. Use Admin menu to seed test data\n";
+  }
+
+  report += "\n";
+
+  // Check current sheets
+  const allSheets = ss.getSheets();
+  report += "📊 CURRENT SHEETS (" + allSheets.length + "):\n";
+  allSheets.forEach(sheet => {
+    report += "  • " + sheet.getName() + "\n";
+  });
+
+  ui.alert("Diagnostic Report", report, ui.ButtonSet.OK);
+  Logger.log(report);
+}
+
 /* ===================== ONE-CLICK SETUP ===================== */
 function CREATE_509_DASHBOARD() {
   const ss = SpreadsheetApp.getActive();
