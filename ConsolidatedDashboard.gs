@@ -3842,9 +3842,11 @@ function createMainDashboard() {
       .setFontWeight("bold")
       .setHorizontalAlignment("center");
 
-    // Apply number formatting with decimal for YTD Vol. Hours
+    // Apply number formatting with commas for numeric metrics
     if (m[0] === "YTD Vol. Hours") {
       valueRange.setNumberFormat("#,##0.0");
+    } else if (m[0] === "Total Members") {
+      valueRange.setNumberFormat("#,##0");
     }
 
     col += 3;
@@ -3866,7 +3868,7 @@ function createMainDashboard() {
     ["Open Grievances", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Open")`, "🔴"],
     ["Pending Info", `=COUNTIF('Grievance Log'!${statusCol}:${statusCol},"Pending Info")`, "🟡"],
     ["Settled (This Mo.)", `=COUNTIFS('Grievance Log'!${statusCol}:${statusCol},"Settled",'Grievance Log'!${dateClosedCol}:${dateClosedCol},">="&DATE(YEAR(TODAY()),MONTH(TODAY()),1))`, "🟢"],
-    ["Avg Days Open", `=ROUND(AVERAGE(FILTER('Grievance Log'!${daysOpenCol}:${daysOpenCol},'Grievance Log'!${statusCol}:${statusCol}="Open")),0)`, "⏱️"]
+    ["Avg Days Open", `=IFERROR(ROUND(AVERAGE(FILTER('Grievance Log'!${daysOpenCol}:${daysOpenCol},'Grievance Log'!${statusCol}:${statusCol}="Open")),0),"N/A")`, "⏱️"]
   ];
 
   col = 1;
@@ -3877,11 +3879,16 @@ function createMainDashboard() {
       .setHorizontalAlignment("center")
       .setBackground("#F3F4F6");
 
-    dashboard.getRange(12, col, 1, 3).merge()
+    const valueRange = dashboard.getRange(12, col, 1, 3).merge()
       .setFormula(m[1])
       .setFontSize(20)
       .setFontWeight("bold")
       .setHorizontalAlignment("center");
+
+    // Apply number formatting with commas (except Avg Days Open which may show "N/A")
+    if (m[0] !== "Avg Days Open") {
+      valueRange.setNumberFormat("#,##0");
+    }
 
     col += 3;
   });
@@ -3917,7 +3924,8 @@ function createMainDashboard() {
       .setFormula(m[1])
       .setFontSize(18)
       .setFontWeight("bold")
-      .setHorizontalAlignment("center");
+      .setHorizontalAlignment("center")
+      .setNumberFormat("#,##0");
 
     col += 3;
   });
