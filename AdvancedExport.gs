@@ -172,12 +172,20 @@ function performQuickExport(format) {
 }
 
 /**
- * Exports sheet to CSV
+ * Exports sheet to CSV with permission-based filtering
  * @param {Sheet} sheet - Sheet to export
  * @returns {string} File URL
  */
 function exportToCSV(sheet) {
-  const data = sheet.getDataRange().getValues();
+  const sheetName = sheet.getName();
+  let data = sheet.getDataRange().getValues();
+
+  // Apply permission filtering based on sheet type
+  if (sheetName === SHEETS.MEMBER_DIR) {
+    data = filterMemberDataByPermission(data);
+  } else if (sheetName === SHEETS.GRIEVANCE_LOG) {
+    data = filterGrievanceDataByPermission(data);
+  }
 
   let csv = '';
   data.forEach(row => {
@@ -197,32 +205,72 @@ function exportToCSV(sheet) {
 }
 
 /**
- * Exports to Excel format
+ * Exports to Excel format with permission-based filtering
+ * Creates a temporary filtered copy for export to enforce permissions
  * @param {Sheet} sheet - Sheet to export
  * @returns {string} File URL
  */
 function exportToExcel(sheet) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const fileName = `${sheet.getName()}_Export_${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')}`;
+  const sheetName = sheet.getName();
+  const fileName = `${sheetName}_Export_${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')}`;
 
-  const blob = ss.getAs(MimeType.MICROSOFT_EXCEL);
+  // Get filtered data based on permissions
+  let data = sheet.getDataRange().getValues();
+  if (sheetName === SHEETS.MEMBER_DIR) {
+    data = filterMemberDataByPermission(data);
+  } else if (sheetName === SHEETS.GRIEVANCE_LOG) {
+    data = filterGrievanceDataByPermission(data);
+  }
+
+  // Create temporary spreadsheet with filtered data for Excel export
+  const tempSS = SpreadsheetApp.create('_temp_export_' + new Date().getTime());
+  const tempSheet = tempSS.getActiveSheet();
+  tempSheet.setName(sheetName);
+
+  if (data.length > 0) {
+    tempSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+  }
+
+  // Export the filtered spreadsheet
+  const blob = tempSS.getAs(MimeType.MICROSOFT_EXCEL);
   const file = DriveApp.createFile(blob).setName(fileName + '.xlsx');
+
+  // Clean up temporary spreadsheet
+  DriveApp.getFileById(tempSS.getId()).setTrashed(true);
 
   return file.getUrl();
 }
 
 /**
- * Exports to PDF
+ * Exports to PDF with permission-based filtering
+ * Creates a temporary filtered copy for export to enforce permissions
  * @param {Sheet} sheet - Sheet to export
  * @returns {string} File URL
  */
 function exportToPDF(sheet) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const fileName = `${sheet.getName()}_Export_${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')}.pdf`;
+  const sheetName = sheet.getName();
+  const fileName = `${sheetName}_Export_${Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd')}.pdf`;
 
-  const url = ss.getUrl();
-  const id = ss.getId();
+  // Get filtered data based on permissions
+  let data = sheet.getDataRange().getValues();
+  if (sheetName === SHEETS.MEMBER_DIR) {
+    data = filterMemberDataByPermission(data);
+  } else if (sheetName === SHEETS.GRIEVANCE_LOG) {
+    data = filterGrievanceDataByPermission(data);
+  }
 
+  // Create temporary spreadsheet with filtered data for PDF export
+  const tempSS = SpreadsheetApp.create('_temp_pdf_export_' + new Date().getTime());
+  const tempSheet = tempSS.getActiveSheet();
+  tempSheet.setName(sheetName);
+
+  if (data.length > 0) {
+    tempSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+  }
+
+  // Export the filtered spreadsheet to PDF
+  const url = tempSS.getUrl();
   const exportUrl = url.replace(/\/edit.*$/, '') +
     '/export?exportFormat=pdf&format=pdf' +
     '&size=A4' +
@@ -231,7 +279,7 @@ function exportToPDF(sheet) {
     '&sheetnames=false&printtitle=false' +
     '&pagenumbers=false&gridlines=false' +
     '&fzr=false' +
-    '&gid=' + sheet.getSheetId();
+    '&gid=' + tempSheet.getSheetId();
 
   const token = ScriptApp.getOAuthToken();
   const response = UrlFetchApp.fetch(exportUrl, {
@@ -243,16 +291,28 @@ function exportToPDF(sheet) {
   const blob = response.getBlob().setName(fileName);
   const file = DriveApp.createFile(blob);
 
+  // Clean up temporary spreadsheet
+  DriveApp.getFileById(tempSS.getId()).setTrashed(true);
+
   return file.getUrl();
 }
 
 /**
- * Exports to JSON
+ * Exports to JSON with permission-based filtering
  * @param {Sheet} sheet - Sheet to export
  * @returns {string} File URL
  */
 function exportToJSON(sheet) {
-  const data = sheet.getDataRange().getValues();
+  const sheetName = sheet.getName();
+  let data = sheet.getDataRange().getValues();
+
+  // Apply permission filtering based on sheet type
+  if (sheetName === SHEETS.MEMBER_DIR) {
+    data = filterMemberDataByPermission(data);
+  } else if (sheetName === SHEETS.GRIEVANCE_LOG) {
+    data = filterGrievanceDataByPermission(data);
+  }
+
   const headers = data[0];
   const rows = data.slice(1);
 

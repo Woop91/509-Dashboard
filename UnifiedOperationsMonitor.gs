@@ -32,6 +32,7 @@ function showUnifiedOperationsMonitor() {
 /**
  * Backend function that provides ALL data for the comprehensive dashboard
  * Called by the HTML dashboard via google.script.run
+ * Data is filtered based on user permissions
  */
 function getUnifiedDashboardData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -45,8 +46,12 @@ function getUnifiedDashboardData() {
   }
 
   // Get all data
-  const grievanceData = grievanceSheet.getDataRange().getValues();
-  const memberData = memberSheet.getDataRange().getValues();
+  const rawGrievanceData = grievanceSheet.getDataRange().getValues();
+  const rawMemberData = memberSheet.getDataRange().getValues();
+
+  // Apply permission filtering based on user role
+  const grievanceData = filterGrievanceDataByPermission(rawGrievanceData);
+  const memberData = filterMemberDataByPermission(rawMemberData);
 
   // Skip headers
   const grievances = grievanceData.slice(1);
