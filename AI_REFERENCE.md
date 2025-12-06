@@ -1785,8 +1785,192 @@ All 16 features (79-94) are fully implemented and integrated into the menu syste
 
 ---
 
-**Document Version:** 2.0
-**Last Updated:** 2025-12-05
+## Feature 95: Coordinator Notification System
+
+**Purpose:** Checkbox-based row highlighting and email notifications for grievance coordinator messages
+
+**Overview:**
+When a grievance coordinator checks the "Coordinator Notified" checkbox in the Grievance Log:
+1. The entire row is highlighted in yellow with an orange border
+2. Emails are automatically sent to the member and assigned steward with the coordinator's message
+3. The row remains highlighted until the checkbox is manually unchecked
+4. All notifications are logged to Audit_Log (if enabled)
+
+**Grievance Log Columns Added:**
+- **Column AC (29):** ✓ Coordinator Notified - Checkbox column
+- **Column AD (30):** Coordinator Message - Text message from coordinator
+
+**Functions:**
+
+1. **setupCoordinatorNotificationTrigger()** - Installation
+   - Sets up onChange trigger to monitor checkbox changes
+   - Run once to install (Menu → Grievance Tools → Setup Notification Trigger)
+   - Prevents duplicate triggers
+
+2. **onGrievanceEdit(e)** - Automatic Trigger
+   - Monitors all edits to Grievance Log
+   - Triggers when Coordinator Notified checkbox (column AC) is changed
+   - Calls handleCoordinatorNotification() when checked
+   - Calls removeRowHighlight() when unchecked
+
+3. **handleCoordinatorNotification(sheet, row)** - Main Handler
+   - Retrieves grievance data
+   - Highlights the row in yellow (#FEF3C7) with orange border (#F97316)
+   - Sends email to member and steward
+   - Logs notification to Audit_Log
+
+4. **highlightRow(sheet, row)** - Row Highlighting
+   - Sets background to light yellow (#FEF3C7)
+   - Adds thick orange border (#F97316) for visibility
+   - Applies to entire row across all columns
+
+5. **removeRowHighlight(sheet, row)** - Remove Highlighting
+   - Resets background to white (#FFFFFF)
+   - Removes all borders
+   - Triggered when checkbox is unchecked
+
+6. **sendCoordinatorEmails(...)** - Email Notifications
+   - Sends personalized emails to member and steward
+   - Includes grievance details and coordinator message
+   - Uses MailApp.sendEmail() with noReply flag
+   - Validates email addresses before sending
+
+7. **getStewardEmail(stewardName)** - Helper
+   - Looks up steward email in Member Directory
+   - Matches by first and last name
+   - Validates steward status (Is Steward = Yes)
+
+8. **showCoordinatorMessageDialog()** - Manual Entry
+   - Interactive dialog for coordinator to enter message
+   - Prompts for message text
+   - Automatically checks checkbox and triggers notification
+   - Menu → Grievance Tools → Send Coordinator Message
+
+9. **showBatchCoordinatorNotification()** - Batch Processing
+   - Sends same message to multiple checked grievances
+   - Only processes rows with checkbox already checked
+   - Menu → Grievance Tools → Batch Coordinator Notification
+
+10. **clearAllCoordinatorNotifications()** - Cleanup
+    - Unchecks all coordinator notification checkboxes
+    - Removes all row highlighting
+    - Keeps coordinator messages intact
+    - Menu → Grievance Tools → Clear All Notifications
+
+**Email Template:**
+
+**Member Email:**
+```
+Dear [First Name] [Last Name],
+
+This is an update regarding your grievance [Grievance ID] ([Issue Category]).
+
+**Current Status:** [Status]
+
+**Message from Grievance Coordinator:**
+[Coordinator Message]
+
+Your assigned steward, [Steward Name], has also been notified of this update.
+
+If you have any questions or concerns, please contact your steward or the grievance coordinator.
+
+Best regards,
+SEIU Local 509 Grievance Coordinator
+```
+
+**Steward Email:**
+```
+Dear [Steward Name],
+
+This is an update regarding grievance [Grievance ID] for member [First Name] [Last Name].
+
+**Grievance Details:**
+- **ID:** [Grievance ID]
+- **Member:** [First Name] [Last Name]
+- **Issue:** [Issue Category]
+- **Status:** [Status]
+
+**Message from Grievance Coordinator:**
+[Coordinator Message]
+
+The member has also been notified of this update.
+
+Please follow up as needed.
+
+Best regards,
+SEIU Local 509 Grievance Coordinator
+```
+
+**Setup Instructions:**
+
+1. **One-Time Setup:**
+   - Menu → Grievance Tools → Setup Notification Trigger
+   - This installs the onChange trigger to monitor checkbox changes
+
+2. **Using the Feature:**
+   - **Option 1 (Automatic):**
+     - Add message in "Coordinator Message" column (AD)
+     - Check the "✓ Coordinator Notified" checkbox (AC)
+     - Row highlights and emails send automatically
+
+   - **Option 2 (Manual Dialog):**
+     - Select a grievance row
+     - Menu → Grievance Tools → Send Coordinator Message
+     - Enter message in dialog
+     - Checkbox is automatically checked and emails sent
+
+3. **Batch Notifications:**
+   - Check multiple grievances' checkboxes
+   - Menu → Grievance Tools → Batch Coordinator Notification
+   - Enter message (applies to all checked rows)
+
+4. **Clear Notifications:**
+   - Menu → Grievance Tools → Clear All Notifications
+   - Removes all highlighting and unchecks all boxes
+
+**Visual Indicators:**
+- **Highlighted Row:** Light yellow background (#FEF3C7) with thick orange border (#F97316)
+- **Normal Row:** White background, no border
+- **Checkbox Checked:** ☑ (checkbox visible in cell)
+- **Checkbox Unchecked:** ☐ (empty checkbox)
+
+**Dependencies:**
+- Member Directory (for steward email lookup)
+- MailApp service (for email sending)
+- Feature 79 - Audit Logging (optional, for logging notifications)
+
+**File Location:** CoordinatorNotification.gs
+
+**Menu Location:** Grievance Tools submenu
+
+**Data Validation:**
+- Column AC (Coordinator Notified): Checkbox validation (true/false)
+- Column AD (Coordinator Message): Free text entry
+
+**Logging:**
+All coordinator notifications are logged to Audit_Log with:
+- Action Type: COORDINATOR_NOTIFICATION or COORDINATOR_NOTIFICATION_CLEARED
+- Sheet Name: Grievance Log
+- Record ID: Grievance ID
+- Field Changed: Coordinator Notified
+- Old/New Value: FALSE/TRUE or TRUE/FALSE
+
+**Error Handling:**
+- Invalid emails are skipped with log message
+- Missing steward emails are logged but don't block member notifications
+- Email send failures are caught and logged
+- Silent failure to avoid interrupting workflow
+
+**Security:**
+- Emails sent with noReply flag
+- Validates email format before sending
+- Requires active user session
+- All actions logged for audit trail
+
+---
+
+**Document Version:** 2.1
+**Last Updated:** 2025-12-06
 **Maintained By:** Claude (AI Assistant)
 **Repository:** [Add GitHub URL]
 
