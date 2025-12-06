@@ -718,6 +718,7 @@ function getWatchlistLog(grievances, members) {
 
 /**
  * Returns the comprehensive terminal-themed HTML
+ * Refactored to use smaller, focused helper functions
  */
 function getUnifiedOperationsMonitorHTML() {
   return `<!DOCTYPE html>
@@ -728,10 +729,35 @@ function getUnifiedOperationsMonitorHTML() {
     <title>SEIU 509 Unified Ops Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom Terminal Theme */
+${getUnifiedOpsStyles()}
+    </style>
+</head>
+<body>
+${getUnifiedOpsLoadingOverlay()}
+${getUnifiedOpsHeader()}
+${getUnifiedOpsExecutiveSection()}
+${getUnifiedOpsEfficiencySection()}
+${getUnifiedOpsNetworkSection()}
+${getUnifiedOpsActionLogSection()}
+${getUnifiedOpsFollowUpSection()}
+${getUnifiedOpsPredictiveSection()}
+${getUnifiedOpsSystemicSection()}
+    <script>
+${getUnifiedOpsScripts()}
+    </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Returns terminal-themed CSS styles
+ */
+function getUnifiedOpsStyles() {
+  return `
         body {
             background-color: #000000;
-            color: #00FF00; /* Primary terminal green */
+            color: #00FF00;
             font-family: 'Consolas', 'Courier New', monospace;
             padding: 10px;
         }
@@ -743,7 +769,7 @@ function getUnifiedOperationsMonitorHTML() {
             margin-bottom: 20px;
         }
         .header-bar {
-            color: #FF00FF; /* Magenta for headers */
+            color: #FF00FF;
             border-bottom: 1px solid #FF00FF80;
             padding-bottom: 5px;
             margin-bottom: 10px;
@@ -759,89 +785,67 @@ function getUnifiedOperationsMonitorHTML() {
             height: 100%;
             transition: width 0.5s;
         }
-        .process-row:nth-child(even) {
-            background-color: #001100;
-        }
-        .process-row:hover {
-            background-color: #003300;
-            cursor: pointer;
-        }
+        .process-row:nth-child(even) { background-color: #001100; }
+        .process-row:hover { background-color: #003300; cursor: pointer; }
         .text-red-term { color: #FF0000; }
         .text-yellow-term { color: #FFFF00; }
         .text-green-term { color: #00FF00; }
         .text-cyan-term { color: #00FFFF; }
         .value-big { font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
-        .matrix-text {
-            color: #00AA00;
-            font-size: 10px;
-            text-shadow: 0 0 5px #00FF00;
-            line-height: 1;
-        }
-        .btn-control {
-            background-color: #008080; /* Teal/Cyan Button */
-            color: black;
-            padding: 8px 15px;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .btn-control:hover {
-            background-color: #00FFFF;
-        }
-        #loading-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            color: #00FF00;
-            font-size: 24px;
-        }
-    </style>
-</head>
-<body>
+        .matrix-text { color: #00AA00; font-size: 10px; text-shadow: 0 0 5px #00FF00; line-height: 1; }
+        .btn-control { background-color: #008080; color: black; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        .btn-control:hover { background-color: #00FFFF; }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; display: flex; justify-content: center; align-items: center; z-index: 1000; color: #00FF00; font-size: 24px; }
+  `;
+}
 
+/**
+ * Returns loading overlay HTML
+ */
+function getUnifiedOpsLoadingOverlay() {
+  return `
     <div id="loading-overlay">
         <div>INITIALIZING SEIU 509 OPS MONITOR... <br> [CONNECTING TO MAINFRAME]</div>
     </div>
+  `;
+}
 
-    <!-- Main Title -->
+/**
+ * Returns header HTML
+ */
+function getUnifiedOpsHeader() {
+  return `
     <div class="text-center text-4xl mb-6 header-bar">
         SEIU 509 :: COMPREHENSIVE ACTION DASHBOARD :: <span id="current-time"></span>
     </div>
+  `;
+}
 
-    <!-- SECTION 1: EXECUTIVE STATUS & DEADLINES -->
+/**
+ * Returns executive overview section HTML
+ */
+function getUnifiedOpsExecutiveSection() {
+  return `
     <div class="terminal-block">
         <div class="header-bar text-xl">
             <span class="text-cyan-term">[STATUS]</span> EXECUTIVE OVERVIEW & ALERTS
         </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-
-            <!-- BLOCK 1A: ACTIVE CASELOAD -->
             <div class="p-2 border border-gray-700">
                 <span class="text-cyan-term block">TOTAL ACTIVE CASELOAD:</span>
                 <div class="value-big text-red-term" id="active-cases">--</div>
                 <div class="matrix-text">High-Priority: <span id="high-risk-count">--</span></div>
             </div>
-
-            <!-- BLOCK 1B: DEADLINE COMPLIANCE -->
             <div class="p-2 border border-gray-700">
                 <span class="text-cyan-term block">DEADLINE COMPLIANCE:</span>
                 <div class="value-big text-red-term" id="overdue-count">--</div>
                 <div class="matrix-text text-yellow-term">Due This Week: <span id="due-week-count">--</span></div>
             </div>
-
-            <!-- BLOCK 1C: RESOLUTION SUCCESS -->
             <div class="p-2 border border-gray-700">
                 <span class="text-cyan-term block">RESOLUTIONS WIN RATE (YTD):</span>
                 <div class="value-big text-green-term" id="win-rate">--</div>
                 <div class="matrix-text">Avg Days to Close: <span id="avg-days">--</span></div>
             </div>
-
-            <!-- BLOCK 1D: ESCALATION WATCH (NEW METRIC) -->
             <div class="p-2 border border-gray-700">
                 <span class="text-cyan-term block">ESCALATION WATCH (III+):</span>
                 <div class="value-big text-yellow-term" id="escalation-count">--</div>
@@ -849,27 +853,34 @@ function getUnifiedOperationsMonitorHTML() {
             </div>
         </div>
     </div>
+  `;
+}
 
-
-    <!-- SECTION 2: PROCESS EFFICIENCY / CASELOAD -->
+/**
+ * Returns efficiency section HTML
+ */
+function getUnifiedOpsEfficiencySection() {
+  return `
     <div class="terminal-block">
         <div class="header-bar text-xl">
             <span class="text-cyan-term">[EFFICIENCY]</span> GRIEVANCE PROCESS EFFICIENCY - Caseload
         </div>
-
         <div id="steps-stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- STEP Caseload Bars will be populated here -->
         </div>
     </div>
+  `;
+}
 
-    <!-- SECTION 3: NETWORK HEALTH & CAPACITY -->
+/**
+ * Returns network health section HTML
+ */
+function getUnifiedOpsNetworkSection() {
+  return `
     <div class="terminal-block">
         <div class="header-bar text-xl">
             <span class="text-cyan-term">[NETWORK]</span> STEWARD & MEMBER HEALTH OVERVIEW
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-
-            <!-- BLOCK 3A: MEMBER UTILIZATION -->
             <div class="p-2 border border-gray-700">
                 <span class="text-cyan-term block">TOTAL MEMBERS: <span id="total-members-full" class="float-right text-green-term">--</span></span>
                 <span class="text-cyan-term block">Engagement Rate: <span id="engagement-rate" class="float-right text-yellow-term">--</span></span>
@@ -878,8 +889,6 @@ function getUnifiedOperationsMonitorHTML() {
                 </div>
                 <div class="mt-4 text-red-term">Members with No Contact (60d): <span id="no-contact-count" class="float-right">--</span></div>
             </div>
-
-            <!-- BLOCK 3B: STEWARD CAPACITY (NEW METRIC) -->
             <div class="p-2 border border-gray-700">
                 <span class="text-cyan-term block">STEWARD CAPACITY: <span id="steward-count" class="float-right text-green-term">--</span></span>
                 <span class="text-cyan-term block">Avg Load / Steward: <span id="avg-load" class="float-right text-yellow-term">--</span></span>
@@ -888,8 +897,6 @@ function getUnifiedOperationsMonitorHTML() {
                 </div>
                  <div class="mt-4 text-red-term">Overloaded Stewards (>7 Cases): <span id="overloaded-stewards" class="float-right">--</span></div>
             </div>
-
-            <!-- BLOCK 3C: ISSUE SEVERITY DISTRIBUTION -->
             <div class="p-2 border border-gray-700">
                 <span class="text-cyan-term block">ISSUE SEVERITY DISTRIBUTION:</span>
                 <div class="mt-2 text-sm">
@@ -900,9 +907,14 @@ function getUnifiedOperationsMonitorHTML() {
             </div>
         </div>
     </div>
+  `;
+}
 
-
-    <!-- SECTION 4: ACTION LOG (FULL WIDTH PROCESS LIST) -->
+/**
+ * Returns action log section HTML
+ */
+function getUnifiedOpsActionLogSection() {
+  return `
     <div class="terminal-block">
         <div class="header-bar text-xl">
             <span class="text-cyan-term">[ACTION]</span> ACTIVE GRIEVANCE LOG :: Top Priority List
@@ -915,40 +927,50 @@ function getUnifiedOperationsMonitorHTML() {
             <span class="col-span-2">DEADLINE (d)</span>
             <span class="col-span-1 text-right">STATUS</span>
         </div>
-        <div id="process-list" class="text-sm mt-1">
-            <!-- Data will be populated here -->
-        </div>
+        <div id="process-list" class="text-sm mt-1"></div>
     </div>
+  `;
+}
 
-    <!-- SECTION 5: FOLLOW-UP RADAR -->
+/**
+ * Returns follow-up radar section HTML
+ */
+function getUnifiedOpsFollowUpSection() {
+  return `
     <div class="terminal-block">
         <div class="header-bar text-xl">
             <span class="text-cyan-term">[RADAR]</span> STEWARD FOLLOW-UP RADAR
         </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm" id="follow-up-radar">
-            <!-- Follow-up tasks populated here -->
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm" id="follow-up-radar"></div>
     </div>
+  `;
+}
 
-    <!-- SECTION 6: PREDICTIVE ALERTS -->
+/**
+ * Returns predictive alerts section HTML
+ */
+function getUnifiedOpsPredictiveSection() {
+  return `
     <div class="terminal-block">
         <div class="header-bar text-xl">
             <span class="text-cyan-term">[PREDICT]</span> EMERGING RISK & CHURN ALERTS
         </div>
-
         <div class="grid grid-cols-12 text-sm font-bold border-b border-gray-700 pb-1 text-cyan-term">
             <span class="col-span-3">MEMBER ID</span>
             <span class="col-span-4">RISK SIGNAL</span>
             <span class="col-span-3">STRENGTH</span>
             <span class="col-span-2 text-right">LAST CONTACT</span>
         </div>
-        <div id="predictive-alerts" class="text-sm mt-1">
-             <!-- Predictive risk items populated here -->
-        </div>
+        <div id="predictive-alerts" class="text-sm mt-1"></div>
     </div>
+  `;
+}
 
-    <!-- SECTION 7: SYSTEMIC RISK MONITOR -->
+/**
+ * Returns systemic risk section HTML
+ */
+function getUnifiedOpsSystemicSection() {
+  return `
     <div class="terminal-block">
         <div class="header-bar text-xl">
             <span class="text-cyan-term">[SYSTEM]</span> SYSTEMIC RISK MONITOR (90 DAYS)
@@ -960,12 +982,16 @@ function getUnifiedOperationsMonitorHTML() {
             <span class="col-span-2">LOSS RATE</span>
             <span class="col-span-2 text-right">SEVERITY</span>
         </div>
-        <div id="systemic-risk" class="text-sm mt-1">
-             <!-- Systemic risk items populated here -->
-        </div>
+        <div id="systemic-risk" class="text-sm mt-1"></div>
     </div>
+  `;
+}
 
-    <script>
+/**
+ * Returns JavaScript code for unified operations dashboard
+ */
+function getUnifiedOpsScripts() {
+  return `
         const STATUS_COLORS = {
             'CRITICAL': 'text-red-term', 'ALERT': 'text-yellow-term', 'WARNING': 'text-yellow-term',
             'NORMAL': 'text-green-term', 'GREEN': 'text-green-term', 'YELLOW': 'text-yellow-term',
@@ -977,7 +1003,8 @@ function getUnifiedOperationsMonitorHTML() {
             document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', {hour12: false});
         }
 
-        function renderValue(id, value, format = 'number') {
+        function renderValue(id, value, format) {
+            format = format || 'number';
             const element = document.getElementById(id);
             if (!element) return;
             if (value === undefined || value === null || value === "") {
@@ -994,11 +1021,18 @@ function getUnifiedOperationsMonitorHTML() {
             return STATUS_COLORS[status] || 'text-cyan-term';
         }
 
-        // --- RENDER FUNCTIONS ---
         function renderDashboard(data) {
             document.getElementById('loading-overlay').style.display = 'none';
+            renderExecutiveStatus(data);
+            renderStepsEfficiency(data);
+            renderNetworkHealth(data);
+            renderActionLog(data);
+            renderFollowUpRadar(data);
+            renderPredictiveAlerts(data);
+            renderSystemicRisk(data);
+        }
 
-            // 1. Executive Status
+        function renderExecutiveStatus(data) {
             renderValue('active-cases', data.activeCases);
             renderValue('overdue-count', data.overdue);
             renderValue('due-week-count', data.dueWeek);
@@ -1007,115 +1041,106 @@ function getUnifiedOperationsMonitorHTML() {
             renderValue('escalation-count', data.escalationCount);
             renderValue('arbitrations', data.arbitrations);
             renderValue('high-risk-count', data.highRiskCount);
+        }
 
-            // 2. Steps Efficiency
+        function renderStepsEfficiency(data) {
             const stepContainer = document.getElementById('steps-stats');
-            stepContainer.innerHTML = data.steps.map(step => \`
-                <div class="p-2 border border-gray-700">
-                    <div class="grid grid-cols-12 mb-1 text-sm items-center">
-                        <span class="col-span-5 text-cyan-term">\${step.name} (\${step.team})</span>
-                        <span class="col-span-3 text-yellow-term text-right">\${step.caseload}%</span>
-                        <span class="col-span-4 text-right">\${step.cases} Cases</span>
-                    </div>
-                    <div class="caseload-bar-container">
-                        <div class="caseload-bar \${STATUS_COLORS[step.status]}" style="width: \${step.caseload}%"></div>
-                    </div>
-                </div>
-            \`).join('');
+            stepContainer.innerHTML = data.steps.map(function(step) {
+                return '<div class="p-2 border border-gray-700">' +
+                    '<div class="grid grid-cols-12 mb-1 text-sm items-center">' +
+                        '<span class="col-span-5 text-cyan-term">' + step.name + ' (' + step.team + ')</span>' +
+                        '<span class="col-span-3 text-yellow-term text-right">' + step.caseload + '%</span>' +
+                        '<span class="col-span-4 text-right">' + step.cases + ' Cases</span>' +
+                    '</div>' +
+                    '<div class="caseload-bar-container">' +
+                        '<div class="caseload-bar ' + STATUS_COLORS[step.status] + '" style="width: ' + step.caseload + '%"></div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
 
-            // 3. Network Health
+        function renderNetworkHealth(data) {
             renderValue('total-members-full', data.totalMembers);
             renderValue('engagement-rate', data.engagementRate, 'percent');
             document.getElementById('engagement-bar').style.width = data.engagementRate + '%';
             renderValue('no-contact-count', data.noContactCount);
-
             renderValue('steward-count', data.stewardCount);
             renderValue('avg-load', data.avgLoad.toFixed(1));
             document.getElementById('capacity-bar').style.width = (data.avgLoad * 10) + '%';
             renderValue('overloaded-stewards', data.overloadedStewards);
-
             renderValue('disc-count', data.issueDistribution.disciplinary);
             renderValue('contract-count', data.issueDistribution.contract);
             renderValue('work-count', data.issueDistribution.work);
+        }
 
-            // 4. Action Log
+        function renderActionLog(data) {
             const logContainer = document.getElementById('process-list');
             logContainer.innerHTML = data.processes.map(function(proc) {
                 const statusColor = getStatusColorClass(proc.status);
-                const dueText = proc.due < 0 ? \`<span class="text-red-term">\${Math.abs(proc.due)} OVERDUE</span>\` : \`\${proc.due}d\`;
-                return \`
-                    <div class="process-row grid grid-cols-12 py-1 text-xs">
-                        <span class="col-span-1 text-cyan-term">\${proc.id}</span>
-                        <span class="col-span-3">\${proc.program}</span>
-                        <span class="col-span-3 text-green-term">\${proc.memberId} / \${proc.steward}</span>
-                        <span class="col-span-2 text-yellow-term">\${proc.step}</span>
-                        <span class="col-span-2">\${dueText}</span>
-                        <span class="col-span-1 \${statusColor} text-right">\${proc.status}</span>
-                    </div>
-                \`;
+                const dueText = proc.due < 0 ? '<span class="text-red-term">' + Math.abs(proc.due) + ' OVERDUE</span>' : proc.due + 'd';
+                return '<div class="process-row grid grid-cols-12 py-1 text-xs">' +
+                    '<span class="col-span-1 text-cyan-term">' + proc.id + '</span>' +
+                    '<span class="col-span-3">' + proc.program + '</span>' +
+                    '<span class="col-span-3 text-green-term">' + proc.memberId + ' / ' + proc.steward + '</span>' +
+                    '<span class="col-span-2 text-yellow-term">' + proc.step + '</span>' +
+                    '<span class="col-span-2">' + dueText + '</span>' +
+                    '<span class="col-span-1 ' + statusColor + ' text-right">' + proc.status + '</span>' +
+                '</div>';
             }).join('');
+        }
 
-            // 5. Follow-Up Radar
+        function renderFollowUpRadar(data) {
             document.getElementById('follow-up-radar').innerHTML = data.followUpTasks.map(function(task) {
                 const priorityColor = getStatusColorClass(task.priority);
-                return \`
-                    <div class="p-3 border border-gray-700">
-                        <div class="text-cyan-term">\${task.type}</div>
-                        <div class="\${priorityColor} text-lg font-bold">\${task.memberId}</div>
-                        <div class="matrix-text">Assigned: \${task.steward}</div>
-                        <div class="matrix-text text-yellow-term">Due: \${task.date}</div>
-                    </div>
-                \`;
+                return '<div class="p-3 border border-gray-700">' +
+                    '<div class="text-cyan-term">' + task.type + '</div>' +
+                    '<div class="' + priorityColor + ' text-lg font-bold">' + task.memberId + '</div>' +
+                    '<div class="matrix-text">Assigned: ' + task.steward + '</div>' +
+                    '<div class="matrix-text text-yellow-term">Due: ' + task.date + '</div>' +
+                '</div>';
             }).join('');
+        }
 
-            // 6. Predictive Alerts
+        function renderPredictiveAlerts(data) {
             document.getElementById('predictive-alerts').innerHTML = data.predictiveAlerts.map(function(alert) {
                 const strengthColor = getStatusColorClass(alert.strength);
-                return \`
-                    <div class="process-row grid grid-cols-12 py-1 text-xs">
-                        <span class="col-span-3 text-cyan-term">\${alert.memberId}</span>
-                        <span class="col-span-4">\${alert.signal}</span>
-                        <span class="col-span-3 \${strengthColor}">\${alert.strength}</span>
-                        <span class="col-span-2 text-right text-yellow-term">\${alert.lastContact}</span>
-                    </div>
-                \`;
+                return '<div class="process-row grid grid-cols-12 py-1 text-xs">' +
+                    '<span class="col-span-3 text-cyan-term">' + alert.memberId + '</span>' +
+                    '<span class="col-span-4">' + alert.signal + '</span>' +
+                    '<span class="col-span-3 ' + strengthColor + '">' + alert.strength + '</span>' +
+                    '<span class="col-span-2 text-right text-yellow-term">' + alert.lastContact + '</span>' +
+                '</div>';
             }).join('');
+        }
 
-            // 7. Systemic Risk
+        function renderSystemicRisk(data) {
             document.getElementById('systemic-risk').innerHTML = data.systemicRisk.map(function(risk) {
                 const severityColor = getStatusColorClass(risk.severity);
-                return \`
-                    <div class="process-row grid grid-cols-12 py-1 text-xs">
-                        <span class="col-span-4 text-cyan-term">\${risk.entity}</span>
-                        <span class="col-span-2">\${risk.type}</span>
-                        <span class="col-span-2 text-yellow-term">\${risk.cases}</span>
-                        <span class="col-span-2 text-red-term">\${risk.lossRate}%</span>
-                        <span class="col-span-2 \${severityColor} text-right">\${risk.severity}</span>
-                    </div>
-                \`;
+                return '<div class="process-row grid grid-cols-12 py-1 text-xs">' +
+                    '<span class="col-span-4 text-cyan-term">' + risk.entity + '</span>' +
+                    '<span class="col-span-2">' + risk.type + '</span>' +
+                    '<span class="col-span-2 text-yellow-term">' + risk.cases + '</span>' +
+                    '<span class="col-span-2 text-red-term">' + risk.lossRate + '%</span>' +
+                    '<span class="col-span-2 ' + severityColor + ' text-right">' + risk.severity + '</span>' +
+                '</div>';
             }).join('');
         }
 
         function initDashboard() {
             updateTime();
             setInterval(updateTime, 1000);
-
-            // CALL GOOGLE APPS SCRIPT AND RENDER EVERYTHING
             if (typeof google === 'object' && google.script && google.script.run) {
                 google.script.run
                     .withSuccessHandler(renderDashboard)
                     .withFailureHandler(function(error) {
-                        document.getElementById('loading-overlay').innerHTML = \`<div class="text-red-term">CONNECTION ERROR: \${error.message}<br>ENSURE WEB APP IS DEPLOYED.</div>\`;
+                        document.getElementById('loading-overlay').innerHTML = '<div class="text-red-term">CONNECTION ERROR: ' + error.message + '<br>ENSURE WEB APP IS DEPLOYED.</div>';
                     })
                     .getUnifiedDashboardData();
             } else {
-                 document.getElementById('loading-overlay').innerHTML = \`<div class="text-red-term">ENVIRONMENT ERROR: 'google.script.run' not available.<br>Please deploy the script as a Web App and open the resulting URL.</div>\`;
+                document.getElementById('loading-overlay').innerHTML = '<div class="text-red-term">ENVIRONMENT ERROR: google.script.run not available.<br>Please deploy the script as a Web App.</div>';
             }
         }
 
         window.onload = initDashboard;
-    </script>
-</body>
-</html>
   `;
 }

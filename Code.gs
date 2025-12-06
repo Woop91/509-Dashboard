@@ -2789,40 +2789,69 @@ function SEED_MEMBERS_TOGGLE_2() { seedMembersWithCount(5000, "Toggle 2"); }
 function SEED_MEMBERS_TOGGLE_3() { seedMembersWithCount(5000, "Toggle 3"); }
 function SEED_MEMBERS_TOGGLE_4() { seedMembersWithCount(5000, "Toggle 4"); }
 
+/**
+ * Seeds member directory with test data
+ * Refactored to use helper functions for maintainability
+ */
 function seedMembersWithCount(count, toggleName) {
   const ss = SpreadsheetApp.getActive();
   const memberDir = ss.getSheetByName(SHEETS.MEMBER_DIR);
   const config = ss.getSheetByName(SHEETS.CONFIG);
 
-  // Verify sheets exist
-  if (!memberDir) {
-    SpreadsheetApp.getUi().alert('Error', 'Member Directory sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
-    return;
-  }
-  if (!config) {
-    SpreadsheetApp.getUi().alert('Error', 'Config sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
-    return;
-  }
+  // Validate sheets exist
+  if (!validateSeedSheets(memberDir, config)) return;
 
+  // Confirm with user
   const ui = SpreadsheetApp.getUi();
   const response = ui.alert(
     `Seed ${count} Members (${toggleName})`,
     `This will add ${count} member records. This may take 1-2 minutes. Continue?`,
     ui.ButtonSet.YES_NO
   );
-
   if (response !== ui.Button.YES) return;
 
   SpreadsheetApp.getActive().toast(`🚀 Seeding ${count} members (${toggleName})...`, "Processing", -1);
 
-  // Clear existing data validations on columns that will receive seeded data
-  // This prevents validation conflicts when Config values differ from existing rules
+  // Prepare for seeding
+  clearMemberValidationsForSeed(memberDir, count);
+
+  // Get seed configuration
+  const seedConfig = getMemberSeedConfig();
+  if (!seedConfig) return;
+
+  // Generate and write data
+  const startingRow = memberDir.getLastRow();
+  const result = generateAndWriteMemberData(memberDir, count, startingRow, toggleName, seedConfig);
+
+  // Restore sheet state
+  restoreMemberSheetAfterSeed(memberDir, startingRow, count);
+
+  const finalRow = memberDir.getLastRow();
+  SpreadsheetApp.getActive().toast(`✅ ${count} members added (${toggleName})! Sheet now has ${finalRow - 1} members.`, "Complete", 5);
+}
+
+/**
+ * Validates sheets exist for seeding
+ */
+function validateSeedSheets(memberDir, config) {
+  if (!memberDir) {
+    SpreadsheetApp.getUi().alert('Error', 'Member Directory sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return false;
+  }
+  if (!config) {
+    SpreadsheetApp.getUi().alert('Error', 'Config sheet not found! Please run CREATE_509_DASHBOARD first.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Clears data validations before seeding
+ */
+function clearMemberValidationsForSeed(memberDir, count) {
   const lastRow = Math.max(memberDir.getLastRow(), 2);
-  const maxSeedRows = lastRow + count + 100; // Buffer for new rows
+  const maxSeedRows = lastRow + count + 100;
   try {
-    // Clear validations on columns with dropdown data:
-    // D (Job Title), E (Location), F (Unit), G (Office Days),
-    // L (Supervisor), M (Manager), N (Is Steward), P (Assigned Steward)
     const columnsToClean = [4, 5, 6, 7, 12, 13, 14, 16];
     columnsToClean.forEach(function(col) {
       memberDir.getRange(2, col, maxSeedRows, 1).clearDataValidations();
@@ -2831,59 +2860,52 @@ function seedMembersWithCount(count, toggleName) {
   } catch (e) {
     Logger.log('Warning: Could not clear some validations: ' + e.message);
   }
+}
 
-  const firstNames = ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley", "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle"];
-  const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores"];
-
-  // Get dropdown values from Config using dynamic helpers
+/**
+ * Gets configuration data for member seeding
+ */
+function getMemberSeedConfig() {
   const dropdowns = getMemberDirectoryDropdownValues();
-  const jobTitles = dropdowns.jobTitles;
-  const locations = dropdowns.locations;
-  const units = dropdowns.units;
-  const officeDays = dropdowns.officeDays;
-  const supervisors = dropdowns.supervisors;  // Now combined full names
-  const managers = dropdowns.managers;        // Now combined full names
-  const stewards = dropdowns.stewards;
 
-  const commMethods = getConfigColumnValues(CONFIG_COLS.COMM_METHODS);
+  let commMethods = getConfigColumnValues(CONFIG_COLS.COMM_METHODS);
   if (commMethods.length === 0) {
-    commMethods.push("Email", "Phone", "Text", "In Person");  // Fallback defaults
-  }
-  const times = ["Mornings", "Afternoons", "Evenings", "Weekends", "Flexible"];
-
-  // Pre-fetch committee and home town options ONCE (not inside the loop!)
-  const committeeOptions = getConfigColumnValues(CONFIG_COLS.STEWARD_COMMITTEES);
-  const homeTownOptions = getConfigColumnValues(CONFIG_COLS.HOME_TOWNS);
-
-  // Validate config data with detailed debugging
-  Logger.log('Seed Config Debug: jobTitles=' + jobTitles.length + ', locations=' + locations.length +
-             ', units=' + units.length + ', supervisors=' + supervisors.length +
-             ', managers=' + managers.length + ', stewards=' + stewards.length);
-
-  if (jobTitles.length === 0 || locations.length === 0 || units.length === 0 ||
-      supervisors.length === 0 || managers.length === 0 || stewards.length === 0) {
-    ui.alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.\n\n' +
-             'Debug info:\n' +
-             '• Job Titles: ' + jobTitles.length + '\n' +
-             '• Locations: ' + locations.length + '\n' +
-             '• Units: ' + units.length + '\n' +
-             '• Supervisors: ' + supervisors.length + '\n' +
-             '• Managers: ' + managers.length + '\n' +
-             '• Stewards: ' + stewards.length, ui.ButtonSet.OK);
-    return;
+    commMethods = ["Email", "Phone", "Text", "In Person"];
   }
 
-  const BATCH_SIZE = 1000;
-  let data = [];
-  const startingRow = memberDir.getLastRow();
-  Logger.log('Seed starting at row: ' + startingRow);
+  const seedConfig = {
+    firstNames: ["James", "Mary", "John", "Patricia", "Robert", "Jennifer", "Michael", "Linda", "William", "Elizabeth", "David", "Barbara", "Richard", "Susan", "Joseph", "Jessica", "Thomas", "Sarah", "Charles", "Karen", "Christopher", "Nancy", "Daniel", "Lisa", "Matthew", "Betty", "Anthony", "Margaret", "Mark", "Sandra", "Donald", "Ashley", "Steven", "Kimberly", "Paul", "Emily", "Andrew", "Donna", "Joshua", "Michelle"],
+    lastNames: ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores"],
+    jobTitles: dropdowns.jobTitles,
+    locations: dropdowns.locations,
+    units: dropdowns.units,
+    officeDays: dropdowns.officeDays,
+    supervisors: dropdowns.supervisors,
+    managers: dropdowns.managers,
+    stewards: dropdowns.stewards,
+    commMethods: commMethods,
+    times: ["Mornings", "Afternoons", "Evenings", "Weekends", "Flexible"],
+    committeeOptions: getConfigColumnValues(CONFIG_COLS.STEWARD_COMMITTEES),
+    homeTownOptions: getConfigColumnValues(CONFIG_COLS.HOME_TOWNS),
+    contactNotes: getSeedContactNotes()
+  };
 
-  // Limit stewards to 25 total per seed operation
-  const MAX_STEWARDS = 25;
-  let stewardCount = 0;
+  // Validate required config
+  if (seedConfig.jobTitles.length === 0 || seedConfig.locations.length === 0 ||
+      seedConfig.units.length === 0 || seedConfig.supervisors.length === 0 ||
+      seedConfig.managers.length === 0 || seedConfig.stewards.length === 0) {
+    SpreadsheetApp.getUi().alert('Error', 'Config data is incomplete. Please ensure all dropdown lists in Config sheet are populated.', SpreadsheetApp.getUi().ButtonSet.OK);
+    return null;
+  }
 
-  // Sample contact notes for steward contact tracking
-  const contactNotes = [
+  return seedConfig;
+}
+
+/**
+ * Returns sample contact notes for seeding
+ */
+function getSeedContactNotes() {
+  return [
     "Discussed upcoming contract negotiations",
     "Follow-up on workplace safety concerns",
     "Scheduled one-on-one meeting for next week",
@@ -2900,138 +2922,113 @@ function seedMembersWithCount(count, toggleName) {
     "Answered questions about union dues",
     "Discussed upcoming union events"
   ];
+}
+
+/**
+ * Generates and writes member data in batches
+ */
+function generateAndWriteMemberData(memberDir, count, startingRow, toggleName, config) {
+  const BATCH_SIZE = 1000;
+  const MAX_STEWARDS = 25;
+  let data = [];
+  let stewardCount = 0;
 
   for (let i = 1; i <= count; i++) {
-    const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-    const memberID = "M" + String(startingRow + i).padStart(6, '0');
-    const jobTitle = jobTitles[Math.floor(Math.random() * jobTitles.length)];
-    const location = locations[Math.floor(Math.random() * locations.length)];
-    const unit = units[Math.floor(Math.random() * units.length)];
-
-    // Generate multiple office days (1-3 days)
-    const numDays = Math.floor(Math.random() * 3) + 1;
-    const selectedDays = [];
-    const availableDays = [...officeDays];
-    for (let d = 0; d < numDays; d++) {
-      if (availableDays.length > 0) {
-        const idx = Math.floor(Math.random() * availableDays.length);
-        selectedDays.push(availableDays.splice(idx, 1)[0]);
-      }
-    }
-    const officeDaysValue = selectedDays.join(", ");
-
-    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${startingRow + i}@union.org`;
-    const phone = `(555) ${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
-    // Limit stewards to MAX_STEWARDS (25) per seed operation
-    const isSteward = (stewardCount < MAX_STEWARDS && Math.random() > 0.95) ? "Yes" : "No";
-    if (isSteward === "Yes") stewardCount++;
-
-    // Select supervisor and manager names from Config (already combined full names)
-    const supervisor = supervisors[Math.floor(Math.random() * supervisors.length)];
-    const manager = managers[Math.floor(Math.random() * managers.length)];
-    const assignedSteward = stewards[Math.floor(Math.random() * stewards.length)];
-
-    const daysAgo = Math.floor(Math.random() * 90);
-    const lastVirtual = Math.random() > 0.7 ? new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000) : "";
-    const lastInPerson = Math.random() > 0.8 ? new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000) : "";
-    const lastSurvey = Math.random() > 0.6 ? new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000) : "";
-    const lastEmailOpen = Math.random() > 0.5 ? new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000) : "";
-
-    const openRate = Math.floor(Math.random() * 40) + 60;
-    const volHours = Math.floor(Math.random() * 50);
-    const localInterest = Math.random() > 0.5 ? "Yes" : "No";
-    const chapterInterest = Math.random() > 0.6 ? "Yes" : "No";
-    const alliedInterest = Math.random() > 0.8 ? "Yes" : "No";
-    const contactDate = new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000);
-    const commMethod = commMethods[Math.floor(Math.random() * commMethods.length)];
-    const bestTime = times[Math.floor(Math.random() * times.length)];
-
-    // Use pre-fetched committees for stewards
-    const committee = isSteward === "Yes" && committeeOptions.length > 0
-      ? committeeOptions[Math.floor(Math.random() * committeeOptions.length)]
-      : "";
-
-    // Use pre-fetched home towns
-    const homeTown = homeTownOptions.length > 0
-      ? homeTownOptions[Math.floor(Math.random() * homeTownOptions.length)]
-      : "";
-
-    // Build row to match Member Directory headers exactly (31 columns):
-    // Section 1: Identity & Core Info (A-D, cols 1-4)
-    // Section 2: Location & Work (E-G, cols 5-7)
-    // Section 3: Contact Information (H-K, cols 8-11)
-    // Section 4: Organizational Structure (L-P, cols 12-16)
-    // Section 5: Engagement Metrics (Q-T, cols 17-20)
-    // Section 6: Member Interests (U-X, cols 21-24)
-    // Section 7: Steward Contact Tracking (Y-AA, cols 25-27)
-    // Section 8: Grievance Management (AB-AE, cols 28-31)
-    const row = [
-      // Section 1-2: Identity, Location & Work (cols 1-7)
-      memberID, firstName, lastName, jobTitle, location, unit, officeDaysValue,
-      // Section 3: Contact Information (cols 8-11)
-      email, phone, commMethod, bestTime,
-      // Section 4: Organizational Structure (cols 12-16)
-      supervisor, manager, isSteward, committee, assignedSteward,
-      // Section 5: Engagement Metrics (cols 17-20)
-      lastVirtual, lastInPerson, openRate, volHours,
-      // Section 6: Member Interests (cols 21-24)
-      localInterest, chapterInterest, alliedInterest, homeTown,
-      // Section 7: Steward Contact Tracking (cols 25-27)
-      // Add realistic steward contact data for some members
-      contactDate,
-      Math.random() > 0.6 ? stewards[Math.floor(Math.random() * stewards.length)] : "",
-      Math.random() > 0.6 ? contactNotes[Math.floor(Math.random() * contactNotes.length)] : ""
-      // NOTE: Section 8 (cols 28-31) - Has Open Grievance?, Grievance Status, Next Deadline, Start Grievance
-      // These columns are NOT included in seed data because:
-      // - Cols 28-30 (AB-AD) are formula columns populated by setupFormulasAndCalculations()
-      // - Col 31 (AE) is a checkbox column that will be set up separately
-    ];
-
-    data.push(row);
+    const row = generateSingleMemberRow(i, startingRow, config, stewardCount, MAX_STEWARDS);
+    if (row.isSteward) stewardCount++;
+    data.push(row.data);
 
     if (data.length === BATCH_SIZE) {
-      try {
-        memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-        SpreadsheetApp.getActive().toast(`Added ${i} of ${count} members (${toggleName})...`, "Progress", 1);
-        data = [];
-        SpreadsheetApp.flush();
-      } catch (e) {
-        Logger.log(`Error writing member batch at ${i}: ${e.message}`);
-        SpreadsheetApp.getActive().toast(`⚠️ Error at ${i}. Retrying...`, "Warning", 2);
-        // Retry once
-        Utilities.sleep(1000);
-        try {
-          memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, row.length).setValues(data);
-          data = [];
-        } catch (e2) {
-          Logger.log(`Retry failed: ${e2.message}`);
-          throw new Error(`Failed to write members: ${e2.message}`);
-        }
-      }
+      writeMemberBatch(memberDir, data, i, count, toggleName);
+      data = [];
     }
   }
 
   // Write remaining data
   if (data.length > 0) {
-    try {
-      const writeRow = memberDir.getLastRow() + 1;
-      Logger.log('Writing final batch of ' + data.length + ' rows at row ' + writeRow);
-      memberDir.getRange(writeRow, 1, data.length, data[0].length).setValues(data);
-    } catch (e) {
-      Logger.log(`Error writing final member batch: ${e.message}`);
-      throw new Error(`Failed to write final members: ${e.message}`);
-    }
+    writeMemberBatch(memberDir, data, count, count, toggleName);
   }
 
-  // Force write to sheet
   SpreadsheetApp.flush();
+  Logger.log('Seed complete. Member Directory now has ' + memberDir.getLastRow() + ' rows');
+}
 
-  // Verify data was written
-  const finalRow = memberDir.getLastRow();
-  Logger.log('Seed complete. Member Directory now has ' + finalRow + ' rows (including header)');
+/**
+ * Generates a single member row
+ */
+function generateSingleMemberRow(index, startingRow, config, stewardCount, maxStewards) {
+  const firstName = config.firstNames[Math.floor(Math.random() * config.firstNames.length)];
+  const lastName = config.lastNames[Math.floor(Math.random() * config.lastNames.length)];
+  const memberID = "M" + String(startingRow + index).padStart(6, '0');
 
-  // CRITICAL: Re-apply dropdowns that were cleared before seeding
+  // Generate office days
+  const numDays = Math.floor(Math.random() * 3) + 1;
+  const selectedDays = [];
+  const availableDays = [...config.officeDays];
+  for (let d = 0; d < numDays && availableDays.length > 0; d++) {
+    const idx = Math.floor(Math.random() * availableDays.length);
+    selectedDays.push(availableDays.splice(idx, 1)[0]);
+  }
+
+  const isSteward = (stewardCount < maxStewards && Math.random() > 0.95) ? "Yes" : "No";
+  const daysAgo = Math.floor(Math.random() * 90);
+
+  const row = [
+    memberID, firstName, lastName,
+    config.jobTitles[Math.floor(Math.random() * config.jobTitles.length)],
+    config.locations[Math.floor(Math.random() * config.locations.length)],
+    config.units[Math.floor(Math.random() * config.units.length)],
+    selectedDays.join(", "),
+    `${firstName.toLowerCase()}.${lastName.toLowerCase()}${startingRow + index}@union.org`,
+    `(555) ${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+    config.commMethods[Math.floor(Math.random() * config.commMethods.length)],
+    config.times[Math.floor(Math.random() * config.times.length)],
+    config.supervisors[Math.floor(Math.random() * config.supervisors.length)],
+    config.managers[Math.floor(Math.random() * config.managers.length)],
+    isSteward,
+    isSteward === "Yes" && config.committeeOptions.length > 0 ? config.committeeOptions[Math.floor(Math.random() * config.committeeOptions.length)] : "",
+    config.stewards[Math.floor(Math.random() * config.stewards.length)],
+    Math.random() > 0.7 ? new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000) : "",
+    Math.random() > 0.8 ? new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000) : "",
+    Math.floor(Math.random() * 40) + 60,
+    Math.floor(Math.random() * 50),
+    Math.random() > 0.5 ? "Yes" : "No",
+    Math.random() > 0.6 ? "Yes" : "No",
+    Math.random() > 0.8 ? "Yes" : "No",
+    config.homeTownOptions.length > 0 ? config.homeTownOptions[Math.floor(Math.random() * config.homeTownOptions.length)] : "",
+    new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000),
+    Math.random() > 0.6 ? config.stewards[Math.floor(Math.random() * config.stewards.length)] : "",
+    Math.random() > 0.6 ? config.contactNotes[Math.floor(Math.random() * config.contactNotes.length)] : ""
+  ];
+
+  return { data: row, isSteward: isSteward === "Yes" };
+}
+
+/**
+ * Writes a batch of member data to the sheet
+ */
+function writeMemberBatch(memberDir, data, currentIndex, totalCount, toggleName) {
+  try {
+    memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+    SpreadsheetApp.getActive().toast(`Added ${currentIndex} of ${totalCount} members (${toggleName})...`, "Progress", 1);
+    SpreadsheetApp.flush();
+  } catch (e) {
+    Logger.log(`Error writing member batch at ${currentIndex}: ${e.message}`);
+    SpreadsheetApp.getActive().toast(`⚠️ Error at ${currentIndex}. Retrying...`, "Warning", 2);
+    Utilities.sleep(1000);
+    try {
+      memberDir.getRange(memberDir.getLastRow() + 1, 1, data.length, data[0].length).setValues(data);
+    } catch (e2) {
+      Logger.log(`Retry failed: ${e2.message}`);
+      throw new Error(`Failed to write members: ${e2.message}`);
+    }
+  }
+}
+
+/**
+ * Restores dropdowns, checkboxes, and formulas after seeding
+ */
+function restoreMemberSheetAfterSeed(memberDir, startingRow, count) {
   SpreadsheetApp.getActive().toast(`Restoring dropdowns...`, "Processing", -1);
   try {
     setupMemberDirectoryDropdownsSilent();
@@ -3041,7 +3038,6 @@ function seedMembersWithCount(count, toggleName) {
     Logger.log('Warning: Could not re-apply dropdowns: ' + e.message);
   }
 
-  // Ensure checkboxes are set up for Start Grievance column (AE - col 31)
   try {
     const startGrievanceCol = MEMBER_COLS.START_GRIEVANCE;
     memberDir.getRange(startingRow + 1, startGrievanceCol, count, 1).insertCheckboxes();
@@ -3050,7 +3046,6 @@ function seedMembersWithCount(count, toggleName) {
     Logger.log('Warning: Could not add checkboxes: ' + e.message);
   }
 
-  // Re-apply formulas for grievance columns (AB, AC, AD) if needed
   SpreadsheetApp.getActive().toast(`Refreshing formulas...`, "Processing", -1);
   try {
     setupFormulasAndCalculations();
@@ -3058,8 +3053,6 @@ function seedMembersWithCount(count, toggleName) {
   } catch (e) {
     Logger.log('Warning: Could not refresh formulas: ' + e.message);
   }
-
-  SpreadsheetApp.getActive().toast(`✅ ${count} members added (${toggleName})! Sheet now has ${finalRow - 1} members.`, "Complete", 5);
 }
 
 /* --------------------- LEGACY: SEED 20,000 MEMBERS --------------------- */

@@ -134,6 +134,7 @@ function showMobileDashboard() {
 
 /**
  * Creates HTML for mobile dashboard
+ * Refactored to use smaller, focused helper functions
  */
 function createMobileDashboardHTML() {
   const stats = getMobileDashboardStats();
@@ -145,6 +146,34 @@ function createMobileDashboardHTML() {
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
+${getMobileDashboardStyles()}
+  </style>
+</head>
+<body>
+${getMobileDashboardHeader()}
+  <div class="container">
+    <div id="refreshIndicator" class="refresh-indicator">
+      ✅ Refreshed!
+    </div>
+${getMobileDashboardStatsGrid(stats)}
+${getMobileDashboardQuickActions()}
+${getMobileDashboardRecentSection()}
+  </div>
+  <button class="fab" onclick="refreshDashboard()" title="Refresh">🔄</button>
+  <script>
+${getMobileDashboardScripts()}
+  </script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Returns CSS styles for mobile dashboard
+ * @returns {string} CSS styles
+ */
+function getMobileDashboardStyles() {
+  return `
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
@@ -334,20 +363,29 @@ function createMobileDashboardHTML() {
       margin-bottom: 15px;
       display: none;
     }
-  </style>
-</head>
-<body>
+  `;
+}
+
+/**
+ * Returns header HTML for mobile dashboard
+ * @returns {string} Header HTML
+ */
+function getMobileDashboardHeader() {
+  return `
   <div class="header">
     <h1>📱 509 Dashboard</h1>
     <div class="subtitle">Mobile Optimized View</div>
   </div>
+  `;
+}
 
-  <div class="container">
-    <div id="refreshIndicator" class="refresh-indicator">
-      ✅ Refreshed!
-    </div>
-
-    <!-- Stats -->
+/**
+ * Returns stats grid HTML for mobile dashboard
+ * @param {Object} stats - Dashboard statistics
+ * @returns {string} Stats grid HTML
+ */
+function getMobileDashboardStatsGrid(stats) {
+  return `
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-value">${stats.totalGrievances}</div>
@@ -366,59 +404,62 @@ function createMobileDashboardHTML() {
         <div class="stat-label">Overdue</div>
       </div>
     </div>
+  `;
+}
 
-    <!-- Quick Actions -->
+/**
+ * Returns quick actions HTML for mobile dashboard
+ * @returns {string} Quick actions HTML
+ */
+function getMobileDashboardQuickActions() {
+  const actions = [
+    { icon: '➕', label: 'New Grievance', description: 'File a new case', handler: 'quickNewGrievance' },
+    { icon: '🔍', label: 'Search', description: 'Find grievances or members', handler: 'quickSearch' },
+    { icon: '📋', label: 'My Cases', description: 'View assigned grievances', handler: 'viewMyCases' },
+    { icon: '📊', label: 'Reports', description: 'Analytics and insights', handler: 'viewReports' }
+  ];
+
+  const buttonsHtml = actions.map(function(action) {
+    return `
+      <button class="action-button" onclick="${action.handler}()">
+        <div class="action-icon">${action.icon}</div>
+        <div class="action-text">
+          <div class="action-label">${action.label}</div>
+          <div class="action-description">${action.description}</div>
+        </div>
+      </button>
+    `;
+  }).join('');
+
+  return `
     <div class="section-title">⚡ Quick Actions</div>
     <div class="quick-actions">
-      <button class="action-button" onclick="quickNewGrievance()">
-        <div class="action-icon">➕</div>
-        <div class="action-text">
-          <div class="action-label">New Grievance</div>
-          <div class="action-description">File a new case</div>
-        </div>
-      </button>
-
-      <button class="action-button" onclick="quickSearch()">
-        <div class="action-icon">🔍</div>
-        <div class="action-text">
-          <div class="action-label">Search</div>
-          <div class="action-description">Find grievances or members</div>
-        </div>
-      </button>
-
-      <button class="action-button" onclick="viewMyCases()">
-        <div class="action-icon">📋</div>
-        <div class="action-text">
-          <div class="action-label">My Cases</div>
-          <div class="action-description">View assigned grievances</div>
-        </div>
-      </button>
-
-      <button class="action-button" onclick="viewReports()">
-        <div class="action-icon">📊</div>
-        <div class="action-text">
-          <div class="action-label">Reports</div>
-          <div class="action-description">Analytics and insights</div>
-        </div>
-      </button>
+      ${buttonsHtml}
     </div>
+  `;
+}
 
-    <!-- Recent Grievances -->
+/**
+ * Returns recent grievances section HTML for mobile dashboard
+ * @returns {string} Recent grievances section HTML
+ */
+function getMobileDashboardRecentSection() {
+  return `
     <div class="section-title">📝 Recent Grievances</div>
     <div id="recentGrievances">
       <div class="loading">Loading recent cases...</div>
     </div>
-
     <div class="swipe-hint">⬅️ Swipe cards for more options</div>
-  </div>
+  `;
+}
 
-  <!-- Floating Action Button -->
-  <button class="fab" onclick="refreshDashboard()" title="Refresh">
-    🔄
-  </button>
-
-  <script>
-    // Load recent grievances
+/**
+ * Returns JavaScript code for mobile dashboard
+ * @returns {string} JavaScript code
+ */
+function getMobileDashboardScripts() {
+  return `
+    // Load recent grievances on page load
     loadRecentGrievances();
 
     function loadRecentGrievances() {
@@ -438,39 +479,29 @@ function createMobileDashboardHTML() {
 
       let html = '';
       grievances.forEach(function(g) {
-        const statusClass = 'status-' + (g.status || 'filed').toLowerCase().replace(/\s+/g, '-');
-        html += \`
-          <div class="recent-card" onclick="viewGrievanceDetail('\${g.id}')">
-            <div class="recent-header">
-              <div class="recent-id">#\${g.id}</div>
-              <div class="status-badge \${statusClass}">\${g.status || 'Filed'}</div>
-            </div>
-            <div class="recent-detail">
-              <span class="recent-detail-label">Member:</span>
-              <span>\${g.memberName || 'N/A'}</span>
-            </div>
-            <div class="recent-detail">
-              <span class="recent-detail-label">Issue:</span>
-              <span>\${g.issueType || 'N/A'}</span>
-            </div>
-            <div class="recent-detail">
-              <span class="recent-detail-label">Filed:</span>
-              <span>\${g.filedDate || 'N/A'}</span>
-            </div>
-            ${g.deadline ? `
-            <div class="recent-detail">
-              <span class="recent-detail-label">Deadline:</span>
-              <span>\${g.deadline}</span>
-            </div>
-            ` : ''}
-          </div>
-        \`;
+        const statusClass = 'status-' + (g.status || 'filed').toLowerCase().replace(/\\s+/g, '-');
+        html += renderGrievanceCard(g, statusClass);
       });
 
       container.innerHTML = html;
-
-      // Add swipe gesture support
       addSwipeSupport();
+    }
+
+    function renderGrievanceCard(g, statusClass) {
+      let deadlineHtml = '';
+      if (g.deadline) {
+        deadlineHtml = '<div class="recent-detail"><span class="recent-detail-label">Deadline:</span><span>' + g.deadline + '</span></div>';
+      }
+      return '<div class="recent-card" onclick="viewGrievanceDetail(\\'' + g.id + '\\')">' +
+        '<div class="recent-header">' +
+          '<div class="recent-id">#' + g.id + '</div>' +
+          '<div class="status-badge ' + statusClass + '">' + (g.status || 'Filed') + '</div>' +
+        '</div>' +
+        '<div class="recent-detail"><span class="recent-detail-label">Member:</span><span>' + (g.memberName || 'N/A') + '</span></div>' +
+        '<div class="recent-detail"><span class="recent-detail-label">Issue:</span><span>' + (g.issueType || 'N/A') + '</span></div>' +
+        '<div class="recent-detail"><span class="recent-detail-label">Filed:</span><span>' + (g.filedDate || 'N/A') + '</span></div>' +
+        deadlineHtml +
+      '</div>';
     }
 
     function addSwipeSupport() {
@@ -487,14 +518,13 @@ function createMobileDashboardHTML() {
           currentX = e.touches[0].clientX;
           const diff = currentX - startX;
           if (Math.abs(diff) > 10) {
-            card.style.transform = \`translateX(\${diff}px)\`;
+            card.style.transform = 'translateX(' + diff + 'px)';
           }
         });
 
         card.addEventListener('touchend', function() {
           const diff = currentX - startX;
           if (Math.abs(diff) > 100) {
-            // Swipe action
             card.style.opacity = '0.5';
             setTimeout(function() { card.style.display = 'none'; }, 200);
           } else {
@@ -527,9 +557,7 @@ function createMobileDashboardHTML() {
     function refreshDashboard() {
       const indicator = document.getElementById('refreshIndicator');
       indicator.style.display = 'block';
-
       loadRecentGrievances();
-
       setTimeout(function() {
         indicator.style.display = 'none';
       }, 2000);
@@ -551,9 +579,6 @@ function createMobileDashboardHTML() {
         refreshDashboard();
       }
     });
-  </script>
-</body>
-</html>
   `;
 }
 
@@ -931,6 +956,7 @@ function showMobileUnifiedSearch() {
 
 /**
  * Creates HTML for unified mobile search
+ * Refactored to use smaller, focused helper functions
  */
 function createMobileUnifiedSearchHTML() {
   return `
@@ -939,7 +965,24 @@ function createMobileUnifiedSearchHTML() {
 <head>
   <base target="_top">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <style>
+  <style>${getMobileUnifiedSearchStyles()}</style>
+</head>
+<body>
+${getMobileUnifiedSearchHeader()}
+${getMobileUnifiedSearchTabs()}
+${getMobileUnifiedSearchFiltersContainer()}
+${getMobileUnifiedSearchResultsContainer()}
+  <script>${getMobileUnifiedSearchScripts()}</script>
+</body>
+</html>
+  `;
+}
+
+/**
+ * Returns CSS styles for mobile unified search
+ */
+function getMobileUnifiedSearchStyles() {
+  return `
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
@@ -1102,9 +1145,14 @@ function createMobileUnifiedSearchHTML() {
       font-size: 12px;
       margin-left: 6px;
     }
-  </style>
-</head>
-<body>
+  `;
+}
+
+/**
+ * Returns header HTML for mobile unified search
+ */
+function getMobileUnifiedSearchHeader() {
+  return `
   <div class="header">
     <h2>🔍 Quick Search</h2>
     <div class="search-container">
@@ -1112,8 +1160,14 @@ function createMobileUnifiedSearchHTML() {
       <input type="text" class="search-input" id="searchInput"
              placeholder="Search members or grievances..." autofocus>
     </div>
-  </div>
+  </div>`;
+}
 
+/**
+ * Returns tabs HTML for mobile unified search
+ */
+function getMobileUnifiedSearchTabs() {
+  return `
   <div class="tabs">
     <button class="tab active" id="tabMembers" onclick="switchTab('members')">
       👥 Members <span class="count-badge" id="memberCount">0</span>
@@ -1121,17 +1175,34 @@ function createMobileUnifiedSearchHTML() {
     <button class="tab" id="tabGrievances" onclick="switchTab('grievances')">
       📋 Grievances <span class="count-badge" id="grievanceCount">0</span>
     </button>
-  </div>
+  </div>`;
+}
 
+/**
+ * Returns filters container HTML for mobile unified search
+ */
+function getMobileUnifiedSearchFiltersContainer() {
+  return `
   <div class="filters" id="filtersContainer">
     <button class="filter-chip active" onclick="filterResults('all')">All</button>
-  </div>
+  </div>`;
+}
 
+/**
+ * Returns results container HTML for mobile unified search
+ */
+function getMobileUnifiedSearchResultsContainer() {
+  return `
   <div class="results" id="resultsContainer">
     <div class="loading">Loading data...</div>
-  </div>
+  </div>`;
+}
 
-  <script>
+/**
+ * Returns JavaScript for mobile unified search
+ */
+function getMobileUnifiedSearchScripts() {
+  return `
     let allMembers = [];
     let allGrievances = [];
     let currentTab = 'members';
@@ -1291,9 +1362,6 @@ function createMobileUnifiedSearchHTML() {
         .withSuccessHandler(function() { google.script.host.close(); })
         .navigateToGrievance(id);
     }
-  </script>
-</body>
-</html>
   `;
 }
 

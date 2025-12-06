@@ -15,6 +15,7 @@
 
 /**
  * Creates the Interactive Dashboard sheet with user-selectable controls
+ * Refactored to use smaller, focused helper functions
  */
 function createInteractiveDashboardSheet(ss) {
   let sheet = ss.getSheetByName(SHEETS.INTERACTIVE_DASHBOARD);
@@ -22,9 +23,23 @@ function createInteractiveDashboardSheet(ss) {
 
   sheet.clear();
 
-  // ------------------------------------------------------------=========
-  // HEADER SECTION
-  // ------------------------------------------------------------=========
+  // Build dashboard sections
+  createDashboardHeaderSection(sheet);
+  createDashboardControlPanel(sheet);
+  createDashboardMetricCards(sheet);
+  createDashboardChartAreas(sheet);
+  createDashboardPieChartSection(sheet);
+  createDashboardLocationChartSection(sheet);
+  createDashboardDataTableSection(sheet);
+  setDashboardDimensions(sheet);
+
+  Logger.log("Interactive Dashboard sheet created successfully");
+}
+
+/**
+ * Creates header section (rows 1-3)
+ */
+function createDashboardHeaderSection(sheet) {
   sheet.getRange("A1:T1").merge()
     .setValue("✨ YOUR UNION DASHBOARD - Where Data Comes Alive!")
     .setFontSize(22).setFontFamily("Roboto")
@@ -34,7 +49,6 @@ function createInteractiveDashboardSheet(ss) {
     .setFontColor("white");
   sheet.setRowHeight(1, 45);
 
-  // Subtitle
   sheet.getRange("A2:T2").merge()
     .setValue("🎉 Welcome! Watch your data dance, celebrate your victories, and track your progress together!")
     .setFontSize(11).setFontFamily("Roboto")
@@ -43,7 +57,6 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.LIGHT_GRAY)
     .setFontColor(COLORS.TEXT_GRAY);
 
-  // Gentle guidance tip
   sheet.getRange("A3:T3").merge()
     .setValue("💡 Pro Tip: Select your metrics below, then watch as your dashboard springs to life with insights and celebrations!")
     .setFontSize(10).setFontFamily("Roboto")
@@ -51,10 +64,12 @@ function createInteractiveDashboardSheet(ss) {
     .setHorizontalAlignment("center")
     .setBackground(COLORS.WHITE)
     .setFontColor(COLORS.ACCENT_TEAL);
+}
 
-  // ------------------------------------------------------------=========
-  // CONTROL PANEL - Row 4
-  // ------------------------------------------------------------=========
+/**
+ * Creates control panel section (rows 4-9)
+ */
+function createDashboardControlPanel(sheet) {
   sheet.getRange("A4:T4").merge()
     .setValue("🎛️ YOUR COMMAND CENTER - Make This Dashboard Your Own!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -63,7 +78,6 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.ACCENT_TEAL)
     .setFontColor("white");
 
-  // Control labels and dropdowns (Row 6-7)
   const controls = [
     ["Metric 1:", "Chart Type 1:", "Metric 2:", "Chart Type 2:", "Theme:"],
     ["", "", "", "", ""]
@@ -75,12 +89,10 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.LIGHT_GRAY)
     .setHorizontalAlignment("right");
 
-  // Dropdown cells (to be populated with data validation)
   sheet.getRange("A7:E7")
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // Comparison toggle
   sheet.getRange("G6").setValue("Enable Comparison:")
     .setFontWeight("bold")
     .setFontSize(10).setFontFamily("Roboto")
@@ -91,14 +103,12 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
 
-  // Action dropdown area
   sheet.getRange("I6").setValue("Quick Action:")
     .setFontWeight("bold")
     .setFontSize(10).setFontFamily("Roboto")
     .setBackground(COLORS.LIGHT_GRAY)
     .setHorizontalAlignment("right");
 
-  // Add dropdown for quick actions
   const actionDropdown = SpreadsheetApp.newDataValidation()
     .requireValueInList([
       "Select Action...",
@@ -117,10 +127,12 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID)
     .setHorizontalAlignment("center");
+}
 
-  // ------------------------------------------------------------=========
-  // METRIC CARDS SECTION - Row 10-18 (4 cards)
-  // ------------------------------------------------------------=========
+/**
+ * Creates metric cards section (rows 10-18)
+ */
+function createDashboardMetricCards(sheet) {
   sheet.getRange("A10:T10").merge()
     .setValue("📈 YOUR VICTORIES AT A GLANCE - Watch These Numbers Grow!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -129,7 +141,6 @@ function createInteractiveDashboardSheet(ss) {
     .setBackground(COLORS.PRIMARY_BLUE)
     .setFontColor("white");
 
-  // Create 4 metric cards
   const cardPositions = [
     {col: "A", endCol: "E", title: "💙 Our Growing Family", color: COLORS.ACCENT_TEAL},
     {col: "F", endCol: "J", title: "🔥 Active Cases", color: COLORS.ACCENT_ORANGE},
@@ -137,20 +148,16 @@ function createInteractiveDashboardSheet(ss) {
     {col: "P", endCol: "T", title: "⏰ Needs Attention", color: COLORS.SOLIDARITY_RED}
   ];
 
-  cardPositions.forEach(function(card, idx) {
+  cardPositions.forEach(function(card) {
     const startRow = 12;
-    const endRow = 18;
 
-    // Card border
-    sheet.getRange(`${card.col}${startRow}:${card.endCol}${endRow}`)
+    sheet.getRange(`${card.col}${startRow}:${card.endCol}18`)
       .setBackground(COLORS.WHITE)
       .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
 
-    // Top colored bar
     sheet.getRange(`${card.col}${startRow}:${card.endCol}${startRow}`)
       .setBorder(true, null, null, null, null, null, card.color, SpreadsheetApp.BorderStyle.SOLID_THICK);
 
-    // Card title
     sheet.getRange(`${card.col}${startRow + 1}:${card.endCol}${startRow + 1}`).merge()
       .setValue(card.title)
       .setFontWeight("bold")
@@ -158,7 +165,6 @@ function createInteractiveDashboardSheet(ss) {
       .setHorizontalAlignment("center")
       .setFontColor(COLORS.TEXT_GRAY);
 
-    // Big number (to be populated)
     sheet.getRange(`${card.col}${startRow + 2}:${card.endCol}${startRow + 4}`).merge()
       .setFontSize(48)
       .setFontWeight("bold")
@@ -167,7 +173,6 @@ function createInteractiveDashboardSheet(ss) {
       .setVerticalAlignment("middle")
       .setFontColor(card.color);
 
-    // Trend indicator (to be populated)
     sheet.getRange(`${card.col}${startRow + 5}:${card.endCol}${startRow + 6}`).merge()
       .setFontSize(10)
       .setFontFamily("Roboto")
@@ -176,10 +181,13 @@ function createInteractiveDashboardSheet(ss) {
       .setFontColor(COLORS.TEXT_GRAY)
       .setValue("📈 Growing Together");
   });
+}
 
-  // ------------------------------------------------------------=========
-  // CHART AREA 1 - Row 21-42 (Selected Metric 1)
-  // ------------------------------------------------------------=========
+/**
+ * Creates chart areas (rows 21-42)
+ */
+function createDashboardChartAreas(sheet) {
+  // Chart Area 1
   sheet.getRange("A21:J21").merge()
     .setValue("📊 YOUR STORY IN CHARTS - Watch Your Data Come to Life!")
     .setFontSize(13).setFontFamily("Roboto")
@@ -200,9 +208,7 @@ function createInteractiveDashboardSheet(ss) {
     .setVerticalAlignment("middle")
     .setFontColor(COLORS.TEXT_GRAY);
 
-  // ------------------------------------------------------------=========
-  // CHART AREA 2 - Row 21-42 (Comparison or Selected Metric 2)
-  // ------------------------------------------------------------=========
+  // Chart Area 2
   sheet.getRange("L21:T21").merge()
     .setValue("📊 DOUBLE THE INSIGHTS - See Two Stories Side by Side!")
     .setFontSize(13).setFontFamily("Roboto")
@@ -222,10 +228,12 @@ function createInteractiveDashboardSheet(ss) {
     .setHorizontalAlignment("center")
     .setVerticalAlignment("middle")
     .setFontColor(COLORS.TEXT_GRAY);
+}
 
-  // ------------------------------------------------------------=========
-  // PIE CHARTS SECTION - Row 45-65
-  // ------------------------------------------------------------=========
+/**
+ * Creates pie chart section (rows 45-65)
+ */
+function createDashboardPieChartSection(sheet) {
   sheet.getRange("A45:T45").merge()
     .setValue("🥧 COLORFUL INSIGHTS - Your Work in Living Color!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -259,10 +267,12 @@ function createInteractiveDashboardSheet(ss) {
   sheet.getRange("L48:T65")
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+}
 
-  // ------------------------------------------------------------=========
-  // WAREHOUSE-STYLE LOCATION CHART - Row 68-88
-  // ------------------------------------------------------------=========
+/**
+ * Creates warehouse-style location chart section (rows 68-88)
+ */
+function createDashboardLocationChartSection(sheet) {
   sheet.getRange("A68:T68").merge()
     .setValue("🏢 UNITED ACROSS LOCATIONS - Our Collective Strength!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -282,10 +292,12 @@ function createInteractiveDashboardSheet(ss) {
   sheet.getRange("A71:T88")
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, false, false, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+}
 
-  // ------------------------------------------------------------=========
-  // DATA TABLE - Top Performers/Issues - Row 91-110
-  // ------------------------------------------------------------=========
+/**
+ * Creates data table section (rows 91-110)
+ */
+function createDashboardDataTableSection(sheet) {
   sheet.getRange("A91:T91").merge()
     .setValue("📋 THE DETAILS THAT MATTER - Celebrating Excellence!")
     .setFontSize(14).setFontFamily("Roboto")
@@ -305,7 +317,12 @@ function createInteractiveDashboardSheet(ss) {
   sheet.getRange("A94:G110")
     .setBackground(COLORS.WHITE)
     .setBorder(true, true, true, true, true, true, COLORS.BORDER_GRAY, SpreadsheetApp.BorderStyle.SOLID);
+}
 
+/**
+ * Sets column widths, row heights, and frozen rows
+ */
+function setDashboardDimensions(sheet) {
   // Set column widths
   sheet.setColumnWidth(1, 80);   // Rank
   sheet.setColumnWidth(2, 250);  // Item
@@ -325,8 +342,6 @@ function createInteractiveDashboardSheet(ss) {
 
   // Freeze header rows
   sheet.setFrozenRows(2);
-
-  Logger.log("Interactive Dashboard sheet created successfully");
 }
 
 /**
