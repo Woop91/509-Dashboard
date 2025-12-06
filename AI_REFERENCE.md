@@ -1,6 +1,6 @@
 # 509 Dashboard - Complete Feature Reference
 
-**Version:** 2.5
+**Version:** 2.6
 **Last Updated:** 2025-12-06
 **Purpose:** Union grievance tracking and member engagement system for SEIU Local 509
 
@@ -36,7 +36,82 @@
 
 ---
 
-## 🆕 Changelog - Version 2.5 (2025-12-06)
+## 🆕 Changelog - Version 2.6 (2025-12-06)
+
+**HIGH PRIORITY FEATURES IMPLEMENTED:**
+
+✅ **Email Unsubscribe / Opt-Out System** (`EmailUnsubscribeSystem.gs`)
+- Checkbox column for email opt-out status in Member Directory
+- Automatic light red row highlighting for opted-out members (#FFCDD2)
+- Export prefix with "(UNSUBSCRIBED)" to prevent accidental sends
+- Filter opted-out members from bulk emails
+- Bulk opt-out/opt-in operations
+- Opt-out statistics and management panel
+
+✅ **Interactive Tutorial System** (`InteractiveTutorial.gs`)
+- Welcome wizard for first-time users
+- Step-by-step feature tours with 9 tutorial steps
+- Video tutorial library with 8 categorized videos
+- Progress tracking with resume capability
+- Quick Start Guide for rapid onboarding
+- Keyboard navigation support (arrow keys, Enter, Escape)
+
+✅ **Quick Actions Menu** (`QuickActionsMenu.gs`)
+- Right-click context menu for Member Directory and Grievance Log
+- Start Grievance from member row
+- Send Email directly to member
+- View grievance history
+- Quick status updates for grievances
+- Copy member/grievance ID to clipboard
+- View Drive folder and sync to calendar
+
+✅ **PII Protection System** (`PIIProtection.gs`)
+- Field-level data masking for emails, phones, SSNs
+- GDPR/CCPA compliance helpers
+- Data portability export (JSON format)
+- Right to erasure request processing
+- Anonymization for inactive members
+- PII audit reports
+- Data subject request form
+
+✅ **Enhanced Validation System** (`EnhancedValidation.gs`)
+- Real-time email format validation with typo detection
+- Phone number validation and auto-formatting
+- Duplicate Member/Grievance ID detection
+- Bulk validation tool with detailed reports
+- Visual indicators (yellow/red backgrounds, notes)
+- Validation settings configuration
+
+✅ **Context-Sensitive Help** (`ContextSensitiveHelp.gs`)
+- Sheet-specific help content with purpose and key tasks
+- Column documentation for major columns
+- Tips and best practices
+- Searchable help index
+- Task-specific guides
+- F1 shortcut for context help
+
+**Menu System Updates:**
+- Added Email Opt-Out Management to Communications menu
+- Added Tutorial and Video Tutorials to Help & Support menu
+- Added Quick Actions as top-level menu item
+- Added PII Protection submenu to Sheet Manager
+- Added Validation settings to Data Integrity menu
+- Added Context Help and Search Help to Help menu
+- Added Release Notes and What's New to Help menu
+
+**New Files Added:**
+- `EmailUnsubscribeSystem.gs` - Email opt-out/unsubscribe management
+- `InteractiveTutorial.gs` - Onboarding tutorials and video library
+- `QuickActionsMenu.gs` - Right-click context menu
+- `PIIProtection.gs` - PII protection and GDPR compliance
+- `EnhancedValidation.gs` - Email/phone validation
+- `ContextSensitiveHelp.gs` - Sheet-specific help system
+
+**Total Modules:** 66 (up from 60)
+
+---
+
+## Changelog - Version 2.5 (2025-12-06)
 
 **Feature 95 Integration:**
 - ✅ **Coordinator Notification System** - Implemented complete checkbox-based notification system

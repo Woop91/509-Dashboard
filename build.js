@@ -79,8 +79,13 @@ const CORE_MODULES = [
   // All feature modules depend on: Constants, SecurityUtils, Code.gs
   'ADHDEnhancements.gs',
   'AdminGrievanceMessages.gs',
+  'AdvancedExport.gs',
+  'AdvancedVisualization.gs',
   'AuditLoggingRBAC.gs',          // Audit logging and role-based access control
+  'AutoRefresh.gs',
+  'BenchmarkTools.gs',
   'EnhancedADHDFeatures.gs',
+  'EnhancedHelp.gs',              // Enhanced help system
   'AddRecommendations.gs',
   'AutomatedNotifications.gs',
   'AutomatedReports.gs',
@@ -88,6 +93,7 @@ const CORE_MODULES = [
   'BatchOperations.gs',
   'CalendarIntegration.gs',
   'ColumnToggles.gs',
+  'ContextSensitiveHelp.gs',        // Context-sensitive help system
   'CoordinatorNotification.gs',      // Feature 95: Coordinator notification system
   'CustomReportBuilder.gs',
   'DarkModeThemes.gs',
@@ -96,7 +102,9 @@ const CORE_MODULES = [
   'DataIntegrityEnhancements.gs',
   'DataPagination.gs',
   'DistributedLocks.gs',
+  'EmailUnsubscribeSystem.gs',     // Email opt-out/unsubscribe system
   'EnhancedErrorHandling.gs',
+  'EnhancedValidation.gs',         // Email/phone validation system
   'FAQKnowledgeBase.gs',
   'GettingStartedAndFAQ.gs',
   'GmailIntegration.gs',
@@ -107,22 +115,29 @@ const CORE_MODULES = [
   'IdempotentOperations.gs',
   'IncrementalBackupSystem.gs',
   'InteractiveDashboard.gs',
+  'InteractiveTutorial.gs',         // Interactive onboarding tutorials
   'KeyboardShortcuts.gs',
   'LazyLoadCharts.gs',
   'MemberDirectoryDropdowns.gs',
   'MemberDirectoryGoogleFormLink.gs',
   'MemberSearch.gs',
   'MobileOptimization.gs',
+  'NotificationCenter.gs',
   'OptimizedDashboardRebuild.gs',
   'PerformanceAndBackup.gs',      // Performance monitoring and backup features
   'PerformanceMonitoring.gs',
   'Phase6Integration.gs',
+  'PIIProtection.gs',               // PII protection and GDPR compliance
   'PredictiveAnalytics.gs',
+  'QuickActionsMenu.gs',            // Right-click context menu
+  'QuickFilters.gs',
+  'ReleaseNotes.gs',                // Release notes and version tracking
   'ReorganizedMenu.gs',
   'RootCauseAnalysis.gs',
   'SecurityAndAdmin.gs',          // Security and admin functions
   'SecurityService.gs',           // Advanced security service layer
   'SeedNuke.gs',
+  'SessionManagement.gs',           // Session management and user tracking
   'SmartAutoAssignment.gs',
   'TransactionRollback.gs',
   'UIFeatures.gs',                // UI-specific features
