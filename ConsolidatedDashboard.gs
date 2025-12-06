@@ -4711,43 +4711,43 @@ function setupFormulasAndCalculations() {
 
   // Filing Deadline (Incident Date + 21 days) - Column H
   grievanceLog.getRange(gFilingDeadlineCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gIncidentDateCol}2:${gIncidentDateCol}1000<>"",${gIncidentDateCol}2:${gIncidentDateCol}1000+21,""))`
+    `=ARRAYFORMULA(IF(${gIncidentDateCol}2:${gIncidentDateCol}10000<>"",${gIncidentDateCol}2:${gIncidentDateCol}10000+21,""))`
   );
 
   // Step I Decision Due (Date Filed + 30 days) - Column J
   grievanceLog.getRange(gStep1DueCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",${gDateFiledCol}2:${gDateFiledCol}1000+30,""))`
+    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}10000<>"",${gDateFiledCol}2:${gDateFiledCol}10000+30,""))`
   );
 
   // Step II Appeal Due (Step I Decision Rcvd + 10 days) - Column L
   grievanceLog.getRange(gStep2AppealDueCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gStep1RcvdCol}2:${gStep1RcvdCol}1000<>"",${gStep1RcvdCol}2:${gStep1RcvdCol}1000+10,""))`
+    `=ARRAYFORMULA(IF(${gStep1RcvdCol}2:${gStep1RcvdCol}10000<>"",${gStep1RcvdCol}2:${gStep1RcvdCol}10000+10,""))`
   );
 
   // Step II Decision Due (Step II Appeal Filed + 30 days) - Column N
   grievanceLog.getRange(gStep2DueCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}1000<>"",${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}1000+30,""))`
+    `=ARRAYFORMULA(IF(${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}10000<>"",${gStep2AppealFiledCol}2:${gStep2AppealFiledCol}10000+30,""))`
   );
 
   // Step III Appeal Due (Step II Decision Rcvd + 30 days) - Column P
   grievanceLog.getRange(gStep3AppealDueCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gStep2RcvdCol}2:${gStep2RcvdCol}1000<>"",${gStep2RcvdCol}2:${gStep2RcvdCol}1000+30,""))`
+    `=ARRAYFORMULA(IF(${gStep2RcvdCol}2:${gStep2RcvdCol}10000<>"",${gStep2RcvdCol}2:${gStep2RcvdCol}10000+30,""))`
   );
 
   // Days Open - Column S (shows actual days - negative values indicate data entry errors)
   grievanceLog.getRange(gDaysOpenCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}1000<>"",IF(${gDateClosedCol}2:${gDateClosedCol}1000<>"",${gDateClosedCol}2:${gDateClosedCol}1000-${gDateFiledCol}2:${gDateFiledCol}1000,TODAY()-${gDateFiledCol}2:${gDateFiledCol}1000),""))`
+    `=ARRAYFORMULA(IF(${gDateFiledCol}2:${gDateFiledCol}10000<>"",IF(${gDateClosedCol}2:${gDateClosedCol}10000<>"",${gDateClosedCol}2:${gDateClosedCol}10000-${gDateFiledCol}2:${gDateFiledCol}10000,TODAY()-${gDateFiledCol}2:${gDateFiledCol}10000),""))`
   );
 
   // Next Action Due - Column T (determines based on current step)
   grievanceLog.getRange(gNextActionCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gStatusCol}2:${gStatusCol}1000="Open",IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step I",${gStep1DueCol}2:${gStep1DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step II",${gStep2DueCol}2:${gStep2DueCol}1000,IF(${gCurrentStepCol}2:${gCurrentStepCol}1000="Step III",${gStep3AppealDueCol}2:${gStep3AppealDueCol}1000,${gFilingDeadlineCol}2:${gFilingDeadlineCol}1000))),""))`
+    `=ARRAYFORMULA(IF(${gStatusCol}2:${gStatusCol}10000="Open",IF(${gCurrentStepCol}2:${gCurrentStepCol}10000="Step I",${gStep1DueCol}2:${gStep1DueCol}10000,IF(${gCurrentStepCol}2:${gCurrentStepCol}10000="Step II",${gStep2DueCol}2:${gStep2DueCol}10000,IF(${gCurrentStepCol}2:${gCurrentStepCol}10000="Step III",${gStep3AppealDueCol}2:${gStep3AppealDueCol}10000,${gFilingDeadlineCol}2:${gFilingDeadlineCol}10000))),""))`
   );
 
   // Days to Deadline - Column U (shows descriptive text for overdue items)
   // Positive = days remaining, 0 = "DUE TODAY", Negative = "OVERDUE Xd"
   grievanceLog.getRange(gDaysToDeadlineCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}1000<>"",IF(${gNextActionCol}2:${gNextActionCol}1000-TODAY()<0,"OVERDUE "&ABS(${gNextActionCol}2:${gNextActionCol}1000-TODAY())&"d",IF(${gNextActionCol}2:${gNextActionCol}1000-TODAY()=0,"DUE TODAY",${gNextActionCol}2:${gNextActionCol}1000-TODAY())),""))`
+    `=ARRAYFORMULA(IF(${gNextActionCol}2:${gNextActionCol}10000<>"",IF(${gNextActionCol}2:${gNextActionCol}10000-TODAY()<0,"OVERDUE "&ABS(${gNextActionCol}2:${gNextActionCol}10000-TODAY())&"d",IF(${gNextActionCol}2:${gNextActionCol}10000-TODAY()=0,"DUE TODAY",${gNextActionCol}2:${gNextActionCol}10000-TODAY())),""))`
   );
 
   // Add conditional formatting for Days to Deadline column
@@ -4796,19 +4796,19 @@ function setupFormulasAndCalculations() {
   // Counts grievances with ANY active status: Open, Pending Info, Appealed, In Arbitration
   const hasGrievanceCol = getColumnLetter(MEMBER_COLS.HAS_OPEN_GRIEVANCE);
   memberDir.getRange(hasGrievanceCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IF(SUMPRODUCT((('Grievance Log'!${gMemberIdCol}:${gMemberIdCol}=A2:A1000)*(('Grievance Log'!${gStatusCol}:${gStatusCol}="Open")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Pending Info")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Appealed")+('Grievance Log'!${gStatusCol}:${gStatusCol}="In Arbitration"))))>0,"Yes","No"),""))`
+    `=ARRAYFORMULA(IF(A2:A25000<>"",IF(SUMPRODUCT((('Grievance Log'!${gMemberIdCol}:${gMemberIdCol}=A2:A25000)*(('Grievance Log'!${gStatusCol}:${gStatusCol}="Open")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Pending Info")+('Grievance Log'!${gStatusCol}:${gStatusCol}="Appealed")+('Grievance Log'!${gStatusCol}:${gStatusCol}="In Arbitration"))))>0,"Yes","No"),""))`
   );
 
   // Grievance Status Snapshot - Column Z (26)
   const statusSnapshotCol = getColumnLetter(MEMBER_COLS.GRIEVANCE_STATUS);
   memberDir.getRange(statusSnapshotCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gStatusCol}:${gStatusCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
+    `=ARRAYFORMULA(IF(A2:A25000<>"",IFERROR(INDEX('Grievance Log'!${gStatusCol}:${gStatusCol},MATCH(A2:A25000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
   );
 
   // Next Grievance Deadline - Column AA (27)
   const nextDeadlineCol = getColumnLetter(MEMBER_COLS.NEXT_DEADLINE);
   memberDir.getRange(nextDeadlineCol + "2").setFormula(
-    `=ARRAYFORMULA(IF(A2:A1000<>"",IFERROR(INDEX('Grievance Log'!${gNextActionCol}:${gNextActionCol},MATCH(A2:A1000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
+    `=ARRAYFORMULA(IF(A2:A25000<>"",IFERROR(INDEX('Grievance Log'!${gNextActionCol}:${gNextActionCol},MATCH(A2:A25000,'Grievance Log'!${gMemberIdCol}:${gMemberIdCol},0)),""),""))`
   );
 
   // Apply progress bar formatting
@@ -5317,9 +5317,7 @@ function onOpen() {
     .addSeparator()
     .addSubMenu(ui.createMenu("🛠️ Advanced Setup")
       .addItem("📊 Populate Analytics Sheets", "populateAllAnalyticsSheets")
-      .addItem("📝 Add Sample Feedback Entries", "addSampleFeedbackEntries")
-      .addSeparator()
-      .addItem("🗑️ Remove Emergency Contact Columns", "removeEmergencyContactColumns"))
+      .addItem("📝 Add Sample Feedback Entries", "addSampleFeedbackEntries"))
     .addSeparator()
     .addSubMenu(ui.createMenu("🌱 Seed Data (Testing)")
       .addSubMenu(ui.createMenu("👥 Seed Members")
@@ -6018,6 +6016,29 @@ function seedMembersWithCount(count, toggleName) {
   const startingRow = memberDir.getLastRow();
   Logger.log('Seed starting at row: ' + startingRow);
 
+  // Limit stewards to 25 total per seed operation
+  const MAX_STEWARDS = 25;
+  let stewardCount = 0;
+
+  // Sample contact notes for steward contact tracking
+  const contactNotes = [
+    "Discussed upcoming contract negotiations",
+    "Follow-up on workplace safety concerns",
+    "Scheduled one-on-one meeting for next week",
+    "Provided information about member benefits",
+    "Addressed scheduling conflict resolution",
+    "Checked in about workload issues",
+    "Discussed professional development opportunities",
+    "Followed up on grievance status",
+    "Welcomed new member to the union",
+    "Provided update on chapter meeting",
+    "Discussed concerns about overtime policies",
+    "Shared information about steward training",
+    "Follow-up on previous conversation about working conditions",
+    "Answered questions about union dues",
+    "Discussed upcoming union events"
+  ];
+
   for (let i = 1; i <= count; i++) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
@@ -6040,7 +6061,9 @@ function seedMembersWithCount(count, toggleName) {
 
     const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${startingRow + i}@union.org`;
     const phone = `(555) ${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`;
-    const isSteward = Math.random() > 0.95 ? "Yes" : "No";
+    // Limit stewards to MAX_STEWARDS (25) per seed operation
+    const isSteward = (stewardCount < MAX_STEWARDS && Math.random() > 0.95) ? "Yes" : "No";
+    if (isSteward === "Yes") stewardCount++;
 
     // Select supervisor and manager names from Config (already combined full names)
     const supervisor = supervisors[Math.floor(Math.random() * supervisors.length)];
@@ -6093,9 +6116,14 @@ function seedMembersWithCount(count, toggleName) {
       // Section 6: Member Interests (cols 21-24)
       localInterest, chapterInterest, alliedInterest, homeTown,
       // Section 7: Steward Contact Tracking (cols 25-27)
-      contactDate, "", "",
-      // Section 8: Grievance Management (cols 28-31) - formulas/checkbox
-      "", "", "", false
+      // Add realistic steward contact data for some members
+      contactDate,
+      Math.random() > 0.6 ? stewards[Math.floor(Math.random() * stewards.length)] : "",
+      Math.random() > 0.6 ? contactNotes[Math.floor(Math.random() * contactNotes.length)] : ""
+      // NOTE: Section 8 (cols 28-31) - Has Open Grievance?, Grievance Status, Next Deadline, Start Grievance
+      // These columns are NOT included in seed data because:
+      // - Cols 28-30 (AB-AD) are formula columns populated by setupFormulasAndCalculations()
+      // - Col 31 (AE) is a checkbox column that will be set up separately
     ];
 
     data.push(row);
@@ -24699,24 +24727,32 @@ function writeChartData(sheet, startCell, data) {
   if (!data || data.length === 0) return;
 
   try {
-    const range = sheet.getRange(startCell).offset(1, 0, data.length, 2);
+    const startRange = sheet.getRange(startCell);
+    const startRow = startRange.getRow() + 1;
+    const startCol = startRange.getColumn();
+    const numRows = data.length;
+    const numCols = 2;
 
-    // IMPORTANT: Break any merged cells before writing data
-    // This prevents "You must select all cells in a merged range" error
-    try {
-      range.breakApart();
-    } catch (e) {
-      // Range wasn't merged, ignore
+    // Get ALL merged regions in the target range and break apart any that overlap
+    // This properly handles the "You must select all cells in a merged range" error
+    const targetRange = sheet.getRange(startRow, startCol, numRows, numCols);
+    const mergedRanges = targetRange.getMergedRanges();
+    for (let i = 0; i < mergedRanges.length; i++) {
+      try {
+        mergedRanges[i].breakApart();
+      } catch (e) {
+        Logger.log('Could not break apart merged range: ' + e.message);
+      }
     }
 
-    // Clear existing content and formatting
-    range.clearContent();
+    // Clear existing content
+    targetRange.clearContent();
 
-    range.setValues(data);
+    // Write the data
+    targetRange.setValues(data);
 
     // Hide this data area - OPTIMIZED: batch hide instead of one-by-one
-    const startRow = range.getRow();
-    sheet.hideRows(startRow, data.length);
+    sheet.hideRows(startRow, numRows);
   } catch (error) {
     handleError(error, 'writeChartData', false);
   }
@@ -26831,63 +26867,6 @@ function refreshStewardDropdowns() {
     'Steward Dropdowns Updated',
     3
   );
-}
-
-/**
- * Removes emergency contact columns from Member Directory
- */
-function removeEmergencyContactColumns() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const memberSheet = ss.getSheetByName(SHEETS.MEMBER_DIR);
-
-  if (!memberSheet) {
-    SpreadsheetApp.getUi().alert('Member Directory sheet not found!');
-    return;
-  }
-
-  const ui = SpreadsheetApp.getUi();
-  const response = ui.alert(
-    'Remove Emergency Contact Columns',
-    'This will remove any columns with "Emergency Contact" in the header.\n\n' +
-    'This action cannot be easily undone.\n\n' +
-    'Continue?',
-    ui.ButtonSet.YES_NO
-  );
-
-  if (response !== ui.Button.YES) {
-    return;
-  }
-
-  try {
-    const headers = memberSheet.getRange(1, 1, 1, memberSheet.getLastColumn()).getValues()[0];
-    const columnsToDelete = [];
-
-    headers.forEach(function(header, index) {
-      const headerStr = String(header).toLowerCase();
-      if (headerStr.includes('emergency contact') || headerStr.includes('emergency phone')) {
-        columnsToDelete.push(index + 1);
-      }
-    });
-
-    if (columnsToDelete.length === 0) {
-      ui.alert('No emergency contact columns found.');
-      return;
-    }
-
-    // Delete columns in reverse order
-    columnsToDelete.reverse().forEach(function(colIndex) {
-      memberSheet.deleteColumn(colIndex);
-    });
-
-    ui.alert(
-      'Columns Removed',
-      `Removed ${columnsToDelete.length} emergency contact column(s).`,
-      ui.ButtonSet.OK
-    );
-
-  } catch (error) {
-    ui.alert('Error: ' + error.message);
-  }
 }
 
 /**
@@ -31943,7 +31922,6 @@ function onOpen_Reorganized() {
       .addItem("🎨 Setup Dashboard Enhancements", "SETUP_DASHBOARD_ENHANCEMENTS")
       .addItem("📊 Populate Analytics Sheets", "populateAllAnalyticsSheets"))
     .addSeparator()
-    .addItem("🗑️ Remove Emergency Contact Columns", "removeEmergencyContactColumns")
     .addItem("📝 Open Member Google Form", "openMemberGoogleForm")
     .addToUi();
 
