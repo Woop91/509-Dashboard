@@ -558,7 +558,7 @@ function onGrievanceFormSubmit(e) {
     const grievanceId = addGrievanceToLog(formData);
 
     // Create Google Drive folder for the grievance
-    const folder = createGrievanceFolder(grievanceId, formData);
+    const folder = createGrievanceFolderFromFormData(grievanceId, formData);
 
     // Generate PDF
     const pdfBlob = generateGrievancePDF(grievanceId);
@@ -578,9 +578,12 @@ function onGrievanceFormSubmit(e) {
 }
 
 /**
- * Creates a Google Drive folder for a grievance
+ * Creates a Google Drive folder for a grievance from form data
+ * @param {string} grievanceId - The grievance ID
+ * @param {Object} formData - Form data object with firstName and lastName properties
+ * @returns {Folder|null} The created folder or null on error
  */
-function createGrievanceFolder(grievanceId, formData) {
+function createGrievanceFolderFromFormData(grievanceId, formData) {
   try {
     // Get or create main Grievances folder
     const mainFolderName = 'SEIU 509 - Grievances';

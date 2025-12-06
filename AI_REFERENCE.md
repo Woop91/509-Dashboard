@@ -1,6 +1,6 @@
 # 509 Dashboard - Complete Feature Reference
 
-**Version:** 2.6
+**Version:** 2.7
 **Last Updated:** 2025-12-06
 **Purpose:** Union grievance tracking and member engagement system for SEIU Local 509
 
@@ -36,7 +36,43 @@
 
 ---
 
-## 🆕 Changelog - Version 2.6 (2025-12-06)
+## 🆕 Changelog - Version 2.7 (2025-12-06)
+
+**CRITICAL BUG FIXES:**
+
+✅ **Fixed Duplicate `createGrievanceFolder` Function** (`GrievanceWorkflow.gs`, `ConsolidatedDashboard.gs`, `GoogleDriveIntegration.gs`)
+- **Issue:** Function was defined 4 times with 2 different signatures (Version A: `grievanceId, grievantName` and Version B: `grievanceId, formData`), causing Version B to override Version A
+- **Solution:** Renamed the formData version to `createGrievanceFolderFromFormData(grievanceId, formData)` in GrievanceWorkflow.gs and ConsolidatedDashboard.gs
+- **API:** Now consistent - use `createGrievanceFolder(grievanceId, grievantName)` for simple folder creation, use `createGrievanceFolderFromFormData(grievanceId, formData)` when you have form data with firstName/lastName properties
+- Updated call sites in GrievanceWorkflow.gs:561 and ConsolidatedDashboard.gs:26718
+
+✅ **Fixed Broken DOM Event Listeners** (`MobileOptimization.gs`, `ConsolidatedDashboard.gs`)
+- **Issue:** `addEventListenerfunction` was a syntax error (missing dot separator) - should be `addEventListener`
+- **Affected:** 10 instances across 2 files in mobile swipe and pull-to-refresh functionality
+- **Solution:** Changed all `addEventListenerfunction(` to `addEventListener(`
+- **Also Fixed:** Arrow function syntax `(e) {` was malformed - changed to `function(e) {` for compatibility
+- Fixed in MobileOptimization.gs lines 482, 486, 494, 544, 548
+- Fixed in ConsolidatedDashboard.gs lines 33903, 33907, 33915, 33965, 33969
+
+✅ **Fixed Misplaced setTimeout Delay Parameter** (`EnhancedADHDFeatures.gs`, `MobileOptimization.gs`, `ConsolidatedDashboard.gs`)
+- **Issue:** `setTimeout(function() { return location.reload(), 1000; });` - the 1000ms delay was inside the callback as part of a comma expression, not passed as the second parameter
+- **Affected:** 10 instances across 3 files in ADHD control panel toggles and swipe card hiding
+- **Solution:** Changed to proper syntax: `setTimeout(function() { location.reload(); }, 1000);`
+- Fixed in EnhancedADHDFeatures.gs lines 359, 364, 369, 374
+- Fixed in ConsolidatedDashboard.gs lines 11260, 11265, 11270, 11275, 33920
+- Fixed in MobileOptimization.gs line 499
+
+**Files Modified:**
+- `GrievanceWorkflow.gs` - Renamed createGrievanceFolder to createGrievanceFolderFromFormData, updated call site
+- `ConsolidatedDashboard.gs` - Same rename, fixed addEventListener syntax, fixed setTimeout syntax
+- `MobileOptimization.gs` - Fixed addEventListener syntax, fixed setTimeout syntax
+- `EnhancedADHDFeatures.gs` - Fixed setTimeout syntax
+
+**Total Bugs Fixed:** 24 instances across 4 files
+
+---
+
+## Changelog - Version 2.6 (2025-12-06)
 
 **HIGH PRIORITY FEATURES IMPLEMENTED:**
 
@@ -2296,6 +2332,22 @@ A comprehensive code review was conducted covering stubs, dead ends, and errors.
    - All array access now uses `MEMBER_COLS - 1` and `GRIEVANCE_COLS - 1` pattern
    - Example: `g[4]` → `g[GRIEVANCE_COLS.STATUS - 1]`
 
+### Recent Code Review (Version 2.7)
+
+**✅ Fixed Issues (Resolved in Version 2.7):**
+
+1. **Duplicate createGrievanceFolder Functions (CRITICAL)** - FIXED
+   - Renamed formData version to `createGrievanceFolderFromFormData()` in GrievanceWorkflow.gs and ConsolidatedDashboard.gs
+   - Consistent API: `createGrievanceFolder(grievanceId, grievantName)` for simple use, `createGrievanceFolderFromFormData(grievanceId, formData)` for form submissions
+
+2. **Broken DOM Event Listeners (CRITICAL)** - FIXED
+   - Fixed `addEventListenerfunction` → `addEventListener` in MobileOptimization.gs and ConsolidatedDashboard.gs
+   - Fixed malformed arrow function syntax `(e) {` → `function(e) {`
+
+3. **Misplaced setTimeout Delays (CRITICAL)** - FIXED
+   - Fixed `setTimeout(function() { return action, delay; });` → `setTimeout(function() { action; }, delay);`
+   - Fixed in EnhancedADHDFeatures.gs, MobileOptimization.gs, ConsolidatedDashboard.gs
+
 **⚠️ Known Technical Debt (Non-Critical):**
 
 None - All issues resolved!
@@ -2309,6 +2361,16 @@ grep "'Grievance Log'![A-Z]:[A-Z]" *.gs | wc -l
 
 # Verify no hardcoded array indices (should return 0)
 grep "g\[[0-9]\+\]\|m\[[0-9]\+\]" UnifiedOperationsMonitor.gs | wc -l
+
+# Verify no broken event listeners (should return 0)
+grep "addEventListenerfunction" *.gs | wc -l
+
+# Verify no misplaced setTimeout delays (should return 0)
+grep "setTimeout(function() { return.*," *.gs | wc -l
+
+# Verify duplicate function names don't exist (should only return function definitions, not duplicates)
+grep -n "function createGrievanceFolder(" *.gs
+# Expected: Only 2 results - one in GoogleDriveIntegration.gs and one in ConsolidatedDashboard.gs (same signature)
 ```
 
 ---

@@ -11257,22 +11257,22 @@ function createADHDControlPanelHTML() {
 
     function toggleZebraStripes() {
       google.script.run.toggleZebraStripes();
-      setTimeout(function() { return location.reload(), 1000; });
+      setTimeout(function() { location.reload(); }, 1000);
     }
 
     function toggleGridlines() {
       google.script.run.toggleGridlinesADHD();
-      setTimeout(function() { return location.reload(), 1000; });
+      setTimeout(function() { location.reload(); }, 1000);
     }
 
     function toggleReducedMotion() {
       google.script.run.toggleReducedMotion();
-      setTimeout(function() { return location.reload(), 1000; });
+      setTimeout(function() { location.reload(); }, 1000);
     }
 
     function toggleComplexityIndicators() {
       google.script.run.toggleComplexityIndicators();
-      setTimeout(function() { return location.reload(), 1000; });
+      setTimeout(function() { location.reload(); }, 1000);
     }
 
     function activateFocusMode() {
@@ -26715,7 +26715,7 @@ function onGrievanceFormSubmit(e) {
     const grievanceId = addGrievanceToLog(formData);
 
     // Create Google Drive folder for the grievance
-    const folder = createGrievanceFolder(grievanceId, formData);
+    const folder = createGrievanceFolderFromFormData(grievanceId, formData);
 
     // Generate PDF
     const pdfBlob = generateGrievancePDF(grievanceId);
@@ -26735,9 +26735,12 @@ function onGrievanceFormSubmit(e) {
 }
 
 /**
- * Creates a Google Drive folder for a grievance
+ * Creates a Google Drive folder for a grievance from form data
+ * @param {string} grievanceId - The grievance ID
+ * @param {Object} formData - Form data object with firstName and lastName properties
+ * @returns {Folder|null} The created folder or null on error
  */
-function createGrievanceFolder(grievanceId, formData) {
+function createGrievanceFolderFromFormData(grievanceId, formData) {
   try {
     // Get or create main Grievances folder
     const mainFolderName = 'SEIU 509 - Grievances';
@@ -33897,11 +33900,11 @@ function createMobileDashboardHTML() {
         let startX = 0;
         let currentX = 0;
 
-        card.addEventListenerfunction('touchstart', (e) {
+        card.addEventListener('touchstart', function(e) {
           startX = e.touches[0].clientX;
         });
 
-        card.addEventListenerfunction('touchmove', (e) {
+        card.addEventListener('touchmove', function(e) {
           currentX = e.touches[0].clientX;
           const diff = currentX - startX;
           if (Math.abs(diff) > 10) {
@@ -33909,12 +33912,12 @@ function createMobileDashboardHTML() {
           }
         });
 
-        card.addEventListenerfunction('touchend', () {
+        card.addEventListener('touchend', function() {
           const diff = currentX - startX;
           if (Math.abs(diff) > 100) {
             // Swipe action
             card.style.opacity = '0.5';
-            setTimeout(function() { return card.style.display = 'none', 200; });
+            setTimeout(function() { card.style.display = 'none'; }, 200);
           } else {
             card.style.transform = '';
           }
@@ -33959,11 +33962,11 @@ function createMobileDashboardHTML() {
 
     // Pull-to-refresh
     let touchStartY = 0;
-    document.addEventListenerfunction('touchstart', (e) {
+    document.addEventListener('touchstart', function(e) {
       touchStartY = e.touches[0].clientY;
     });
 
-    document.addEventListenerfunction('touchmove', (e) {
+    document.addEventListener('touchmove', function(e) {
       const touchY = e.touches[0].clientY;
       if (touchY - touchStartY > 150 && window.scrollY === 0) {
         refreshDashboard();
