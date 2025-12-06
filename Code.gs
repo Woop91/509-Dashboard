@@ -82,7 +82,11 @@ const GRIEVANCE_COLS = {
   UNIT: 25,             // Y
   LOCATION: 26,         // Z
   STEWARD: 27,          // AA
-  RESOLUTION: 28        // AB
+  RESOLUTION: 28,       // AB
+  COORDINATOR_NOTIFIED: 29,  // AC - Checkbox for coordinator message
+  COORDINATOR_MESSAGE: 30,   // AD - Coordinator's message text
+  ACKNOWLEDGED_BY: 31,       // AE - Steward who acknowledged (unchecked)
+  ACKNOWLEDGED_DATE: 32      // AF - When steward acknowledged
 };
 
 /**
@@ -436,7 +440,11 @@ function createGrievanceLog() {
     "Unit",
     "Work Location (Site)",
     "Assigned Steward (Name)",
-    "Resolution Summary"
+    "Resolution Summary",
+    "✓ Coordinator Notified",  // AC - Checkbox
+    "Coordinator Message",      // AD - Message text
+    "Acknowledged By",          // AE - Steward who acknowledged
+    "Acknowledged Date"         // AF - When acknowledged
   ];
 
   grievanceLog.getRange(1, 1, 1, headers.length).setValues([headers]);
@@ -452,6 +460,10 @@ function createGrievanceLog() {
   grievanceLog.setColumnWidth(1, 110);
   grievanceLog.setColumnWidth(22, 180);
   grievanceLog.setColumnWidth(28, 250);
+  grievanceLog.setColumnWidth(29, 150); // Coordinator Notified
+  grievanceLog.setColumnWidth(30, 300); // Coordinator Message
+  grievanceLog.setColumnWidth(31, 180); // Acknowledged By
+  grievanceLog.setColumnWidth(32, 140); // Acknowledged Date
 
   grievanceLog.setTabColor("#DC2626");
 }
@@ -1068,6 +1080,13 @@ function setupDataValidations() {
       .build();
     grievanceLog.getRange(2, v.col, 5000, 1).setDataValidation(rule);
   });
+
+  // Coordinator Notified checkbox validation (column AC / 29)
+  const checkboxRule = SpreadsheetApp.newDataValidation()
+    .requireCheckbox()
+    .setAllowInvalid(false)
+    .build();
+  grievanceLog.getRange(2, GRIEVANCE_COLS.COORDINATOR_NOTIFIED, 5000, 1).setDataValidation(checkboxRule);
 }
 
 /* ===================== FORMULAS ===================== */
@@ -1167,7 +1186,14 @@ function onOpen() {
       .addItem("🔍 Quick Member Search", "quickMemberSearch"))
     .addSeparator()
     .addSubMenu(ui.createMenu("📋 Grievance Tools")
-      .addItem("➕ Start New Grievance", "showStartGrievanceDialog"))
+      .addItem("➕ Start New Grievance", "showStartGrievanceDialog")
+      .addItem("🔍 Advanced Search", "showSearchDialog")
+      .addItem("🔎 Advanced Filtering", "showFilterDialog")
+      .addSeparator()
+      .addItem("📧 Send Coordinator Message", "showCoordinatorMessageDialog")
+      .addItem("📧 Batch Coordinator Notification", "showBatchCoordinatorNotification")
+      .addItem("🔧 Setup Notification Trigger", "setupCoordinatorNotificationTrigger")
+      .addItem("🧹 Clear All Notifications", "clearAllCoordinatorNotifications"))
     .addSeparator()
     .addSubMenu(ui.createMenu("🔄 Workflow Management")
       .addItem("🔄 Workflow Visualizer", "showWorkflowVisualizer")
